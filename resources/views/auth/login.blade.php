@@ -10,11 +10,11 @@
         @csrf
         <div class="space-y-4">
             <div>
-                <x-jet-label for="email" value="{{ __('Email') }}" />
+                <x-jet-label for="email" value="{{ __('Your Email') }}" />
                 <x-jet-input id="email" type="email" name="email" :value="old('email')" required autofocus />                
             </div>
             <div>
-                <x-jet-label for="password" value="{{ __('Password') }}" />
+                <x-jet-label for="password" value="{{ __('Your Password') }}" />
                 <x-jet-input id="password" type="password" name="password" required autocomplete="current-password" />                
             </div>
             {{-- <div>
