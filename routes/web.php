@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\homepage\HomeController;
 use App\Http\Controllers\DataFeedController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
@@ -28,11 +29,13 @@ use Faker\Guesser\Name;
 |
 */
 
-Route::get('/inventory', [SearchProductController::class, 'index'])->name('search-product');
-Route::get('/inventory/getdata', [SearchProductController::class, 'getData'])->name('search-product.getdata');
-Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
+// Route::get('/inventory', [SearchProductController::class, 'index'])->name('search-product');
+// Route::get('/inventory/getdata', [SearchProductController::class, 'getData'])->name('search-product.getdata');
+// Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
 
-Route::redirect('/', 'login');
+// Route::redirect('/', 'login');
+Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
+Route::redirect('/','homepage');
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // ->middleware('checkRoleUser:500,501')
