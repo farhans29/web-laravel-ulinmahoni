@@ -55,24 +55,25 @@
 
     <main class="flex-1 mt-16">
         <!-- Hero Section -->
-        <div class="relative w-full h-screen">
-            <video id="heroVideo" class="w-full h-full object-cover">
+        <div class="relative w-full" style="position: relative; width: 100%; padding-top: calc(9 / 21 * 100%);">
+            <video id="heroVideo" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                 <source src="videos/assets/hero-video.mp4" type="video/mp4">
                 Browser Anda tidak mendukung video.
             </video>
-            
+
             <!-- Overlay with text -->
-            <div class="absolute inset-0 flex flex-col justify-end items-start p-12 text-white hero-overlay">
-                <h1 class="text-3xl font-light mb-2">Un environnement sûr et harmonieux</h1>
-                <p class="text-lg font-light">#ulinmahoni</p>
-                
+            <div class="absolute inset-0 flex flex-col justify-end items-start p-12 text-white hero-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 3rem; color: white;">
+                <h1 class="text-3xl font-light mb-2" style="font-size: 1.875rem; font-weight: 300; margin-bottom: 0.5rem;">Un environnement sûr et harmonieux</h1>
+                <p class="text-lg font-light" style="font-size: 1.125rem; font-weight: 300;">#ulinmahoni</p>
             </div>
 
             <!-- Play/Pause Button -->
-            <button id="playPauseBtn" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-50 rounded-full w-16 h-16 flex items-center justify-center">
-                <i class="fas fa-pause text-white text-xl"></i>
+            <button id="playPauseBtn" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-50 rounded-full w-16 h-16 flex items-center justify-center" 
+                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255,255,255,0.5); border-radius: 50%; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-pause text-white text-xl" style="color: white; font-size: 1.25rem;"></i>
             </button>
         </div>
+
 
        <!-- Luxoria Living Section -->
         <section class="flex flex-col md:flex-row">
@@ -182,7 +183,7 @@
                                 Mykonos Riviera Hotel & Spa offers a large selection of suites, most with heated pools, scintillating sunset views, and utmost privacy.
                             </p>
                             <div class="text-center">
-                                <a href="#" class="text-green-700 hover:text-green-800 transition">View</a>
+                                <a href="/rooms" class="text-green-700 hover:text-green-800 transition">View</a>
                             </div>
                         </div>
                     </div>

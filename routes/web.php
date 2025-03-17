@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\homepage\HomeController;
 use App\Http\Controllers\DataFeedController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CustomerController;
@@ -16,6 +15,11 @@ use App\Http\Controllers\profile\ProfileController;
 use App\Http\Controllers\salesorder\NewCustomerRequestController;
 use App\Http\Controllers\salesorder\SalesOrderController;
 use App\Http\Controllers\SearchProductController;
+
+use App\Http\Controllers\homepage\HomeController;
+use App\Http\Controllers\apart\ApartController;
+use App\Http\Controllers\room\RoomController;
+use App\Http\Controllers\property\PropertyController;
 use Faker\Guesser\Name;
 
 /*
@@ -34,8 +38,12 @@ use Faker\Guesser\Name;
 // Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
 
 // Route::redirect('/', 'login');
-Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 Route::redirect('/','homepage');
+Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
+
+
+Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
+Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // ->middleware('checkRoleUser:500,501')
