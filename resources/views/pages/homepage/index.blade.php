@@ -9,6 +9,33 @@
 </head>
 
 <body class="bg-white text-gray-900">
+    <!-- Add this near the top of your blade template for debugging -->
+    @if(isset($banners))
+        <script>
+            console.log('Banner Data:', @json($banners));
+        </script>
+    @endif
+
+    @if(isset($error))
+        <script>
+            console.error('Error:', @json($error));
+        </script>
+    @endif
+
+    <!-- Add this near the top of your blade template, after the <body> tag -->
+    @if(isset($debug))
+        <script>
+            console.group('API Debug Information');
+            console.log('Type:', @json($debug['type']));
+            console.log('Data:', @json($debug['data']));
+            console.groupEnd();
+
+            @if($debug['type'] === 'error' || $debug['type'] === 'exception')
+                console.error('Error Details:', @json($debug['data']));
+            @endif
+        </script>
+    @endif
+
     <!-- Topbar -->
     <header class="bg-white text-gray-900 p-4 fixed w-full top-0 left-0 shadow-md z-10 flex justify-between items-center h-16">
         <div class="flex items-center">
@@ -21,7 +48,9 @@
         </div>
         
         <div class="flex items-center justify-center">
-            <img src="images/assets/ulinmahoni-logo.svg" alt="Ulin Mahoni Logo" width="45">
+            <a href="/homepage">
+                <img src="images/assets/ulinmahoni-logo.svg" alt="Ulin Mahoni Logo" width="45">
+            </a>
         </div>
         
         <nav>
@@ -183,7 +212,7 @@
                                 Mykonos Riviera Hotel & Spa offers a large selection of suites, most with heated pools, scintillating sunset views, and utmost privacy.
                             </p>
                             <div class="text-center">
-                                <a href="/rooms" class="text-green-700 hover:text-green-800 transition">View</a>
+                                <a href="/properties" class="text-green-700 hover:text-green-800 transition">View</a>
                             </div>
                         </div>
                     </div>
@@ -202,7 +231,8 @@
                                 Mykonos Riviera Hotel & Spa offers a large selection of suites, most with heated pools, scintillating sunset views, and utmost privacy.
                             </p>
                             <div class="text-center">
-                                <a href="#" class="text-green-700 hover:text-green-800 transition">View</a>
+                                {{-- <a href="#" class="text-green-700 hover:text-green-800 transition">View</a> --}}
+                                <a href="/coming-soon" class="text-green-700 hover:text-green-800 transition">View</a>
                             </div>
                         </div>
                     </div>
@@ -221,7 +251,8 @@
                                 Mykonos Riviera Hotel & Spa offers a large selection of suites, most with heated pools, scintillating sunset views, and utmost privacy.
                             </p>
                             <div class="text-center">
-                                <a href="#" class="text-green-700 hover:text-green-800 transition">View</a>
+                                {{-- <a href="#" class="text-green-700 hover:text-green-800 transition">View</a> --}}
+                                <a href="/coming-soon" class="text-green-700 hover:text-green-800 transition">View</a>
                             </div>
                         </div>
                     </div>
@@ -240,7 +271,8 @@
                                 Mykonos Riviera Hotel & Spa offers a large selection of suites, most with heated pools, scintillating sunset views, and utmost privacy.
                             </p>
                             <div class="text-center">
-                                <a href="#" class="text-green-700 hover:text-green-800 transition">View</a>
+                                {{-- <a href="#" class="text-green-700 hover:text-green-800 transition">View</a> --}}
+                                <a href="/coming-soon" class="text-green-700 hover:text-green-800 transition">View</a>
                             </div>
                         </div>
                     </div>

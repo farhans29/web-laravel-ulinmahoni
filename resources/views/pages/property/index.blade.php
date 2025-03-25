@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ulin Mahoni - Our Rooms</title>
+    <title>Ulin Mahoni - Our Houses</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -72,7 +72,9 @@
         </div>
         
         <div class="flex items-center justify-center">
-            <img src="/images/assets/ulinmahoni-logo.svg" alt="Ulin Mahoni Logo" width="45">
+            <a href="/homepage">
+                <img src="images/assets/ulinmahoni-logo.svg" alt="Ulin Mahoni Logo" width="45">
+            </a>
         </div>
         
         <nav>
@@ -109,7 +111,7 @@
         <section class="bg-gray-100 py-12">
             <div class="max-w-7xl mx-auto px-4">
                 <h1 class="text-4xl font-light text-center">
-                    <span class="text-red-600">OUR</span> <span class="text-green-700">ROOMS</span>
+                    <span class="text-red-600">OUR</span> <span class="text-green-700">HOUSES</span>
                 </h1>
                 <p class="text-center text-gray-600 mt-4 max-w-3xl mx-auto">
                     Discover our exclusive selection of luxury accommodations designed for your comfort and relaxation.
@@ -125,7 +127,7 @@
             {{-- <img src="images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0012.jpg" alt=""> --}}
                 <div class="property-overlay">
                     <h2 class="text-3xl font-light mb-4">LIU HOUSE WEST JAKARTA</h2>
-                    <a href="/rooms/liu-house" class="cta-button inline-block">See Our Rooms</a>
+                    <a href="/rooms" class="cta-button inline-block">See Our Rooms</a>
                 </div>
                 <div class="property-info-bar">
                     <div class="flex space-x-6">

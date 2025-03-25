@@ -40,9 +40,11 @@ use Faker\Guesser\Name;
 // Route::redirect('/', 'login');
 Route::redirect('/','homepage');
 Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
+Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
 
 
 Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
+Route::get('/properties/houses', [PropertyController::class, 'houses'])->name('houses');
 Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {

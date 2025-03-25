@@ -56,7 +56,7 @@
         .room-price {
             font-size: 1.5rem;
             font-weight: 300;
-            color: white;
+            color: rgb(54, 53, 53);
             background-color: rgba(255, 255, 255, 0.2);
             padding: 0.5rem 1rem;
             position: absolute;
@@ -105,36 +105,49 @@
 
 <body class="bg-white text-gray-900">
     <!-- Header -->
-    <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center">
-        <button class="header-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            MENU
-        </button>
-        
-        <div class="flex items-center justify-center">
-            <img src="/images/assets/ulinmahoni-logo.svg" alt="Ulin Mahoni Logo" width="45">
-        </div>
-        
-        <div class="flex items-center space-x-4">
-            <div class="relative">
-                <button class="header-button" onclick="toggleDropdown()">
-                    EN
-                    <svg class="ml-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-24 bg-white shadow-lg z-10">
-                    <a href="?lang=en" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">EN</a>
-                    <a href="?lang=in" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">IN</a>
-                </div>
-            </div>
-            
-            <button class="book-button">
-                BOOK ONLINE
+    <header class="bg-white text-gray-900 p-4 fixed w-full top-0 left-0 shadow-md z-10 flex justify-between items-center h-16">
+        <div class="flex items-center">
+            <button class="border border-gray-300 p-2 mr-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span class="ml-2 text-gray-600">MENU</span>
             </button>
         </div>
+        
+        <div class="flex items-center justify-center">
+            <a href="/homepage">
+                <img src="images/assets/ulinmahoni-logo.svg" alt="Ulin Mahoni Logo" width="45">
+            </a>
+        </div>
+        
+        <nav>
+            <ul class="flex space-x-4">
+                <li>
+                    <div class="relative inline-block text-left">
+                        <div>
+                            <button type="button" class="inline-flex justify-center w-full border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500" id="options-menu" aria-haspopup="true" aria-expanded="true" onclick="toggleDropdown()">
+                                EN
+                                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="dropdownMenu" class="hidden z-10 mt-2 w-56 shadow-lg bg-white ring-1 ring-black ring-opacity-5" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                            <div class="py-1" role="none">
+                                <a href="?lang=en" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem">EN</a>
+                                <a href="?lang=in" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem">IN</a>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <button class="bg-green-800 text-white px-4 py-2">
+                        BOOK ONLINE
+                    </button>
+                </li>
+            </ul>
+        </nav>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 py-8">
@@ -159,7 +172,7 @@
                         Rp.1.500.000
                     </div>
                     
-                    <img src="images/assets/dining-room.jpg" alt="Alpha Room Dining Area" class="room-thumbnail">
+                    <img src="images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.46 (5).jpeg" alt="Alpha Room Dining Area" class="room-thumbnail">
                     
                     <div class="room-type-label">
                         ALPHA ROOMS
