@@ -58,7 +58,8 @@
                 <li>
                     <div class="relative inline-block text-left">
                         <div>
-                            <button type="button" class="inline-flex justify-center w-full border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500" id="options-menu" aria-haspopup="true" aria-expanded="true" onclick="toggleDropdown()">
+                            <button type="button" 
+                                    class="inline-flex justify-center w-full border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500" id="options-menu" aria-haspopup="true" aria-expanded="true" onclick="toggleDropdown()">
                                 EN
                                 <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -84,25 +85,28 @@
 
     <main class="flex-1 mt-16">
         <!-- Hero Section -->
-        <div class="relative w-full" style="position: relative; width: 100%; padding-top: calc(9 / 21 * 100%);">
+        <div class="relative w-full" style="position: relative; width: 100%; padding-top: calc(9 / 32 * 100%);">
             <video id="heroVideo" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover;">
                 <source src="videos/assets/hero-video.mp4" type="video/mp4">
                 Browser Anda tidak mendukung video.
             </video>
 
             <!-- Overlay with text -->
-            <div class="absolute inset-0 flex flex-col justify-end items-start p-12 text-white hero-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 3rem; color: white;">
-                <h1 class="text-3xl font-light mb-2" style="font-size: 1.875rem; font-weight: 300; margin-bottom: 0.5rem;">Un environnement sûr et harmonieux</h1>
-                <p class="text-lg font-light" style="font-size: 1.125rem; font-weight: 300;">#ulinmahoni</p>
+            <div class="absolute inset-0 flex flex-col justify-end items-start p-8 text-white hero-overlay" 
+                 style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 2rem; color: white;">
+                <h1 class="text-2xl font-light mb-2" style="font-size: 1.5rem; font-weight: 300; margin-bottom: 0.5rem;">
+                    A safe and harmonious environment
+                </h1>
+                <p class="text-base font-light" style="font-size: 1rem; font-weight: 300;">#UlinMahoni</p>
             </div>
 
             <!-- Play/Pause Button -->
-            <button id="playPauseBtn" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-50 rounded-full w-16 h-16 flex items-center justify-center" 
-                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255,255,255,0.5); border-radius: 50%; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center;">
-                <i class="fas fa-pause text-white text-xl" style="color: white; font-size: 1.25rem;"></i>
+            <button id="playPauseBtn" 
+                    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center" 
+                    style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255,255,255,0.5); border-radius: 50%; width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-pause text-white text-lg" style="color: white; font-size: 1.125rem;"></i>
             </button>
         </div>
-
 
        <!-- Luxoria Living Section -->
         <section class="flex flex-col md:flex-row">
@@ -111,19 +115,20 @@
                 <img src="images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0008.jpg" 
                     alt="Luxury Bedroom" 
                     class="w-full h-full object-cover">
-            </div>
-            
+                </div>
+
             <!-- Right Content -->
             <div class="w-full md:w-1/2 flex flex-col justify-center items-center p-12 bg-white">
                 <h2 class="text-5xl font-light mb-2">
-                    <span class="text-red-600">ULIN</span> <span class="text-green-700">MAHONI</span>
-                </h2>
+                    <span class="text-red-600">ULIN</span>
+                    <span class="text-green-700">MAHONI</span>
+                    </h2>
                 <h3 class="text-xl text-gray-500 font-light tracking-wider mb-8">LUXÓRIA LIVING</h3>
                 
                 <p class="text-gray-600 font-light text-center max-w-xl leading-relaxed mb-8">
-                    Ulin Mahoni adalah hunian eksklusif yang menghadirkan kemewahan, kenyamanan, dan ketenangan
-                    dalam satu tempat. Dengan desain interior yang elegan dan fasilitas premium, setiap sudutnya
-                    dirancang untuk memberikan pengalaman tinggal yang istimewa.
+                        Ulin Mahoni adalah hunian eksklusif yang menghadirkan kemewahan, kenyamanan, dan ketenangan
+                        dalam satu tempat. Dengan desain interior yang elegan dan fasilitas premium, setiap sudutnya
+                        dirancang untuk memberikan pengalaman tinggal yang istimewa.
                 </p>
                 
                 <button class="border border-gray-300 text-gray-600 px-8 py-2 hover:bg-gray-50 transition">
@@ -178,7 +183,7 @@
                         <input type="text" placeholder="Any location" class="border-0 focus:ring-0 p-0 text-sm">
                     </div>
                 </div>
-                
+
                 <button class="bg-green-800 text-white px-6 py-3 rounded shadow hover:bg-green-900 transition">
                     <i class="fas fa-search mr-2"></i> Search
                 </button>
@@ -559,7 +564,7 @@
             if (!button.contains(event.target) && !dropdown.contains(event.target)) {
                 dropdown.classList.add('hidden');
             }
-        });
+    });
 </script>
 
 </html>

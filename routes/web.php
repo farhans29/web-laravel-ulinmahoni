@@ -42,16 +42,17 @@ Route::redirect('/','homepage');
 Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
 
-
 Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
 Route::get('/properties/houses', [PropertyController::class, 'houses'])->name('houses');
 Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
+
+// API ROUTES
+// Route::get('/api/banner',[]);
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // ->middleware('checkRoleUser:500,501')
 
     Route::post('/update-gcal', [ProfileController::class, 'update'])->name('update.gcal');
-l/
     Route::prefix('inventory')->group(function () {
         Route::get('/invlist', [InvListController::class, 'index'])->name('invlist');
         Route::get('/invlist/getdata', [InvListController::class, 'getData'])->name('invlist.getdata');
