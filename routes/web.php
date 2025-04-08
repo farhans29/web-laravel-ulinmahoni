@@ -51,7 +51,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // ->middleware('checkRoleUser:500,501')
 
     Route::post('/update-gcal', [ProfileController::class, 'update'])->name('update.gcal');
-
+l/
     Route::prefix('inventory')->group(function () {
         Route::get('/invlist', [InvListController::class, 'index'])->name('invlist');
         Route::get('/invlist/getdata', [InvListController::class, 'getData'])->name('invlist.getdata');
