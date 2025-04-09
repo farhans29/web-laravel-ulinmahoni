@@ -20,6 +20,7 @@ use App\Http\Controllers\homepage\HomeController;
 use App\Http\Controllers\apart\ApartController;
 use App\Http\Controllers\room\RoomController;
 use App\Http\Controllers\property\PropertyController;
+use App\Http\Controllers\house\HouseController;
 use Faker\Guesser\Name;
 
 /*
@@ -43,8 +44,12 @@ Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
 
 Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
-Route::get('/properties/houses', [PropertyController::class, 'houses'])->name('houses');
-Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
+// Route::get('/properties/houses', [PropertyController::class, 'houses'])->name('houses');
+
+// Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
+
+Route::get('/houses', [HouseController::class, 'index'])->name('houses');
+Route::get('/houses/rooms', [RoomController::class, 'index'])->name('houses.rooms');
 
 // API ROUTES
 // Route::get('/api/banner',[]);

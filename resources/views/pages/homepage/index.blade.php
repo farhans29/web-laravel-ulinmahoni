@@ -217,7 +217,7 @@
                                 Mykonos Riviera Hotel & Spa offers a large selection of suites, most with heated pools, scintillating sunset views, and utmost privacy.
                             </p>
                             <div class="text-center">
-                                <a href="/properties" class="text-green-700 hover:text-green-800 transition">View</a>
+                                <a href="/houses" class="text-green-700 hover:text-green-800 transition">View</a>
                             </div>
                         </div>
                     </div>

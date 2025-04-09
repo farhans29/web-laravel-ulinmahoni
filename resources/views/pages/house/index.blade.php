@@ -124,10 +124,9 @@
             <!-- LIU HOUSE WEST JAKARTA -->
             <div class="property-banner" 
             style="background-image: url('images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0012.jpg');">
-            {{-- <img src="images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0012.jpg" alt=""> --}}
                 <div class="property-overlay">
                     <h2 class="text-3xl font-light mb-4">LIU HOUSE WEST JAKARTA</h2>
-                    <a href="/rooms" class="cta-button inline-block">See Our Rooms</a>
+                    <a href="/houses/rooms" class="cta-button inline-block">See Our Rooms</a>
                 </div>
                 <div class="property-info-bar">
                     <div class="flex space-x-6">
