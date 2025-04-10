@@ -166,26 +166,32 @@
     </section>
 
     <!-- Hero Section with Video (moved below search) -->
-    <div class="relative w-full h-[500px] bg-gray-900 mt-4">
-      <video id="heroVideo" class="absolute inset-0 w-full h-full object-cover" muted loop>
-        {{-- <source src="videos/assets/hero-video.mp4" type="video/mp4"> --}}
-        <source src="{{ asset('videos/assets/hero-video.mp4') }}" type="video/mp4">
-          
-        {{-- <source src="videos/assets/" type="video/mp4"> --}}
-        Your browser does not support the video tag.
-      </video>
-      {{-- <img src="images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0006.jpg"  --}}
+    <div class="relative w-full min-h-[500px] md:min-h-[700px] lg:min-h-[900px] bg-gray-900 mt-4">
+      {{-- Check if video exists and should be displayed --}}
+      @if($heroMedia['type'] == 'video')
+      <div class="relative w-full h-full">
+        <video id="heroVideo" class="absolute inset-0 w-full h-full object-cover" muted>
+          <source src="{{ asset($heroMedia['sources']['video']) }}" type="video/mp4">
+          Your browser does not support the video tag.  
+        </video>
+        <p class="absolute bottom-0 left-0 p-4 text-white bg-black/50">{{$heroMedia['sources']['video']}}</p>
+      </div> 
+      @else
+        {{-- Fallback to image --}}
+        <div class="relative w-full h-full">
+          <img id="heroImage" 
+              src="{{ asset('images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg') }}" 
+              alt="Hero Image"
+              class="absolute inset-0 w-full h-full object-cover">
+          <p class="absolute bottom-0 left-0 p-4 text-white bg-black/50">{{$heroMedia['sources']['image']}}</p>
+        </div>
+      @endif
 
       <!-- Overlay with text -->
       <div class="absolute inset-0 gradient-overlay flex flex-col justify-end p-8 text-white">
         <h1 class="text-3xl font-light mb-2">A safe and harmonious environment</h1>
         <p class="text-lg font-light">#UlinMahoni</p>
       </div>
-
-      <!-- Play/Pause Button -->
-      <button id="playPauseBtn" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/50 rounded-full w-12 h-12 flex items-center justify-center">
-        <i id="playPauseIcon" class="fas fa-pause text-white"></i>
-      </button>
     </div>
 
     <!-- Property Types Section -->
@@ -223,7 +229,7 @@
                 <span>Villa</span>
               </div>
             </button>
-            
+
             <button class="tab-trigger" data-tab="hotel">
               <div class="flex items-center">
                 {{-- <img src="https://via.placeholder.com/24" alt="Apartemen Icon" class="mr-2"> --}}
@@ -819,7 +825,7 @@
 
     <!-- Area Kost Coliving Terpopuler Section -->
     <section class="max-w-7xl mx-auto px-4 py-8">
-      <h2 class="text-2xl font-medium mb-6">Area Kost Coliving Terpopuler</h2>
+      <h2 class="text-4xl font-bold mb-6">Area Kost Coliving Terpopuler</h2>
 
       <div class="mb-6 border-b border-gray-200">
         <div class="flex space-x-6">

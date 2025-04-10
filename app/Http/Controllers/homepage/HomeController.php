@@ -16,22 +16,31 @@ class HomeController extends Controller {
     
     public function index()
     {
+        $heroMedia = [
+            'type' => ' video', // 'video' or 'image'
+            'sources' => [
+                'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg', // path to your image
+                'video' => 'images/assets/hero-video.mp4' // path to your video
+            ]
+        ];
+
         try {
             $response = $this->fetchBannerData();
             
             if ($response->successful()) {
-                return $this->handleSuccessResponse($response);
+                return $this->handleSuccessResponse($response, $heroMedia);
             }
             
-            return $this->handleErrorResponse($response);
+            return $this->handleErrorResponse($response, $heroMedia);
             
         } catch (Exception $e) {
-            return $this->handleException($e);
+            return $this->handleException($e, $heroMedia);
         }
     }
 
     private function fetchBannerData()
     {
+        // No changes needed here
         return Http::withoutVerifying()
             ->timeout(60)
             ->retry(3, 100, function ($exception) {
@@ -44,7 +53,7 @@ class HomeController extends Controller {
             ->get(self::API_URL);
     }
 
-    private function handleSuccessResponse($response)
+    private function handleSuccessResponse($response, $heroMedia = null)
     {
         $bannerData = $response->json();
         Log::info('Banner data fetched successfully', [
@@ -53,6 +62,7 @@ class HomeController extends Controller {
 
         return view("pages.homepage.index", [
             'banners' => $bannerData,
+            'heroMedia' => $heroMedia,
             'debug' => [
                 'type' => 'success',
                 'data' => $bannerData
@@ -60,7 +70,7 @@ class HomeController extends Controller {
         ]);
     }
 
-    private function handleErrorResponse($response)
+    private function handleErrorResponse($response, $heroMedia = null)
     {
         $errorData = [
             'status' => $response->status(),
@@ -71,6 +81,7 @@ class HomeController extends Controller {
 
         return view("pages.homepage.index", [
             'banners' => [],
+            'heroMedia' => $heroMedia,
             // 'debug' => [
             //     'type' => 'error',
             //     'data' => $errorData
@@ -78,7 +89,7 @@ class HomeController extends Controller {
         ]);
     }
 
-    private function handleException(Exception $e)
+    private function handleException(Exception $e, $heroMedia = null)
     {
         $errorData = [
             'message' => $e->getMessage(),
@@ -90,6 +101,7 @@ class HomeController extends Controller {
 
         return view("pages.homepage.index", [
             'banners' => [],
+            'heroMedia' => $heroMedia,
             // 'debug' => [
             //     'type' => 'exception',
             //     'data' => $errorData
