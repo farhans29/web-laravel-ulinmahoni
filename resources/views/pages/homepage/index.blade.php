@@ -167,6 +167,53 @@
         box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         padding: 1.5rem;
     }
+
+    /* Section styling */
+    .section-light {
+        background-color: #f8f7f4;
+        padding: 4rem 0;
+    }
+
+    .section-dark {
+        background-color: #f5f2ea;
+        padding: 4rem 0;
+    }
+
+    .section-container {
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+    }
+
+    .section-title {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-title h2 {
+        font-size: 2.25rem;
+        font-weight: 300;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .section-title .divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .section-title .divider-line {
+        width: 3rem;
+        height: 1px;
+        background-color: #d1d5db;
+    }
+
+    .section-title .divider-text {
+        color: #0d9488;
+        font-style: italic;
+    }
   </style>
 </head>
 <body>
@@ -279,477 +326,236 @@
     </div>
 
     <!-- Property Types Section -->
-    <section class="max-w-7xl mx-auto px-4 py-12">
-
-      <div class="w-full">
-        <div class="flex justify-between items-center mb-6 mt-12">
-          <div class="flex space-x-2">
-            <button class="tab-trigger active" data-tab="kost">
-              <div class="flex items-center">
-                {{-- <img src="https://via.placeholder.com/24" alt="Kost Icon" class="mr-2"> --}}
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 64 64" class="mr-2 ml-2">
-                    <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAj5JREFUeF7tmj1OAzEQhb8cAAlRA1egR0CF+GkREkfgCgjRUtNzBBCiQgJBB/TUdPy1SMABAKPdKDjZjJ312pt40qAoszNvnt+MPWY7ZP7pZJ4/SoAqIHMGtAQyF4A2QS0BLQGZgTngCFgDpmTzVlh8ATfAHvA4DJFUAib5B2CmFWn5g3gHFoDXqkclAk6BbeAC2AXe/DEkeWIWOAY2gRNgZ1QCPgvZGyVUspgkRTmowfwMfADToxLwXTwoKUWGk8ZCxC8lJjpIk5dzVBG/EiBwKTLovBZpDEX8qgBVwHAGRAmlUbZzVBG/loCWgH8J1BmOhg0pTfgNXgKhhiN7SGnKb3AC6g5HVUNKU36DExBiOBo0pDTlNzgBokPHDcr2k8yv7zaYDGhTxCoBnueALBRQZz92VGp0s8rzh10Cofbj6Bk6Buy7JLUJqLsfO+KIblZ5SWoTEGI/jp6dY8CBl6Q2AaGanCOm6GZ9+SkB1hqoAsb8/wBSTWkJ2AusPUB7wH8Gsm2C98Ci1EEm7Pc7YLnsAeXKT1iOYjodmwDpfkD0OCYG3VJXAooVy74Ebn/fqloaE/mGgmlyXhl2ENoCzoDL4mWjUIFj+jHY1wGTyzngdRQ+BPYB8/cgJuqAsewcvAi4Kl6OLNkLiCuaq1LFJpcNHwX0IpwHXqJBDhvIYH8a4LJb+nYPsJvhdaGCsLDiejM5rPaE/Gt+5fdcDj6VlCsBcdXYvmiqgPatSVxEqoC4fLcvmiqgfWsSF1H2CvgBq3GlQZNUFbMAAAAASUVORK5CYII=" x="0" y="0" width="64" height="64"/>
-                </svg>
-                <span>House & Room</span>
-              </div>
-            </button>
-
-            <button class="tab-trigger" data-tab="apartment">
-              <div class="flex items-center">
-                {{-- <img src="https://via.placeholder.com/24" alt="Apartemen Icon" class="mr-2"> --}}
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 64 64" class="mr-2 ml-2">
-                    <image xlink:href="data:image/png;base64,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" x="0" y="0" width="64" height="64"/>
-                  </svg>
-                <span>Apartment</span>
-              </div>
-            </button>
-
-            <button class="tab-trigger" data-tab="villa">
-              <div class="flex items-center">
-                {{-- <img src="https://via.placeholder.com/24" alt="Apartemen Icon" class="mr-2"> --}}
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 64 64" class="mr-2 ml-2">
-                    <image xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAABK5JREFUeF7tmmmoVVUUx38maB8UUywUFUNJLUvxi2amQU4kBUmUQ+GACg5BfVA/VJaV6AcVx0otQzFQKNLCcFacp4hIcKjUpEjEbFRTc9r/x7pxeL537znnnnvuO+fc/cXhnb3fXr+z9lp7/depR8ZHvYzbTwVAxQMyTqByBDLuAJUgGOcRaAB8AnQDngR+rgveFxeAu4DVwAtm9LdAb+BiuSHEBeB9YALwG3DBwegIfAkMBm6WE0IcAN4F3gD+MdcXgAPAfcAcYEqaAUwE3gOuAc8Am83YXu4IbAMammcsKReEUnrAMAt6t4ChwGfVjBxiceE68JQBiZ1DqQD0A9YDivzjgOW1WJY7Hr8DPYHv4yZQCgA9gK3ufDey861zXtvQ71dqHA6cAh4FzscJIWoAnV2g2wU0c29/JvC6D2PuBnaY8buB/sBVH/MieSRKAG3c5vc6d9efS4HxAXbYwjJDW2AFMDrA3KIejQrAvYDenvL7WuB54EbAnT0E7AOaAFOB2QHnh3q8OgCd2yPuLdwfarWaJ/3qoHS1S1ChZQfZBUn7eg5YV2hCsT+vDqADcKLYRWuYr8B4yOe6rwDzgX9dbHgCOOxzXqjHagPwnb21UIt6Junio6AWBICmL3bZYBIg79HcX4rdSL405P1ZzgPKDaC+uf/TwDdAH5dSL5UCQl31ANna2LLKI8DnFlgjL5zqMgBBUDA+aIWT33tFIEcJAkCRXKlObybf+NMVPY8Bx6z4CRMDvOtrLRVOujCNAlYGsrDAw0EAvASs8vnLJXx8GhEA/Uqtt8aV1SqcBtrN0edW8j8WBsBHVuDUtPKHLmKPtQ1HCUC/620nnrxpgooKpx+iIJAkANqrPPBFV14ft2P2R7EQkgRAtioObLfSeae7Og8wsSU0h6QBkKHNrXBqbzqDjlzokUQAMlaFkyrPe4BXgQVhCSQVgOxVNpDqJMld6rJU5sAjyQBk7MvAIlOcHwd0hQ804gIQaFMhHz5jhdO5IPPTBEB2f20l9GW/EOICUKgclnSuNydpLOiYYdqj1pA9ujFKZNW/C440AVADRldmyXO6NU4vaL0R8z6XTw/I1QKluApH4QGTTXXaYv2IESa55+WQJg8QgLmmKH8MXHE6QherGZQt9Hf1If/yEkkjANn3joFQo+Vhlx02uDjxn8WHkVkA4LVRjRplhf1WTbZzcJQyq0ZaPSBnnxQltdwUD9RzOOmKp9dcV3pWVgCMAaRRtALOGozTTtnqmxUACoa6g6hnqSEY0hMk61V1rsIcAT/pNagkFlUaVBbwDjVjjpqWqP9Xv/ID4AHgx7QD0MtVynvL9RvnGRUJrCqjn3Vfq30RFkBdvgh5PUCd5p/s65ONBqApoI8x/g+EYY5AUgComyTZTHK+t0xWh0naYlX7Ps0ApBduMvWok9UIy0xV/spSY6oBtLQLjzpKD1qXSZWjlCN1oBem3QNknwzWef8bUMNVn+XpQ6zudjtMtQfk0qE+t5kGtLa2u6AoEGbiKpyzU1+qqZy/Q3BREFReVH7M4tgjAOr4SlHN4tgd1VdiiYVXAZDYVxfRxiseEBHIxC5T8YDEvrqINp55D7gNN9bZ1fJkozMAAAAASUVORK5CYII=" x="0" y="0" width="64" height="64"/>
-                </svg>
-                <span>Villa</span>
-              </div>
-            </button>
-
-            <button class="tab-trigger" data-tab="hotel">
-              <div class="flex items-center">
-                {{-- <img src="https://via.placeholder.com/24" alt="Apartemen Icon" class="mr-2"> --}}
-                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 64 64" class="mr-2 ml-2">
-                    <image xlink:href="data:image/png;base64,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" x="0" y="0" width="64" height="64"/>
-                </svg>
-                <span>Hotel</span>
-              </div>
-            </button>
-          </div>
-          <button class="text-teal-600">
-            Lihat Semua
-          </button>
-        </div>
-
-        {{-- ICONS --}}
-        {{-- <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Populer">
-            </div>
-            <span class="text-sm text-gray-700">Populer</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Terbaru">
-            </div>
-            <span class="text-sm text-gray-700">Terbaru</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Bandung">
-            </div>
-            <span class="text-sm text-gray-700">Bandung</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Surabaya">
-            </div>
-            <span class="text-sm text-gray-700">Surabaya</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Dekat MRT">
-            </div>
-            <span class="text-sm text-gray-700">Dekat MRT</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Dekat KRL">
-            </div>
-            <span class="text-sm text-gray-700">Dekat KRL</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Dekat LRT">
-            </div>
-            <span class="text-sm text-gray-700">Dekat LRT</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Tomang">
-            </div>
-            <span class="text-sm text-gray-700">Tomang</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="BSD City">
-            </div>
-            <span class="text-sm text-gray-700">BSD City</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="UPH Karawaci">
-            </div>
-            <span class="text-sm text-gray-700">UPH Karawaci</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Pasutri">
-            </div>
-            <span class="text-sm text-gray-700">Pasutri</span>
-          </div>
-          <div class="flex flex-col items-center justify-center p-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
-            <div class="feature-icon">
-              <img src="https://via.placeholder.com/24" alt="Mewah">
-            </div>
-            <span class="text-sm text-gray-700">Mewah</span>
-          </div>
-        </div> --}}
-
-        <div id="kost-tab" class="tab-content active">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Property Card 1 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0006.jpg" 
-                       alt="Rexucia House & Room" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Coliving</span>
-                </div>
-              </div>
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Rexucia House & Room</h3>
-                <p class="text-gray-500 text-sm mb-1">Petojo Selatan, Gambir</p>
-                <p class="text-gray-500 text-xs mb-3">2.4 km dari Stasiun MRT Bundaran HI</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp1.300.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <p class="font-bold text-gray-800">
-                        Rp975.000 <span class="text-xs font-normal">/bulan</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Property Card 2 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/apt.jpg" 
-                       alt="Royal Mediteranian Apartment" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Coliving</span>
-                </div>
-              </div>
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Royal Mediteranian Apartment</h3>
-                <p class="text-gray-500 text-sm mb-1">Cilandak Barat, Cilandak</p>
-                <p class="text-gray-500 text-xs mb-3">976 m dari Stasiun MRT Fatmawati</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp4.250.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <p class="font-bold text-gray-800">
-                        Rp4.025.000 <span class="text-xs font-normal">/bulan</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Property Card 3 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/villa.jpg" 
-                       alt="Xilonen Villa" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Coliving</span>
-                </div>
-              </div>
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Xilonen Villa</h3>
-                <p class="text-gray-500 text-sm mb-1">Kelurahan Fatmawati, Fatmawati</p>
-                <p class="text-gray-500 text-xs mb-3">3.3 km dari Stasiun MRT Bundaran Senayan</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp2.400.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <p class="font-bold text-gray-800">
-                        Rp2.275.000 <span class="text-xs font-normal">/bulan</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Property Card 4 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/hotel.jpg" 
-                       alt="Kvlarya Hotel" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-pink-600 text-white text-xs px-2 py-1 rounded-full">Coliving Wanita</span>
-                </div>
-              </div>
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Kvlarya Hotel</h3>
-                <p class="text-gray-500 text-sm mb-1">Tegalrejo, Bogor Utara</p>
-                <p class="text-gray-500 text-xs mb-3">2.3 km dari Stasiun Bogor</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp2.000.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">HOT</span>
-                      <p class="font-bold text-gray-800">
-                        Rp1.891.999 <span class="text-xs font-normal">/bulan</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <section class="section-light mt-4">
+      <div class="section-container">
+        <div class="section-title">
+          <h2>Properties</h2>
+          <div class="divider">
+            <div class="divider-line"></div>
+            <p class="divider-text">Exclusive & Cozy</p>
+            <div class="divider-line"></div>
           </div>
         </div>
 
-        <div id="apartment-tab" class="tab-content">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Apartment Card 1 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/Modern Japanese House_ Minimalist and Harmonious - Quiet Minimal.jpg" 
-                       alt="Luxoria Apartment" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Apartemen</span>
-                </div>
-              </div>
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Luxoria Apartment</h3>
-                <p class="text-gray-500 text-sm mb-1">Kemang, Jakarta Selatan</p>
-                <p class="text-gray-500 text-xs mb-3">1.2 km dari Stasiun MRT Fatmawati</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp6.300.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <p class="font-bold text-gray-800">
-                        Rp5.975.000 <span class="text-xs font-normal">/bulan</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Apartment Card 2 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/0e127752-6073-4445-89cc-e9f47f7122f8.jpg" 
-                       alt="Mahoni Heights" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Apartemen</span>
-                </div>
-              </div>
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Mahoni Heights</h3>
-                <p class="text-gray-500 text-sm mb-1">BSD City, Tangerang</p>
-                <p class="text-gray-500 text-xs mb-3">500 m dari Mall BSD</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp3.750.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <p class="font-bold text-gray-800">
-                        Rp3.500.000 <span class="text-xs font-normal">/bulan</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <div class="w-full">
+          <!-- Property Type Tabs -->
+          <div class="flex border-b border-gray-200 mb-6">
+            <button class="property-tab-trigger px-6 py-3 text-sm font-medium text-teal-600 border-b-2 border-teal-600" data-tab="house">
+              House & Room
+            </button>
+            <button class="property-tab-trigger px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="apartment">
+              Apartment
+            </button>
+            <button class="property-tab-trigger px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="villa">
+              Villa
+            </button>
+            <button class="property-tab-trigger px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="hotel">
+              Hotel
+            </button>
           </div>
-        </div>
 
-        {{-- VILLA TAB --}}
-        <div id="villa-tab" class="tab-content">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Apartment Card 1 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/Modern Japanese House_ Minimalist and Harmonious - Quiet Minimal.jpg" 
-                       alt="Luxoria Apartment" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Villa</span>
-                </div>
-              </div>
-
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Luxoria Villas</h3>
-                <p class="text-gray-500 text-sm mb-1">Kemang, Jakarta Selatan</p>
-                <p class="text-gray-500 text-xs mb-3">1.2 km dari Stasiun MRT Fatmawati</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp6.300.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <p class="font-bold text-gray-800">
-                        Rp5.975.000 <span class="text-xs font-normal">/bulan</span>
-                      </p>
+          <!-- Property Type Content -->
+          <div class="property-tab-contents">
+            <!-- House & Room Content -->
+            <div class="property-tab-content active" data-tab="house">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Property Card 1 -->
+                <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                  <div class="relative">
+                    <div class="relative h-48 overflow-hidden">
+                      <img src="images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0006.jpg" 
+                           alt="Rexucia House & Room" 
+                           class="card-image w-full h-full object-cover">
+                      <div class="absolute top-2 right-2 z-10">
+                      </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
+                    <div class="absolute bottom-2 left-2">
+                      <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Coliving</span>
                     </div>
                   </div>
 
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
+                  <div class="p-4">
+                    <h3 class="font-medium text-gray-800 mb-1">Rexucia House & Room</h3>
+                    <p class="text-gray-500 text-sm mb-1">Petojo Selatan, Gambir</p>
+                    <p class="text-gray-500 text-xs mb-3">2.4 km dari Stasiun MRT Bundaran HI</p>
+
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-xs text-gray-500">
+                          mulai dari <span class="line-through">Rp1.300.000</span>
+                        </p>
+                        <div class="flex items-center">
+                          <p class="font-bold text-gray-800">
+                            Rp975.000 <span class="text-xs font-normal">/bulan</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col space-y-2 text-xs text-gray-500">
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Property Card 2 -->
+                <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                  <div class="relative">
+                    <div class="relative h-48 overflow-hidden">
+                      <img src="images/assets/apt.jpg" 
+                           alt="Royal Mediteranian Apartment" 
+                           class="card-image w-full h-full object-cover">
+                      <div class="absolute top-2 right-2 z-10">
+                      </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
+                    <div class="absolute bottom-2 left-2">
+                      <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Coliving</span>
+                    </div>
+                  </div>
+
+                  <div class="p-4">
+                    <h3 class="font-medium text-gray-800 mb-1">Royal Mediteranian Apartment</h3>
+                    <p class="text-gray-500 text-sm mb-1">Cilandak Barat, Cilandak</p>
+                    <p class="text-gray-500 text-xs mb-3">976 m dari Stasiun MRT Fatmawati</p>
+
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-xs text-gray-500">
+                          mulai dari <span class="line-through">Rp4.250.000</span>
+                        </p>
+                        <div class="flex items-center">
+                          <p class="font-bold text-gray-800">
+                            Rp4.025.000 <span class="text-xs font-normal">/bulan</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col space-y-2 text-xs text-gray-500">
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Property Card 3 -->
+                <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                  <div class="relative">
+                    <div class="relative h-48 overflow-hidden">
+                      <img src="images/assets/villa.jpg" 
+                           alt="Xilonen Villa" 
+                           class="card-image w-full h-full object-cover">
+                      <div class="absolute top-2 right-2 z-10">
+                      </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
+                    <div class="absolute bottom-2 left-2">
+                      <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Coliving</span>
+                    </div>
+                  </div>
+
+                  <div class="p-4">
+                    <h3 class="font-medium text-gray-800 mb-1">Xilonen Villa</h3>
+                    <p class="text-gray-500 text-sm mb-1">Kelurahan Fatmawati, Fatmawati</p>
+                    <p class="text-gray-500 text-xs mb-3">3.3 km dari Stasiun MRT Bundaran Senayan</p>
+
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-xs text-gray-500">
+                          mulai dari <span class="line-through">Rp2.400.000</span>
+                        </p>
+                        <div class="flex items-center">
+                          <p class="font-bold text-gray-800">
+                            Rp2.275.000 <span class="text-xs font-normal">/bulan</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col space-y-2 text-xs text-gray-500">
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Property Card 4 -->
+                <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                  <div class="relative">
+                    <div class="relative h-48 overflow-hidden">
+                      <img src="images/assets/hotel.jpg" 
+                           alt="Kvlarya Hotel" 
+                           class="card-image w-full h-full object-cover">
+                      <div class="absolute top-2 right-2 z-10">
+                      </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
+                    <div class="absolute bottom-2 left-2">
+                      <span class="bg-pink-600 text-white text-xs px-2 py-1 rounded-full">Coliving Wanita</span>
+                    </div>
+                  </div>
+
+                  <div class="p-4">
+                    <h3 class="font-medium text-gray-800 mb-1">Kvlarya Hotel</h3>
+                    <p class="text-gray-500 text-sm mb-1">Tegalrejo, Bogor Utara</p>
+                    <p class="text-gray-500 text-xs mb-3">2.3 km dari Stasiun Bogor</p>
+
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <p class="text-xs text-gray-500">
+                          mulai dari <span class="line-through">Rp2.000.000</span>
+                        </p>
+                        <div class="flex items-center">
+                          <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full mr-2">HOT</span>
+                          <p class="font-bold text-gray-800">
+                            Rp1.891.999 <span class="text-xs font-normal">/bulan</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col space-y-2 text-xs text-gray-500">
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
+                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Apartment Card 2 -->
-            <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
-              <div class="relative">
-                <div class="relative h-48 overflow-hidden">
-                  <img src="images/assets/0e127752-6073-4445-89cc-e9f47f7122f8.jpg" 
-                       alt="Mahoni Heights" 
-                       class="card-image w-full h-full object-cover">
-                  <div class="absolute top-2 right-2 z-10">
-                  
-                  </div>
+            <!-- Apartment Content -->
+            <div class="property-tab-content hidden" data-tab="apartment">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Property cards for Apartment -->
+                <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                  <!-- Your existing apartment property card content -->
                 </div>
-                <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                <div class="absolute bottom-2 left-2">
-                  <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">Villa</span>
-                </div>
+                <!-- More apartment property cards -->
               </div>
+            </div>
 
-              <div class="p-4">
-                <h3 class="font-medium text-gray-800 mb-1">Mahoni Villas</h3>
-                <p class="text-gray-500 text-sm mb-1">BSD City, Tangerang</p>
-                <p class="text-gray-500 text-xs mb-3">500 m dari Mall BSD</p>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-xs text-gray-500">
-                      mulai dari <span class="line-through">Rp3.750.000</span>
-                    </p>
-                    <div class="flex items-center">
-                      <p class="font-bold text-gray-800">
-                        Rp3.500.000 <span class="text-xs font-normal">/bulan</span>
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">Diskon sewa 12 Bulan</span>
-                    <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">S+ Voucher s.d. 2%</span>
-                  </div>
+            <!-- Villa Content -->
+            <div class="property-tab-content hidden" data-tab="villa">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Property cards for Villa -->
+                <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                  <!-- Your existing villa property card content -->
                 </div>
+                <!-- More villa property cards -->
+              </div>
+            </div>
+
+            <!-- Hotel Content -->
+            <div class="property-tab-content hidden" data-tab="hotel">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Property cards for Hotel -->
+                <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                  <!-- Your existing hotel property card content -->
+                </div>
+                <!-- More hotel property cards -->
               </div>
             </div>
           </div>
@@ -850,115 +656,139 @@
     </section> --}}
 
     <!-- Promo berlangsung Section -->
-    <section class="max-w-7xl mx-auto px-4 py-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-medium">Promo berlangsung</h2>
-        <a href="#" class="text-sm text-gray-600 hover:text-teal-600 flex items-center">
-          Lihat Semua
-          <i class="fas fa-chevron-right ml-1 text-xs"></i>
-        </a>
-      </div>
-
-      <div class="promo-slider relative">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Promo Card 1 -->
-          <div class="bg-white rounded-lg overflow-hidden shadow-md">
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Grab Promo" class="w-full h-48 object-cover">
-            <div class="p-4">
-              <div class="flex items-center mb-2">
-                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Hemat 90%</span>
-              </div>
-              <h3 class="font-medium text-gray-800 mb-1">Hemat Waktu Hemat Ongkos</h3>
-              <p class="text-gray-600 text-sm">Pakai Grab Hemat</p>
-            </div>
-          </div>
-
-          <!-- Promo Card 2 -->
-          <div class="bg-white rounded-lg overflow-hidden shadow-md">
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Prabu Promo" class="w-full h-48 object-cover">
-            <div class="p-4">
-              <div class="flex items-center mb-2">
-                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Diskon 100rb</span>
-              </div>
-              <h3 class="font-medium text-gray-800 mb-1">Dompet tetep anteng beli sepatu ganteng</h3>
-              <p class="text-gray-600 text-sm">Nikmati diskon</p>
-            </div>
-          </div>
-
-          <!-- Promo Card 3 -->
-          <div class="bg-white rounded-lg overflow-hidden shadow-md">
-            <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Primecare Promo" class="w-full h-48 object-cover">
-            <div class="p-4">
-              <div class="flex items-center mb-2">
-                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">499ribu</span>
-              </div>
-              <h3 class="font-medium text-gray-800 mb-1">Jadi gak gampang sakit pake promo vaksin</h3>
-              <p class="text-gray-600 text-sm">Vaksin Flu 560ribu</p>
-            </div>
+    <section class="section-dark">
+      <div class="section-container">
+        <div class="section-title">
+          <h2>Promo Berlangsung</h2>
+          <div class="divider">
+            <div class="divider-line"></div>
+            <p class="divider-text">Special Offers</p>
+            <div class="divider-line"></div>
           </div>
         </div>
 
-        <!-- Slider Navigation Dots -->
-        <div class="promo-nav-dots">
-          <div class="nav-dot active"></div>
-          <div class="nav-dot"></div>
-          <div class="nav-dot"></div>
+        <div class="promo-slider relative">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Promo Card 1 -->
+            <div class="bg-white rounded-lg overflow-hidden shadow-md">
+              <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Grab Promo" class="w-full h-48 object-cover">
+              <div class="p-4">
+                <div class="flex items-center mb-2">
+                  <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Hemat 90%</span>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">Hemat Waktu Hemat Ongkos</h3>
+                <p class="text-gray-600 text-sm">Pakai Grab Hemat</p>
+              </div>
+            </div>
+
+            <!-- Promo Card 2 -->
+            <div class="bg-white rounded-lg overflow-hidden shadow-md">
+              <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Prabu Promo" class="w-full h-48 object-cover">
+              <div class="p-4">
+                <div class="flex items-center mb-2">
+                  <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Diskon 100rb</span>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">Dompet tetep anteng beli sepatu ganteng</h3>
+                <p class="text-gray-600 text-sm">Nikmati diskon</p>
+              </div>
+            </div>
+
+            <!-- Promo Card 3 -->
+            <div class="bg-white rounded-lg overflow-hidden shadow-md">
+              <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Primecare Promo" class="w-full h-48 object-cover">
+              <div class="p-4">
+                <div class="flex items-center mb-2">
+                  <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">499ribu</span>
+                </div>
+                <h3 class="font-medium text-gray-800 mb-1">Jadi gak gampang sakit pake promo vaksin</h3>
+                <p class="text-gray-600 text-sm">Vaksin Flu 560ribu</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slider Navigation Dots -->
+          <div class="promo-nav-dots">
+            <div class="nav-dot active"></div>
+            <div class="nav-dot"></div>
+            <div class="nav-dot"></div>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Area Kost Coliving Terpopuler Section -->
-    <section class="max-w-7xl mx-auto px-4 py-8">
-      <h2 class="text-4xl font-bold mb-6">Area Kost Coliving Terpopuler</h2>
-
-      <div class="mb-6 border-b border-gray-200">
-        <div class="flex space-x-6">
-          <button class="area-tab active" data-area="kota">Kota</button>
-          <button class="area-tab" data-area="universitas">Universitas</button>
-          <button class="area-tab" data-area="perkantoran">Perkantoran</button>
-          <button class="area-tab" data-area="stasiun">Stasiun & Halte</button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- Area Card 1 -->
-        <div class="relative rounded-lg overflow-hidden group">
-          <img src="https://via.placeholder.com/300x200" alt="Jakarta Barat" class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
-          <div class="absolute bottom-0 left-0 right-0 gradient-overlay p-4">
-            <h3 class="text-white font-medium">Jakarta Barat</h3>
+    <section class="section-light">
+      <div class="section-container">
+        <div class="section-title">
+          <h2>Area Kost & Coliving Terpopuler</h2>
+          <div class="divider">
+            <div class="divider-line"></div>
+            <p class="divider-text">Popular Areas</p>
+            <div class="divider-line"></div>
           </div>
         </div>
 
-        <!-- Area Card 2 -->
-        <div class="relative rounded-lg overflow-hidden group">
-          <img src="https://via.placeholder.com/300x200" alt="Jakarta Selatan" class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
-          <div class="absolute bottom-0 left-0 right-0 gradient-overlay p-4">
-            <h3 class="text-white font-medium">Jakarta Selatan</h3>
+        <div class="mb-6">
+          <!-- Area Tabs -->
+          <div class="flex border-b border-gray-200">
+            <button class="area-tab-trigger px-6 py-3 text-sm font-medium text-teal-600 border-b-2 border-teal-600" data-tab="jakarta">
+              Jakarta
+            </button>
+            <button class="area-tab-trigger px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="tangerang">
+              Tangerang
+            </button>
+            <button class="area-tab-trigger px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="bogor">
+              Bogor
+            </button>
+            <button class="area-tab-trigger px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="depok">
+              Depok
+            </button>
+            <button class="area-tab-trigger px-6 py-3 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="bekasi">
+              Bekasi
+            </button>
+          </div>
+
+          <!-- Area Content -->
+          <div class="area-tab-contents mt-6">
+            <!-- Jakarta Tab -->
+            <div class="area-tab-content active" data-tab="jakarta">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Area Card -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div class="relative h-48">
+                    <img src="images/assets/jakarta.jpg" alt="Jakarta Area" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+                    <div class="absolute bottom-4 left-4 text-white">
+                      <h3 class="text-xl font-medium">Jakarta Selatan</h3>
+                      <p class="text-sm">50+ properties available</p>
+                    </div>
+                  </div>
+                </div>
+                <!-- More area cards for Jakarta -->
+              </div>
+            </div>
+
+            <!-- Tangerang Tab -->
+            <div class="area-tab-content hidden" data-tab="tangerang">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Area Card -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div class="relative h-48">
+                    <img src="images/assets/tangerang.jpg" alt="Tangerang Area" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-40"></div>
+                    <div class="absolute bottom-4 left-4 text-white">
+                      <h3 class="text-xl font-medium">BSD City</h3>
+                      <p class="text-sm">30+ properties available</p>
+                    </div>
+                  </div>
+                </div>
+                <!-- More area cards for Tangerang -->
+              </div>
+            </div>
+
+            <!-- Add similar blocks for Bogor, Depok, and Bekasi -->
           </div>
         </div>
-
-        <!-- Area Card 3 -->
-        <div class="relative rounded-lg overflow-hidden group">
-          <img src="https://via.placeholder.com/300x200" alt="Jakarta Pusat" class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
-          <div class="absolute bottom-0 left-0 right-0 gradient-overlay p-4">
-            <h3 class="text-white font-medium">Jakarta Pusat</h3>
-          </div>
-        </div>
-
-        <!-- Area Card 4 -->
-        <div class="relative rounded-lg overflow-hidden group">
-          <img src="https://via.placeholder.com/300x200" alt="Tangerang" class="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105">
-          <div class="absolute bottom-0 left-0 right-0 gradient-overlay p-4">
-            <h3 class="text-white font-medium">Tangerang</h3>
-          </div>
-        </div>
-      </div>
-
-      <!-- Area Navigation Dots -->
-      <div class="area-nav-dots mt-6">
-        <div class="nav-dot active"></div>
-        <div class="nav-dot"></div>
-        <div class="nav-dot"></div>
       </div>
     </section>
 
@@ -1226,101 +1056,106 @@
   </footer>
 
   <script>
-    // Video Play/Pause functionality
     document.addEventListener('DOMContentLoaded', function() {
-      const video = document.getElementById('heroVideo');
-      const playPauseBtn = document.getElementById('playPauseBtn');
-      const playPauseIcon = document.getElementById('playPauseIcon');
-      let isPlaying = true;
+        // Property tabs functionality
+        const propertyTriggers = document.querySelectorAll('.property-tab-trigger');
+        const propertyContents = document.querySelectorAll('.property-tab-content');
 
-      // Try to play video on load
-      if (video) {
-        video.play().catch(error => {
-          console.error("Video autoplay failed:", error);
-          isPlaying = false;
-          playPauseIcon.classList.remove('fa-pause');
-          playPauseIcon.classList.add('fa-play');
+        propertyTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const tabName = trigger.getAttribute('data-tab');
+                
+                // Update trigger styles
+                propertyTriggers.forEach(t => {
+                    t.classList.remove('text-teal-600', 'border-b-2', 'border-teal-600');
+                    t.classList.add('text-gray-500');
+                });
+                trigger.classList.remove('text-gray-500');
+                trigger.classList.add('text-teal-600', 'border-b-2', 'border-teal-600');
+                
+                // Update content visibility
+                propertyContents.forEach(content => {
+                    if (content.getAttribute('data-tab') === tabName) {
+                        content.classList.remove('hidden');
+                        content.classList.add('active');
+                    } else {
+                        content.classList.add('hidden');
+                        content.classList.remove('active');
+                    }
+                });
+            });
         });
 
-        playPauseBtn.addEventListener('click', function() {
-          if (isPlaying) {
-            video.pause();
-            playPauseIcon.classList.remove('fa-pause');
-            playPauseIcon.classList.add('fa-play');
-          } else {
-            video.play();
-            playPauseIcon.classList.remove('fa-play');
-            playPauseIcon.classList.add('fa-pause');
-          }
-          isPlaying = !isPlaying;
+        // Area tabs functionality
+        const areaTriggers = document.querySelectorAll('.area-tab-trigger');
+        const areaContents = document.querySelectorAll('.area-tab-content');
+
+        areaTriggers.forEach(trigger => {
+            trigger.addEventListener('click', () => {
+                const tabName = trigger.getAttribute('data-tab');
+                
+                // Update trigger styles
+                areaTriggers.forEach(t => {
+                    t.classList.remove('text-teal-600', 'border-b-2', 'border-teal-600');
+                    t.classList.add('text-gray-500');
+                });
+                trigger.classList.remove('text-gray-500');
+                trigger.classList.add('text-teal-600', 'border-b-2', 'border-teal-600');
+                
+                // Update content visibility
+                areaContents.forEach(content => {
+                    if (content.getAttribute('data-tab') === tabName) {
+                        content.classList.remove('hidden');
+                        content.classList.add('active');
+                    } else {
+                        content.classList.add('hidden');
+                        content.classList.remove('active');
+                    }
+                });
+            });
         });
-      }
 
-      // Tab functionality
-      const tabTriggers = document.querySelectorAll('.tab-trigger');
-      const tabContents = document.querySelectorAll('.tab-content');
+        // Video functionality (keeping existing code)
+        const video = document.getElementById('heroVideo');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playPauseIcon = document.getElementById('playPauseIcon');
+        
+        if (video && playPauseBtn && playPauseIcon) {
+            let isPlaying = true;
 
-      tabTriggers.forEach(trigger => {
-        trigger.addEventListener('click', () => {
-          // Remove active class from all triggers and contents
-          tabTriggers.forEach(t => t.classList.remove('active'));
-          tabContents.forEach(c => c.classList.remove('active'));
+            video.play().catch(error => {
+                console.error("Video autoplay failed:", error);
+                isPlaying = false;
+                playPauseIcon.classList.remove('fa-pause');
+                playPauseIcon.classList.add('fa-play');
+            });
 
-          // Add active class to clicked trigger
-          trigger.classList.add('active');
-          
-          // Get the tab ID and find corresponding content
-          const tabId = trigger.getAttribute('data-tab');
-          const targetTab = document.getElementById(`${tabId}-tab`);
-          
-          // Check if tab exists before adding active class
-          if (targetTab) {
-            targetTab.classList.add('active');
-          } else {
-            console.error(`Tab content with ID "${tabId}-tab" not found`);
-          }
-        });
-      });
-
-      // Area tabs functionality
-      const areaTabs = document.querySelectorAll('.area-tab');
-      
-      areaTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          // Remove active class from all area tabs
-          areaTabs.forEach(t => t.classList.remove('active'));
-          
-          // Add active class to clicked tab
-          tab.classList.add('active');
-          
-          // If area tabs are connected to content, handle that here
-          const areaId = tab.getAttribute('data-area');
-          if (areaId) {
-            const areaContents = document.querySelectorAll('.area-content');
-            areaContents.forEach(content => content.classList.remove('active'));
-            
-            const targetContent = document.getElementById(`${areaId}-content`);
-            if (targetContent) {
-              targetContent.classList.add('active');
-            }
-          }
-        });
-      });
-    });
-
-    // Add this to your existing script section
-    let lastScrollY = window.scrollY;
-    const header = document.querySelector('.site-header');
-
-    window.addEventListener('scroll', () => {
-        if (lastScrollY < window.scrollY) {
-            // Scrolling down
-            header.classList.add('header-hidden');
-        } else {
-            // Scrolling up
-            header.classList.remove('header-hidden');
+            playPauseBtn.addEventListener('click', function() {
+                if (isPlaying) {
+                    video.pause();
+                    playPauseIcon.classList.remove('fa-pause');
+                    playPauseIcon.classList.add('fa-play');
+                } else {
+                    video.play();
+                    playPauseIcon.classList.remove('fa-play');
+                    playPauseIcon.classList.add('fa-pause');
+                }
+                isPlaying = !isPlaying;
+            });
         }
-        lastScrollY = window.scrollY;
+
+        // Header scroll functionality (keeping existing code)
+        let lastScrollY = window.scrollY;
+        const header = document.querySelector('.site-header');
+
+        window.addEventListener('scroll', () => {
+            if (lastScrollY < window.scrollY) {
+                header.classList.add('header-hidden');
+            } else {
+                header.classList.remove('header-hidden');
+            }
+            lastScrollY = window.scrollY;
+        });
     });
   </script>
 </body>
