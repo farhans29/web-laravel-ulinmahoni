@@ -86,11 +86,92 @@
       justify-content: center;
       margin-bottom: 0.25rem;
     }
+
+    .hero-section {
+        position: relative;
+        width: 100%;
+        height: 600px;
+        background-color: #111827;
+    }
+
+    /* Add styles for header */
+    .site-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        background-color: #f5f2ea;
+        border-bottom: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(8px);
+    }
+
+    /* Add padding to main content to account for fixed header */
+    main {
+        padding-top: 72px; /* Height of the header */
+    }
+
+    /* Hide header on scroll down, show on scroll up */
+    /* .site-header.header-hidden {
+        transform: translateY(-100%);
+    } */
+
+    /* Responsive heights */
+    @media (min-width: 768px) {
+        .hero-section {
+            height: 900px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .hero-section {
+            height: 800px;
+        }
+    }
+
+    .hero-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    .hero-media {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .search-section {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transform: translateY(50%);
+        z-index: 30;
+    }
+
+    .search-container {
+        max-width: 80rem;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .search-box {
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        border-radius: 1rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        padding: 1.5rem;
+    }
   </style>
 </head>
 <body>
   <!-- Header -->
-  <header class="bg-[#f5f2ea] py-4 px-6 flex items-center justify-between border-b border-gray-200">
+  <header class="site-header py-4 px-6 flex items-center justify-between">
     <div class="flex items-center space-x-8">
       <img src="images/assets/ulinmahoni-logo.svg" alt="Ulin Mahoni Logo" class="h-10 w-auto">
       <nav class="hidden md:flex">
@@ -133,65 +214,68 @@
   </header>
 
   <main>
-    <!-- Search Section -->
-    <section class="max-w-7xl mx-auto px-4 py-6 relative z-10">
-      <div class="bg-white rounded-lg shadow-lg p-4">
-        <div class="flex flex-col md:flex-row gap-2">
-          <div class="flex-1 relative">
-            <i class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="text" placeholder="Cari lokasi, nama gedung atau landmark..." class="w-full pl-10 h-12 border border-gray-200 rounded-md">
-          </div>
-          <div class="md:w-48 relative">
-            <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <input type="date" placeholder="Pilih tanggal" class="w-full pl-10 h-12 border border-gray-200 rounded-md">
-          </div>
-          <div class="md:w-48 relative">
-            <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-            <select class="w-full pl-10 h-12 border border-gray-200 rounded-md">
-              <option value="">Semua tipe</option>
-              <option value="house">House & Room</option>
-              <option value="apartment">Apartment</option>
-              <option value="villa">Villa</option>
-              <option value="hotel">Hotel</option>
-            </select>
-          </div>
-          <div class="md:w-48">
-            <button class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-md">
-              <i class="fas fa-search mr-2"></i>
-              Cari Hunian
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Hero Section with Video (moved below search) -->
-    <div class="relative w-full min-h-[500px] md:min-h-[700px] lg:min-h-[900px] bg-gray-900 mt-4">
-      {{-- Check if video exists and should be displayed --}}
+    <!-- Hero Section with Video -->
+    <div class="hero-section">
       @if($heroMedia['type'] == 'video')
-      <div class="relative w-full h-full">
-        <video id="heroVideo" class="absolute inset-0 w-full h-full object-cover" muted>
+      <div class="hero-content">
+        <video id="heroVideo" class="hero-media" autoplay loop muted playsinline>
           <source src="{{ asset($heroMedia['sources']['video']) }}" type="video/mp4">
           Your browser does not support the video tag.  
         </video>
-        <p class="absolute bottom-0 left-0 p-4 text-white bg-black/50">{{$heroMedia['sources']['video']}}</p>
+        <div class="absolute bottom-4 right-4 p-4">
+          <button id="playPauseBtn" class="bg-black/50 hover:bg-black/70 text-white p-3 rounded-full">
+            <i id="playPauseIcon" class="fas fa-pause"></i>
+          </button>
+        </div>
       </div> 
       @else
-        {{-- Fallback to image --}}
-        <div class="relative w-full h-full">
+        <div class="hero-content">
           <img id="heroImage" 
               src="{{ asset('images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg') }}" 
               alt="Hero Image"
-              class="absolute inset-0 w-full h-full object-cover">
-          <p class="absolute bottom-0 left-0 p-4 text-white bg-black/50">{{$heroMedia['sources']['image']}}</p>
+              class="hero-media">
         </div>
       @endif
 
       <!-- Overlay with text -->
-      <div class="absolute inset-0 gradient-overlay flex flex-col justify-end p-8 text-white">
-        <h1 class="text-3xl font-light mb-2">A safe and harmonious environment</h1>
-        <p class="text-lg font-light">#UlinMahoni</p>
+      <div class="absolute inset-0 gradient-overlay flex flex-col justify-end p-8 md:p-12 lg:p-16 text-white">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-light mb-3">A safe and harmonious environment</h1>
+        <p class="text-xl md:text-2xl font-light">#UlinMahoni</p>
       </div>
+
+      <!-- Search Section - Positioned at bottom of hero -->
+      <section class="search-section">
+        <div class="search-container">
+          <div class="search-box">
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex-1 relative">
+                <i class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" placeholder="Cari lokasi, nama gedung atau landmark..." class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+              </div>
+              <div class="md:w-48 relative">
+                <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="date" placeholder="Pilih tanggal" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+              </div>
+              <div class="md:w-48 relative">
+                <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <select class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white">
+                  <option value="">Semua tipe</option>
+                  <option value="house">House & Room</option>
+                  <option value="apartment">Apartment</option>
+                  <option value="villa">Villa</option>
+                  <option value="hotel">Hotel</option>
+                </select>
+              </div>
+              <div class="md:w-48">
+                <button class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors duration-200">
+                  <i class="fas fa-search mr-2"></i>
+                  Cari Hunian
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
 
     <!-- Property Types Section -->
@@ -1150,25 +1234,27 @@
       let isPlaying = true;
 
       // Try to play video on load
-      video.play().catch(error => {
-        console.error("Video autoplay failed:", error);
-        isPlaying = false;
-        playPauseIcon.classList.remove('fa-pause');
-        playPauseIcon.classList.add('fa-play');
-      });
-
-      playPauseBtn.addEventListener('click', function() {
-        if (isPlaying) {
-          video.pause();
+      if (video) {
+        video.play().catch(error => {
+          console.error("Video autoplay failed:", error);
+          isPlaying = false;
           playPauseIcon.classList.remove('fa-pause');
           playPauseIcon.classList.add('fa-play');
-        } else {
-          video.play();
-          playPauseIcon.classList.remove('fa-play');
-          playPauseIcon.classList.add('fa-pause');
-        }
-        isPlaying = !isPlaying;
-      });
+        });
+
+        playPauseBtn.addEventListener('click', function() {
+          if (isPlaying) {
+            video.pause();
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+          } else {
+            video.play();
+            playPauseIcon.classList.remove('fa-play');
+            playPauseIcon.classList.add('fa-pause');
+          }
+          isPlaying = !isPlaying;
+        });
+      }
 
       // Tab functionality
       const tabTriggers = document.querySelectorAll('.tab-trigger');
@@ -1180,10 +1266,19 @@
           tabTriggers.forEach(t => t.classList.remove('active'));
           tabContents.forEach(c => c.classList.remove('active'));
 
-          // Add active class to clicked trigger and corresponding content
+          // Add active class to clicked trigger
           trigger.classList.add('active');
+          
+          // Get the tab ID and find corresponding content
           const tabId = trigger.getAttribute('data-tab');
-          document.getElementById(`${tabId}-tab`).classList.add('active');
+          const targetTab = document.getElementById(`${tabId}-tab`);
+          
+          // Check if tab exists before adding active class
+          if (targetTab) {
+            targetTab.classList.add('active');
+          } else {
+            console.error(`Tab content with ID "${tabId}-tab" not found`);
+          }
         });
       });
 
@@ -1197,8 +1292,35 @@
           
           // Add active class to clicked tab
           tab.classList.add('active');
+          
+          // If area tabs are connected to content, handle that here
+          const areaId = tab.getAttribute('data-area');
+          if (areaId) {
+            const areaContents = document.querySelectorAll('.area-content');
+            areaContents.forEach(content => content.classList.remove('active'));
+            
+            const targetContent = document.getElementById(`${areaId}-content`);
+            if (targetContent) {
+              targetContent.classList.add('active');
+            }
+          }
         });
       });
+    });
+
+    // Add this to your existing script section
+    let lastScrollY = window.scrollY;
+    const header = document.querySelector('.site-header');
+
+    window.addEventListener('scroll', () => {
+        if (lastScrollY < window.scrollY) {
+            // Scrolling down
+            header.classList.add('header-hidden');
+        } else {
+            // Scrolling up
+            header.classList.remove('header-hidden');
+        }
+        lastScrollY = window.scrollY;
     });
   </script>
 </body>
