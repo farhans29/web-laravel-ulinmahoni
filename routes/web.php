@@ -21,6 +21,8 @@ use App\Http\Controllers\apart\ApartController;
 use App\Http\Controllers\room\RoomController;
 use App\Http\Controllers\property\PropertyController;
 use App\Http\Controllers\house\HouseController;
+use App\Http\Controllers\villa\VillaController;
+use App\Http\Controllers\hotel\HotelController;
 use Faker\Guesser\Name;
 
 /*
@@ -44,12 +46,26 @@ Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
 
 Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
+Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
 // Route::get('/properties/houses', [PropertyController::class, 'houses'])->name('houses');
 
 // Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
 
 Route::get('/houses', [HouseController::class, 'index'])->name('houses');
+Route::get('/houses/{id}', [HouseController::class, 'show'])->name('houses.show');
 Route::get('/houses/rooms', [RoomController::class, 'index'])->name('houses.rooms');
+
+// Apartment Routes
+Route::get('/apartments', [ApartController::class, 'index'])->name('apartments');
+Route::get('/apartments/{id}', [ApartController::class, 'show'])->name('apartments.show');
+
+// Villa Routes
+Route::get('/villas', [VillaController::class, 'index'])->name('villas');
+Route::get('/villas/{id}', [VillaController::class, 'show'])->name('villas.show');
+
+// Hotel Routes
+Route::get('/hotels', [HotelController::class, 'index'])->name('hotels');
+Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
 
 // API ROUTES
 // Route::get('/api/banner',[]);
