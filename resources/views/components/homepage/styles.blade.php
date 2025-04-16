@@ -24,13 +24,13 @@
 
     @media (min-width: 768px) {
       .hero-section {
-        height: 900px;
+        height: 400px;
       }
     }
 
     @media (min-width: 1024px) {
       .hero-section {
-        height: 800px;
+        height: 600px;
       }
     }
 
