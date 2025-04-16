@@ -29,14 +29,28 @@
             <!-- Property Details -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Image Section -->
-                <div class="relative h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
-                    <img src="{{ asset($hotel['image']) }}" 
-                         alt="{{ $hotel['name'] }}" 
-                         class="w-full h-full object-cover">
-                    <div class="absolute top-4 left-4">
-                        <span class="bg-teal-600 text-white px-3 py-1.5 rounded-full text-sm">
-                            {{ $hotel['type'] }}
-                        </span>
+                <div class="grid grid-cols-2 grid-rows-2 gap-4 h-[500px]">
+                    <!-- Main Large Image -->
+                    <div class="relative col-span-2 row-span-1 rounded-lg overflow-hidden">
+                        <img src="{{ asset($hotel['image']) }}" 
+                             alt="{{ $hotel['name'] }}" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute top-4 left-4">
+                            <span class="bg-teal-600 text-white px-3 py-1.5 rounded-full text-sm">
+                                {{ $hotel['type'] }}
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Smaller Images -->
+                    <div class="relative rounded-lg overflow-hidden">
+                        <img src="{{ asset($hotel['image_2'] ?? $hotel['image']) }}" 
+                             alt="{{ $hotel['name'] }}" 
+                             class="w-full h-full object-cover">
+                    </div>
+                    <div class="relative rounded-lg overflow-hidden">
+                        <img src="{{ asset($hotel['image_3'] ?? $hotel['image']) }}" 
+                             alt="{{ $hotel['name'] }}" 
+                             class="w-full h-full object-cover">
                     </div>
                 </div>
 

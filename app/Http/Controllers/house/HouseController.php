@@ -24,8 +24,16 @@ class HouseController extends Controller {
             'location' => 'Petojo Selatan, Gambir',
             'distance' => '2.4 km dari Stasiun MRT Bundaran HI',
             'price' => [
-                'original' => 1300000,
-                'discounted' => 975000
+                'original' => [
+                    '1_month' => 1300000,
+                    '6_month' => 0,
+                    '12_month' => 0,
+                ],
+                'discounted' => [
+                    '1_month' => 975000,
+                    '6_month' => 0,
+                    '12_month' => 0,
+                ]
             ],
             'features' => [
                 'Diskon sewa 12 Bulan',

@@ -28,18 +28,18 @@
       </div> 
       @else
       <div class="hero-content">
-        <img id="heroImage" 
-          src="{{ asset('images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg') }}" 
-          alt="Hero Image"
+          <img id="heroImage" 
+              src="{{ asset('images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg') }}" 
+              alt="Hero Image"
           class="hero-media">
-      </div>
+        </div>
       @endif
 
       <!-- Overlay with text -->
       <div class="absolute inset-0 gradient-overlay flex flex-col justify-center md:justify-end p-8 md:p-12 lg:p-16 text-white">
         <h1 class="text-2xl md:text-5xl lg:text-4xl font-light mb-3 max-w-4xl">A safe and harmonious environment</h1>
         <p class="text-xl md:text-xl font-light mb-24">#UlinMahoni</p>
-      </div>
+    </div>
 
       <!-- Search Section -->
       <section class="search-section">
@@ -73,20 +73,20 @@
                 <button class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
                   <i class="fas fa-search mr-2"></i>
                   <span>Cari Hunian</span>
-                </button>
-              </div>
+          </button>
             </div>
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
+        </div>
 
     @include('components.homepage.property-types')
     @include('components.homepage.promos')
     @include('components.homepage.areas')
     @include('components.homepage.featured')
     @include('components.homepage.special-offers')
-    @include('components.homepage.liu-house')
+    {{-- @include('components.homepage.liu-house') --}}
   </main>
 
   @include('components.homepage.footer')
