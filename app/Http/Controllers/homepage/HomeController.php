@@ -22,6 +22,7 @@ class HomeController extends Controller {
                 'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg', // path to your image
                 // 'video' => 'images/assets/hero-video.mp4' // path to your video
                 'video' => 'images/assets/My_Movie.mp4' // path to your video   
+                
             ]
         ];
 
