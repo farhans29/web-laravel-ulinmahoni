@@ -14,8 +14,8 @@ use App\Models\Property;
 class HouseController extends Controller {
     public function index(Request $request){
         try {
-            // Get properties that are houses from the database
-            $query = Property::query()->whereJsonContains('tags', 'House');
+            // Get houses from the database
+            $query = Property::where('status', 1);
             
             // Add filters if provided in the request
             if ($request->has('status')) {
@@ -38,6 +38,9 @@ class HouseController extends Controller {
                 $query->where('price->original', '<=', $request->price_max);
             }
 
+            // Filter for houses
+            $query->where('tags', 'House');
+
             // Order by created_at (newest first)
             $query->orderBy('created_at', 'desc');
 
@@ -53,6 +56,7 @@ class HouseController extends Controller {
     public function show($id)
     {
         try {
+            /*
             // DONT REMOVE THIS COMMENTED LINE DUMMY DATAS
             // For now, we'll use dummy data. Later you can replace this with actual database queries
             $dummyHouse = [
@@ -106,60 +110,48 @@ class HouseController extends Controller {
                                 for a vibrant community in the heart of the city.'
             ];
             // End of dummy data
+            */
 
             // Get house from database (using Property model and filtering for houses)
             $house = Property::where('tags', 'House')->findOrFail($id);
 
             // Format the data for the view
             $formattedHouse = [
-                'id' => is_numeric($house->idrec) ? $house->idrec : null,
-                'name' => is_string($house->name) ? $house->name : null,
-                'type' => is_array($house->tags) && in_array('House', $house->tags) ? 'House' : 'Other',
-                'location' => is_string($house->address) ? $house->address : null,
-                'distance' => is_string($house->location) ? $house->distance : null,
+                'id' => $house->idrec,
+                'name' => $house->name,
+                'type' => $house->tags,
+                'location' => $house->address,
+                'subLocation' => $house->subdistrict . ', ' . $house->city,
+                'distance' => $house->distance ? "{$house->distance} km dari {$house->location}" : null,
                 'price' => [
-                    'original' => [
-                        '1_month' => isset($house->price['original']) && is_numeric($house->price['original']) ? 
-                            $house->price['original'] : null,
-                        '6_month' => isset($house->price['original_6']) && is_numeric($house->price['original_6']) ? 
-                            $house->price['original_6'] : null,
-                        '12_month' => isset($house->price['original_12']) && is_numeric($house->price['original_12']) ? 
-                            $house->price['original_12'] : null,
-                    ],
-                    'discounted' => [
-                        '1_month' => isset($house->price['discounted']) && is_numeric($house->price['discounted']) ? 
-                            $house->price['discounted'] : null,
-                        '6_month' => isset($house->price['discounted_6']) && is_numeric($house->price['discounted_6']) ? 
-                            $house->price['discounted_6'] : null,
-                        '12_month' => isset($house->price['discounted_12']) && is_numeric($house->price['discounted_12']) ? 
-                            $house->price['discounted_12'] : null,
-                    ]
+                    'original' => $house->price['original'] ?? 0,
+                    'discounted' => $house->price['discounted'] ?? 0
                 ],
-                'features' => is_array($house->features) ? $house->features : [],
-                'image' => is_string($house->image) ? $house->image : null,
-                'image_2' => is_string($house->image_2) ? $house->image_2 : null,
-                'image_3' => is_string($house->image_3) ? $house->image_3 : null,
-                'attributes' => is_array($house->attributes) ? $house->attributes : [
+                'features' => is_string($house->features) ? json_decode($house->features, true) : ($house->features ?? []),
+                'image' => $house->image,
+                'image_2' => $house->image_2 ?? null,
+                'image_3' => $house->image_3 ?? null,
+                'attributes' => is_string($house->attributes) ? json_decode($house->attributes, true) : ($house->attributes ?? [
                     'amenities' => [],
                     'room_facilities' => [],
                     'rules' => []
-                ],
-                'description' => is_string($house->description) ? $house->description : null,
+                ]),
+                'description' => $house->description,
                 'address' => [
-                    'province' => is_string($house->province) ? $house->province : null,
-                    'city' => is_string($house->city) ? $house->city : null,
-                    'subdistrict' => is_string($house->subdistrict) ? $house->subdistrict : null,
-                    'village' => is_string($house->village) ? $house->village : null,
-                    'postal_code' => is_string($house->postal_code) ? $house->postal_code : null,
-                    'full_address' => is_string($house->address) ? $house->address : null
+                    'province' => $house->province,
+                    'city' => $house->city,
+                    'subdistrict' => $house->subdistrict,
+                    'village' => $house->village,
+                    'postal_code' => $house->postal_code,
+                    'full_address' => $house->address
                 ],
-                'status' => is_string($house->status) ? $house->status : null
+                'status' => $house->status
             ];
 
             return view('pages.house.show', [
-                'house' => $formattedHouse,
-                'dummyHouse' => $dummyHouse // Keeping dummy data for reference
+                'house' => $formattedHouse
             ]);
+
         } catch (Exception $e) {
             Log::error('House not found or error occurred: ' . $e->getMessage());
             abort(404);
@@ -172,7 +164,7 @@ class HouseController extends Controller {
     public function search(Request $request)
     {
         try {
-            $query = Property::query()->whereJsonContains('tags', 'House');
+            $query = Property::query()->where('tags', 'House');
 
             // Apply search filters
             if ($request->has('search')) {

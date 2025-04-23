@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Property;
 
 class HomeController extends Controller {
-    
     public function index()
     {
         $heroMedia = [
@@ -22,8 +21,8 @@ class HomeController extends Controller {
         ];
 
         try {
-            // Get active properties
-            $properties = Property::where('status', 'active')
+            // Get active properties (status = 1)
+            $properties = Property::where('status', 1)
                 ->orderBy('created_at', 'desc')
                 ->get();
 
@@ -36,14 +35,20 @@ class HomeController extends Controller {
             ];
 
             foreach ($properties as $property) {
-                $tags = is_array($property->tags) ? $property->tags : [];
+                $tag = $property->tags; // Direct string comparison
                 
-                foreach ($propertyTypes as $type => $data) {
-                    if (in_array($type, $tags)) {
-                        $propertyTypes[$type][] = $this->formatProperty($property);
-                    }
+                if (array_key_exists($tag, $propertyTypes)) {
+                    $propertyTypes[$tag][] = $this->formatProperty($property);
                 }
             }
+
+            // Log the final data for debugging
+            Log::info('Property data by type:', [
+                'houses_count' => count($propertyTypes['House']),
+                'apartments_count' => count($propertyTypes['Apartment']),
+                'villas_count' => count($propertyTypes['Villa']),
+                'hotels_count' => count($propertyTypes['Hotel'])
+            ]);
 
             return view("pages.homepage.index", [
                 'houses' => $propertyTypes['House'],
@@ -54,7 +59,9 @@ class HomeController extends Controller {
             ]);
 
         } catch (Exception $e) {
-            Log::error('Error fetching properties: ' . $e->getMessage());
+            Log::error('Error fetching properties: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
             
             return view("pages.homepage.index", [
                 'houses' => [],
@@ -68,18 +75,33 @@ class HomeController extends Controller {
 
     private function formatProperty($property)
     {
+        // Handle price data
+        $price = is_string($property->price) ? json_decode($property->price, true) : $property->price;
+        if (!is_array($price)) {
+            $price = [
+                'original' => $price ?? 0,
+                'discounted' => $price ?? 0
+            ];
+        }
+
+        // Handle features data
+        $features = is_string($property->features) ? json_decode($property->features, true) : $property->features;
+        if (!is_array($features)) {
+            $features = [];
+        }
+
         return [
             'id' => $property->idrec,
             'name' => $property->name,
-            'type' => is_array($property->tags) ? $property->tags[0] : 'Other',
+            'type' => $property->tags,
             'location' => $property->address,
             'subLocation' => $property->subdistrict . ', ' . $property->city,
             'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
             'price' => [
-                'original' => $property->price['original'] ?? 0,
-                'discounted' => $property->price['discounted'] ?? 0
+                'original' => $price['original'] ?? 0,
+                'discounted' => $price['discounted'] ?? 0
             ],
-            'features' => $property->features ?? [],
+            'features' => $features,
             'image' => $property->image,
             'status' => $property->status
         ];

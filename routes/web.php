@@ -23,6 +23,7 @@ use App\Http\Controllers\property\PropertyController;
 use App\Http\Controllers\house\HouseController;
 use App\Http\Controllers\villa\VillaController;
 use App\Http\Controllers\hotel\HotelController;
+use App\Http\Controllers\AllPropertiesController;
 use Faker\Guesser\Name;
 
 /*
@@ -45,7 +46,7 @@ Route::redirect('/','homepage');
 Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
 
-Route::get('/properties', [PropertyController::class, 'index'])->name('properties');
+Route::get('/properties', [App\Http\Controllers\AllPropertiesController::class, 'index'])->name('properties.index');
 Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
 // Route::get('/properties/houses', [PropertyController::class, 'houses'])->name('houses');
 

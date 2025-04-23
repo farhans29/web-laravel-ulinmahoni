@@ -171,11 +171,11 @@
                     <!-- Price Section -->
                     <div class="text-center mb-6">
                         <p class="text-sm text-gray-500 mb-2">
-                            mulai dari <span class="line-through">Rp{{ number_format($house['price']['original']['1_month'], 0, ',', '.') }}</span>
+                            mulai dari <span class="line-through">Rp{{ number_format($house['price']['original'], 0, ',', '.') }}</span>
                         </p>
                         <div class="flex items-center justify-center space-x-2">
                             <p class="text-3xl font-bold text-gray-900">
-                                Rp{{ number_format($house['price']['discounted']['1_month'], 0, ',', '.') }}
+                                Rp{{ number_format($house['price']['discounted'], 0, ',', '.') }}
                             </p>
                             <span class="text-sm text-gray-500">/bulan</span>
                         </div>
