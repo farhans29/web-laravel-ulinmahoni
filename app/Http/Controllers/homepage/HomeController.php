@@ -6,108 +6,83 @@ use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Property;
 
 class HomeController extends Controller {
-    private const API_URL = 'https://api-dev.rumahayoda.com/banner';
     
     public function index()
     {
         $heroMedia = [
-            'type' => 'video', // 'video' or 'image'
+            'type' => 'video',
             'sources' => [
-                'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg', // path to your image
-                // 'video' => 'images/assets/hero-video.mp4' // path to your video
-                'video' => 'images/assets/My_Movie.mp4' // path to your video   
+                'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg',
+                'video' => 'images/assets/My_Movie.mp4'
             ]
         ];
 
         try {
-            $response = $this->fetchBannerData();
-            
-            if ($response->successful()) {
-                return $this->handleSuccessResponse($response, $heroMedia);
+            // Get active properties
+            $properties = Property::where('status', 'active')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Prepare property data by type
+            $propertyTypes = [
+                'House' => [],
+                'Apartment' => [],
+                'Villa' => [],
+                'Hotel' => []
+            ];
+
+            foreach ($properties as $property) {
+                $tags = is_array($property->tags) ? $property->tags : [];
+                
+                foreach ($propertyTypes as $type => $data) {
+                    if (in_array($type, $tags)) {
+                        $propertyTypes[$type][] = $this->formatProperty($property);
+                    }
+                }
             }
-            
-            return $this->handleErrorResponse($response, $heroMedia);
-            
+
+            return view("pages.homepage.index", [
+                'houses' => $propertyTypes['House'],
+                'apartments' => $propertyTypes['Apartment'],
+                'villas' => $propertyTypes['Villa'],
+                'hotels' => $propertyTypes['Hotel'],
+                'heroMedia' => $heroMedia
+            ]);
+
         } catch (Exception $e) {
-            return $this->handleException($e, $heroMedia);
+            Log::error('Error fetching properties: ' . $e->getMessage());
+            
+            return view("pages.homepage.index", [
+                'houses' => [],
+                'apartments' => [],
+                'villas' => [],
+                'hotels' => [],
+                'heroMedia' => $heroMedia
+            ]);
         }
     }
 
-    private function fetchBannerData()
+    private function formatProperty($property)
     {
-        // No changes needed here
-        return Http::withoutVerifying()
-            ->timeout(60)
-            ->retry(3, 100, function ($exception) {
-                return $exception instanceof \Illuminate\Http\Client\ConnectionException;
-            })
-            ->withHeaders([
-                'Accept' => 'application/json',
-                'Cache-Control' => 'no-cache'
-            ])
-            ->get(self::API_URL);
-    }
-
-    private function handleSuccessResponse($response, $heroMedia = null)
-    {
-        $bannerData = $response->json();
-        Log::info('Banner data fetched successfully', [
-            'data' => $bannerData
-        ]);
-
-        return view("pages.homepage.index", [
-            'banners' => $bannerData,
-            'heroMedia' => $heroMedia,
-            'debug' => [
-                'type' => 'success',
-                'data' => $bannerData
-            ]
-        ]);
-    }
-
-    private function handleErrorResponse($response, $heroMedia = null)
-    {
-        $errorData = [
-            'status' => $response->status(),
-            'body' => $response->body()
+        return [
+            'id' => $property->idrec,
+            'name' => $property->name,
+            'type' => is_array($property->tags) ? $property->tags[0] : 'Other',
+            'location' => $property->address,
+            'subLocation' => $property->subdistrict . ', ' . $property->city,
+            'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+            'price' => [
+                'original' => $property->price['original'] ?? 0,
+                'discounted' => $property->price['discounted'] ?? 0
+            ],
+            'features' => $property->features ?? [],
+            'image' => $property->image,
+            'status' => $property->status
         ];
-        
-        Log::error('Failed to fetch banner data', $errorData);
-
-        return view("pages.homepage.index", [
-            'banners' => [],
-            'heroMedia' => $heroMedia,
-            // 'debug' => [
-            //     'type' => 'error',
-            //     'data' => $errorData
-            // ]
-        ]);
-    }
-
-    private function handleException(Exception $e, $heroMedia = null)
-    {
-        $errorData = [
-            'message' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine()
-        ];
-
-        Log::error('Exception while fetching banner data', $errorData);
-
-        return view("pages.homepage.index", [
-            'banners' => [],
-            'heroMedia' => $heroMedia,
-            // 'debug' => [
-            //     'type' => 'exception',
-            //     'data' => $errorData
-            // ]
-        ]);
     }
 
     public function comingSoon()

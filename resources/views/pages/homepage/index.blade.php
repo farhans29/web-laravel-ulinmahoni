@@ -6,6 +6,8 @@
   <title>Ulin Mahoni</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
   @include('components.homepage.styles')
 </head>
 <body>
@@ -36,7 +38,7 @@
       @endif
 
       <!-- Overlay with text -->
-      <div class="absolute inset-0 gradient-overlay flex flex-col justify-center md:justify-end p-8 md:p-12 lg:p-16 text-white">
+      <div class="absolute inset-0 gradient-overlay flex flex-col justify-center md:justify-end p-8 md:p-12 lg:p-12  text-white">
         <h1 class="text-2xl md:text-5xl lg:text-4xl font-light mb-3 max-w-4xl">A safe and harmonious environment</h1>
         <p class="text-xl md:text-xl font-light mb-24">#UlinMahoni</p>
     </div>

@@ -10,51 +10,148 @@
             </div>
         </div>
 
-        <div class="promo-slider relative">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Swiper container -->
+        <div class="swiper promo-swiper">
+            <div class="swiper-wrapper mb-8">
                 <!-- Promo Card 1 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Grab Promo" class="w-full h-48 object-cover">
-                    <div class="p-4">
-                        <div class="flex items-center mb-2">
-                            <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Hemat 90%</span>
+                <div class="swiper-slide">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
+                             alt="Rukita x Grab Promo" 
+                             class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Hemat 90%</span>
+                            </div>
+                            <h3 class="font-medium text-gray-800 mb-1">Hemat Waktu Hemat Ongkos</h3>
+                            <p class="text-gray-600 text-sm">Pakai Grab Hemat</p>
                         </div>
-                        <h3 class="font-medium text-gray-800 mb-1">Hemat Waktu Hemat Ongkos</h3>
-                        <p class="text-gray-600 text-sm">Pakai Grab Hemat</p>
                     </div>
                 </div>
 
                 <!-- Promo Card 2 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Prabu Promo" class="w-full h-48 object-cover">
-                    <div class="p-4">
-                        <div class="flex items-center mb-2">
-                            <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Diskon 100rb</span>
+                <div class="swiper-slide">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
+                             alt="Rukita x Prabu Promo" 
+                             class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Diskon 100rb</span>
+                            </div>
+                            <h3 class="font-medium text-gray-800 mb-1">Dompet tetep anteng beli sepatu ganteng</h3>
+                            <p class="text-gray-600 text-sm">Nikmati diskon</p>
                         </div>
-                        <h3 class="font-medium text-gray-800 mb-1">Dompet tetep anteng beli sepatu ganteng</h3>
-                        <p class="text-gray-600 text-sm">Nikmati diskon</p>
                     </div>
                 </div>
 
                 <!-- Promo Card 3 -->
-                <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" alt="Rukita x Primecare Promo" class="w-full h-48 object-cover">
-                    <div class="p-4">
-                        <div class="flex items-center mb-2">
-                            <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">499ribu</span>
+                <div class="swiper-slide">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
+                             alt="Rukita x Primecare Promo" 
+                             class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">499ribu</span>
+                            </div>
+                            <h3 class="font-medium text-gray-800 mb-1">Jadi gak gampang sakit pake promo vaksin</h3>
+                            <p class="text-gray-600 text-sm">Vaksin Flu 560ribu</p>
                         </div>
-                        <h3 class="font-medium text-gray-800 mb-1">Jadi gak gampang sakit pake promo vaksin</h3>
-                        <p class="text-gray-600 text-sm">Vaksin Flu 560ribu</p>
                     </div>
                 </div>
+
+                <!-- Additional Promo Cards (4-5) -->
+                @for ($i = 4; $i <= 5; $i++)
+                <div class="swiper-slide">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
+                             alt="Promo {{ $i }}" 
+                             class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex items-center mb-2">
+                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Promo {{ $i }}</span>
+                            </div>
+                            <h3 class="font-medium text-gray-800 mb-1">Special Promo {{ $i }}</h3>
+                            <p class="text-gray-600 text-sm">Limited Time Offer</p>
+                        </div>
+                    </div>
+                </div>
+                @endfor
             </div>
 
-            <!-- Slider Navigation Dots -->
-            <div class="promo-nav-dots">
-                <div class="nav-dot active"></div>
-                <div class="nav-dot"></div>
-                <div class="nav-dot"></div>
-            </div>
+            <!-- Add Navigation -->
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            <!-- Add Pagination -->
+            <div class="swiper-pagination"></div>
         </div>
     </div>
-</section> 
+</section>
+
+<style>
+    .promo-swiper {
+        padding: 20px 40px;
+    }
+    
+    .swiper-button-next,
+    .swiper-button-prev {
+        color: #0d9488; /* teal-600 */
+    }
+    
+    .swiper-pagination-bullet-active {
+        background: #0d9488; /* teal-600 */
+    }
+    
+    @media (min-width: 1024px) {
+        .promo-swiper .swiper-slide {
+            width: 33.333%; /* 3 cards per view on large screens */
+        }
+    }
+    
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .promo-swiper .swiper-slide {
+            width: 50%; /* 2 cards per view on medium screens */
+        }
+    }
+    
+    @media (max-width: 767px) {
+        .promo-swiper .swiper-slide {
+            width: 100%; /* 1 card per view on small screens */
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        new Swiper('.promo-swiper', {
+            slidesPerView: 'auto',
+            spaceBetween: 24,
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            breakpoints: {
+                // Mobile
+                320: {
+                    slidesPerView: 1,
+                    spaceBetween: 16
+                },
+                // Tablet
+                768: {
+                    slidesPerView: 2,
+                    spaceBetween: 20
+                },
+                // Desktop
+                1024: {
+                    slidesPerView: 3,
+                    spaceBetween: 24
+                }
+            }
+        });
+    });
+</script> 

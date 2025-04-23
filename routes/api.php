@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\PropertyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,3 +47,9 @@ Route::get('banner/{id}', [BannerController::class, 'show']);
 Route::post('banner', [BannerController::class, 'store']);
 Route::put('banner/{id}', [BannerController::class, 'update']);
 Route::delete('banner/{id}', [BannerController::class, 'destroy']);
+
+Route::get('property', [PropertyController::class, 'index']);
+Route::get('property/{id}', [PropertyController::class, 'show']);
+Route::post('property', [PropertyController::class, 'store']);
+Route::put('property/{id}', [PropertyController::class, 'update']);
+Route::delete('property/{id}', [PropertyController::class, 'destroy']);

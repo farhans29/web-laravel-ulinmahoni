@@ -131,7 +131,7 @@
             <div class="image-gallery grid grid-cols-3 gap-4 mb-8">
                 <!-- Main Large Image -->
                 <div class="gallery-item main-image col-span-2">
-                    <img src="{{ asset($house['image']) }}" 
+                    <img src="data:image/jpeg;base64,{{ $house['image'] }}" 
                          alt="{{ $house['name'] }}">
                     <span class="type-badge">
                         {{ $house['type'] }}
@@ -143,14 +143,14 @@
                 <!-- Right Side Smaller Images -->
                 <div class="flex flex-col gap-4">
                     <div class="gallery-item side-image">
-                        <img src="{{ asset($house['image_2'] ?? $house['image']) }}" 
+                        <img src="data:image/jpeg;base64,{{ $house['image_2'] ?? $house['image'] }}"
                              alt="{{ $house['name'] }}">
                         <span class="image-count">
                             <i class="fas fa-camera mr-1"></i> 2/3
                         </span>
                     </div>
                     <div class="gallery-item side-image">
-                        <img src="{{ asset($house['image_3'] ?? $house['image']) }}" 
+                        <img src="data:image/jpeg;base64,{{ $house['image_3'] ?? $house['image'] }}"
                              alt="{{ $house['name'] }}">
                         <span class="image-count">
                             <i class="fas fa-camera mr-1"></i> 3/3

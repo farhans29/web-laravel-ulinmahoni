@@ -25,11 +25,12 @@
             <div class="border-t border-gray-200 pt-8">
                 <p class="text-gray-500">Looking for something specific?</p>
                 <div class="flex justify-center gap-4 mt-4">
-                    <a href="{{ route('properties') }}" class="text-teal-600 hover:text-teal-700">Properties</a>
+                    <a href="/" class="text-teal-600 hover:text-teal-700">Home</a>
+                    {{-- <a href="{{ route('properties') }}" class="text-teal-600 hover:text-teal-700">Properties</a>
                     <a href="{{ route('houses') }}" class="text-teal-600 hover:text-teal-700">Houses</a>
                     <a href="{{ route('apartments') }}" class="text-teal-600 hover:text-teal-700">Apartments</a>
                     <a href="{{ route('villas') }}" class="text-teal-600 hover:text-teal-700">Villas</a>
-                    <a href="{{ route('hotels') }}" class="text-teal-600 hover:text-teal-700">Hotels</a>
+                    <a href="{{ route('hotels') }}" class="text-teal-600 hover:text-teal-700">Hotels</a> --}}
                 </div>
             </div>
         </div>
