@@ -1,6 +1,4 @@
-@php
-    use Illuminate\Support\Str;
-@endphp
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,7 +71,7 @@
                 }, $property->idrec) }}" class="block">
                     <!-- Image Section -->
                     <div class="relative pb-[75%]">
-                        @if(is_string($property->image) && !Str::startsWith($property->image, ['http', 'data:image']))
+                        @if(is_string($property->image))
                             <img src="data:image/jpeg;base64,{{ $property->image }}"
                                  alt="{{ $property->name }}" 
                                  class="absolute inset-0 w-full h-full object-cover">
