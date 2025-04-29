@@ -58,6 +58,8 @@ Route::prefix('rooms')->group(function () {
     Route::post('property/{propertyId}', [RoomController::class, 'store'])->name('rooms.store');
     Route::put('{id}', [RoomController::class, 'update'])->name('rooms.update');
     Route::delete('{id}', [RoomController::class, 'destroy'])->name('rooms.destroy');
+    Route::get('{id}', [RoomController::class, 'show'])->name('rooms.show');
+    Route::post('book', [RoomController::class, 'book'])->name('rooms.book');
 });
 
 // Apartment Routes
