@@ -202,6 +202,67 @@
                 </div>
             </div>
 
+            <!-- Rooms Section -->
+            <div class="mt-12 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Available Rooms</h2>
+                
+                {{-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @forelse($house->rooms as $room)
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <!-- Room Image -->
+                            @if($room->attachment)
+                                <div class="relative h-48">
+                                    <img src="{{ json_decode($room->attachment)->images[0] ?? 'default-room-image.jpg' }}" 
+                                         alt="{{ $room->name }}"
+                                         class="w-full h-full object-cover">
+                                    <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
+                                        {{ $room->type }}
+                                    </span>
+                                </div>
+                            @endif
+
+                            <!-- Room Details -->
+                            <div class="p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room->name }}</h3>
+                                <p class="text-gray-600 text-sm mb-4">{{ $room->descriptions }}</p>
+
+                                <!-- Facilities -->
+                                @if($room->facility)
+                                    <div class="mb-4">
+                                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Room Facilities:</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach(json_decode($room->facility) as $facility => $value)
+                                                @if($value === true)
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                        {{ ucfirst($facility) }}
+                                                    </span>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- Status Badge -->
+                                <div class="flex items-center justify-between mt-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $room->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                        {{ ucfirst($room->status) }}
+                                    </span>
+                                    
+                                    <!-- Book Now Button -->
+                                    <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                                        Book Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="col-span-full text-center py-8">
+                            <p class="text-gray-500">No rooms available for this property at the moment.</p>
+                        </div>
+                    @endforelse
+                </div> --}}
+            </div>
+
             <!-- Additional Details -->
             <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Property Description -->

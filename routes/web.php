@@ -48,13 +48,17 @@ Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-
 
 Route::get('/properties', [App\Http\Controllers\AllPropertiesController::class, 'index'])->name('properties.index');
 Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
-// Route::get('/properties/houses', [PropertyController::class, 'houses'])->name('houses');
-
-// Route::get('/rooms', [RoomController::class, 'index'])->name('rooms');
 
 Route::get('/houses', [HouseController::class, 'index'])->name('houses');
 Route::get('/houses/{id}', [HouseController::class, 'show'])->name('houses.show');
 Route::get('/houses/rooms', [RoomController::class, 'index'])->name('houses.rooms');
+
+Route::prefix('rooms')->group(function () {
+    Route::get('property/{propertyId}', [RoomController::class, 'showPropertyRooms'])->name('rooms.property.show');
+    Route::post('property/{propertyId}', [RoomController::class, 'store'])->name('rooms.store');
+    Route::put('{id}', [RoomController::class, 'update'])->name('rooms.update');
+    Route::delete('{id}', [RoomController::class, 'destroy'])->name('rooms.destroy');
+});
 
 // Apartment Routes
 Route::get('/apartments', [ApartController::class, 'index'])->name('apartments');
@@ -264,4 +268,5 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::fallback(function () {
         return view('pages/utility/404');
     });
+
 });
