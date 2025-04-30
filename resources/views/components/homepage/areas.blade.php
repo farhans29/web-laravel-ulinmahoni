@@ -2,10 +2,10 @@
 <section class="section-light">
     <div class="section-container">
         <div class="section-title">
-            <h3 class="text-4xl font-medium">Area Terpopuler</h3>
+            <h3 class="text-4xl font-medium">Area Tersedia</h3>
             <div class="divider mt-2 md-2">
                 <div class="divider-line"></div>
-                <p class="divider-text">Popular areas in your surroundings</p>
+                <p class="divider-text">Available areas in your surroundings</p>
                 <div class="divider-line"></div>
             </div>
         </div>

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Property;
 use App\Models\Room;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class RoomController extends Controller {
     public function index(){
@@ -99,6 +100,7 @@ class RoomController extends Controller {
             $room = $property->rooms()->create([
                 'property_name' => $property->name,
                 'name' => $validated['name'],
+                'slug' => Str::slug($validated['name']),
                 'descriptions' => $validated['descriptions'],
                 'type' => $validated['type'],
                 'facility' => json_encode($validated['facility'] ?? []),
@@ -152,6 +154,10 @@ class RoomController extends Controller {
                 $updateData['attachment'] = json_encode($validated['attachment']);
             }
 
+            if (isset($validated['name'])) {
+                $updateData['slug'] = Str::slug($validated['name']);
+            }
+
             $room->update($updateData);
 
             return response()->json([
@@ -190,51 +196,43 @@ class RoomController extends Controller {
         }
     }
 
-    public function show($id)
+    public function show($slug)
     {
         try {
-            // Find the room and eager load the property relationship
-            $room = Room::with('property')->findOrFail($id);
+            // Find the room by slug and eager load the property relationship
+            $room = Room::with('property')->where('slug', $slug)->firstOrFail();
             
             // Format the room data
             $formattedRoom = [
                 'id' => $room->idrec,
+                'property_id' => $room->property_id,
+                'property_name' => $room->property_name,
+                'slug' => $room->slug,
                 'name' => $room->name,
-                'type' => $room->type,
                 'descriptions' => $room->descriptions,
+                'type' => $room->type,
+                'level' => $room->level,
+                'facility' => is_string($room->facility) ? json_decode(
+                    $room->facility, true
+                    ) : (
+                        $room->facility ?? []
+                    ),
+                'attachment' => is_string($room->attachment) ? json_decode(
+                    $room->attachment, true
+                    ) : (
+                        $room->attachment ?? []
+                    ),
                 'property' => [
                     'id' => $room->property->idrec,
                     'name' => $room->property_name,
                     'location' => $room->property->address,
                     'subLocation' => $room->property->subdistrict . ', ' . $room->property->city,
                 ],
-                'facility' => is_string($room->facility) ? json_decode($room->facility, true) : ($room->facility ?? [
-                    'wifi' => true,
-                    'ac' => true,
-                    'tv' => true,
-                    'bathroom' => 'private'
-                ]),
-                'attachment' => is_string($room->attachment) ? json_decode($room->attachment, true) : ($room->attachment ?? [
-                    'images' => ['default-room.jpg']
-                ]),
-                'status' => $room->status,
-                // Add dummy data for fields not in database
-                'details' => [
-                    'size' => '32 m²',
-                    'occupancy' => '2 Adults',
-                    'bed_type' => '1 King Bed',
-                    'view' => 'City View'
-                ],
-                'price' => [
-                    'per_night' => 1500000,
-                    'service_fee' => 150000,
-                    'total' => 1650000
-                ],
-                'policies' => [
-                    'check_in' => '2:00 PM - 11:00 PM',
-                    'check_out' => '12:00 PM',
-                    'cancellation' => 'Free cancellation up to 24 hours before check-in'
-                ]
+                'created_at' => $room->created_at,
+                'updated_at' => $room->updated_at,
+                'created_by' => $room->created_by,
+                'updated_by' => $room->updated_by,
+                'status' => $room->status
             ];
 
             return view('pages.room.show', [

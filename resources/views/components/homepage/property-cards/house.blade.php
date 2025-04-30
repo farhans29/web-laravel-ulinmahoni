@@ -5,8 +5,8 @@
         <div class="swiper-wrapper mb-8">
             @forelse($houses as $house)
             <div class="swiper-slide">
-                <a href="{{ route('houses.show', ['id' => $house['id']]) }}" class="block hover:shadow-lg transition-shadow duration-300">
-                    <div class="property-card bg-white rounded-lg shadow-md overflow-hidden">
+                <a href="{{ route('houses.show', ['id' => $house['id']]) }}" class="block h-full">
+                    <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
                         <div class="relative">
                             <div class="relative h-48 overflow-hidden">
                                 <img src="data:image/jpeg;base64,{{ $house['image'] }}" 
@@ -19,27 +19,32 @@
                             </div>
                         </div>
 
-                        <div class="p-4">
-                            <h3 class="font-medium text-gray-800 mb-1">{{ $house['name'] }}</h3>
-                            <p class="text-gray-500 text-sm mb-1">{{ $house['subLocation'] }}</p>
-                            <p class="text-gray-500 text-xs mb-3">{{ $house['distance'] }}</p>
+                        <div class="p-4 flex-1 flex flex-col">
+                            <div class="flex-1">
+                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $house['name'] }}</h3>
+                                <p class="text-gray-500 text-sm mb-1">{{ $house['subLocation'] }}</p>
+                                <p class="text-gray-500 text-xs mb-3">{{ $house['distance'] }}</p>
+                            </div>
 
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-xs text-gray-500">
-                                        mulai dari <span class="line-through">Rp{{ number_format($house['price']['original'], 0, ',', '.') }}</span>
-                                    </p>
-                                    <div class="flex items-center">
-                                        <p class="font-bold text-gray-800">
-                                            Rp{{ number_format($house['price']['discounted'], 0, ',', '.') }} <span class="text-xs font-normal">/bulan</span>
+                            <div class="mt-auto">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs text-gray-500">
+                                            mulai dari <span class="line-through">Rp{{ number_format($house['price']['original'], 0, ',', '.') }}</span>
                                         </p>
+                                        <div class="flex items-center">
+                                            <p class="text-lg font-bold text-gray-800">
+                                                Rp{{ number_format($house['price']['discounted'], 0, ',', '.') }} 
+                                                <span class="text-xs font-normal">/bulan</span>
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div class="flex flex-col space-y-2 text-xs text-gray-500">
-                                    @foreach($house['features'] as $feature)
-                                        <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-center">{{ $feature }}</span>
-                                    @endforeach
+                                    <div class="flex flex-col space-y-1 text-xs text-gray-500">
+                                        @foreach($house['features'] as $feature)
+                                            <span class="border border-gray-300 rounded-lg px-2 py-1 text-center">{{ $feature }}</span>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -77,21 +82,29 @@
         background: #0d9488; /* teal-600 */
     }
     
+    .property-card {
+        height: 100%;
+        min-height: 420px;
+    }
+    
     @media (min-width: 1024px) {
         .property-swiper .swiper-slide {
-            width: 25%; /* 4 cards per view on large screens */
+            width: 20%; /* 5 cards per view on large screens */
+            height: auto;
         }
     }
     
     @media (min-width: 768px) and (max-width: 1023px) {
         .property-swiper .swiper-slide {
             width: 50%; /* 2 cards per view on medium screens */
+            height: auto;
         }
     }
     
     @media (max-width: 767px) {
         .property-swiper .swiper-slide {
             width: 100%; /* 1 card per view on small screens */
+            height: auto;
         }
     }
 </style>
@@ -100,7 +113,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         new Swiper('.property-swiper', {
             slidesPerView: 'auto',
-            spaceBetween: 24,
+            spaceBetween: 16,
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev',
@@ -118,12 +131,12 @@
                 // Tablet
                 768: {
                     slidesPerView: 2,
-                    spaceBetween: 20
+                    spaceBetween: 16
                 },
                 // Desktop
                 1024: {
-                    slidesPerView: 4,
-                    spaceBetween: 24
+                    slidesPerView: 5,
+                    spaceBetween: 16
                 }
             }
         });

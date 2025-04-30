@@ -44,8 +44,23 @@ class HouseController extends Controller {
             // Order by created_at (newest first)
             $query->orderBy('created_at', 'desc');
 
-            // Get paginated results
-            $houses = $query->paginate(12); // Show 12 houses per page
+            // Get paginated results and transform the data
+            $houses = $query->paginate(12)->through(function($house) {
+                return [
+                    'id' => $house->idrec,
+                    'slug' => $house->slug,
+                    'name' => $house->name,
+                    'type' => $house->tags,
+                    'subLocation' => $house->subdistrict . ', ' . $house->city,
+                    'distance' => $house->distance ? "{$house->distance} km dari {$house->location}" : null,
+                    'price' => [
+                        'original' => json_decode($house->price)->original ?? 0,
+                        'discounted' => json_decode($house->price)->discounted ?? 0
+                    ],
+                    'features' => is_string($house->features) ? json_decode($house->features, true) : [],
+                    'image' => $house->image
+                ];
+            });
 
             return view("pages.house.index", compact('houses'));
         } catch (Exception $e) {
@@ -79,6 +94,7 @@ class HouseController extends Controller {
                 LEFT JOIN t_rooms r ON p.idrec = r.property_id
                 WHERE p.tags = 'House' 
                 AND p.idrec = ?
+                ORDER BY idrec ASC
             ", [$id]);
 
             if (empty($house)) {
@@ -114,6 +130,7 @@ class HouseController extends Controller {
             // Format the data for the view
             $formattedHouse = [
                 'id' => $houseData->idrec,
+                'slug' => $houseData->slug,
                 'name' => $houseData->name,
                 'type' => $houseData->tags,
                 'location' => $houseData->address,
@@ -195,7 +212,7 @@ class HouseController extends Controller {
             }
 
             // Order by created_at (newest first)
-            $query->orderBy('created_at', 'desc');
+            $query->orderBy('idrec', 'asc');
 
             // Get paginated results
             $houses = $query->paginate(12)->withQueryString();

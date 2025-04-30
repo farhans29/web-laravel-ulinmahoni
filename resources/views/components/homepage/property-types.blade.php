@@ -1,6 +1,6 @@
 <!-- Property Types Component -->
 <section class="section-light">
-    <div class="section-container">
+    <div class="container mx-auto px-4 md:px-8 max-w-[95%] xl:max-w-[90%]">
         {{-- <div class="section-title">
             <h3 class="text-4xl font-medium">Properties</h3>
             <div class="divider mt-2 md-2">

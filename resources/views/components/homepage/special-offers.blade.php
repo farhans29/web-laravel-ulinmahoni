@@ -5,7 +5,7 @@
             <h3 class="text-4xl font-medium text-gray-800 mb-2">Special Features</h3>
             <div class="flex items-center justify-center">
                 <div class="w-12 h-px bg-gray-300"></div>
-                <p class="mx-4 text-teal-600 italic">Trendy & Serene</p>
+                <p class="mx-4 text-teal-600 italic">Provided Features in our Properties</p>
                 <div class="w-12 h-px bg-gray-300"></div>
             </div>
         </div>
@@ -19,10 +19,10 @@
                          class="w-full h-full object-cover">
                 </div>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-800">THE OQUA SPA</h3>
+                    <h3 class="text-lg font-medium text-gray-800">SPA AREAS</h3>
                     <p class="text-gray-500 text-sm mb-2">A journey of wellness and relaxation</p>
                     <p class="text-gray-600 text-sm mb-10">
-                        The Oqua Spa at the newest luxury hotel in Mykonos is a 500 sqm heaven of wellness and relaxation.
+                        The Spa at the newest luxury hotel is a 500 sqm heaven of wellness and relaxation.
                     </p>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">LEARN MORE</button>
                 </div>
@@ -36,10 +36,10 @@
                          class="w-full h-full object-cover">
                 </div>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-800">LAFS RESTAURANT</h3>
+                    <h3 class="text-lg font-medium text-gray-800">RESTAURANTS</h3>
                     <p class="text-gray-500 text-sm mb-2">Waterfront dining under the stars</p>
                     <p class="text-gray-600 text-sm mb-10">
-                        A new, sensational gastronomic concept in Mykonos with tradition inspired, seafood-based
+                        A new, sensational gastronomic concept with tradition inspired, seafood-based
                         contemporary greek cuisine.
                     </p>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">LEARN MORE</button>
@@ -72,10 +72,10 @@
                          class="w-full h-full object-cover">
                 </div>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-800">PRIVATE BBQ</h3>
-                    <p class="text-gray-500 text-sm mb-2">Dine under Mykonos starlit sky</p>
+                    <h3 class="text-lg font-medium text-gray-800">PRIVATE BALCONY AREAS</h3>
+                    <p class="text-gray-500 text-sm mb-2">Dine under starlit sky</p>
                     <p class="text-gray-600 text-sm mb-10">
-                        The Suites with their beautiful outdoor barbecue setup are ideal for personalized BBQ experience.
+                        The Suites with their beautiful outdoor barbecue setup are ideal for personalized experience.
                     </p>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">LEARN MORE</button>
                 </div>

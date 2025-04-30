@@ -1,5 +1,5 @@
 <!-- Header Component -->
-<header class="site-header py-4 px-6 flex items-center justify-between">
+<header class="site-header py-4 px-6 flex items-center justify-between bg-white shadow-md sticky top-0 z-50">
     <div class="flex items-center space-x-8">
         <a href="/homepage">
             <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-10 w-auto">
@@ -8,10 +8,10 @@
             <ul class="flex space-x-6">
                 <li>
                     <a href="/sewa" class="text-sm text-gray-600 hover:text-gray-900">
-                        Sewa
+                        Sewa Berjangka
                     </a>
                 </li>
-                <li>
+                <li>    
                     <a href="/kerjasama" class="text-sm text-gray-600 hover:text-gray-900">
                         Kerjasama Ulin Mahoni
                     </a>
