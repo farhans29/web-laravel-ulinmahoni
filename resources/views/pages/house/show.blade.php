@@ -192,7 +192,7 @@
 
                     <!-- Action Buttons -->
                     <div class="flex justify-center space-x-4 max-w-md mx-auto">
-                        <button class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors">
+                        <button onclick="scrollToRooms()" class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors">
                             Book Now
                         </button>
                         <button class="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors">
@@ -272,7 +272,7 @@
                     </div>
 
                     <!-- Rooms Section -->
-                    <div class="mt-12">
+                    <div id="rooms-section" class="mt-12">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">Available Rooms</h2>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -301,6 +301,33 @@
                                                         </span>
                                                     @endif
                                                 @endforeach
+                                            </div>
+                                        </div>
+
+                                        <!-- Rental Periods -->
+                                        <div class="mb-4">
+                                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Available Rental Periods:</h4>
+                                            <div class="flex flex-wrap gap-2">
+                                                @if($room['periode']['daily'])
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                                                        Daily
+                                                    </span>
+                                                @endif
+                                                @if($room['periode']['weekly'])
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                                                        Weekly
+                                                    </span>
+                                                @endif
+                                                @if($room['periode']['monthly'])
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
+                                                        Monthly
+                                                    </span>
+                                                @endif
+                                                @if(!$room['periode']['daily'] && !$room['periode']['weekly'] && !$room['periode']['monthly'])
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                        No periods available
+                                                    </span>
+                                                @endif
                                             </div>
                                         </div>
 
@@ -351,6 +378,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             @include('components.homepage.scripts')
         });
+
+        function scrollToRooms() {
+            const roomsSection = document.getElementById('rooms-section');
+            if (roomsSection) {
+                roomsSection.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
     </script>
 </body>
 </html> 

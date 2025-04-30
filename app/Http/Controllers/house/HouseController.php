@@ -85,6 +85,7 @@ class HouseController extends Controller {
                     r.level as room_level,
                     r.facility as room_facility,
                     r.attachment as room_attachment,
+                    r.periode as room_periode,
                     r.created_at as room_created_at,
                     r.updated_at as room_updated_at,
                     r.created_by as room_created_by,
@@ -118,6 +119,11 @@ class HouseController extends Controller {
                         'level' => $row->room_level,
                         'facility' => is_string($row->room_facility) ? json_decode($row->room_facility, true) : [],
                         'attachment' => is_string($row->room_attachment) ? json_decode($row->room_attachment, true) : [],
+                        'periode' => is_string($row->room_periode) ? json_decode($row->room_periode, true) : [
+                            'daily' => false,
+                            'weekly' => false,
+                            'monthly' => false
+                        ],
                         'created_at' => $row->room_created_at,
                         'updated_at' => $row->room_updated_at,
                         'created_by' => $row->room_created_by,

@@ -20,8 +20,16 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Property;
+use App\Http\Controllers\promo\PromoController;
 
 class HomeController extends Controller {
+    protected $promoController;
+
+    public function __construct(PromoController $promoController)
+    {
+        $this->promoController = $promoController;
+    }
+
     /**
      * Display the homepage with categorized properties and hero media.
      * 
@@ -43,6 +51,9 @@ class HomeController extends Controller {
                 'video' => 'images/assets/My_Movie.mp4'
             ]
         ];
+
+        // Get promos data
+        $promos = $this->promoController->getPromos();
 
         try {
             // Get active properties (status = 1)
@@ -79,7 +90,8 @@ class HomeController extends Controller {
                 'apartments' => $propertyTypes['Apartment'],
                 'villas' => $propertyTypes['Villa'],
                 'hotels' => $propertyTypes['Hotel'],
-                'heroMedia' => $heroMedia
+                'heroMedia' => $heroMedia,
+                'promos' => $promos
             ]);
 
         } catch (Exception $e) {
@@ -92,7 +104,8 @@ class HomeController extends Controller {
                 'apartments' => [],
                 'villas' => [],
                 'hotels' => [],
-                'heroMedia' => $heroMedia
+                'heroMedia' => $heroMedia,
+                'promos' => $promos
             ]);
         }
     }

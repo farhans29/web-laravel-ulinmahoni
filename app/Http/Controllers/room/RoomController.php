@@ -34,6 +34,11 @@ class RoomController extends Controller {
                     'descriptions' => $room->descriptions,
                     'facility' => is_string($room->facility) ? json_decode($room->facility, true) : ($room->facility ?? []),
                     'attachment' => is_string($room->attachment) ? json_decode($room->attachment, true) : ($room->attachment ?? []),
+                    'periode' => is_string($room->periode) ? json_decode($room->periode, true) : ($room->periode ?? [
+                        'daily' => false,
+                        'weekly' => false,
+                        'monthly' => false
+                    ]),
                     'status' => $room->status
                 ];
             });
@@ -221,6 +226,15 @@ class RoomController extends Controller {
                     $room->attachment, true
                     ) : (
                         $room->attachment ?? []
+                    ),
+                'periode' => is_string($room->periode) ? json_decode(
+                    $room->periode, true
+                    ) : (
+                        $room->periode ?? [
+                            'daily' => false,
+                            'weekly' => false,
+                            'monthly' => false
+                        ]
                     ),
                 'property' => [
                     'id' => $room->property->idrec,

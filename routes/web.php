@@ -15,6 +15,7 @@ use App\Http\Controllers\profile\ProfileController;
 use App\Http\Controllers\salesorder\NewCustomerRequestController;
 use App\Http\Controllers\salesorder\SalesOrderController;
 use App\Http\Controllers\SearchProductController;
+use App\Http\Controllers\promo\PromoController;
 
 use App\Http\Controllers\homepage\HomeController;
 use App\Http\Controllers\apart\ApartController;
@@ -46,6 +47,27 @@ Route::redirect('/','homepage');
 Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
 
+// Information Pages Routes
+Route::prefix('id')->group(function () {
+    Route::view('/sewa', 'pages.info.indonesia.sewa')->name('id.sewa');
+    Route::view('/kerjasama', 'pages.info.indonesia.kerjasama')->name('id.kerjasama');
+    Route::view('/business', 'pages.info.indonesia.business')->name('id.business');
+    Route::view('/tentang', 'pages.info.indonesia.tentang')->name('id.tentang');
+});
+
+Route::prefix('en')->group(function () {
+    Route::view('/rental', 'pages.info.english.rental')->name('en.rental');
+    Route::view('/partnership', 'pages.info.english.partnership')->name('en.partnership');
+    Route::view('/business', 'pages.info.english.business')->name('en.business');
+    Route::view('/about', 'pages.info.english.about')->name('en.about');
+});
+
+// Default routes (redirect to preferred language)
+Route::redirect('/sewa', '/id/sewa');
+Route::redirect('/kerjasama', '/id/kerjasama');
+Route::redirect('/business', '/id/business');
+Route::redirect('/tentang', '/id/tentang');
+
 Route::get('/properties', [App\Http\Controllers\AllPropertiesController::class, 'index'])->name('properties.index');
 Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
 
@@ -74,6 +96,21 @@ Route::get('/villas/{id}', [VillaController::class, 'show'])->name('villas.show'
 Route::get('/hotels', [HotelController::class, 'index'])->name('hotels');
 Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
 
+Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
+Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show');
+// Route::get('/promo/{id}', function ($id) {
+//     return view('promos.show', [
+//         'promo' => [
+//             'id' => $id,
+//             'title' => 'Paket Premium 3 Bulan',
+//             'image' => '...',
+//             'badge' => '40% OFF',
+//             'original_price' => 1500000,
+//             'discounted_price' => 900000,
+//             'features' => ['Bebas Pilih Kost', 'Prioritas Booking', 'Support 24/7']
+//         ]
+//     ]);
+// })->name('promos.show');
 // API ROUTES
 // Route::get('/api/banner',[]);
 
@@ -267,8 +304,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/component/icons', function () {
         return view('pages/component/icons-page');
     })->name('icons-page');
+    
     Route::fallback(function () {
         return view('pages/utility/404');
     });
 
 });
+
+Route::get('/masuk', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::get('/daftar', function () {
+    return view('auth.register');
+})->name('register');

@@ -19,6 +19,7 @@ class Room extends Model
         'level',
         'facility',
         'attachment',
+        'periode',
         'status',
         'created_by',
         'updated_by'
@@ -26,7 +27,7 @@ class Room extends Model
 
     protected $casts = [
         'facility' => 'json',
-        'attachment' => 'json'
+        'periode' => 'json'
     ];
 
     /**
@@ -67,5 +68,20 @@ class Room extends Model
     public function getAttachmentAttribute($value)
     {
         return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Get the periode attribute.
+     *
+     * @param  string  $value
+     * @return array
+     */
+    public function getPeriodeAttribute($value)
+    {
+        return json_decode($value, true) ?? [
+            'daily' => false,
+            'weekly' => false,
+            'monthly' => false
+        ];
     }
 } 

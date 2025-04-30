@@ -17,3 +17,4 @@ yarn-error.log
 /.zip
 *.zip
 *.DS_Store
+cursor_mac_id_modifier.sh

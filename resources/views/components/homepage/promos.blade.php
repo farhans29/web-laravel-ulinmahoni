@@ -13,71 +13,24 @@
         <!-- Swiper container -->
         <div class="swiper promo-swiper">
             <div class="swiper-wrapper mb-8">
-                <!-- Promo Card 1 -->
+                @foreach ($promos as $promo)
                 <div class="swiper-slide">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
-                             alt="Rukita x Grab Promo" 
-                             class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Hemat 90%</span>
+                    <a href="/promo/{{ $promo['id'] }}" class="block">
+                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                            <img src="data:image/png;base64,{{ $promo['image'] }}" 
+                                 alt="{{ $promo['title'] }}" 
+                                 class="w-full h-48 object-cover">
+                            <div class="p-4">
+                                <div class="flex items-center mb-2">
+                                    <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">{{ $promo['badge'] }}</span>
+                                </div>
+                                <h3 class="font-medium text-gray-800 mb-1">{{ $promo['title'] }}</h3>
+                                <p class="text-gray-600 text-sm">{{ $promo['description'] }}</p>
                             </div>
-                            <h3 class="font-medium text-gray-800 mb-1">Hemat Waktu Hemat Ongkos</h3>
-                            <p class="text-gray-600 text-sm">Pakai Grab Hemat</p>
                         </div>
-                    </div>
+                    </a>
                 </div>
-
-                <!-- Promo Card 2 -->
-                <div class="swiper-slide">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
-                             alt="Rukita x Prabu Promo" 
-                             class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Diskon 100rb</span>
-                            </div>
-                            <h3 class="font-medium text-gray-800 mb-1">Dompet tetep anteng beli sepatu ganteng</h3>
-                            <p class="text-gray-600 text-sm">Nikmati diskon</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Promo Card 3 -->
-                <div class="swiper-slide">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
-                             alt="Rukita x Primecare Promo" 
-                             class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">499ribu</span>
-                            </div>
-                            <h3 class="font-medium text-gray-800 mb-1">Jadi gak gampang sakit pake promo vaksin</h3>
-                            <p class="text-gray-600 text-sm">Vaksin Flu 560ribu</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Additional Promo Cards (4-5) -->
-                @for ($i = 4; $i <= 5; $i++)
-                <div class="swiper-slide">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                        <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-04-11%20at%2001.38.16-ONQfSyRpYU314aVuFnhY5tCbMSbnlQ.png" 
-                             alt="Promo {{ $i }}" 
-                             class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <div class="flex items-center mb-2">
-                                <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">Promo {{ $i }}</span>
-                            </div>
-                            <h3 class="font-medium text-gray-800 mb-1">Special Promo {{ $i }}</h3>
-                            <p class="text-gray-600 text-sm">Limited Time Offer</p>
-                        </div>
-                    </div>
-                </div>
-                @endfor
+                @endforeach
             </div>
 
             <!-- Add Navigation -->
@@ -154,4 +107,4 @@
             }
         });
     });
-</script> 
+</script>

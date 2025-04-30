@@ -115,26 +115,64 @@
                             </span>
                         </div>
 
-                        <h2 class="text-xl font-bold text-gray-900 mb-4">Book This Room</h2>
+                        <h2 class="text-xl font-bold text-gray-900 mb-4">Room Booking</h2>
                         
                         <form action="{{ route('rooms.book') }}" method="POST" class="space-y-4">
                             @csrf
                             <input type="hidden" name="room_id" value="{{ $room['id'] }}">
                             
+                            <!-- Rent Type -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
-                                <input type="date" name="check_in" 
-                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                                       required
-                                       {{ $room['status'] == 0 ? 'disabled' : '' }}>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Rent Type</label>
+                                <select name="rent_type" id="rentType" 
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                        {{ $room['status'] == 0 ? 'disabled' : '' }}
+                                        onchange="updatePeriodOptions()">
+                                    @if($room['periode']['daily'])
+                                        <option value="daily">Daily</option>
+                                    @endif
+                                    @if($room['periode']['weekly'])
+                                        <option value="weekly">Weekly</option>
+                                    @endif
+                                    @if($room['periode']['monthly'])
+                                        <option value="monthly">Monthly</option>
+                                    @endif
+                                </select>
+                                @if(!$room['periode']['daily'] && !$room['periode']['weekly'] && !$room['periode']['monthly'])
+                                    <p class="mt-1 text-sm text-red-600">No rental periods available for this room.</p>
+                                @endif
                             </div>
 
+                            <!-- Period -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
-                                <input type="date" name="check_out" 
-                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                                       required
-                                       {{ $room['status'] == 0 ? 'disabled' : '' }}>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Period</label>
+                                <div class="flex items-center space-x-2">
+                                    <input type="number" name="period" id="period" min="1" value="1"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                           {{ $room['status'] == 0 ? 'disabled' : '' }}
+                                           onchange="updateDates()">
+                                    <span id="periodUnit" class="text-gray-500 w-20">day(s)</span>
+                                </div>
+                            </div>
+
+                            <!-- Dates Section -->
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
+                                    <input type="date" name="check_in" id="checkIn"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                           required
+                                           onchange="updateCheckoutDate()"
+                                           {{ $room['status'] == 0 ? 'disabled' : '' }}>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
+                                    <input type="date" name="check_out" id="checkOut"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                           required
+                                           {{ $room['status'] == 0 ? 'disabled' : '' }}>
+                                </div>
                             </div>
 
                             <div>
@@ -143,12 +181,12 @@
                                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
                                         {{ $room['status'] == 0 ? 'disabled' : '' }}>
                                     <option value="1">1 Guest</option>
-                                    {{-- <option value="2">2 Guests</option> --}}
+                                    <option value="2">2 Guests</option>
                                 </select>
                             </div>
 
                             <button type="submit" 
-                                    class="w-full py-3 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 {{ $room['status'] == 0 
+                                    class="w-full py-3 px-4 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 {{ $room['status'] == 0 
                                         ? 'bg-gray-400 cursor-not-allowed' 
                                         : 'bg-teal-600 hover:bg-teal-700 focus:ring-teal-500' }}"
                                     {{ $room['status'] == 0 ? 'disabled' : '' }}>
@@ -163,5 +201,72 @@
 
     <!-- Footer -->
     @include('components.homepage.footer')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default check-in date (today + 1 day)
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('checkIn').valueAsDate = tomorrow;
+            
+            // Initialize dates
+            updateDates();
+        });
+
+        function updatePeriodOptions() {
+            const rentType = document.getElementById('rentType').value;
+            const periodUnit = document.getElementById('periodUnit');
+            const period = document.getElementById('period');
+
+            switch(rentType) {
+                case 'daily':
+                    periodUnit.textContent = 'day(s)';
+                    period.min = 1;
+                    period.value = 1;
+                    break;
+                case 'weekly':
+                    periodUnit.textContent = 'week(s)';
+                    period.min = 1;
+                    period.value = 1;
+                    break;
+                case 'monthly':
+                    periodUnit.textContent = 'month(s)';
+                    period.min = 1;
+                    period.value = 1;
+                    break;
+            }
+            updateDates();
+        }
+
+        function updateDates() {
+            const checkIn = document.getElementById('checkIn');
+            const checkOut = document.getElementById('checkOut');
+            const rentType = document.getElementById('rentType').value;
+            const period = parseInt(document.getElementById('period').value);
+
+            if (checkIn.value) {
+                const startDate = new Date(checkIn.value);
+                const endDate = new Date(startDate);
+
+                switch(rentType) {
+                    case 'daily':
+                        endDate.setDate(startDate.getDate() + period);
+                        break;
+                    case 'weekly':
+                        endDate.setDate(startDate.getDate() + (period * 7));
+                        break;
+                    case 'monthly':
+                        endDate.setMonth(startDate.getMonth() + period);
+                        break;
+                }
+
+                checkOut.valueAsDate = endDate;
+            }
+        }
+
+        function updateCheckoutDate() {
+            updateDates();
+        }
+    </script>
 </body>
 </html> 
