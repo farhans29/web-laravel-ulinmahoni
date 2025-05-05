@@ -87,7 +87,7 @@
                 </div>
 
                 <!-- Team Section -->
-                <div class="text-center mb-16">
+                <!-- <div class="text-center mb-16">
                     <h2 class="text-3xl font-bold mb-8">Tim Kami</h2>
                     <div class="grid md:grid-cols-3 gap-8">
                         <div class="bg-white p-6 rounded-lg shadow-md">
@@ -109,7 +109,7 @@
                             <p class="text-gray-600 text-sm">12+ tahun pengalaman teknologi properti</p>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Contact Section -->
                 <div class="text-center">
