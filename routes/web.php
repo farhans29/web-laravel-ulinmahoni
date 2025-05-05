@@ -16,6 +16,7 @@ use App\Http\Controllers\salesorder\NewCustomerRequestController;
 use App\Http\Controllers\salesorder\SalesOrderController;
 use App\Http\Controllers\SearchProductController;
 use App\Http\Controllers\promo\PromoController;
+use App\Http\Controllers\BookingController;
 
 use App\Http\Controllers\homepage\HomeController;
 use App\Http\Controllers\apart\ApartController;
@@ -98,25 +99,13 @@ Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show'
 
 Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
 Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show');
-// Route::get('/promo/{id}', function ($id) {
-//     return view('promos.show', [
-//         'promo' => [
-//             'id' => $id,
-//             'title' => 'Paket Premium 3 Bulan',
-//             'image' => '...',
-//             'badge' => '40% OFF',
-//             'original_price' => 1500000,
-//             'discounted_price' => 900000,
-//             'features' => ['Bebas Pilih Kost', 'Prioritas Booking', 'Support 24/7']
-//         ]
-//     ]);
-// })->name('promos.show');
-// API ROUTES
-// Route::get('/api/banner',[]);
 
+// Bookings Routes
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-    // ->middleware('checkRoleUser:500,501')
+    Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+});
 
+Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {
     Route::post('/update-gcal', [ProfileController::class, 'update'])->name('update.gcal');
     Route::prefix('inventory')->group(function () {
         Route::get('/invlist', [InvListController::class, 'index'])->name('invlist');
@@ -145,7 +134,6 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/new-customer/getdata', [NewCustomerRequestController::class, 'getData'])->name('new-customer.getdata');
         Route::post('/new-customer/create', [NewCustomerRequestController::class, 'create'])->name('new-customer.create');
     });
-    
 
     // Route for the getting the data feed
     Route::get('/json-data-feed', [DataFeedController::class, 'getDataFeed'])->name('json_data_feed');
