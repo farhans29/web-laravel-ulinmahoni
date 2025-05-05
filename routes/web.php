@@ -311,10 +311,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
 });
 
-Route::get('/masuk', function () {
+Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-Route::get('/daftar', function () {
+Route::get('/register', function () {
     return view('auth.register');
 })->name('register');
