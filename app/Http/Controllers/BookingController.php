@@ -22,7 +22,7 @@ class BookingController extends Controller
     {
         $bookings = DB::table('t_transactions')
             ->join('users', 't_transactions.user_id', '=', 'users.id')
-            ->select('t_transactions.*', 'users.name', 'users.email', 'users.phone')
+            ->select('t_transactions.*', 'users.username', 'users.email')
             ->where('users.id', Auth::user()->id)
             ->orderBy('t_transactions.created_at', 'desc')
             ->paginate(10);
@@ -89,7 +89,7 @@ class BookingController extends Controller
                 'order_id' => 'ORD-' . strtoupper(Str::random(8)),
                 'user_id' => $user->id,
                 'user_name' => $user->name,
-                'user_phone_number' => $user->phone,
+                // 'user_phone_number' => $user->phone,
                 'property_name' => $request->property_name,
                 'transaction_date' => now(),
                 'check_in' => $checkIn,

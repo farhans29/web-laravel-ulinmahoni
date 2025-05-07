@@ -338,8 +338,9 @@
                 let total = 0;
 
                 if (rentType === 'monthly') {
-                    duration = parseInt(monthsSelect.value) || 0;
-                    total = prices.monthly * duration;
+                    const months = parseInt(monthsSelect.value) || 0;
+                    duration = months * 30; // Convert months to days (30-day intervals)
+                    total = prices.monthly * months;
                 } else {
                     if (checkInInput.value && checkOutInput.value) {
                         const start = new Date(checkInInput.value);
@@ -356,7 +357,7 @@
                 document.getElementById('rateTypeDisplay').textContent = 
                     `${rentType.charAt(0).toUpperCase() + rentType.slice(1)} Rate`;
                 document.getElementById('durationDisplay').textContent = 
-                    rentType === 'monthly' ? `${duration} month(s)` : `${duration} night(s)`;
+                    rentType === 'monthly' ? `${duration} days (${monthsSelect.value} month(s))` : `${duration} night(s)`;
                 document.getElementById('roomTotal').textContent = 
                     `Rp ${total.toLocaleString('id-ID')}`;
                 document.getElementById('adminFee').textContent = 
@@ -447,4 +448,4 @@
 
 
 </body>
-</html> 
+</html>

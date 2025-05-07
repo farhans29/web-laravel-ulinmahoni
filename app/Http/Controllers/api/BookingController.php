@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\ApiController;
-use App\Models\Transaction;
+use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -12,7 +12,7 @@ class BookingController extends ApiController
     public function index(Request $request)
     {
         try {
-            $query = Transaction::query();
+            $query = Booking::query();
             
             if ($request->has('status')) {
                 $query->where('status', $request->status);
@@ -33,6 +33,7 @@ class BookingController extends ApiController
                 
                 return response()->json([
                     'status' => 'success',
+                    'message' => 'Bookings retrieved successfully',
                     'data' => $transactions->items(),
                     'meta' => [
                         'current_page' => $transactions->currentPage(),
@@ -47,6 +48,7 @@ class BookingController extends ApiController
             
             return response()->json([
                 'status' => 'success',
+                'message' => 'Bookings retrieved successfully',
                 'data' => $transactions
             ]);
         } catch (\Exception $e) {
@@ -61,7 +63,7 @@ class BookingController extends ApiController
     public function show($id)
     {
         try {
-            $transaction = Transaction::find($id);
+            $transaction = Booking::find($id);
             
             if (!$transaction) {
                 return response()->json([
@@ -72,6 +74,7 @@ class BookingController extends ApiController
             
             return response()->json([
                 'status' => 'success',
+                'message' => 'Booking retrieved successfully',
                 'data' => $transaction
             ]);
         } catch (\Exception $e) {
@@ -115,7 +118,7 @@ class BookingController extends ApiController
             $adminFees = $roomPrice * 0.10; // 10% admin fee
             $grandtotalPrice = $roomPrice + $adminFees;
 
-            $transaction = Transaction::create([
+            $transaction = Booking::create([
                 ...$validator->validated(),
                 'order_id' => 'ORD-' . Str::random(10),
                 'transaction_date' => now(),
@@ -146,7 +149,7 @@ class BookingController extends ApiController
     public function update(Request $request, $id)
     {
         try {
-            $transaction = Transaction::find($id);
+            $transaction = Booking::find($id);
             
             if (!$transaction) {
                 return response()->json([
@@ -180,6 +183,39 @@ class BookingController extends ApiController
             return response()->json([
                 'status' => 'error',
                 'message' => 'Error updating booking',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Display the specified booking by order_id
+     *
+     * @param  string  $order_id
+     * @return \Illuminate\Http\Response
+     */
+    public function showByOrderId($order_id)
+    {
+        try {
+            $booking = Booking::where('order_id', $order_id)->first();
+            
+            if (!$booking) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking not found'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Booking retrieved successfully',
+                'data' => $booking
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error retrieving booking',
                 'error' => $e->getMessage()
             ], 500);
         }

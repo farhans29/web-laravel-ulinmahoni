@@ -72,5 +72,6 @@ Route::delete('property/{id}', [PropertyController::class, 'destroy']);
 
 Route::get('booking', [BookingController::class, 'index']);
 Route::get('booking/{id}', [BookingController::class, 'show']);
+Route::get('booking/order/{order_id}', [BookingController::class, 'showByOrderId']);
 Route::post('booking', [BookingController::class, 'store']);
 Route::put('booking/{id}', [BookingController::class, 'update']);
