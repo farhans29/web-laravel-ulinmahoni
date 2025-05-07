@@ -217,6 +217,10 @@ class RoomController extends Controller {
                 'descriptions' => $room->descriptions,
                 'type' => $room->type,
                 'level' => $room->level,
+                'price' => is_string($room->price) ? json_decode($room->price, true) : ($room->price ?? [
+                    'original' => 0,
+                    'discounted' => null
+                ]),
                 'facility' => is_string($room->facility) ? json_decode(
                     $room->facility, true
                     ) : (

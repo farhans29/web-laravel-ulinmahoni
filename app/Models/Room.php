@@ -22,12 +22,14 @@ class Room extends Model
         'periode',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
+        'price'
     ];
 
     protected $casts = [
         'facility' => 'json',
-        'periode' => 'json'
+        'periode' => 'json',
+        'price' => 'json'
     ];
 
     /**

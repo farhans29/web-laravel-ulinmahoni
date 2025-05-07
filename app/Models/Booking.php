@@ -75,6 +75,12 @@ class Booking extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id', 'idrec');
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    // Use transaction_code as the route key
+    public function getRouteKeyName()
+    {
+        return 'transaction_code';
     }
 }

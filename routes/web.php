@@ -17,6 +17,7 @@ use App\Http\Controllers\salesorder\SalesOrderController;
 use App\Http\Controllers\SearchProductController;
 use App\Http\Controllers\promo\PromoController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\PaymentController;
 
 use App\Http\Controllers\homepage\HomeController;
 use App\Http\Controllers\apart\ApartController;
@@ -103,6 +104,9 @@ Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show')
 // Bookings Routes
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
+    Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 });
 
 Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {

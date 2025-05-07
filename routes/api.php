@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BookingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -68,3 +69,8 @@ Route::get('property/{id}', [PropertyController::class, 'show']);
 Route::post('property', [PropertyController::class, 'store']);
 Route::put('property/{id}', [PropertyController::class, 'update']);
 Route::delete('property/{id}', [PropertyController::class, 'destroy']);
+
+Route::get('booking', [BookingController::class, 'index']);
+Route::get('booking/{id}', [BookingController::class, 'show']);
+Route::post('booking', [BookingController::class, 'store']);
+Route::put('booking/{id}', [BookingController::class, 'update']);
