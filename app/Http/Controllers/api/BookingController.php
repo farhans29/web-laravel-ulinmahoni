@@ -219,5 +219,38 @@ class BookingController extends ApiController
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
+    }    /**
+         * Display bookings for a specific user
+         *
+         * @param  int  $user_id
+         * @return \Illuminate\Http\Response
+         */
+        public function showByUserId($user_id)
+        {
+            try {
+                $bookings = Booking::where('user_id', $user_id)
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+    
+                if ($bookings->isEmpty()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'No bookings found for this user'
+                    ], 404);
+                }
+    
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Bookings retrieved successfully',
+                    'data' => $bookings
+                ]);
+    
+            } catch (\Exception $e) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Error retrieving bookings',
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+        }
 }

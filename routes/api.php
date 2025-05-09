@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\Api\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,5 +74,13 @@ Route::delete('property/{id}', [PropertyController::class, 'destroy']);
 Route::get('booking', [BookingController::class, 'index']);
 Route::get('booking/{id}', [BookingController::class, 'show']);
 Route::get('booking/order/{order_id}', [BookingController::class, 'showByOrderId']);
+Route::get('booking/userId/{user_id}', [BookingController::class, 'showByUserId']);
 Route::post('booking', [BookingController::class, 'store']);
 Route::put('booking/{id}', [BookingController::class, 'update']);
+
+// User API
+Route::get('users', [UserController::class, 'index']);
+Route::get('users/{id}', [UserController::class, 'show']);
+Route::post('users', [UserController::class, 'store']);
+Route::put('users/{id}', [UserController::class, 'update']);
+Route::delete('users/{id}', [UserController::class, 'destroy']);
