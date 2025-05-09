@@ -17,9 +17,16 @@
                 <div class="swiper-slide">
                     <a href="/promo/{{ $promo['id'] }}" class="block">
                         <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                            <img src="data:image/png;base64,{{ $promo['image'] }}" 
-                                 alt="{{ $promo['title'] }}" 
-                                 class="w-full h-48 object-cover">
+                            @if($promo['image'])
+                                <img src="data:image/png;base64,{{ $promo['image'] }}" 
+                                     alt="{{ $promo['title'] }}" 
+                                     class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105">
+                            @else
+                                <div class="bg-gray-100 w-full h-48 flex items-center justify-center">
+                                    <i class="fas fa-image text-4xl text-gray-400"></i>
+                                    <span class="ml-2 text-gray-500">No Image</span>
+                                </div>
+                            @endif
                             <div class="p-4">
                                 <div class="flex items-center mb-2">
                                     <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">{{ $promo['badge'] }}</span>

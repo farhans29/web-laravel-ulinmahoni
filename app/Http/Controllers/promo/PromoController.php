@@ -9,59 +9,49 @@ class PromoController extends Controller
 {
     public function index()
     {
-        $promos = $this->getPromos();
+        $promos = \App\Models\Promo::where('status', 1)
+            ->orderByDesc('idrec')
+            ->get()
+            ->map(function ($promo) {
+                return [
+                    'id' => $promo->idrec,
+                    'title' => $promo->title,
+                    'image' => $promo->image, // base64 accessor in model
+                    'badge' => 'Promo', // You can customize or add a badge column if needed
+                    'description' => $promo->descriptions,
+                ];
+            });
         return view('components.homepage.promos', compact('promos'));
     }
 
     public function show($id)
     {
-        $promo = collect($this->getPromos())->firstWhere('id', (int)$id);
-        
+        $promo = \App\Models\Promo::where('status', 1)->where('idrec', $id)->first();
         if (!$promo) {
             abort(404);
         }
-
+        $promoArr = [
+            'id' => $promo->idrec,
+            'title' => $promo->title,
+            'image' => $promo->image,
+            'badge' => 'Promo',
+            'description' => $promo->descriptions,
+            // Add more fields if needed
+        ];
         // Add additional details for the promo page
-        $promo['terms_conditions'] = [
+        $promoArr['terms_conditions'] = [
             'Syarat dan ketentuan berlaku',
             'Tidak dapat digabung dengan promo lain',
             'Periode promo terbatas',
             'Hanya berlaku untuk member baru'
         ];
-        
-        $promo['how_to_claim'] = [
+        $promoArr['how_to_claim'] = [
             'Pilih properti yang diinginkan',
             'Klik tombol "Klaim Promo"',
             'Masukkan kode promo saat checkout',
             'Nikmati diskon yang didapat'
         ];
-
-        return view('promos.show', compact('promo'));
+        return view('promos.show', ['promo' => $promoArr]);
     }
 
-    public function getPromos()
-    {
-        return [
-            [
-                'id' => 1,
-                'title' => 'Paket Premium 3 Bulan',
-                'image' => 'base64_encoded_image_here',
-                'badge' => '40% OFF',
-                'description' => 'Dapatkan akses penuh ke semua properti premium',
-                'original_price' => 1500000,
-                'discounted_price' => 900000,
-                'valid_until' => '2025-05-30'
-            ],
-            [
-                'id' => 2,
-                'title' => 'Diskon Member Baru',
-                'image' => 'base64_encoded_image_here', 
-                'badge' => '100rb OFF',
-                'description' => 'Khusus pengguna baru pertama registrasi',
-                'original_price' => 500000,
-                'discounted_price' => 400000,
-                'valid_until' => '2025-06-30'
-            ]
-        ];
-    }
 }

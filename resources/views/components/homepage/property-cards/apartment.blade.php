@@ -8,14 +8,23 @@
                 <a href="{{ route('apartments.show', ['id' => $apartment['id']]) }}" class="block h-full">
                     <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
                         <div class="relative">
-                            <div class="relative h-48 overflow-hidden">
-                                <img src="data:image/jpeg;base64,{{ $apartment['image'] }}" 
-                                     alt="{{ $apartment['name'] }}" 
-                                     class="card-image w-full h-full object-cover">
-                            </div>
-                            <div class="absolute bottom-0 left-0 right-0 gradient-overlay h-16"></div>
-                            <div class="absolute bottom-2 left-2">
-                                <span class="bg-teal-600 text-white text-xs px-2 py-1 rounded-full">{{ $apartment['type'] }}</span>
+                            <div class="relative pb-[56.25%] h-48">
+                                <div class="absolute inset-0">
+                                    @if($apartment['image'])
+                                        <img src="data:image/jpeg;base64,{{ $apartment['image'] }}" 
+                                             alt="{{ $apartment['name'] }}" 
+                                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                                    @else
+                                        <div class="bg-gray-100 w-full h-full flex items-center justify-center">
+                                            <i class="fas fa-image text-4xl text-gray-400"></i>
+                                            <span class="ml-2 text-gray-500">No Image</span>
+                                        </div>
+                                    @endif
+                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
+                                </div>
+                                <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
+                                    {{ $apartment['type'] }}
+                                </span>
                             </div>
                         </div>
 

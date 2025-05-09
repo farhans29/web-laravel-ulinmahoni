@@ -42,8 +42,19 @@ class Property extends Model
      * @param  string  $value
      * @return string|null
      */
-    // public function getImageAttribute($value)
-    // {
-    //     return null; // This will show the 'image' field but with null value
-    // }
+    public function getImageAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        // If the value is already base64 encoded, return it as is
+        if (preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $value)) {
+            return $value;
+        }
+        // If it's a file path or binary data, convert to base64
+        if (file_exists($value)) {
+            return base64_encode(file_get_contents($value));
+        }
+        return base64_encode($value);
+    }
 } 

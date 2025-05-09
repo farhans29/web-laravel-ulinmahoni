@@ -52,8 +52,19 @@ class HomeController extends Controller {
             ]
         ];
 
-        // Get promos data
-        $promos = $this->promoController->getPromos();
+        // Get promos data from DB
+        $promos = \App\Models\Promo::where('status', 1)
+            ->orderByDesc('idrec')
+            ->get()
+            ->map(function ($promo) {
+                return [
+                    'id' => $promo->idrec,
+                    'title' => $promo->title,
+                    'image' => $promo->image,
+                    'badge' => 'Promo',
+                    'description' => $promo->descriptions,
+                ];
+            });
 
         try {
             // Get active properties (status = 1)

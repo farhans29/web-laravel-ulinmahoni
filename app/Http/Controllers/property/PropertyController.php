@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\property;
+namespace App\Http\Controllers\Property;
 
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
@@ -8,13 +8,14 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Models\Property;
 
 class PropertyController extends Controller {
     public function index(Request $request){
         try {
-            // Get properties from the database
-            $query = Property::query();
+            // Get properties from the database with active status
+            $query = Property::where('status', 1);
             
             // Add filters if provided in the request
             if ($request->has('status')) {
@@ -30,20 +31,35 @@ class PropertyController extends Controller {
             }
 
             if ($request->has('price_min')) {
-                $query->where('price', '>=', $request->price_min);
+                $query->where('price->original', '>=', $request->price_min);
             }
 
             if ($request->has('price_max')) {
-                $query->where('price', '<=', $request->price_max);
+                $query->where('price->original', '<=', $request->price_max);
             }
 
             // Order by created_at (newest first)
             $query->orderBy('created_at', 'desc');
 
-            // Get paginated results
-            $properties = $query->paginate(12); // Show 12 properties per page
+            // Get paginated results and transform the data
+            $properties = $query->paginate(12)->through(function($property) {
+                return [
+                    'id' => $property->idrec,
+                    'slug' => $property->slug,
+                    'name' => $property->name,
+                    'type' => $property->tags,
+                    'subLocation' => $property->subdistrict . ', ' . $property->city,
+                    'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                    'price' => [
+                        'original' => json_decode($property->price)->original ?? 0,
+                        'discounted' => json_decode($property->price)->discounted ?? 0
+                    ],
+                    'features' => is_string($property->features) ? json_decode($property->features, true) : [],
+                    'image' => $property->image
+                ];
+            });
 
-            return view("pages.property.index", compact('properties'));
+            return view("pages.properties.index", compact('properties'));
         } catch (Exception $e) {
             return back()->with('error', 'Error loading properties: ' . $e->getMessage());
         }
@@ -52,88 +68,115 @@ class PropertyController extends Controller {
     public function show($id)
     {
         try {
-            // DONT REMOVE THIS COMMENTED LINE DUMMY DATAS
-            // For now, we'll use dummy data. Later you can replace this with actual database queries
-            $dummyProperty = [
-                'id' => 1,
-                'name' => 'Rexucia',
-                'type' => 'Coliving',
-                'location' => 'Petojo Selatan, Gambir',
-                'distance' => '2.4 km dari Stasiun MRT Bundaran HI',
-                'price' => [
-                    'original' => 1300000,
-                    'discounted' => 975000
-                ],
-                'features' => [
-                    'Diskon sewa 12 Bulan',
-                    'S+ Voucher s.d. 2%'
-                ],
-                'image' => 'images/assets/foto_project_ulin_mahoni/RENDER HALUS PROJECT BAPAK LIU KOS BOGOR_pages-to-jpg-0006.jpg',
-                'attributes' => [
-                    'amenities' => [
-                        'High-speed WiFi',
-                        '24/7 Security',
-                        'Shared Kitchen',
-                        'Laundry Service',
-                        'Parking Area',
-                        'Common Area'
-                    ],
-                    'room_facilities' => [
-                        'Air Conditioning',
-                        'Private Bathroom',
-                        'Furnished',
-                        'TV Cable Ready'
-                    ],
-                    'rules' => [
-                        'No Smoking',
-                        'No Pets',
-                        'ID Card Required',
-                        'Deposit Required'
-                    ]
-                ],
-                'description' => 'Experience modern coliving at its finest in this strategically located property. 
-                                Featuring well-designed spaces, community areas, and all the amenities you need 
-                                for comfortable urban living. Perfect for young professionals and students looking 
-                                for a vibrant community in the heart of the city.'
-            ];
-            // End of dummy data
+            // Raw query to get property with its rooms
+            $property = DB::select("
+                SELECT 
+                    p.*,
+                    r.idrec as room_id,
+                    r.property_id,
+                    r.property_name,
+                    r.slug as room_slug,
+                    r.name as room_name,
+                    r.descriptions as room_descriptions,
+                    r.type as room_type,
+                    r.level as room_level,
+                    r.facility as room_facility,
+                    r.attachment as room_attachment,
+                    r.periode as room_periode,
+                    r.created_at as room_created_at,
+                    r.updated_at as room_updated_at,
+                    r.created_by as room_created_by,
+                    r.updated_by as room_updated_by,
+                    r.status as room_status
+                FROM t_properties p
+                LEFT JOIN t_rooms r ON p.idrec = r.property_id
+                WHERE p.idrec = ?
+                ORDER BY idrec ASC
+            ", [$id]);
 
-            // Get property from database
-            $property = Property::findOrFail($id);
+            if (empty($property)) {
+                throw new Exception('Property not found');
+            }
+
+            // Get the first row for property data (since it's repeated in the join)
+            $propertyData = $property[0];
+
+            // Format rooms data
+            $formattedRooms = collect($property)->map(function($row) {
+                if ($row->room_id) {
+                    return [
+                        'id' => $row->room_id,
+                        'property_id' => $row->property_id,
+                        'property_name' => $row->property_name,
+                        'slug' => $row->room_slug,
+                        'name' => $row->room_name,
+                        'descriptions' => $row->room_descriptions,
+                        'type' => $row->room_type,
+                        'level' => $row->room_level,
+                        'facility' => is_string($row->room_facility) ? json_decode($row->room_facility, true) : [],
+                        'attachment' => is_string($row->room_attachment) ? json_decode($row->room_attachment, true) : [],
+                        'periode' => is_string($row->room_periode) ? json_decode($row->room_periode, true) : [],
+                        'created_at' => $row->room_created_at,
+                        'updated_at' => $row->room_updated_at,
+                        'created_by' => $row->room_created_by,
+                        'updated_by' => $row->room_updated_by,
+                        'status' => $row->room_status
+                    ];
+                }
+                return null;
+            })->filter();
 
             // Format the data for the view
             $formattedProperty = [
-                'id' => $property->idrec,
-                'name' => $property->name,
-                'location' => $property->address,
-                'distance' => $property->distance . ' km dari ' . $property->location,
-                'price' => is_array($property->price) ? $property->price : ['original' => $property->price],
-                'features' => $property->features ?? [],
-                'image' => $property->image,
-                'attributes' => $property->attributes ?? [
+                'id' => $propertyData->idrec,
+                'slug' => $propertyData->slug,
+                'name' => $propertyData->name,
+                'type' => $propertyData->tags,
+                'location' => $propertyData->address,
+                'subLocation' => $propertyData->subdistrict . ', ' . $propertyData->city,
+                'distance' => $propertyData->distance ? "{$propertyData->distance} km dari {$propertyData->location}" : null,
+                'price' => [
+                    'original' => json_decode($propertyData->price)->original ?? 0,
+                    'discounted' => json_decode($propertyData->price)->discounted ?? 0
+                ],
+                'features' => is_string($propertyData->features) ? json_decode($propertyData->features, true) : [],
+                'image' => $propertyData->image,
+                'image_2' => $propertyData->image_2 ?? null,
+                'image_3' => $propertyData->image_3 ?? null,
+                'attributes' => is_string($propertyData->attributes) ? json_decode($propertyData->attributes, true) : [
                     'amenities' => [],
                     'room_facilities' => [],
                     'rules' => []
                 ],
-                'description' => $property->description,
+                'description' => $propertyData->description,
                 'address' => [
-                    'province' => $property->province,
-                    'city' => $property->city,
-                    'subdistrict' => $property->subdistrict,
-                    'village' => $property->village,
-                    'postal_code' => $property->postal_code,
-                    'full_address' => $property->address
+                    'province' => $propertyData->province,
+                    'city' => $propertyData->city,
+                    'subdistrict' => $propertyData->subdistrict,
+                    'village' => $propertyData->village,
+                    'postal_code' => $propertyData->postal_code,
+                    'full_address' => $propertyData->address
                 ],
-                'tags' => $property->tags ?? [],
-                'status' => $property->status
+                'status' => $propertyData->status,
+                'rooms' => $formattedRooms
             ];
 
-            return view('pages.property.show', [
-                'property' => $formattedProperty,
-                'dummyProperty' => $dummyProperty // Keeping dummy data for reference
+            // Return the appropriate view based on property type
+            $view = match($propertyData->tags) {
+                'House' => 'pages.house.show',
+                'Apartment' => 'pages.apartment.show',
+                'Villa' => 'pages.villa.show',
+                'Hotel' => 'pages.hotel.show',
+                default => 'pages.property.show'
+            };
+
+            return view($view, [
+                'property' => $formattedProperty
             ]);
+
         } catch (Exception $e) {
-            return back()->with('error', 'Property not found or error occurred: ' . $e->getMessage());
+            Log::error('Property not found or error occurred: ' . $e->getMessage());
+            abort(404);
         }
     }
 
@@ -187,10 +230,25 @@ class PropertyController extends Controller {
             // Order by created_at (newest first)
             $query->orderBy('created_at', 'desc');
 
-            // Get paginated results
-            $properties = $query->paginate(12)->withQueryString();
+            // Get paginated results and transform the data
+            $properties = $query->paginate(12)->through(function($property) {
+                return [
+                    'id' => $property->idrec,
+                    'slug' => $property->slug,
+                    'name' => $property->name,
+                    'type' => $property->tags,
+                    'subLocation' => $property->subdistrict . ', ' . $property->city,
+                    'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                    'price' => [
+                        'original' => json_decode($property->price)->original ?? 0,
+                        'discounted' => json_decode($property->price)->discounted ?? 0
+                    ],
+                    'features' => is_string($property->features) ? json_decode($property->features, true) : [],
+                    'image' => $property->image
+                ];
+            })->withQueryString();
 
-            return view('pages.property.index', compact('properties'));
+            return view('pages.properties.index', compact('properties'));
         } catch (Exception $e) {
             return back()->with('error', 'Error searching properties: ' . $e->getMessage());
         }

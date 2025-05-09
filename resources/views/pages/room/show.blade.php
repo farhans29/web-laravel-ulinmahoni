@@ -28,8 +28,8 @@
             </nav>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <!-- Room Details -->
-                <div class="lg:col-span-8">
+                <!-- Room Details (left) -->
+                <div class="lg:col-span-7">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                         <!-- Room Image Gallery -->
                         <div class="relative h-96">
@@ -47,40 +47,29 @@
                             </span>
                         </div>
 
-                        <div class="p-6">
-                            <!-- Room Title & Property Info -->
-                            <div class="flex justify-between items-start mb-6">
+                        <div class="p-8">
+                            <!-- Room Title and Price -->
+                            <div class="flex justify-between items-start mb-8">
                                 <div>
-                                    <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ $room['name'] }}</h1>
-                                    <p class="text-gray-600">{{ $room['property']['name'] }}</p>
-                                    <p class="text-gray-500">{{ $room['property']['location'] }}</p>
+                                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $room['name'] }}</h1>
+                                    <p class="text-gray-500 uppercase tracking-wide">{{ $room['type'] }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-sm text-gray-500">Floor Level</p>
-                                    <p class="text-xl font-bold text-gray-900">{{ $room['level'] }}</p>
+                                    <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price']['original']['daily'], 0, ',', '.') }}</p>
+                                    <p class="text-sm text-gray-500">per night</p>
                                 </div>
                             </div>
-
-                            <!-- Room Facilities -->
-                            @if($room['descriptions'])
-                            <div class="mb-6">
-                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Room Description</h2>
-                                <p class="text-gray-600">
-                                    {{ $room['descriptions'] }}
-                                </p>
-                            </div>
-                            @endif
 
                             <!-- Room Facilities -->
                             @if(!empty($room['facility']))
-                            <div class="mb-6">
-                                <h2 class="text-lg font-semibold text-gray-900 mb-4">Room Facilities</h2>
-                                <div class="grid grid-cols-2 gap-4">
+                            <div class="mb-8">
+                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Room Facilities</h2>
+                                <div class="grid grid-cols-2 gap-6">
                                     @foreach($room['facility'] as $facility => $value)
                                         @if($value)
-                                        <div class="flex items-center space-x-2">
+                                        <div class="flex items-center space-x-3 py-2">
                                             <i class="fas fa-check text-teal-600"></i>
-                                            <span>{{ ucfirst($facility) }}</span>
+                                            <span class="text-gray-600">{{ $facility }}</span>
                                         </div>
                                         @endif
                                     @endforeach
@@ -90,117 +79,136 @@
 
                             <!-- Room Description -->
                             <div class="space-y-6">
-                                <div class="prose prose-sm text-gray-500">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">About this room</h3>
-                                    <p class="whitespace-pre-line">{{ $room['descriptions'] }}</p>
+                                <div class="prose prose-lg max-w-none">
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-4">About this room</h3>
+                                    <p class="text-gray-600 leading-relaxed">{{ $room['descriptions'] }}</p>
                                 </div>
                             </div>
-
-                            </div>
-
-                            <!-- Additional Information -->
-                            {{-- <div class="mt-6 text-sm text-gray-500">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p>Created by: {{ $room['created_by'] }}</p>
-                                        <p>Created at: {{ $room['created_at'] }}</p>
-                                    </div>
-                                    <div>
-                                        <p>Updated by: {{ $room['updated_by'] }}</p>
-                                        <p>Updated at: {{ $room['updated_at'] }}</p>
-                                    </div>
-                                </div>
-                            </div> --}}
                         </div>
                     </div>
                 </div>
 
-                <!-- Booking Form -->
-                <div class="lg:col-span-4 mt-8">
-                    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 sticky top-8">
-                        <!-- Status and Title -->
-                        <div class="flex items-center justify-between mb-6">
-                            <h2 class="text-xl font-bold text-gray-900">Room Booking</h2>
-                            <span class="px-3 py-1 rounded-full text-sm font-medium
+                <!-- Booking Form (right) -->
+                <div class="lg:col-span-5 lg:pl-4">
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-8 sticky top-8">
+                        <!-- Status and Price Summary -->
+                        <div class="flex items-center justify-between mb-8">
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-900 mb-2">Book Your Stay</h2>
+                                <p class="text-gray-500">Fill in the details below</p>
+                            </div>
+                            <span class="px-4 py-2 rounded-full text-sm font-medium
                                 {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                 {{ $room['status'] == 1 ? 'Available' : 'Booked' }}
                             </span>
                         </div>
                         
                         <form id="bookingForm" class="space-y-6">
-                            @csrf
                             <input type="hidden" name="room_id" value="{{ $room['id'] }}">
-                            <input type="hidden" name="property_name" value="{{ $room['property']['name'] }}">
-                            <input type="hidden" name="room_name" value="{{ $room['name'] }}">
                             <input type="hidden" name="prices" value='{{ json_encode(["daily" => $room["price"]["discounted"]["daily"], "monthly" => $room["price"]["discounted"]["monthly"]]) }}'>
-                            
-                            <!-- Error Alert -->
-                            <div id="errorAlert" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm whitespace-pre-line"></div>
-                            
-                            <!-- Rent Type -->
+                            <!-- Price Summary -->
+                            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                                <!-- Daily Rate -->
+                                <div class="mb-4">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-gray-600">Daily Rate</span>
+                                        @if($room['price']['discounted']['daily'] < $room['price']['original']['daily'])
+                                            <div class="text-right">
+                                                <span class="line-through text-gray-400 text-sm">Rp {{ number_format($room['price']['original']['daily'], 0, ',', '.') }}</span>
+                                                <span class="font-semibold text-teal-600 ml-2">Rp {{ number_format($room['price']['discounted']['daily'], 0, ',', '.') }}</span>
+                                            </div>
+                                        @else
+                                            <span class="font-semibold">Rp {{ number_format($room['price']['original']['daily'], 0, ',', '.') }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- Monthly Rate -->
+                                <div>
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-gray-600">Monthly Rate</span>
+                                        @if($room['price']['discounted']['monthly'] < $room['price']['original']['monthly'])
+                                            <div class="text-right">
+                                                <span class="line-through text-gray-400 text-sm">Rp {{ number_format($room['price']['original']['monthly'], 0, ',', '.') }}</span>
+                                                <span class="font-semibold text-teal-600 ml-2">Rp {{ number_format($room['price']['discounted']['monthly'], 0, ',', '.') }}</span>
+                                            </div>
+                                        @else
+                                            <span class="font-semibold">Rp {{ number_format($room['price']['original']['monthly'], 0, ',', '.') }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Check-in Date -->
+                                <div>
+                                    <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
+                                    <input type="date" id="check_in" name="check_in" required
+                                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                        min="{{ date('Y-m-d') }}">
+                                    <div id="check_inError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
+                                </div>
+
+                                <!-- Check-out Date -->
+                                <div>
+                                    <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
+                                    <input type="date" id="check_out" name="check_out" required
+                                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                        min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                                    <div id="check_outError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
+                                </div>
+                            </div>
+
+                            <!-- Number of Guests -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Rent Type</label>
+                                <label for="guests" class="block text-sm font-medium text-gray-700 mb-2">Guests</label>
                                 <div class="relative">
-                                    <select name="rent_type" id="rentType" 
-                                            class="w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-gray-600"
-                                            {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        @if($room['periode']['daily'])
-                                            <option value="daily">Daily</option>
-                                        @endif
-                                        @if($room['periode']['weekly'])
-                                            <option value="weekly">Weekly</option>
-                                        @endif
-                                        @if($room['periode']['monthly'])
-                                            <option value="monthly">Monthly</option>
-                                        @endif
+                                    <select id="guests" name="guests" required
+                                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 appearance-none">
+                                        @for ($i = 1; $i <= 4; $i++)
+                                            <option value="{{ $i }}">{{ $i }} {{ $i == 1 ? 'Guest' : 'Guests' }}</option>
+                                        @endfor
                                     </select>
-                                    <i class="fas fa-calendar absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                                        </svg>
+                                    </div>
                                 </div>
+                                <div id="guestsError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                             </div>
 
-                            <!-- Date Selection for Daily -->
-                            <div id="dateInputs" class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Check In</label>
-                                    <div class="relative">
-                                        <input type="date" name="check_in" id="checkIn"
-                                               class="w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-gray-600"
-                                               required
-                                               min="{{ date('Y-m-d') }}"
-                                               {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                    </div>
-                                    <div class="error-message text-red-500 text-sm mt-1 hidden" id="checkInError"></div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Check Out</label>
-                                    <div class="relative">
-                                        <input type="date" name="check_out" id="checkOut"
-                                               class="w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-gray-600"
-                                               required
-                                               min="{{ date('Y-m-d', strtotime('+1 day')) }}"
-                                               {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                    </div>
-                                    <div class="error-message text-red-500 text-sm mt-1 hidden" id="checkOutError"></div>
-                                </div>
+                            <!-- Notes -->
+                            <div>
+                                <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Special Requests</label>
+                                <textarea id="notes" name="notes" rows="3"
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                    placeholder="Let us know if you have any special requests..."></textarea>
+                                <div id="notesError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                             </div>
 
-                            <!-- Month Selection for Monthly -->
-                            <div id="monthInput" class="hidden">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                                <div class="relative">
-                                    <select name="months" id="months" 
-                                            class="w-full pl-10 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 text-gray-600"
-                                            {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        <option value="1">1 Month</option>
-                                        <option value="3">3 Months</option>
-                                        <option value="6">6 Months</option>
-                                        <option value="12">12 Months</option>
-                                    </select>
-                                    <i class="fas fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                                </div>
-                                <div class="error-message text-red-500 text-sm mt-1 hidden" id="monthsError"></div>
+                            <!-- Error Alert -->
+                            <div id="errorAlert" class="hidden bg-red-50 text-red-800 p-4 rounded-lg text-sm"></div>
+
+                            <!-- Submit Button -->
+                            <div>
+                                @guest
+                                    <button type="button" 
+                                        class="w-full bg-gray-400 text-white py-4 px-6 rounded-lg cursor-not-allowed text-lg font-medium flex items-center justify-center gap-2"
+                                        disabled
+                                        onclick="window.location.href = '{{ route('login') }}'">
+                                        <i class="fas fa-lock"></i>
+                                        Login to Book
+                                    </button>
+                                    <p class="text-sm text-gray-500 text-center mt-2">Please login or register to make a booking</p>
+                                @else
+                                    <button type="submit" id="submitButton"
+                                        class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium"
+                                        {{ $room['status'] == 0 ? 'disabled' : '' }}>
+                                        {{ $room['status'] == 1 ? 'Book Now' : 'Room Not Available' }}
+                                    </button>
+                                @endguest
                             </div>
 
                             <!-- Price Summary -->

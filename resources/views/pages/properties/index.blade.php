@@ -15,48 +15,51 @@
     <main class="container mx-auto px-4 py-8">
         <!-- Filters Section -->
         <div class="mb-8">
-            <form action="{{ route('properties.index') }}" method="GET" class="bg-white rounded-lg shadow-sm p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Property Type Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
-                        <select name="type" class="w-full border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
-                            <option value="">All Types</option>
-                            <option value="House" {{ request('type') == 'House' ? 'selected' : '' }}>House & Room</option>
-                            <option value="Apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
-                            <option value="Villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
-                            <option value="Hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
-                        </select>
-                    </div>
+    <form action="{{ route('properties.index') }}" method="GET" class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex flex-col md:flex-row gap-4">
+            <!-- Property Type Filter -->
+            <div class="md:w-48 relative">
+                <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <select name="type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
+                    <option value="">All Types</option>
+                    <option value="House" {{ request('type') == 'House' ? 'selected' : '' }}>House & Room</option>
+                    <option value="Apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
+                    <option value="Villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
+                    <option value="Hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+            </div>
 
-                    <!-- Location Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Search location..." 
-                               class="w-full border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
-                    </div>
+            <!-- Location Filter -->
+            <div class="flex-1 relative">
+                <i class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search location..." 
+                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+            </div>
 
-                    <!-- Price Range Filter -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Min Price</label>
-                        <input type="number" name="price_min" value="{{ request('price_min') }}" placeholder="Minimum price" 
-                               class="w-full border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
-                    </div>
+            <!-- Min Price Filter -->
+            <div class="md:w-48 relative">
+                <i class="fas fa-dollar-sign absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="number" name="price_min" value="{{ request('price_min') }}" placeholder="Minimum price" 
+                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+            </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Price</label>
-                        <input type="number" name="price_max" value="{{ request('price_max') }}" placeholder="Maximum price" 
-                               class="w-full border-gray-300 rounded-lg focus:ring-primary-500 focus:border-primary-500">
-                    </div>
-                </div>
+            <!-- Max Price Filter -->
+            <div class="md:w-48 relative">
+                <i class="fas fa-dollar-sign absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="number" name="price_max" value="{{ request('price_max') }}" placeholder="Maximum price" 
+                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+            </div>
 
-                <div class="mt-4 flex justify-end">
-                    <button type="submit" class="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition-colors">
-                        Apply Filters
-                    </button>
-                </div>
-            </form>
+            <div class="md:w-48">
+                <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
+                    <i class="fas fa-search mr-2"></i>
+                    <span>Apply Filters</span>
+                </button>
+            </div>
         </div>
+    </form>
+</div>
 
         <!-- Properties Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -70,17 +73,21 @@
                     default => 'property.show'
                 }, $property->idrec) }}" class="block">
                     <!-- Image Section -->
-                    <div class="relative pb-[75%]">
-                        @if(is_string($property->image))
-                            <img src="data:image/jpeg;base64,{{ $property->image }}"
-                                 alt="{{ $property->name }}" 
-                                 class="absolute inset-0 w-full h-full object-cover">
-                        @else
-                            <img src="{{ $property->image }}"
-                                 alt="{{ $property->name }}" 
-                                 class="absolute inset-0 w-full h-full object-cover">
-                        @endif
-                        <span class="absolute top-2 left-2 bg-primary-600 text-white px-2 py-1 rounded-full text-sm">
+                    <div class="relative pb-[56.25%] h-48">
+                        <div class="absolute inset-0">
+                            @if($property->image)
+                                <img src="data:image/jpeg;base64,{{ $property->image }}" 
+                                     alt="{{ $property->name }}" 
+                                     class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                            @else
+                                <div class="bg-gray-100 w-full h-full flex items-center justify-center">
+                                    <i class="fas fa-image text-4xl text-gray-400"></i>
+                                    <span class="ml-2 text-gray-500">No Image</span>
+                                </div>
+                            @endif
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
+                        </div>
+                        <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
                             {{ $property->tags }}
                         </span>
                     </div>
