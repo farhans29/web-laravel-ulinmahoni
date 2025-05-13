@@ -102,10 +102,10 @@ class BookingController extends Controller
                 'admin_fees' => $adminFee,
                 'grandtotal_price' => $totalPrice + $adminFee,
                 'property_type' => $request->property_type ?? 'room',
-                'transaction_type' => $request->transaction_type ?? 'regular',
+                'transaction_type' => $request->transaction_type ?? '',
                 'transaction_code' => $transactionCode,
                 'transaction_status' => 'pending',
-                'status' => 'active'
+                'status' => '1'
             ]);
 
             DB::commit();

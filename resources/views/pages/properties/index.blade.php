@@ -14,52 +14,66 @@
 
     <main class="container mx-auto px-4 py-8">
         <!-- Filters Section -->
-        <div class="mb-8">
-    <form action="{{ route('properties.index') }}" method="GET" class="bg-white rounded-xl shadow-lg p-6">
-        <div class="flex flex-col md:flex-row gap-4">
-            <!-- Property Type Filter -->
-            <div class="md:w-48 relative">
-                <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <select name="type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                    <option value="">All Types</option>
-                    <option value="House" {{ request('type') == 'House' ? 'selected' : '' }}>House & Room</option>
-                    <option value="Apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
-                    <option value="Villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
-                    <option value="Hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-            </div>
+        <!-- <section class="search-section">
+            <div class="search-container">
+              <div class="search-box">
+                <form action="{{ route('properties.search') }}" method="GET" id="propertySearchForm">
+                  <div class="flex flex-col md:flex-row gap-4">
+                    Property Types
+                    <div class="md:w-48 relative">
+                      <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                      <select name="property_type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
+                        <option value="">Property Types</option>
+                        <option value="House" {{ request('property_type') === 'House' ? 'selected' : '' }}>House & Room</option>
+                        <option value="Apartment" {{ request('property_type') === 'Apartment' ? 'selected' : '' }}>Apartment</option>
+                        <option value="Villa" {{ request('property_type') === 'Villa' ? 'selected' : '' }}>Villa</option>
+                        <option value="Hotel" {{ request('property_type') === 'Hotel' ? 'selected' : '' }}>Hotel</option>
+                      </select>
+                      <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
 
-            <!-- Location Filter -->
-            <div class="flex-1 relative">
-                <i class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search location..." 
-                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
-            </div>
+                    Rent Period
+                    <div class="md:w-48 relative">
+                      <i class="fas fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                      <select name="rent_period" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
+                        <option value="">Rent Period</option>
+                        <option value="daily" {{ request('rent_period') === 'daily' ? 'selected' : '' }}>Daily</option>
+                        <option value="monthly" {{ request('rent_period') === 'monthly' ? 'selected' : '' }}>Monthly</option>
+                      </select>
+                      <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
 
-            <!-- Min Price Filter -->
-            <div class="md:w-48 relative">
-                <i class="fas fa-dollar-sign absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="number" name="price_min" value="{{ request('price_min') }}" placeholder="Minimum price" 
-                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                    Check-in Check-out Dates
+                    <div class="flex-1 flex gap-4">
+                      <div class="w-1/2 relative">
+                        <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="date" 
+                          name="check_in"
+                          value="{{ request('check_in') }}"
+                          min="{{ date('Y-m-d') }}"
+                          class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                      </div>
+                      <div class="w-1/2 relative">
+                        <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <input type="date" 
+                          name="check_out"
+                          value="{{ request('check_out') }}"
+                          min="{{ date('Y-m-d', strtotime('+1 day')) }}"
+                          class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                      </div>
+                    </div>
+                    
+                    <div class="md:w-48">
+                      <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
+                        <i class="fas fa-search mr-2"></i>
+                        <span>Cari Hunian</span>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
             </div>
-
-            <!-- Max Price Filter -->
-            <div class="md:w-48 relative">
-                <i class="fas fa-dollar-sign absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <input type="number" name="price_max" value="{{ request('price_max') }}" placeholder="Maximum price" 
-                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
-            </div>
-
-            <div class="md:w-48">
-                <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
-                    <i class="fas fa-search mr-2"></i>
-                    <span>Apply Filters</span>
-                </button>
-            </div>
-        </div>
-    </form>
-</div>
+          </section> -->
 
         <!-- Properties Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

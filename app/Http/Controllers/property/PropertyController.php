@@ -188,43 +188,25 @@ class PropertyController extends Controller {
         try {
             $query = Property::query();
 
-            // Apply search filters
-            if ($request->has('search')) {
-                $search = $request->search;
-                $query->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%")
-                      ->orWhere('address', 'like', "%{$search}%");
-                });
+            // Filter by type
+            if ($request->has('type') && !empty($request->type)) {
+                $query->where('tags', $request->type);
             }
 
-            // Apply location filters
-            if ($request->has('province')) {
-                $query->where('province', $request->province);
-            }
-            if ($request->has('city')) {
-                $query->where('city', $request->city);
+            // Filter by rent period
+            if ($request->has('rent_period') && !empty($request->rent_period)) {
+                $query->whereJsonContains('price->original->' . $request->rent_period, '>', 0);
             }
 
-            // Apply price range filter
-            if ($request->has('price_min')) {
-                $query->where('price', '>=', $request->price_min);
-            }
-            if ($request->has('price_max')) {
-                $query->where('price', '<=', $request->price_max);
-            }
+            // Filter by check-in/check-out dates
+            if ($request->has('check_in') && $request->has('check_out') && 
+                !empty($request->check_in) && !empty($request->check_out)) {
+                $checkIn = Carbon::parse($request->check_in);
+                $checkOut = Carbon::parse($request->check_out);
 
-            // Apply tags filter
-            if ($request->has('tags')) {
-                $tags = is_array($request->tags) ? $request->tags : [$request->tags];
-                foreach ($tags as $tag) {
-                    $query->whereJsonContains('tags', $tag);
-                }
-            }
-
-            // Apply status filter
-            if ($request->has('status')) {
-                $query->where('status', $request->status);
+                // Add date availability logic here if needed
+                // For now, we'll just ensure the property is active
+                $query->where('status', 1);
             }
 
             // Order by created_at (newest first)

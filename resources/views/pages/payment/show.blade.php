@@ -43,32 +43,18 @@
                             <!-- Payment Method -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                                <div class="grid grid-cols-3 gap-4">
-                                    <label class="relative border rounded-lg p-4 cursor-pointer hover:border-teal-500 transition-colors">
-                                        <input type="radio" name="payment_method" value="bca" class="sr-only" checked>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="relative border rounded-lg p-4 cursor-pointer hover:border-teal-500 transition-colors payment-option" data-method="bca">
                                         <span class="flex items-center justify-center">
-                                            <img src="{{ asset('images/payment/bca.png') }}" alt="BCA" class="h-8">
+                                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" alt="BCA" class="h-8">
                                         </span>
-                                    </label>
-                                    <label class="relative border rounded-lg p-4 cursor-pointer hover:border-teal-500 transition-colors">
-                                        <input type="radio" name="payment_method" value="mandiri" class="sr-only">
-                                        <span class="flex items-center justify-center">
-                                            <img src="{{ asset('images/payment/mandiri.png') }}" alt="Mandiri" class="h-8">
+                                    </div>
+                                    <div class="relative border rounded-lg p-4 cursor-pointer hover:border-teal-500 transition-colors payment-option" data-method="cash">
+                                        <span class="flex items-center justify-center text-lg font-semibold">
+                                            Cash
                                         </span>
-                                    </label>
-                                    <label class="relative border rounded-lg p-4 cursor-pointer hover:border-teal-500 transition-colors">
-                                        <input type="radio" name="payment_method" value="bni" class="sr-only">
-                                        <span class="flex items-center justify-center">
-                                            <img src="{{ asset('images/payment/bni.png') }}" alt="BNI" class="h-8">
-                                        </span>
-                                    </label>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="border-t pt-6">
-                                <button type="submit" class="w-full bg-teal-600 text-white py-2.5 px-4 rounded-lg hover:bg-teal-700 transition-colors">
-                                    Pay Now
-                                </button>
                             </div>
                         </form>
                     </div>
@@ -90,9 +76,12 @@
 
                             <div>
                                 <h4 class="font-medium">Guest Details</h4>
-                                <p class="text-sm text-gray-600">{{ $booking->user_name }}</p>
-                                <p class="text-sm text-gray-600">{{ $booking->user_email }}</p>
-                                <p class="text-sm text-gray-600">{{ $booking->user_phone_number }}</p>
+                                <h4 class="font-medium text-gray-600">Name</h4>
+                                <p class="text-sm text-gray-600 mb-2">{{ $booking->user_name }}</p>
+                                <h4 class="font-medium text-gray-600">Email</h4>
+                                <p class="text-sm text-gray-600 mb-2">{{ $booking->user_email }}</p>
+                                <h4 class="font-medium text-gray-600">Phone Number</h4>
+                                <p class="text-sm text-gray-600 mb-2">{{ $booking->user_phone_number }}</p>
                             </div>
 
                             <div>

@@ -278,11 +278,21 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             @forelse($house['rooms'] as $room)
                                 <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-                                    <div class="relative h-48">
-                                        <img src="{{ isset($room['attachment']['images'][0]) ? asset($room['attachment']['images'][0]) : asset('images/rooms/default-room.jpg') }}" 
-                                             alt="{{ $room['name'] }}"
-                                             class="w-full h-full object-cover">
-                                        <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
+                                    <div class="relative pb-[56.25%] h-48">
+                                        <div class="absolute inset-0">
+                                            @if(isset($room['image']) && $room['image'])
+                                                <img src="data:image/jpeg;base64,{{ $room['image'] }}" 
+                                                    alt="{{ $room['name'] }}" 
+                                                    class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                                            @else
+                                                <div class="bg-gray-100 w-full h-full flex items-center justify-center">
+                                                    <i class="fas fa-image text-4xl text-gray-400"></i>
+                                                    <span class="ml-2 text-gray-500">No Image</span>
+                                                </div>
+                                            @endif
+                                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
+                                        </div>
+                                        <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
                                             {{ ucfirst($room['type']) }}
                                         </span>
                                     </div>

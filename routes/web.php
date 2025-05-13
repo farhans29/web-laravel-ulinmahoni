@@ -71,6 +71,7 @@ Route::redirect('/business', '/id/business');
 Route::redirect('/tentang', '/id/tentang');
 
 Route::get('/properties', [App\Http\Controllers\AllPropertiesController::class, 'index'])->name('properties.index');
+Route::get('/properties/search', [PropertyController::class, 'search'])->name('properties.search');
 Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
 
 Route::get('/houses', [HouseController::class, 'index'])->name('houses');
