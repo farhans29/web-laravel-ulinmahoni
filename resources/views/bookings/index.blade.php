@@ -31,7 +31,7 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Transaction Code
+                                        Order #
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Property
@@ -45,26 +45,38 @@
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status
                                     </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Attachment
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($bookings as $booking)
                                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                                         <td class="px-6 py-4">
-                                            <div class="text-sm font-medium text-teal-600">{{ $booking->transaction_code }}</div>
+                                            <div class="flex flex-col space-y-1">
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="font-semibold text-xs text-gray-500">Order ID:</span>
+                                                    <span class="text-xs text-gray-900">{{ $booking->order_id }}</span>
+                                                </div>
+                                                <div class="flex items-center space-x-2">
+                                                    <span class="font-semibold text-xs text-gray-500">Transaction Code:</span>
+                                                    <span class="text-xs text-teal-600">{{ $booking->transaction_code }}</span>
+                                                </div>
+                                            </div>
                                             <div class="text-xs text-gray-500">{{ $booking->transaction_type }}</div>
                                             <div class="text-xs text-gray-500 mt-1">
                                                 <div class="flex items-center">
                                                     <i class="fas fa-user mr-1"></i>
-                                                    {{ $booking->name }}
+                                                    {{ $booking->user_name }}
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="fas fa-phone mr-1"></i>
-                                                    {{ $booking->phone }}
+                                                    {{ $booking->user_phone_number }}
                                                 </div>
                                                 <div class="flex items-center">
                                                     <i class="fas fa-envelope mr-1"></i>
-                                                    {{ $booking->email }}
+                                                    {{ $booking->user_email }}
                                                 </div>
                                             </div>
                                         </td>
@@ -105,16 +117,51 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $booking->status_color['bg'] }} {{ $booking->status_color['text'] }}">
-                                                <i class="fas fa-circle text-xs mr-1"></i>
-                                                {{ ucfirst($booking->transaction_status) }}
-                                            </span>
+                                            <div class="flex justify-center items-center h-full">
+                                                @php
+                                                    $status = strtolower($booking->transaction_status);
+                                                    $badgeBg = $badgeText = $dot = '';
+                                                    if ($status === 'pending') {
+                                                        $badgeBg = 'bg-red-50'; $badgeText = 'text-red-700'; $dot = 'bg-red-500';
+                                                    } elseif ($status === 'waiting') {
+                                                        $badgeBg = 'bg-yellow-50'; $badgeText = 'text-yellow-700'; $dot = 'bg-yellow-400';
+                                                    } elseif ($status === 'success' || $status === 'paid') {
+                                                        $badgeBg = 'bg-green-50'; $badgeText = 'text-green-700'; $dot = 'bg-green-500';
+                                                    } else {
+                                                        $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-400';
+                                                    }
+                                                @endphp
+                                                <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm {{ $badgeBg }} {{ $badgeText }} border border-gray-200">
+                                                    <span class="w-2 h-2 rounded-full {{ $dot }} inline-block"></span>
+                                                    <span class="tracking-wide capitalize">{{ $booking->transaction_status }}</span>
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            @if(!$booking->attachment)
+                                                <form action="{{ route('bookings.upload-attachment', $booking->idrec) }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2">
+                                                    @csrf
+                                                    <div class="relative">
+                                                        <input type="file" name="attachment" id="attachment-{{ $booking->id }}" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                            onchange="this.form.submit()">
+                                                        <label for="attachment-{{ $booking->id }}" class="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                                                            <i class="fas fa-paperclip mr-2"></i>
+                                                            Upload
+                                                        </label>
+                                                    </div>
+                                                </form>
+                                            @else
+                                            <div class="flex justify-center items-center h-full">
+                                                <a href="{{ asset('storage/' . $booking->attachment) }}" target="_blank" class="text-teal-600 hover:text-teal-700">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        @endif
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-12 text-center">
+                                        <td colspan="6" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center justify-center text-gray-500">
                                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
                                                 <p class="text-lg">No bookings found</p>

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Storage;
 
 class BookingController extends Controller
 {
@@ -17,12 +18,128 @@ class BookingController extends Controller
     {
         $this->middleware('auth');
     }
+    
+    /**
+     * Upload attachment for a booking
+     * 
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function uploadAttachment(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'attachment' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048'
+            ]);
+    
+            $booking = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->where('user_id', Auth::id())
+                ->first();
 
+            if (!$booking) {
+                return back()->with('error', 'Booking not found.');
+            }
+    
+            // Delete old attachment if exists
+            if ($booking->attachment) {
+                Storage::disk('public')->delete($booking->attachment);
+            }
+    
+            // Store the new file
+            $path = $request->file('attachment')->store('booking-attachments/' . $id, 'public');
+    
+            // Update the booking record
+            DB::table('t_transactions')
+                ->where('order_id', $id)
+                ->update(['attachment' => $path]);
+    
+            return back()->with('success', 'Attachment uploaded successfully.');
+        } catch (Exception $e) {
+            return back()->with('error', 'Error uploading attachment: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update payment method for a booking
+     * 
+     * @param Request $request
+     * @param string $orderId
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updatePaymentMethod(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'payment_method' => 'required|in:bca,cash'
+            ]);
+
+            $booking = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->where('user_id', Auth::id())
+                ->first();
+
+            if (!$booking) {
+                return back()->with('error', 'Booking not found.');
+            }
+
+            // Update the booking record with payment method
+            DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->update([
+                    'transaction_type' => $request->payment_method,
+                    'status' => $request->payment_method === 'bca' ? 'paid' : 'pending',
+                    'payment_date' => $request->payment_method === 'bca' ? now() : null
+                ]);
+
+            return redirect()->route('bookings.index')
+                ->with('success', 'Payment method updated successfully.');
+        } catch (Exception $e) {
+            return back()->with('error', 'Error updating payment method: ' . $e->getMessage());
+        }
+    }
+
+    // public function uploadAttachment(Request $request, $orderId)
+    // {
+    //     try {
+    //         $request->validate([
+    //             'attachment' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048'
+    //         ]);
+    
+    //         $booking = DB::table('t_transactions')
+    //             ->where('order_id', $orderId)
+    //             ->where('user_id', Auth::id())
+    //             ->first();
+
+    //         if (!$booking) {
+    //             return back()->with('error', 'Booking not found.');
+    //         }
+    
+    //         // Delete old attachment if exists
+    //         if ($booking->attachment) {
+    //             Storage::disk('public')->delete($booking->attachment);
+    //         }
+    
+    //         // Store the new file
+    //         $path = $request->file('attachment')->store('booking-attachments/' . $orderId, 'public');
+    
+    //         // Update the booking record
+    //         DB::table('t_transactions')
+    //             ->where('order_id', $orderId)
+    //             ->update(['attachment' => $path]);
+    
+    //         return back()->with('success', 'Attachment uploaded successfully.');
+    //     } catch (Exception $e) {
+    //         return back()->with('error', 'Error uploading attachment: ' . $e->getMessage());
+    //     }
+    // }
     public function index()
     {
         $bookings = DB::table('t_transactions')
             ->join('users', 't_transactions.user_id', '=', 'users.id')
             ->select('t_transactions.*', 'users.username', 'users.email')
+            ->where('t_transactions.status','1')
             ->where('users.id', Auth::user()->id)
             ->orderBy('t_transactions.created_at', 'desc')
             ->paginate(10);

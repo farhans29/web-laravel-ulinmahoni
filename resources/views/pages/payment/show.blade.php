@@ -36,24 +36,24 @@
                 <!-- Payment Form -->
                 <div class="lg:col-span-2">
                     <div class="bg-white rounded-lg shadow-sm p-6">
-                        <form id="paymentForm" class="space-y-6">
+                        <form id="paymentForm" action="{{ route('bookings.update-payment', $booking->idrec) }}" method="POST" class="space-y-6">
                             @csrf
+                            <input type="hidden" name="payment_method" id="payment_method">
                             <input type="hidden" name="booking_id" value="{{ $booking->id }}">
-                            
                             <!-- Payment Method -->
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Payment Method</label>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div class="relative border rounded-lg p-4 cursor-pointer hover:border-teal-500 transition-colors payment-option" data-method="bca">
+                                    <button type="button" class="relative border rounded-lg p-4 w-full cursor-pointer hover:border-teal-500 transition-colors payment-option" data-method="bca">
                                         <span class="flex items-center justify-center">
                                             <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" alt="BCA" class="h-8">
                                         </span>
-                                    </div>
-                                    <div class="relative border rounded-lg p-4 cursor-pointer hover:border-teal-500 transition-colors payment-option" data-method="cash">
+                                    </button>
+                                    <button type="button" class="relative border rounded-lg p-4 w-full cursor-pointer hover:border-teal-500 transition-colors payment-option" data-method="cash">
                                         <span class="flex items-center justify-center text-lg font-semibold">
                                             Cash
                                         </span>
-                                    </div>
+                                    </button>
                                 </div>
                             </div>
                         </form>
@@ -114,42 +114,15 @@
     @include('components.homepage.footer')
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            @include('components.homepage.scripts')
-
-            // Payment form submission
-            document.getElementById('paymentForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const formData = new FormData(this);
-                const submitButton = this.querySelector('button[type="submit"]');
-                submitButton.disabled = true;
-                
-                fetch('{{ route("payment.process") }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(Object.fromEntries(formData))
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.redirect_url) {
-                        window.location.href = data.redirect_url;
-                    } else {
-                        alert('Payment processing failed. Please try again.');
-                        submitButton.disabled = false;
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while processing your payment. Please try again.');
-                    submitButton.disabled = false;
-                });
+    document.addEventListener('DOMContentLoaded', function() {
+        @include('components.homepage.scripts')
+        document.querySelectorAll('.payment-option').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.getElementById('payment_method').value = btn.getAttribute('data-method');
+                document.getElementById('paymentForm').submit();
             });
         });
-    </script>
+    });
+</script>
 </body>
 </html>

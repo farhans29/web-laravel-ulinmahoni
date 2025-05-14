@@ -106,6 +106,8 @@ Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show')
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+    Route::post('/bookings/{id}/upload-attachment', [BookingController::class, 'uploadAttachment'])->name('bookings.upload-attachment');
+    Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
     Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 });

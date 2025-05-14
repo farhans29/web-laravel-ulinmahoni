@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\RoomController;
 
 /*
 |--------------------------------------------------------------------------
@@ -84,3 +85,10 @@ Route::get('users/{id}', [UserController::class, 'show']);
 Route::post('users', [UserController::class, 'store']);
 Route::put('users/{id}', [UserController::class, 'update']);
 Route::delete('users/{id}', [UserController::class, 'destroy']);
+
+// Room API
+Route::get('rooms', [RoomController::class, 'index']);
+Route::get('rooms/{id}', [RoomController::class, 'show']);
+Route::post('rooms', [RoomController::class, 'store']);
+Route::put('rooms/{id}', [RoomController::class, 'update']);
+Route::delete('rooms/{id}', [RoomController::class, 'destroy']);
