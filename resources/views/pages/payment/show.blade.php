@@ -39,7 +39,6 @@
                         <form id="paymentForm" action="{{ route('bookings.update-payment', $booking->idrec) }}" method="POST" class="space-y-6">
                             @csrf
                             <input type="hidden" name="payment_method" id="payment_method">
-                            <input type="hidden" name="booking_id" value="{{ $booking->id }}">
                             <!-- Payment Method -->
                             <div>
                                 <label class="block text-lg font-medium text-gray-700 mb-2">Payment Method</label>

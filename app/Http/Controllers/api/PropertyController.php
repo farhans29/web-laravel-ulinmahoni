@@ -44,9 +44,6 @@ class PropertyController extends ApiController
                 $query->where('price', '<=', $request->price_max);
             }
 
-            // if ($request->has('tags')) {
-            //     $query->whereJsonContains('tags', $request->tags);
-            // }
             
             // Order by created_at (newest first)
             $query->orderBy('created_at', 'desc');

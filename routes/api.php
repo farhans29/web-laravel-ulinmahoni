@@ -88,6 +88,7 @@ Route::delete('users/{id}', [UserController::class, 'destroy']);
 
 // Room API
 Route::get('rooms', [RoomController::class, 'index']);
+Route::get('rooms/propertyId/{property_id}', [RoomController::class, 'byPropertyId']);
 Route::get('rooms/{id}', [RoomController::class, 'show']);
 Route::post('rooms', [RoomController::class, 'store']);
 Route::put('rooms/{id}', [RoomController::class, 'update']);

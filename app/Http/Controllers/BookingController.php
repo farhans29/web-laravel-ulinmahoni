@@ -89,8 +89,8 @@ class BookingController extends Controller
                 ->where('idrec', $id)
                 ->update([
                     'transaction_type' => $request->payment_method,
-                    'status' => $request->payment_method === 'bca' ? 'paid' : 'pending',
-                    'payment_date' => $request->payment_method === 'bca' ? now() : null
+                    'transaction_status' => 'waiting',
+                    'paid_at' => $request->payment_method === 'bca' ? now() : null
                 ]);
 
             return redirect()->route('bookings.index')
@@ -164,6 +164,7 @@ class BookingController extends Controller
         ]);
 
         try {
+
             DB::beginTransaction();
 
             $user = Auth::user();
@@ -203,6 +204,8 @@ class BookingController extends Controller
             $adminFee = $totalPrice * 0.1; // 10% admin fee
 
             $booking = Booking::create([
+                // 'property_id' => $user->id,
+                // 'room_id' => $user->id,
                 'order_id' => 'ORD-' . strtoupper(Str::random(8)),
                 'user_id' => $user->id,
                 'user_name' => $user->name,
@@ -222,7 +225,8 @@ class BookingController extends Controller
                 'transaction_type' => $request->transaction_type ?? '',
                 'transaction_code' => $transactionCode,
                 'transaction_status' => 'pending',
-                'status' => '1'
+                'status' => '1',
+                'booking_months' => $request->rent_type === 'monthly' ? ($request->booking_months ?? null) : null
             ]);
 
             DB::commit();

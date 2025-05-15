@@ -6,6 +6,7 @@ use App\Http\Controllers\ApiController;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 
 class BookingController extends ApiController
 {
@@ -88,7 +89,7 @@ class BookingController extends ApiController
 
     public function store(Request $request)
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'user_name' => 'required',
             'user_phone_number' => 'required',

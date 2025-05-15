@@ -33,17 +33,21 @@
                     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                         <!-- Room Image Gallery -->
                         <div class="relative h-96">
-                            @if(isset($room['attachment']['images'][0]))
-                                <img src="{{ asset($room['attachment']['images'][0]) }}" 
-                                     alt="{{ $room['name'] }}"
-                                     class="w-full h-full object-cover">
-                            @else
-                                <img src="{{ asset('images/rooms/default-room.jpg') }}" 
-                                     alt="{{ $room['name'] }}"
-                                     class="w-full h-full object-cover">
-                            @endif
+                            <div class="absolute inset-0">
+                                @if(isset($room['attachment']['images'][0]) && $room['attachment']['images'][0])
+                                    <img src="{{ asset($room['attachment']['images'][0]) }}"
+                                        alt="{{ $room['name'] }}"
+                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                                @else
+                                    <div class="bg-gray-100 w-full h-full flex items-center justify-center">
+                                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                                        <span class="ml-2 font-medium text-gray-500">No Image</span>
+                                    </div>
+                                @endif
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
+                            </div>
                             <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
-                                {{ ucfirst($room['type'])  }}
+                                {{ ucfirst($room['type']) }}
                             </span>
                         </div>
 
@@ -69,7 +73,7 @@
                                         @if($value)
                                         <div class="flex items-center space-x-3 py-2">
                                             <i class="fas fa-check text-teal-600"></i>
-                                            <span class="text-gray-600">{{ $facility }}</span>
+                                            <span class="text-gray-600">{{ strtoupper($facility) }}</span>
                                         </div>
                                         @endif
                                     @endforeach
@@ -123,7 +127,7 @@
                             <!-- Months Selection (Hidden by default) -->
                             <div id="monthInput" class="hidden">
                                 <label for="months" class="block text-sm font-medium text-gray-700 mb-2">Number of Months</label>
-                                <select id="months" name="months" 
+                                <select id="months" name="booking_months" 
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updatePriceSummary()">
                                     @for ($i = 1; $i <= 12; $i++)

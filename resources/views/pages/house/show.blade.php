@@ -306,8 +306,8 @@
                                             <div class="flex flex-wrap gap-2">
                                                 @foreach($room['facility'] as $facility => $value)
                                                     @if($value === true)
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                            {{ ucfirst($facility) }}
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
+                                                            {{ strtoupper($facility) }}
                                                         </span>
                                                     @endif
                                                 @endforeach
@@ -321,11 +321,6 @@
                                                 @if($room['periode']['daily'])
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
                                                         Daily
-                                                    </span>
-                                                @endif
-                                                @if($room['periode']['weekly'])
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                                                        Weekly
                                                     </span>
                                                 @endif
                                                 @if($room['periode']['monthly'])

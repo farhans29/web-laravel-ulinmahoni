@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
+    // GET /api/rooms/property/{property_id}
+    public function byPropertyId($property_id)
+    {
+        $rooms = Room::where('property_id', $property_id)->get();
+        return response()->json($rooms);
+    }
     // GET /api/v1/rooms
     public function index()
     {
