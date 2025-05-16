@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\api;
+use Illuminate\Support\Facades\DB;
 
-use App\Http\Controllers\ApiController;
+use App\Http\Controllers\apiController;
 
 use App\Models\Booking;
 use App\Models\Room;
@@ -117,6 +118,8 @@ class BookingController extends ApiController
         }
 
         try {
+            DB::beginTransaction();
+
             $checkIn = \Carbon\Carbon::parse($request->check_in);
             $checkOut = \Carbon\Carbon::parse($request->check_out);
             $bookingDays = $checkOut->diffInDays($checkIn);
@@ -125,15 +128,16 @@ class BookingController extends ApiController
             $adminFees = $roomPrice * 0.10; // 10% admin fee
             $grandtotalPrice = $roomPrice + $adminFees;
 
-            // Generate order_id in format INV/UM/APP/2505003JH using property_id
+            // Generate order_id in format INV/UM0/APP/2505003JH using property_id
             $property = null;
             if ($request->property_id) {
-                $property = \App\Models\Property::find($request->property_id);
+                $property = Property::find($request->property_id);
             }
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'INV-UM0-APP-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            $order_id = 'INV-UM-APP-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
+            // Insert into transactions table
             $transaction = Transaction::create([
                 ...$validator->validated(),
                 'order_id' => $order_id,
@@ -148,16 +152,30 @@ class BookingController extends ApiController
                 'status' => '1'
             ]);
 
+            // Prepare booking data for t_booking
+            $bookingData = [
+                'property_id' => $request->property_id,
+                'order_id' => $order_id,
+                'room_id' => $request->room_id ?? null,
+                'check_in_at' => $request->check_in,
+                'check_out_at' => $request->check_out,
+                'status' => '1'
+            ];
+            Booking::create($bookingData);
+
+            DB::commit();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Booking created successfully',
                 'data' => $transaction
             ], 201);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'status' => 'error',
                 'message' => 'Error creating booking',
-                'error' => $e->getMessage()
+                'errors' => ['general' => [$e->getMessage()]]
             ], 500);
         }
     }
