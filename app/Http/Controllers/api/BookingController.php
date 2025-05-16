@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 use Illuminate\Support\Facades\DB;
 
-use App\Http\Controllers\apiController;
+use App\Http\Controllers\ApiController;
 
 use App\Models\Booking;
 use App\Models\Room;

@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\apiController;
+use App\Http\Controllers\ApiController;
 use App\Models\Banner;
 use Illuminate\Http\Request;
 
