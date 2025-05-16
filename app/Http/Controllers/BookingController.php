@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Room;
+use App\Models\Transaction;
+use App\Models\Property;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -81,21 +84,36 @@ class BookingController extends Controller
                 ->first();
 
             if (!$booking) {
+                if ($request->expectsJson()) {
+                    return response()->json(['success' => false, 'message' => 'Booking not found.'], 404);
+                }
                 return back()->with('error', 'Booking not found.');
             }
 
-            // Update the booking record with payment method
             DB::table('t_transactions')
                 ->where('idrec', $id)
                 ->update([
                     'transaction_type' => $request->payment_method,
                     'transaction_status' => 'waiting',
-                    'paid_at' => $request->payment_method === 'bca' ? now() : null
+                    'paid_at' => null
                 ]);
 
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment method updated successfully.',
+                    'redirect_url' => route('bookings.index')
+                ]);
+            }
             return redirect()->route('bookings.index')
                 ->with('success', 'Payment method updated successfully.');
         } catch (Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error updating payment method: ' . $e->getMessage()
+                ], 500);
+            }
             return back()->with('error', 'Error updating payment method: ' . $e->getMessage());
         }
     }
@@ -203,19 +221,45 @@ class BookingController extends Controller
 
             $adminFee = $totalPrice * 0.1; // 10% admin fee
 
-            $booking = Booking::create([
-                // 'property_id' => $user->id,
-                // 'room_id' => $user->id,
-                'order_id' => 'ORD-' . strtoupper(Str::random(8)),
+            // Generate order_id in format INV/UM/APP/2505003JH using property_id
+            $propertyInitial = 'HX';
+            if (!empty($request->property_id)) {
+                $property = Property::find($request->property_id);
+                if ($property && $property->initial) {
+                    $propertyInitial = $property->initial;
+                }
+            }
+            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+            $order_id = 'INV-UM-WEB-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+
+            // Get property_id from the room
+            $propertyId = null;
+            if (!empty($request->room_id)) {
+                $room = Room::find($request->room_id);
+                if ($room && $room->property_id) {
+                    $propertyId = $room->property_id;
+                }
+            } elseif (!empty($request->room_name)) {
+                $room = Room::where('name', $request->room_name)->first();
+                if ($room && $room->property_id) {
+                    $propertyId = $room->property_id;
+                }
+            }
+
+            // Prepare transaction data array for transactions table
+            $transactionData = [
+                'property_id' => $propertyId,
+                'room_id' => $room ? $room->id : null,
+                'order_id' => $order_id,
                 'user_id' => $user->id,
                 'user_name' => $user->name,
-                // 'user_phone_number' => $user->phone,
+                'user_email' => $user->email,
+                'user_phone_number' => $user->phone,
                 'property_name' => $request->property_name,
                 'transaction_date' => now(),
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'room_name' => $request->room_name,
-                'user_email' => $user->email,
                 'booking_days' => $duration,
                 'daily_price' => $price,
                 'room_price' => $totalPrice,
@@ -227,13 +271,30 @@ class BookingController extends Controller
                 'transaction_status' => 'pending',
                 'status' => '1',
                 'booking_months' => $request->rent_type === 'monthly' ? ($request->booking_months ?? null) : null
-            ]);
+            ];
+
+            // Prepare booking data array for t_booking table
+            $bookingData = [
+                'property_id' => $propertyId,
+                'order_id' => $order_id,
+                'room_id' => $room ? $room->id : null,
+                'check_in_at' => $checkIn,
+                'check_out_at' => $checkOut,
+                'status' => '1'
+            ];
+
+            // Insert into transactions table
+            $transaction = Transaction::create($transactionData);
+
+            // Insert into bookings table
+            $booking = Booking::create($bookingData);
+
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'redirect_url' => route('payment.show', ['booking' => $booking->order_id])
+                'redirect_url' => route('payment.show', ['booking' => $transaction->order_id])
             ]);
         } catch (Exception $e) {
             DB::rollBack();

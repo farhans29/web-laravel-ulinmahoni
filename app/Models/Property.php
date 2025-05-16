@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Property extends Model
 {
-    protected $table = 't_properties';
+    protected $table = 'm_properties';
     protected $primaryKey = 'idrec';
     
     protected $fillable = [
         'tags',
         'name',
+        'initial',
         'tags',
         'description',
         'province',

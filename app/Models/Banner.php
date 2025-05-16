@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Banner extends Model
 {
-    protected $table = 't_promo_banner';
+    protected $table = 'm_promo_banner';
     protected $primaryKey = 'idrec';
     
     protected $fillable = [

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Transaction;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +12,7 @@ class PaymentController extends Controller
 {
     public function show($order_id)
     {
-        $booking = Booking::where('order_id', $order_id)->firstOrFail();
+        $booking = Transaction::where('order_id', $order_id)->firstOrFail();
 
         // Check if the booking belongs to the authenticated user
         if ($booking->user_id !== auth()->id()) {
@@ -27,7 +29,7 @@ class PaymentController extends Controller
             'payment_method' => 'required|in:bca,mandiri,bni'
         ]);
 
-        $booking = Booking::where('order_id', $request->order_id)->firstOrFail();
+        $booking = Transaction::where('order_id', $request->order_id)->firstOrFail();
 
         // Check if the booking belongs to the authenticated user
         if ($booking->user_id !== auth()->id()) {

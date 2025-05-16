@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Promo extends Model
 {
-    protected $table = 't_promo_banner';
+    protected $table = 'm_promo_banners';
     protected $primaryKey = 'idrec';
     public $timestamps = false;
 

@@ -91,8 +91,8 @@ class HouseController extends Controller {
                     r.created_by as room_created_by,
                     r.updated_by as room_updated_by,
                     r.status as room_status
-                FROM t_properties p
-                LEFT JOIN t_rooms r ON p.idrec = r.property_id
+                FROM m_properties p
+                LEFT JOIN m_rooms r ON p.idrec = r.property_id
                 WHERE p.tags = 'House' 
                 AND p.idrec = ?
                 ORDER BY idrec ASC

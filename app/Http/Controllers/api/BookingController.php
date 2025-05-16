@@ -3,17 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\ApiController;
+
 use App\Models\Booking;
+use App\Models\Room;
+use App\Models\Transaction;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Property;
 
 class BookingController extends ApiController
 {
     public function index(Request $request)
     {
         try {
-            $query = Booking::query();
+            $query = Transaction::query();
             
             if ($request->has('status')) {
                 $query->where('status', $request->status);
@@ -64,7 +69,7 @@ class BookingController extends ApiController
     public function show($id)
     {
         try {
-            $transaction = Booking::find($id);
+            $transaction = Transaction::find($id);
             
             if (!$transaction) {
                 return response()->json([
@@ -93,6 +98,7 @@ class BookingController extends ApiController
             'user_id' => 'required',
             'user_name' => 'required',
             'user_phone_number' => 'required',
+            'property_id'=>'nullable',
             'property_name' => 'required',
             'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
@@ -119,9 +125,18 @@ class BookingController extends ApiController
             $adminFees = $roomPrice * 0.10; // 10% admin fee
             $grandtotalPrice = $roomPrice + $adminFees;
 
-            $transaction = Booking::create([
+            // Generate order_id in format INV/UM/APP/2505003JH using property_id
+            $property = null;
+            if ($request->property_id) {
+                $property = \App\Models\Property::find($request->property_id);
+            }
+            $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
+            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+            $order_id = 'INV-UM0-APP-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+
+            $transaction = Transaction::create([
                 ...$validator->validated(),
-                'order_id' => 'ORD-' . Str::random(10),
+                'order_id' => $order_id,
                 'transaction_date' => now(),
                 'booking_days' => $bookingDays,
                 'room_price' => $roomPrice,
@@ -130,7 +145,7 @@ class BookingController extends ApiController
                 'transaction_type' => 'booking',
                 'transaction_code' => 'TRX-' . Str::random(8),
                 'transaction_status' => 'pending',
-                'status' => 'active'
+                'status' => '1'
             ]);
 
             return response()->json([
@@ -150,7 +165,7 @@ class BookingController extends ApiController
     public function update(Request $request, $id)
     {
         try {
-            $transaction = Booking::find($id);
+            $transaction = Transaction::find($id);
             
             if (!$transaction) {
                 return response()->json([
@@ -159,7 +174,7 @@ class BookingController extends ApiController
                 ], 404);
             }
 
-            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            $validator = Validator::make($request->all(), [
                 'transaction_status' => 'sometimes|required',
                 'status' => 'sometimes|required',
                 'paid_at' => 'sometimes|required|date'
@@ -198,7 +213,7 @@ class BookingController extends ApiController
     public function showByOrderId($order_id)
     {
         try {
-            $booking = Booking::where('order_id', $order_id)->first();
+            $booking = Transaction::where('order_id', $order_id)->first();
             
             if (!$booking) {
                 return response()->json([
@@ -229,7 +244,7 @@ class BookingController extends ApiController
         public function showByUserId($user_id)
         {
             try {
-                $bookings = Booking::where('user_id', $user_id)
+                $bookings = Transaction::where('user_id', $user_id)
                     ->orderBy('created_at', 'desc')
                     ->get();
     

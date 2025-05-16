@@ -66,7 +66,12 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($bookings as $booking)
+                                @php
+                                    $all = $bookings->filter(function($booking) {
+                                        return strtolower($booking->transaction_status) !== 'paid';
+                                    });
+                                @endphp
+                                @forelse ($all as $booking)
                                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col space-y-1">
@@ -79,8 +84,12 @@
                                                     <span class="text-xs text-teal-600">{{ $booking->transaction_code }}</span>
                                                 </div>
                                             </div>
-                                            <div class="text-xs text-gray-500">{{ $booking->transaction_type }}</div>
-                                            <div class="text-xs text-gray-500 mt-1">
+                                            
+                                            <div class="text-xs text-gray-500">
+                                                <span class="font-semibold text-xs text-gray-500">Transaction Type:</span>
+                                                <span class="text-xs text-gray-900">{{ strtoupper($booking->transaction_type) }}</span>
+                                            </div>
+                                            <div class="text-xs text-gray-500 mt-4">
                                                 <div class="flex items-center">
                                                     <i class="fas fa-user mr-1"></i>
                                                     {{ $booking->user_name }}

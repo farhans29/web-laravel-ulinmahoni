@@ -178,25 +178,7 @@
                                 </div>
                             </div>
                         </a>
-                        <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                            <ul class="pl-9 mt-1 @if(!in_array(Request::segment(1), ['sales'])){{ 'hidden' }}@endif"
-                                :class="open ? '!block' : 'hidden'">
-                                <li class="mb-1 last:mb-0">
-                                    <a class="block text-slate-400 hover:text-slate-200 transition duration-150 truncate @if(Route::is('sales-order*')){{ '!text-indigo-500' }}@endif"
-                                        href="{{ route('sales-order') }}">
-                                        <span
-                                            class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Sales Order</span>
-                                    </a>
-                                </li>
-                                <li class="mb-1 last:mb-0">
-                                    <a class="block text-slate-400 hover:text-slate-200 transition duration-150 truncate @if(Route::is('new-customer*')){{ '!text-indigo-500' }}@endif"
-                                        href="{{ route('new-customer') }}">
-                                        <span
-                                            class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">New Customer - Request</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                        
                     </li>
                    
                             </ul>

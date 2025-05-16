@@ -434,6 +434,8 @@
                     if (data.success && data.redirect_url) {
                         window.location.href = data.redirect_url;
                     } else if (data.errors) {
+                        // Debug: log the full errors object
+                        console.error('Booking form errors:', data.errors);
                         Object.entries(data.errors).forEach(([field, messages]) => {
                             const errorElement = document.getElementById(`${field}Error`);
                             if (errorElement) {
@@ -441,8 +443,11 @@
                                 errorElement.classList.remove('hidden');
                             }
                         });
-                        errorAlert.textContent = 'Please fix the errors below';
-                        errorAlert.textContent = data.errors;
+                        // Show all error messages as a readable string
+                        const allMessages = Object.entries(data.errors)
+                            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
+                            .join(' | ');
+                        errorAlert.textContent = allMessages || 'Please fix the errors below';
                         errorAlert.classList.remove('hidden');
                     }
                 } catch (error) {

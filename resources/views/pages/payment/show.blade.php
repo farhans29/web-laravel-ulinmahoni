@@ -116,10 +116,54 @@
     document.addEventListener('DOMContentLoaded', function() {
         @include('components.homepage.scripts')
         document.querySelectorAll('.payment-option').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                document.getElementById('payment_method').value = btn.getAttribute('data-method');
-                document.getElementById('paymentForm').submit();
+            btn.addEventListener('click', function(e) {
+                const paymentMethod = btn.getAttribute('data-method');
+                document.getElementById('payment_method').value = paymentMethod;
+                // Log form data
+                const form = document.getElementById('paymentForm');
+                const formData = new FormData(form);
+                const data = {};
+                for (const [key, value] of formData.entries()) {
+                    data[key] = value;
+                }
+                console.log('Submitting payment form with data:', data);
+                // Prevent default submit
+                e.preventDefault();
+                // Submit via fetch (AJAX)
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                .then(async response => {
+                    if (!response.ok) {
+                        let errorText = await response.text();
+                        try { errorText = JSON.parse(errorText); } catch {}
+                        console.error('Payment POST error:', errorText);
+                        alert('Payment failed: ' + (errorText.message || response.status));
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data) {
+                        console.log('Payment POST success:', data);
+                        // Optionally redirect or show success
+                        window.location.href = data.redirect_url || window.location.href;
+                    }
+                })
+                .catch(err => {
+                    console.error('Payment POST exception:', err);
+                    alert('Payment error: ' + err);
+                });
             });
+        });
+        // Optionally, prevent default form submit
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
         });
     });
 </script>

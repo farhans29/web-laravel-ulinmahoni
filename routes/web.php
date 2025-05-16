@@ -113,6 +113,14 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/getdata', [DashboardController::class, 'getData'])->name('dashboard.sales');
+    Route::get('/dashboard/analytics', [DashboardController::class, 'analytics'])->name('analytics');
+    Route::get('/dashboard/fintech', [DashboardController::class, 'fintech'])->name('fintech');
+    Route::get('/ecommerce/customers', [CustomerController::class, 'index'])->name('customers');
+    Route::get('/ecommerce/orders', [OrderController::class, 'index'])->name('orders');
+    Route::get('/ecommerce/invoices', [InvoiceController::class, 'index'])->name('invoices');
+    
     Route::post('/update-gcal', [ProfileController::class, 'update'])->name('update.gcal');
     Route::prefix('inventory')->group(function () {
         Route::get('/invlist', [InvListController::class, 'index'])->name('invlist');
@@ -145,13 +153,7 @@ Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {
     // Route for the getting the data feed
     Route::get('/json-data-feed', [DataFeedController::class, 'getDataFeed'])->name('json_data_feed');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/getdata', [DashboardController::class, 'getData'])->name('dashboard.sales');
-    Route::get('/dashboard/analytics', [DashboardController::class, 'analytics'])->name('analytics');
-    Route::get('/dashboard/fintech', [DashboardController::class, 'fintech'])->name('fintech');
-    Route::get('/ecommerce/customers', [CustomerController::class, 'index'])->name('customers');
-    Route::get('/ecommerce/orders', [OrderController::class, 'index'])->name('orders');
-    Route::get('/ecommerce/invoices', [InvoiceController::class, 'index'])->name('invoices');
+    
     Route::get('/ecommerce/shop', function () {
         return view('pages/ecommerce/shop');
     })->name('shop');

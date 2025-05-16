@@ -9,27 +9,19 @@ class Booking extends Model
 {
     use HasFactory;
 
-    protected $table = 't_transactions';
+    protected $table = 't_booking';
     protected $primaryKey = 'idrec';
-    
+    // public $incrementing = true;
+    // public $timestamps = true; // Uses created_at and updated_at
+
     protected $fillable = [
+        'property_id',
         'order_id',
-        'user_id',
-        'user_name',
-        'user_phone_number',
-        'property_name',
-        'transaction_date',
-        'check_in',
-        'check_out',
-        'room_name',
-        'user_email',
-        'booking_days',
-        'daily_price',
-        'room_price',
-        'admin_fees',
-        'grandtotal_price',
-        'property_type',
-        'transaction_type',
+        'room_id',
+        'check_in_at',
+        'check_out_at',
+        'created_by',
+        'updated_by',
         'transaction_code',
         'transaction_status',
         'status',
