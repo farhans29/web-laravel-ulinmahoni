@@ -1,13 +1,13 @@
 <?php
 
-use aApp\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\BookingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use aApp\Http\Controllers\Api\AuthController;
-use aApp\Http\Controllers\Api\BannerController;
-use aApp\Http\Controllers\Api\PropertyController;
-use aApp\Http\Controllers\Api\UserController;
-use aApp\Http\Controllers\Api\RoomController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BannerController;
+use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\RoomController;
 
 /*
 |--------------------------------------------------------------------------
