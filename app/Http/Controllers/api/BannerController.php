@@ -1,8 +1,9 @@
 <?php
 
-namespace aApp\Http\Controllers\Api;
+namespace App\Http\Controllers\Api;
 
-use aApp\Http\Controllers\ApiController;
+
+use App\Http\Controllers\ApiController;
 use App\Models\Banner;
 use Illuminate\Http\Request;
 
@@ -89,10 +90,7 @@ class BannerController extends ApiController
             
             $banner = Banner::create($validated);
             
-            return $this->respondCreated([
-                'message' => 'Banner created successfully',
-                'created_id' => $banner->idrec
-            ]);
+            return $this->respondCreated('Banner created successfully');
         } catch (\Exception $e) {
             return $this->respondBadRequest($e->getMessage());
         }

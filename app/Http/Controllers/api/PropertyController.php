@@ -1,8 +1,8 @@
 <?php
 
-namespace aApp\Http\Controllers\Api;
+namespace App\Http\Controllers\Api;
 
-use aApp\Http\Controllers\ApiController;
+use App\Http\Controllers\ApiController;
 use App\Models\Property;
 use Illuminate\Http\Request;
 
@@ -122,10 +122,10 @@ class PropertyController extends ApiController
             
             $property = Property::create($validated);
             
-            return $this->respondCreated([
+            return response()->json([
                 'message' => 'Property created successfully',
                 'created_id' => $property->idrec
-            ]);
+            ], 201);
         } catch (\Exception $e) {
             return $this->respondBadRequest($e->getMessage());
         }
