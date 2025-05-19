@@ -33,9 +33,9 @@ class BookingController extends Controller
     {
         try {
             $request->validate([
-                'attachment' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048'
+                'attachment_file' => 'required|file|mimes:jpg,jpeg,png|max:10240', // 10MB max
             ]);
-    
+
             $booking = DB::table('t_transactions')
                 ->where('idrec', $id)
                 ->where('user_id', Auth::id())
@@ -44,25 +44,31 @@ class BookingController extends Controller
             if (!$booking) {
                 return back()->with('error', 'Booking not found.');
             }
-    
+
             // Delete old attachment if exists
             if ($booking->attachment) {
                 Storage::disk('public')->delete($booking->attachment);
             }
-    
-            // Store the new file
-            $path = $request->file('attachment')->store('booking-attachments/' . $id, 'public');
-    
-            // Update the booking record
-            DB::table('t_transactions')
-                ->where('order_id', $id)
-                ->update(['attachment' => $path]);
-    
-            return back()->with('success', 'Attachment uploaded successfully.');
+
+            if ($request->hasFile('attachment_file') && $request->file('attachment_file')->isValid()) {
+                $file = $request->file('attachment_file');
+                $fileContents = file_get_contents($file->getRealPath());
+                $base64 = base64_encode($fileContents);
+
+                // Store the base64 string directly in the attachment column
+                DB::table('t_transactions')
+                    ->where('idrec', $id)
+                    ->update(['attachment' => $base64]);
+
+                return back()->with('success', 'Attachment uploaded successfully.');
+            } else {
+                return back()->with('error', 'Invalid file upload.');
+            }
         } catch (Exception $e) {
             return back()->with('error', 'Error uploading attachment: ' . $e->getMessage());
         }
     }
+
 
     /**
      * Update payment method for a booking

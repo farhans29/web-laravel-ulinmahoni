@@ -86,6 +86,7 @@ class HouseController extends Controller {
                     r.facility as room_facility,
                     r.attachment as room_attachment,
                     r.periode as room_periode,
+                    r.price as room_price,
                     r.created_at as room_created_at,
                     r.updated_at as room_updated_at,
                     r.created_by as room_created_by,
@@ -123,6 +124,17 @@ class HouseController extends Controller {
                             'daily' => false,
                             'weekly' => false,
                             'monthly' => false
+                        ],
+                        'price' => is_string($row->room_price) ? json_decode($row->room_price, true) : 
+                        [
+                            'original' => [
+                                'daily' => $row->room_price['original']['daily'] ?? 0,
+                                'monthly' => $row->room_price['original']['monthly'] ?? 0
+                            ],
+                            'discounted' => [
+                                'daily' => $row->room_price['discounted']['daily'] ?? 0,
+                                'monthly' => $row->room_price['discounted']['monthly'] ?? 0
+                            ]
                         ],
                         'created_at' => $row->room_created_at,
                         'updated_at' => $row->room_updated_at,

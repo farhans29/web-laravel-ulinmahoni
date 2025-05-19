@@ -166,9 +166,14 @@
                                                 <form action="{{ route('bookings.upload-attachment', $booking->idrec) }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2">
                                                     @csrf
                                                     <div class="relative">
-                                                        <input type="file" name="attachment" id="attachment-{{ $booking->id }}" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                                        <input type="file"
+                                                            name="attachment_file"
+                                                            id="attachment-{{ $booking->id }}"
+                                                            class="hidden"
+                                                            accept=".jpg,.jpeg,.png"
                                                             onchange="this.form.submit()">
-                                                        <label for="attachment-{{ $booking->id }}" class="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                                                        <label for="attachment-{{ $booking->id }}"
+                                                            class="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
                                                             <i class="fas fa-paperclip mr-2"></i>
                                                             Upload
                                                         </label>
@@ -176,9 +181,15 @@
                                                 </form>
                                             @else
                                                 <div class="flex justify-center items-center h-full">
-                                                    <a href="{{ asset('storage/' . $booking->attachment) }}" target="_blank" class="text-teal-600 hover:text-teal-700">
-                                                        <i class="fas fa-eye"></i>
-                                                    </a>
+                                                    @php
+                                                        $mime = 'image/png';
+                                                        $decoded = base64_decode($booking->attachment, true);
+                                                        if ($decoded !== false && strlen($decoded) > 2) {
+                                                            if (substr($decoded, 0, 2) === "\xFF\xD8") $mime = 'image/jpeg';
+                                                            elseif (substr($decoded, 0, 8) === "\x89PNG\x0D\x0A\x1A\x0A") $mime = 'image/png';
+                                                        }
+                                                    @endphp
+                                                    <img src="data:{{ $mime }};base64,{{ $booking->attachment }}" alt="Attachment" style="max-width:100px;max-height:100px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" />
                                                 </div>
                                             @endif
                                         </td>
@@ -324,11 +335,47 @@
     @include('components.homepage.footer')
 
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            @include('components.homepage.scripts')
-        });
-    </script>
+    
+    function handleFileUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('Only JPG and PNG images are allowed.');
+        input.value = '';
+        return;
+    }
+
+    // Optionally disable the submit button to prevent double submit
+    const submitBtn = input.form.querySelector('[type=submit]');
+    if (submitBtn) submitBtn.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+        const base64Input = input.form.querySelector('input[name=base64_attachment]');
+        if (!base64Input) {
+            alert('Upload error: hidden input not found.');
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+        }
+        const base64String = evt.target.result.split(',')[1];
+        base64Input.value = base64String;
+        input.form.submit();
+    };
+    reader.onerror = function() {
+        alert('Failed to read file.');
+        input.value = '';
+        if (submitBtn) submitBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        @include('components.homepage.scripts')
+    });
+</script>
 </body>
 </html>

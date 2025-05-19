@@ -316,24 +316,46 @@
 
                                         <!-- Rental Periods -->
                                         <div class="mb-4">
-                                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Available Rental Periods:</h4>
-                                            <div class="flex flex-wrap gap-2">
-                                                @if($room['periode']['daily'])
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                                                        Daily
-                                                    </span>
+                                            <h4 class="text-sm font-semibold text-gray-700 mt-2 mb-2">Available Rental Periods &amp; Prices:</h4>
+                                            <ul class="space-y-2">
+                                                @if(isset($room['periode']['daily']) && $room['periode']['daily'])
+                                                    <li class="flex items-center">
+                                                        <span class="w-24 text-sm font-semibold text-gray-800">Daily</span>
+                                                        <span>
+                                                            @if(isset($room['price']['discounted']['daily']))
+                                                                <span class="line-through text-gray-400">Rp{{ number_format($room['price']['original']['daily']) }}</span>
+                                                                <span class="text-green-700 ml-1">Rp{{ number_format($room['price']['discounted']['daily']) }}</span>
+                                                            @else
+                                                                <span>Rp{{ number_format($room['price']['original']['daily']) }}</span>
+                                                            @endif
+                                                        </span>
+                                                    </li>
                                                 @endif
-                                                @if($room['periode']['monthly'])
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-800">
-                                                        Monthly
-                                                    </span>
+                                                @if(isset($room['periode']['monthly']) && $room['periode']['monthly'])
+                                                    <li class="flex items-center">
+                                                        <span class="w-24 text-sm font-semibold text-gray-800">Monthly</span>
+                                                        <span>
+                                                            @if(isset($room['price']['discounted']['monthly']))
+                                                                <span class="line-through text-gray-400">Rp{{ number_format($room['price']['original']['monthly']) }}</span>
+                                                                <span class="text-green-700 ml-1">Rp{{ number_format($room['price']['discounted']['monthly']) }}</span>
+                                                            @else
+                                                                <span>Rp{{ number_format($room['price']['original']['monthly']) }}</span>
+                                                            @endif
+                                                        </span>
+                                                    </li>
                                                 @endif
-                                                @if(!$room['periode']['daily'] && !$room['periode']['weekly'] && !$room['periode']['monthly'])
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                        No periods available
-                                                    </span>
+                                                @if(
+                                                    (!isset($room['periode']['daily']) || !$room['periode']['daily']) &&
+                                                    (!isset($room['periode']['weekly']) || !$room['periode']['weekly']) &&
+                                                    (!isset($room['periode']['monthly']) || !$room['periode']['monthly'])
+                                                )
+                                                    <li>
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                            No periods available
+                                                        </span>
+                                                    </li>
                                                 @endif
-                                            </div>
+                                            </ul>
                                         </div>
 
                                         <div class="flex items-center justify-between mt-4">
