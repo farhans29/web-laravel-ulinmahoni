@@ -6,6 +6,81 @@
     <title>My Bookings - Ulin Mahoni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    // Make confirmFileUpload available globally
+    window.confirmFileUpload = async function(input) {
+        if (!input.files || input.files.length === 0) {
+            return;
+        }
+
+        const file = input.files[0];
+        const validTypes = ['image/jpeg', 'image/png'];
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        // Check file type
+        if (!validTypes.includes(file.type)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: 'Only JPG and PNG images are allowed.',
+                confirmButtonColor: '#0d9488',
+            });
+            input.value = '';
+            return;
+        }
+
+        // Check file size
+        if (file.size > maxSize) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: 'Maximum file size is 10MB.',
+                confirmButtonColor: '#0d9488',
+            });
+            input.value = '';
+            return;
+        }
+
+        // Show preview and confirmation
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            const result = await Swal.fire({
+                title: 'Confirm Upload',
+                html: `
+                    <div class="text-center">
+                        <p class="mb-4">Are you sure you want to upload this image?</p>
+                        <img src="${e.target.result}" class="max-w-full h-auto rounded-lg mx-auto mb-4" style="max-height: 300px;" alt="Preview">
+                        <p class="text-sm text-gray-600">${file.name} (${(file.size / 1024).toFixed(2)} KB)</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#0d9488',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Yes, upload it!',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true,
+                showLoaderOnConfirm: true,
+                allowOutsideClick: false,
+                preConfirm: () => {
+                    return new Promise((resolve) => {
+                        input.form.submit();
+                        resolve(true);
+                    });
+                },
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            if (result.dismiss === Swal.DismissReason.cancel) {
+                // Reset the input if canceled
+                input.value = '';
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+    </script>
     @include('components.homepage.styles')
 </head>
 <body>
@@ -170,8 +245,8 @@
                                                             name="attachment_file"
                                                             id="attachment-{{ $booking->id }}"
                                                             class="hidden"
-                                                            accept=".jpg,.jpeg,.png"
-                                                            onchange="this.form.submit()">
+                                                            accept="image/jpeg, image/png"
+                                                            onchange="confirmFileUpload(this)">
                                                         <label for="attachment-{{ $booking->id }}"
                                                             class="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
                                                             <i class="fas fa-paperclip mr-2"></i>
@@ -180,6 +255,7 @@
                                                     </div>
                                                 </form>
                                             @else
+                                                <!-- Original image display (commented for reference)
                                                 <div class="flex justify-center items-center h-full">
                                                     @php
                                                         $mime = 'image/png';
@@ -189,7 +265,19 @@
                                                             elseif (substr($decoded, 0, 8) === "\x89PNG\x0D\x0A\x1A\x0A") $mime = 'image/png';
                                                         }
                                                     @endphp
-                                                    <img src="data:{{ $mime }};base64,{{ $booking->attachment }}" alt="Attachment" style="max-width:100px;max-height:100px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" />
+                                                    <a href="{{ route('bookings.view-attachment', $booking->idrec) }}" target="_blank" class="inline-block hover:opacity-90 transition-opacity">
+                                                        <img src="data:{{ $mime }};base64,{{ $booking->attachment }}" alt="Attachment" style="max-width:100px;max-height:100px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);" class="cursor-pointer" />
+                                                    </a>
+                                                </div>
+                                                -->
+                                                
+                                                <!-- Eye icon for viewing attachment -->
+                                                <div class="flex justify-center items-center h-full">
+                                                    <a href="{{ route('bookings.view-attachment', $booking->idrec) }}" target="_blank" 
+                                                       class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors duration-200"
+                                                       title="View Attachment">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
                                                 </div>
                                             @endif
                                         </td>
@@ -336,45 +424,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
-    
-    function handleFileUpload(input) {
-    const file = input.files[0];
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/png'];
-    if (!allowedTypes.includes(file.type)) {
-        alert('Only JPG and PNG images are allowed.');
-        input.value = '';
-        return;
-    }
-
-    // Optionally disable the submit button to prevent double submit
-    const submitBtn = input.form.querySelector('[type=submit]');
-    if (submitBtn) submitBtn.disabled = true;
-
-    const reader = new FileReader();
-    reader.onload = function(evt) {
-        const base64Input = input.form.querySelector('input[name=base64_attachment]');
-        if (!base64Input) {
-            alert('Upload error: hidden input not found.');
-            if (submitBtn) submitBtn.disabled = false;
-            return;
-        }
-        const base64String = evt.target.result.split(',')[1];
-        base64Input.value = base64String;
-        input.form.submit();
-    };
-    reader.onerror = function() {
-        alert('Failed to read file.');
-        input.value = '';
-        if (submitBtn) submitBtn.disabled = false;
-    };
-    reader.readAsDataURL(file);
-}
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
         @include('components.homepage.scripts')
+        
+        // Initialize any global SweetAlert2 defaults if needed
+        window.Swal = Swal.mixin({
+            customClass: {
+                confirmButton: 'px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500',
+                cancelButton: 'px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ml-3'
+            },
+            buttonsStyling: false
+        });
     });
 </script>
 </body>

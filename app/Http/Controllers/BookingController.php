@@ -71,6 +71,36 @@ class BookingController extends Controller
 
 
     /**
+     * View booking attachment
+     * 
+     * @param string $id
+     * @return \Illuminate\Http\Response
+     */
+    public function viewAttachment($id)
+    {
+        $booking = DB::table('t_transactions')
+            ->where('idrec', $id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$booking || !$booking->attachment) {
+            abort(404);
+        }
+
+        // Detect MIME type
+        $mime = 'image/png'; // default
+        $decoded = base64_decode($booking->attachment, true);
+        if ($decoded !== false && strlen($decoded) > 2) {
+            if (substr($decoded, 0, 2) === "\xFF\xD8") $mime = 'image/jpeg';
+            elseif (substr($decoded, 0, 8) === "\x89PNG\x0D\x0A\x1A\x0A") $mime = 'image/png';
+        }
+
+        return response($decoded)
+            ->header('Content-Type', $mime)
+            ->header('Content-Disposition', 'inline; filename="booking_attachment_' . $id . '"');
+    }
+
+    /**
      * Update payment method for a booking
      * 
      * @param Request $request
