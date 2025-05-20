@@ -109,7 +109,8 @@ class BookingController extends ApiController
             'booking_type' => 'nullable|string|max:100',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
-            'daily_price' => 'required|numeric|min:0'
+            'daily_price' => 'nullable|numeric|min:0',
+            'monthly_price' => 'nullable|numeric|min:0'
         ]);
 
         if ($validator->fails()) {

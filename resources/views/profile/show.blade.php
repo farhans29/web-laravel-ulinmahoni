@@ -88,20 +88,22 @@
                 @endif
 
                 <!-- Two Factor Authentication -->
-                @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
+                {{-- @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
                         <div class="p-8">
                             @livewire('profile.two-factor-authentication-form')
                         </div>
                     </div>
-                @endif
+                @endif --}}
 
                 <!-- Browser Sessions -->
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                    <div class="p-8">
-                        @livewire('profile.logout-other-browser-sessions-form')
-                    </div>
-                </div>
+                 {{-- 
+                 <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+                     <div class="p-8">
+                         @livewire('profile.logout-other-browser-sessions-form')
+                     </div>
+                 </div>
+                 --}}
 
                 <!-- Account Deletion -->
                 @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())

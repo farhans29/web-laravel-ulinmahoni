@@ -416,10 +416,12 @@
                 errorAlert.textContent = '';
                 loadingOverlay.classList.remove('hidden');
                 if (submitButton) submitButton.disabled = true;
+                
                 try {
                     const formData = new FormData(bookingForm);
                     const formObject = Object.fromEntries(formData);
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
                     const response = await fetch('{{ route("bookings.store") }}', {
                         method: 'POST',
                         headers: {
@@ -427,27 +429,33 @@
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify(formObject),
-                        credentials: 'same-origin'
+                        body: JSON.stringify(formObject)
                     });
+
                     const data = await response.json();
-                    if (data.success && data.redirect_url) {
+                    
+                    if (response.ok && data.redirect_url) {
                         window.location.href = data.redirect_url;
-                    } else if (data.errors) {
-                        // Debug: log the full errors object
-                        console.error('Booking form errors:', data.errors);
+                        return;
+                    }
+
+                    if (data.errors) {
+                        // Handle validation errors
                         Object.entries(data.errors).forEach(([field, messages]) => {
                             const errorElement = document.getElementById(`${field}Error`);
                             if (errorElement) {
-                                errorElement.textContent = messages[0];
+                                errorElement.textContent = Array.isArray(messages) ? messages[0] : messages;
                                 errorElement.classList.remove('hidden');
                             }
                         });
-                        // Show all error messages as a readable string
-                        const allMessages = Object.entries(data.errors)
-                            .map(([field, messages]) => `${field}: ${messages.join(', ')}`)
-                            .join(' | ');
-                        errorAlert.textContent = allMessages || 'Please fix the errors below';
+                        errorAlert.textContent = 'Please fix the errors below';
+                        errorAlert.classList.remove('hidden');
+                    } else if (data.message) {
+                        // Handle other error messages
+                        errorAlert.textContent = data.message;
+                        errorAlert.classList.remove('hidden');
+                    } else {
+                        errorAlert.textContent = 'An unexpected error occurred. Please try again.';
                         errorAlert.classList.remove('hidden');
                     }
                 } catch (error) {

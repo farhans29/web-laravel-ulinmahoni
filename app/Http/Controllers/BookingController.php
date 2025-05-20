@@ -209,137 +209,127 @@ class BookingController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'rent_type' => 'required|in:daily,monthly',
-            'check_in' => 'required|date|after_or_equal:today',
-            'check_out' => 'required|date|after:check_in',
-            'property_name' => 'required|string',
-            'room_name' => 'required|string',
-            'months' => 'required_if:rent_type,monthly|in:1,3,6,12'
-        ]);
+{
+    $request->validate([
+        'rent_type' => 'required|in:daily,monthly',
+        'check_in' => 'required|date|after_or_equal:today',
+        'check_out' => 'required|date|after:check_in',
+        'property_name' => 'required|string',
+        'room_name' => 'required|string',
+        'room_id' => 'required|integer',
+        'booking_type' => 'nullable|string|max:100',
+        'months' => 'nullable'
+    ]);
 
-        try {
+    try {
+        DB::beginTransaction();
 
-            DB::beginTransaction();
-
-            $user = Auth::user();
-            if (!$user) {
-                throw new Exception('User not authenticated');
-            }
-            
-            // Generate unique transaction code
-            $transactionCode = 'TRX-' . strtoupper(Str::random(8));
-
-            $room = Room::where('name', $request->room_name)->first();
-            if (!$room) {
-                throw new Exception('Room not found');
-            }
-
-            // Get prices from request instead of room model
-            $prices = json_decode($request->prices, true);
-            $price = $prices[$request->rent_type] ?? 0;
-
-            if ($price <= 0) {
-                throw new Exception('Invalid room price');
-            }
-
-            $checkIn = Carbon::parse($request->check_in);
-            $checkOut = Carbon::parse($request->check_out);
-
-            if ($request->rent_type === 'monthly') {
-                $months = (int) $request->months;
-                $checkOut = $checkIn->copy()->addMonths($months);
-                $duration = $months;
-                $totalPrice = $price * $months;
-            } else {
-                $duration = $checkIn->diffInDays($checkOut);
-                $totalPrice = $price * $duration;
-            }
-
-            $adminFee = $totalPrice * 0.1; // 10% admin fee
-
-            // Generate order_id in format INV/UM/APP/2505003JH using property_id
-            $propertyInitial = 'HX';
-            if (!empty($request->property_id)) {
-                $property = Property::find($request->property_id);
-                if ($property && $property->initial) {
-                    $propertyInitial = $property->initial;
-                }
-            }
-            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'INV-UM-WEB-' . now()->format('ymd') . $randomNumber . $propertyInitial;
-
-            // Get property_id from the room
-            $propertyId = null;
-            if (!empty($request->room_id)) {
-                $room = Room::find($request->room_id);
-                if ($room && $room->property_id) {
-                    $propertyId = $room->property_id;
-                }
-            } elseif (!empty($request->room_name)) {
-                $room = Room::where('name', $request->room_name)->first();
-                if ($room && $room->property_id) {
-                    $propertyId = $room->property_id;
-                }
-            }
-
-            // Prepare transaction data array for transactions table
-            $transactionData = [
-                'property_id' => $propertyId,
-                'room_id' => $room ? $room->id : null,
-                'order_id' => $order_id,
-                'user_id' => $user->id,
-                'user_name' => $user->name,
-                'user_email' => $user->email,
-                'user_phone_number' => $user->phone,
-                'property_name' => $request->property_name,
-                'transaction_date' => now(),
-                'check_in' => $checkIn,
-                'check_out' => $checkOut,
-                'room_name' => $request->room_name,
-                'booking_days' => $duration,
-                'daily_price' => $price,
-                'room_price' => $totalPrice,
-                'admin_fees' => $adminFee,
-                'grandtotal_price' => $totalPrice + $adminFee,
-                'property_type' => $request->property_type ?? 'room',
-                'transaction_type' => $request->transaction_type ?? '',
-                'transaction_code' => $transactionCode,
-                'transaction_status' => 'pending',
-                'status' => '1',
-                'booking_months' => $request->rent_type === 'monthly' ? ($request->booking_months ?? null) : null
-            ];
-
-            // Prepare booking data array for t_booking table
-            $bookingData = [
-                'property_id' => $propertyId,
-                'order_id' => $order_id,
-                'room_id' => $room ? $room->id : null,
-                'check_in_at' => $checkIn,
-                'check_out_at' => $checkOut,
-                'status' => '1'
-            ];
-
-            // Insert into transactions table
-            $transaction = Transaction::create($transactionData);
-
-            // Insert into bookings table
-            $booking = Booking::create($bookingData);
-
-
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'redirect_url' => route('payment.show', ['booking' => $transaction->order_id])
-            ]);
-        } catch (Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'errors' => ['general' => [$e->getMessage()]]
-            ], 422);
+        $user = Auth::user();
+        if (!$user) {
+            return back()->with('error', 'Please login to make a booking.');
         }
+
+        // Get room with property relationship
+        $room = Room::with('property')->findOrFail($request->room_id);
+
+        // Verify room name matches (prevent tampering)
+        if ($room->name !== $request->room_name) {
+            throw new Exception('Room information mismatch');
+        }
+
+        // Get prices from room data
+        $roomPrices = is_string($room->price) 
+            ? json_decode($room->price, true) 
+            : ($room->price ?? []);
+            
+        $price = $roomPrices[$request->rent_type]['discounted'] 
+            ?? $roomPrices[$request->rent_type]['original'] 
+            ?? null;
+
+        if (!$price || $price <= 0) {
+            throw new \Exception('This room is not available for booking at the moment');
+        }
+
+        // Calculate dates and prices
+        $checkIn = Carbon::parse($request->check_in);
+        $checkOut = Carbon::parse($request->check_out);
+
+        if ($request->rent_type === 'monthly') {
+            $months = (int) $request->months;
+            $checkOut = $checkIn->copy()->addMonths($months);
+            $duration = $months;
+            $totalPrice = $price * $months;
+        } else {
+            $duration = $checkIn->diffInDays($checkOut);
+            $totalPrice = $price * $duration;
+        }
+
+        $adminFee = $totalPrice * 0.1; // 10% admin fee
+
+        // Generate order_id in format INV-UM-WEB-yymmddXXXPP
+        $propertyInitial = $room->property->initial ?? 'HX';
+        $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+        $order_id = 'INV-UM-WEB-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+
+        // Prepare transaction data
+        $transactionData = [
+            'property_id' => $room->property_id,
+            'room_id' => $room->id,
+            'order_id' => $order_id,
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'user_email' => $user->email,
+            'user_phone_number' => $user->phone,
+            'property_name' => $room->property->name ?? $request->property_name,
+            'transaction_date' => now(),
+            'check_in' => $checkIn,
+            'check_out' => $checkOut,
+            'room_name' => $room->name,
+            'booking_days' => $duration,
+            'daily_price' => $price,
+            'room_price' => $totalPrice,
+            'admin_fees' => $adminFee,
+            'grandtotal_price' => $totalPrice + $adminFee,
+            'property_type' => $room->type ?? $request->property_type ?? 'room',
+            'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
+            'transaction_status' => 'pending',
+            'status' => '1',
+            'booking_months' => $request->rent_type === 'monthly' ? $request->months : null
+        ];
+
+        // Create transaction
+        $transaction = Transaction::create($transactionData);
+
+        // Create booking
+        $bookingData = [
+            'property_id' => $room->property_id,
+            'order_id' => $order_id,
+            'room_id' => $room->id,
+            'check_in_at' => $checkIn,
+            'check_out_at' => $checkOut,
+            'status' => '1',
+            'booking_type' => $request->booking_type
+        ];
+        $booking = Booking::create($bookingData);
+
+        DB::commit();
+
+        // Redirect to payment page
+        return redirect()->route('payment.show', ['booking' => $transaction->order_id])
+            ->with('success', 'Booking created successfully!');
+
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        DB::rollBack();
+        return back()->with('error', 'The requested room is not available.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Booking creation failed: ' . $e->getMessage(), [
+            'exception' => $e,
+            'user_id' => Auth::id(),
+            'room_id' => $request->room_id ?? null
+        ]);
+        
+        return back()->with('error', $e->getMessage() ?: 'Failed to create booking');
     }
+}
 }
