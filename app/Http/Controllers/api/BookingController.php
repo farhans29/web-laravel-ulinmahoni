@@ -97,17 +97,19 @@ class BookingController extends ApiController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required',
-            'user_name' => 'required',
-            'user_phone_number' => 'required',
-            'property_id'=>'nullable',
-            'property_name' => 'required',
-            'check_in' => 'required|date',
+            'user_id' => 'required|integer',
+            'user_name' => 'required|string|max:255',
+            'user_phone_number' => 'nullable|string|max:20',
+            'user_email' => 'required|email|max:255',
+            'property_id' => 'nullable|integer',
+            'property_name' => 'required|string|max:255',
+            'property_type' => 'required|string',
+            'room_name' => 'required|string|max:255',
+            'room_id' => 'nullable|integer',
+            'booking_type' => 'nullable|string|max:100',
+            'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
-            'room_name' => 'required',
-            'user_email' => 'required|email',
-            'daily_price' => 'required|numeric',
-            'property_type' => 'required'
+            'daily_price' => 'required|numeric|min:0'
         ]);
 
         if ($validator->fails()) {
@@ -129,40 +131,59 @@ class BookingController extends ApiController
             $adminFees = $roomPrice * 0.10; // 10% admin fee
             $grandtotalPrice = $roomPrice + $adminFees;
 
-            // Generate order_id in format INV/UM0/APP/2505003JH using property_id
-            $property = null;
-            if ($request->property_id) {
-                $property = Property::find($request->property_id);
-            }
+            // Generate order_id in format INV-UM-APP-yymmddXXXPP
+            $property = $request->property_id ? Property::find($request->property_id) : null;
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
             $order_id = 'INV-UM-APP-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
-            // Insert into transactions table
-            $transaction = Transaction::create([
-                ...$validator->validated(),
+            // Prepare transaction data
+            $transactionData = [
+                // USER DATAS
+                'user_id' => $request->user_id,
+                'user_name' => $request->user_name,
+                'user_phone_number' => $request->user_phone_number,
+                'user_email' => $request->user_email,
+                // PROPERTY DATAS
+                'property_id' => $request->property_id,
+                'property_name' => $request->property_name,
+                'property_type' => $request->property_type,
+                // ROOM DATAS
+                'room_id' => $request->room_id,
+                'room_name' => $request->room_name,
+                // ORDER DETAILS
                 'order_id' => $order_id,
                 'transaction_date' => now(),
                 'booking_days' => $bookingDays,
+                // PRICES
                 'room_price' => $roomPrice,
                 'admin_fees' => $adminFees,
                 'grandtotal_price' => $grandtotalPrice,
-                'transaction_type' => 'booking',
+                // CODE AND STATUS
                 'transaction_code' => 'TRX-' . Str::random(8),
                 'transaction_status' => 'pending',
-                'status' => '1'
-            ]);
-
-            // Prepare booking data for t_booking
-            $bookingData = [
-                'property_id' => $request->property_id,
-                'order_id' => $order_id,
-                'room_id' => $request->room_id ?? null,
-                'check_in_at' => $request->check_in,
-                'check_out_at' => $request->check_out,
-                'status' => '1'
+                'status' => '1',
+                // DATES
+                'check_in' => $request->check_in,
+                'check_out' => $request->check_out,
             ];
-            Booking::create($bookingData);
+
+            // Create transaction
+            $transaction = Transaction::create($transactionData);
+
+            // Create booking if room_id is provided
+            if ($request->has('room_id') && $request->room_id) {
+                $bookingData = [
+                    'property_id' => $request->property_id,
+                    'order_id' => $order_id,
+                    'room_id' => $request->room_id,
+                    'check_in_at' => $request->check_in,
+                    'check_out_at' => $request->check_out,
+                    'status' => '1',
+                    'booking_type' => $request->booking_type
+                ];
+                Booking::create($bookingData);
+            }
 
             DB::commit();
 
@@ -171,15 +192,20 @@ class BookingController extends ApiController
                 'message' => 'Booking created successfully',
                 'data' => $transaction
             ], 201);
+
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Booking creation failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Error creating booking',
-                'errors' => ['general' => [$e->getMessage()]]
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }
+    
 
     public function update(Request $request, $id)
     {
@@ -376,4 +402,82 @@ class BookingController extends ApiController
             ], 500);
         }
     }
+
+    /**
+     * Update payment method for a booking
+     * 
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updatePaymentMethod(Request $request, $id)
+    {
+        try {
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'payment_method' => 'required'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Find the booking
+            $booking = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->first();
+
+            if (!$booking) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking not found'
+                ], 404);
+            }
+
+            // Check if transaction_type is already set
+            if (!is_null($booking->transaction_type)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Payment method has already been set and cannot be changed'
+                ], 400);
+            }
+
+            // Update payment method
+            $updated = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->whereNull('transaction_type') // Additional safety check
+                ->update([
+                    'transaction_type' => $request->payment_method,
+                    'transaction_status' => 'waiting',
+                    'paid_at' => null,
+                    'updated_at' => now()
+                ]);
+
+            if (!$updated) {
+                throw new \Exception('Failed to update payment method. It may have already been set.');
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment method updated successfully',
+                'data' => [
+                    'booking_id' => $id,
+                    'payment_method' => $request->payment_method,
+                    'transaction_status' => 'waiting'
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error updating payment method',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    
 }
