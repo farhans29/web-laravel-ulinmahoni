@@ -45,36 +45,61 @@
         // Show preview and confirmation
         const reader = new FileReader();
         reader.onload = async function(e) {
-            const result = await Swal.fire({
-                title: 'Confirm Upload',
-                html: `
-                    <div class="text-center">
-                        <p class="mb-4">Are you sure you want to upload this image?</p>
-                        <img src="${e.target.result}" class="max-w-full h-auto rounded-lg mx-auto mb-4" style="max-height: 300px;" alt="Preview">
-                        <p class="text-sm text-gray-600">${file.name} (${(file.size / 1024).toFixed(2)} KB)</p>
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonColor: '#0d9488',
-                cancelButtonColor: '#6b7280',
-                confirmButtonText: 'Yes, upload it!',
-                cancelButtonText: 'Cancel',
-                reverseButtons: true,
-                showLoaderOnConfirm: true,
-                allowOutsideClick: false,
-                preConfirm: () => {
-                    return new Promise((resolve) => {
-                        input.form.submit();
-                        resolve(true);
-                    });
-                },
-                willOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+            try {
+                const result = await Swal.fire({
+                    title: 'Confirm Upload',
+                    html: `
+                        <div class="text-center">
+                            <p class="mb-4">Are you sure you want to upload this image?</p>
+                            <img src="${e.target.result}" class="max-w-full h-auto rounded-lg mx-auto mb-4" style="max-height: 300px;" alt="Preview">
+                            <p class="text-sm text-gray-600">${file.name} (${(file.size / 1024).toFixed(2)} KB)</p>
+                            <div id="upload-progress" class="hidden mt-4">
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="progress-bar" class="bg-teal-600 h-2.5 rounded-full" style="width: 0%"></div>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2">Uploading...</p>
+                            </div>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonColor: '#0d9488',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Yes, upload it!',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true,
+                    showLoaderOnConfirm: false,
+                    allowOutsideClick: false,
+                    preConfirm: async () => {
+                        // Show progress bar
+                        document.getElementById('upload-progress').classList.remove('hidden');
+                        const progressBar = document.getElementById('progress-bar');
+                        
+                        // Simulate progress (in a real app, you'd use actual upload progress events)
+                        for (let i = 0; i <= 100; i += 10) {
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                            progressBar.style.width = `${i}%`;
+                        }
+                        
+                        // Submit the form
+                        return new Promise((resolve) => {
+                            input.form.submit();
+                            // The form submission will navigate away, so we don't need to resolve
+                        });
+                    }
+                });
 
-            if (result.dismiss === Swal.DismissReason.cancel) {
-                // Reset the input if canceled
+                if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Reset the input if canceled
+                    input.value = '';
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Upload Failed',
+                    text: 'An error occurred while uploading the file. Please try again.',
+                    confirmButtonColor: '#0d9488',
+                });
                 input.value = '';
             }
         };

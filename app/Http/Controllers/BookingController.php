@@ -10,6 +10,7 @@ use App\Models\Property;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Exception;
@@ -76,15 +77,49 @@ class BookingController extends Controller
      * @param string $id
      * @return \Illuminate\Http\Response
      */
-    public function viewAttachment($id)
+    /**
+     * Generate a signed URL for viewing the attachment
+     * 
+     * @param string $id
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function generateAttachmentUrl($id)
     {
+        // Verify the booking exists and belongs to the user
         $booking = DB::table('t_transactions')
             ->where('idrec', $id)
             ->where('user_id', Auth::id())
             ->first();
 
         if (!$booking || !$booking->attachment) {
-            abort(404);
+            abort(404, 'Attachment not found');
+        }
+
+        // Create a signed URL that's valid for 30 minutes
+        $signedUrl = URL::temporarySignedRoute(
+            'attachments.view',
+            now()->addMinutes(10),
+            ['id' => $id]
+        );
+
+        return redirect($signedUrl);
+    }
+
+    /**
+     * View booking attachment (protected by signed URL)
+     * 
+     * @param string $id
+     * @return \Illuminate\Http\Response
+     */
+    public function viewAttachment($id)
+    {
+        // The signed middleware already verified the request
+        $booking = DB::table('t_transactions')
+            ->where('idrec', $id)
+            ->first();
+
+        if (!$booking || !$booking->attachment) {
+            abort(404, 'Attachment not found');
         }
 
         // Detect MIME type
@@ -97,7 +132,8 @@ class BookingController extends Controller
 
         return response($decoded)
             ->header('Content-Type', $mime)
-            ->header('Content-Disposition', 'inline; filename="booking_attachment_' . $id . '"');
+            ->header('Content-Disposition', 'inline; filename="booking_attachment_' . $id . '"')
+            ->header('Cache-Control', 'private, max-age=1800'); // Cache for 30 minutes (matching URL expiration)
     }
 
     /**
@@ -154,40 +190,6 @@ class BookingController extends Controller
         }
     }
 
-    // public function uploadAttachment(Request $request, $orderId)
-    // {
-    //     try {
-    //         $request->validate([
-    //             'attachment' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048'
-    //         ]);
-    
-    //         $booking = DB::table('t_transactions')
-    //             ->where('order_id', $orderId)
-    //             ->where('user_id', Auth::id())
-    //             ->first();
-
-    //         if (!$booking) {
-    //             return back()->with('error', 'Booking not found.');
-    //         }
-    
-    //         // Delete old attachment if exists
-    //         if ($booking->attachment) {
-    //             Storage::disk('public')->delete($booking->attachment);
-    //         }
-    
-    //         // Store the new file
-    //         $path = $request->file('attachment')->store('booking-attachments/' . $orderId, 'public');
-    
-    //         // Update the booking record
-    //         DB::table('t_transactions')
-    //             ->where('order_id', $orderId)
-    //             ->update(['attachment' => $path]);
-    
-    //         return back()->with('success', 'Attachment uploaded successfully.');
-    //     } catch (Exception $e) {
-    //         return back()->with('error', 'Error uploading attachment: ' . $e->getMessage());
-    //     }
-    // }
     public function index()
     {
         $bookings = DB::table('t_transactions')

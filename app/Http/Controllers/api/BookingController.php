@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Property;
 
 class BookingController extends ApiController
@@ -287,4 +288,92 @@ class BookingController extends ApiController
                 ], 500);
             }
         }
+
+    /**
+     * Upload attachment for a booking
+     *
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadAttachment(Request $request, $id)
+    {
+        try {
+            // Validate the ID first
+            $booking = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->first();
+
+            if (!$booking) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking not found'
+                ], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'attachment_file' => 'required|string', // Changed from file to string
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $base64Image = $request->input('attachment_file');
+            
+            // Remove data URL prefix if present
+            if (strpos($base64Image, ';base64,') !== false) {
+                [$_, $base64Image] = explode(';', $base64Image);
+                [$_, $base64Image] = explode(',', $base64Image);
+            }
+
+            // Validate base64 image
+            $imageData = base64_decode($base64Image, true);
+            if ($imageData === false) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid base64 image'
+                ], 422);
+            }
+
+            // Validate image type
+            $f = finfo_open();
+            $mimeType = finfo_buffer($f, $imageData, FILEINFO_MIME_TYPE);
+            if (!in_array($mimeType, ['image/jpeg', 'image/png'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid image type. Only JPEG and PNG are allowed.'
+                ], 422);
+            }
+
+            // Update the booking with the base64 image
+            $updated = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->update(['attachment' => $base64Image]);
+
+            if (!$updated) {
+                throw new \Exception('Failed to update booking with attachment');
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Attachment uploaded successfully',
+                'data' => [
+                    'booking_id' => $id,
+                    'attachment_uploaded' => true
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error uploading attachment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

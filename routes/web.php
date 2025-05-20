@@ -107,7 +107,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::post('/bookings/{id}/upload-attachment', [BookingController::class, 'uploadAttachment'])->name('bookings.upload-attachment');
-    Route::get('/bookings/{id}/view-attachment', [BookingController::class, 'viewAttachment'])->name('bookings.view-attachment');
+    // This route generates a signed URL for viewing attachments
+    Route::get('/bookings/{id}/view-attachment', [BookingController::class, 'generateAttachmentUrl'])->name('bookings.view-attachment');
+    
+    // This route handles the actual attachment viewing with a signed URL
+    Route::get('/attachments/{id}', [BookingController::class, 'viewAttachment'])
+        ->name('attachments.view')
+        ->middleware('signed');
     Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
     Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');

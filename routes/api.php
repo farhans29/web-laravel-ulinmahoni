@@ -78,6 +78,7 @@ Route::get('booking/order/{order_id}', [BookingController::class, 'showByOrderId
 Route::get('booking/userId/{user_id}', [BookingController::class, 'showByUserId']);
 Route::post('booking', [BookingController::class, 'store']);
 Route::put('booking/{id}', [BookingController::class, 'update']);
+Route::post('booking/{id}/upload', [BookingController::class, 'uploadAttachment']);
 
 // User API
 Route::get('users', [UserController::class, 'index']);
