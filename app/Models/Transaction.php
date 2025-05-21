@@ -27,6 +27,8 @@ class Transaction extends Model
         'user_email',
         'booking_days',
         'daily_price',
+        'booking_months',
+        'monthly_price',
         'room_price',
         'admin_fees',
         'grandtotal_price',
@@ -50,6 +52,7 @@ class Transaction extends Model
     protected $casts = [
         'grandtotal_price' => 'decimal:2',
         'daily_price' => 'decimal:2',
+        'monthly_price' => 'decimal:2',
         'room_price' => 'decimal:2',
         'admin_fees' => 'decimal:2',
         'booking_days' => 'integer'
@@ -66,7 +69,7 @@ class Transaction extends Model
         };
     }
 
-    public function getFormattedPriceAttribute()
+    public function getFormattedGrandtotalPriceAttribute()
     {
         return 'Rp ' . number_format($this->grandtotal_price, 0, ',', '.');
     }
@@ -79,6 +82,16 @@ class Transaction extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id', 'idrec');
+    }
+
+    public function property()
+    {
+        return $this->belongsTo(Property::class, 'property_id', 'idrec');
     }
 
     // Use transaction_code as the route key

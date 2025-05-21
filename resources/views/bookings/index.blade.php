@@ -228,7 +228,7 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $booking->formatted_price }}
+                                                {{ $booking->formatted_grandtotal_price }}
                                             </div>
                                             @if($booking->paid_at)
                                                 <div class="text-xs text-green-600 flex items-center">
@@ -236,9 +236,11 @@
                                                     Paid: {{ \Carbon\Carbon::parse($booking->paid_at)->format('d M Y H:i') }}
                                                 </div>
                                             @endif
+                                            {{-- 
                                             <div class="text-xs text-gray-500">
                                                 {{ $booking->formatted_daily_price }} / day
                                             </div>
+                                            --}}
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex justify-center items-center h-full">
@@ -401,9 +403,9 @@
                                                     Paid: {{ \Carbon\Carbon::parse($booking->paid_at)->format('d M Y H:i') }}
                                                 </div>
                                             @endif
-                                            <div class="text-xs text-gray-500">
-                                                {{ $booking->formatted_daily_price }} / day
-                                            </div>
+                                            {{-- <div class="text-xs text-gray-500">
+                                                {{ $booking->daily_price }} / day
+                                            </div> --}}
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex justify-center items-center h-full">

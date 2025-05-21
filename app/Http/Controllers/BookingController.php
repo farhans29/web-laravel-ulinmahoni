@@ -192,41 +192,73 @@ class BookingController extends Controller
 
     public function index()
     {
-        $bookings = DB::table('t_transactions')
-            ->join('users', 't_transactions.user_id', '=', 'users.id')
-            ->select('t_transactions.*', 'users.username', 'users.email')
-            ->where('t_transactions.status','1')
-            ->where('users.id', Auth::user()->id)
-            ->orderBy('t_transactions.created_at', 'desc')
-            ->paginate(10);
+        $tab = request()->get('tab', 'all');
+        
+        // Get all bookings with relationships
+        $query = Transaction::with(['user', 'room', 'property'])
+            ->where('user_id', Auth::id())
+            ->when($tab === 'all', function($query) {
+                return $query->whereIn('transaction_status', ['pending', 'waiting']);
+            })
+            ->when($tab === 'completed', function($query) {
+                return $query->where('transaction_status', ['completed','paid']);
+            })
+            ->orderBy('created_at', 'desc');
+            
+        $bookings = $query->get();
+        
+        // Get counts for tabs using the model
+        $completedCount = Transaction::where('user_id', Auth::id())
+            ->where('status', '1')
+            ->where('transaction_status', 'paid')
+            ->count();
 
-        // Convert the paginated results to Booking model instances
-        $bookings->getCollection()->transform(function ($booking) {
-            return (new Booking)->forceFill((array)$booking);
-        });
+        $activeCount = Transaction::where('user_id', Auth::id())
+            ->where('status', '1')
+            ->where('transaction_status', '!=', 'paid')
+            ->count();
 
-        return view('bookings.index', compact('bookings'));
+        return view('bookings.index', [
+            'bookings' => $bookings,
+            'completedCount' => $completedCount,
+            'activeCount' => $activeCount,
+            'activeTab' => $tab
+        ]);
     }
 
     public function store(Request $request)
 {
-    $request->validate([
+    $response = ['success' => false, 'message' => '', 'redirect_url' => null];
+
+    $validator = \Validator::make($request->all(), [
         'rent_type' => 'required|in:daily,monthly',
-        'check_in' => 'required|date|after_or_equal:today',
-        'check_out' => 'required|date|after:check_in',
+        'check_in' => 'nullable|date|after_or_equal:today',
+        'check_out' => 'nullable|date|after:check_in',
         'property_name' => 'required|string',
-        'room_name' => 'required|string',
-        'room_id' => 'required|integer',
+        'room_name' => 'nullable|string',
+        'room_id' => 'required|integer|exists:m_rooms,idrec',
         'booking_type' => 'nullable|string|max:100',
-        'months' => 'nullable'
+        'months' => 'nullable|integer'
     ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
+    }
 
     try {
         DB::beginTransaction();
 
         $user = Auth::user();
         if (!$user) {
-            return back()->with('error', 'Please login to make a booking.');
+            return response()->json([
+                'success' => false,
+                'message' => 'Please login to make a booking.',
+                'redirect_url' => route('login')
+            ], 401);
         }
 
         // Get room with property relationship
@@ -234,20 +266,33 @@ class BookingController extends Controller
 
         // Verify room name matches (prevent tampering)
         if ($room->name !== $request->room_name) {
-            throw new Exception('Room information mismatch');
+            return response()->json([
+                'success' => false,
+                'message' => 'Room information mismatch',
+                'errors' => ['room_name' => ['The room information does not match.']]
+            ], 422);
         }
 
-        // Get prices from room data
-        $roomPrices = is_string($room->price) 
-            ? json_decode($room->price, true) 
-            : ($room->price ?? []);
-            
-        $price = $roomPrices[$request->rent_type]['discounted'] 
-            ?? $roomPrices[$request->rent_type]['original'] 
-            ?? null;
+        // Get the price based on rent type
+        $priceField = 'price_discounted_' . $request->rent_type;
+        $price = $room->$priceField;
+        
+        // Log the price being used
+        \Log::info('Room price selected:', [
+            'room_id' => $room->id,
+            'rent_type' => $request->rent_type,
+            'price_field' => $priceField,
+            'price' => $price
+        ]);
 
         if (!$price || $price <= 0) {
-            throw new \Exception('This room is not available for booking at the moment');
+            return response()->json([
+                'success' => false,
+                'message' => 'This room is not available for booking at the moment. No valid price found.',
+                'errors' => [
+                    'price' => ["No valid {$request->rent_type} rate found for this room."]
+                ]
+            ], 400);
         }
 
         // Calculate dates and prices
@@ -274,7 +319,7 @@ class BookingController extends Controller
         // Prepare transaction data
         $transactionData = [
             'property_id' => $room->property_id,
-            'room_id' => $room->id,
+            'room_id' => $room->idrec,
             'order_id' => $order_id,
             'user_id' => $user->id,
             'user_name' => $user->name,
@@ -286,7 +331,9 @@ class BookingController extends Controller
             'check_out' => $checkOut,
             'room_name' => $room->name,
             'booking_days' => $duration,
+            'booking_months' => $request->rent_type === 'monthly' ? $request->months : null,
             'daily_price' => $price,
+            'monthly_price'=> $request->rent_type === 'monthly' ? $price : null,
             'room_price' => $totalPrice,
             'admin_fees' => $adminFee,
             'grandtotal_price' => $totalPrice + $adminFee,
@@ -294,7 +341,6 @@ class BookingController extends Controller
             'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
             'transaction_status' => 'pending',
             'status' => '1',
-            'booking_months' => $request->rent_type === 'monthly' ? $request->months : null
         ];
 
         // Create transaction
@@ -314,13 +360,19 @@ class BookingController extends Controller
 
         DB::commit();
 
-        // Redirect to payment page
-        return redirect()->route('payment.show', ['booking' => $transaction->order_id])
-            ->with('success', 'Booking created successfully!');
+        return response()->json([
+            'success' => true,
+            'message' => 'Booking created successfully',
+            'redirect_url' => route('payment.show', ['booking' => $transaction->order_id])
+        ]);
 
     } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
         DB::rollBack();
-        return back()->with('error', 'The requested room is not available.');
+        return response()->json([
+            'success' => false,
+            'message' => 'The requested room is not available.',
+            'errors' => ['room_id' => ['The requested room is not available.']]
+        ], 404);
     } catch (\Exception $e) {
         DB::rollBack();
         \Log::error('Booking creation failed: ' . $e->getMessage(), [
@@ -329,7 +381,11 @@ class BookingController extends Controller
             'room_id' => $request->room_id ?? null
         ]);
         
-        return back()->with('error', $e->getMessage() ?: 'Failed to create booking');
+        return response()->json([
+            'success' => false,
+            'message' => $e->getMessage() ?: 'Failed to create booking',
+            'errors' => ['server' => [$e->getMessage() ?: 'An unexpected error occurred']]
+        ], 500);
     }
 }
 }

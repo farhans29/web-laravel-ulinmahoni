@@ -23,7 +23,11 @@ class Room extends Model
         'status',
         'created_by',
         'updated_by',
-        'price'
+        'price',
+        'price_original_daily',
+        'price_discounted_daily',
+        'price_original_monthly',
+        'price_discounted_monthly',
     ];
 
     protected $casts = [

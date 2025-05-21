@@ -59,7 +59,8 @@
                                     <p class="text-gray-500 uppercase tracking-wide">{{ $room['type'] }}</p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price']['original']['daily'], 0, ',', '.') }}</p>
+                                    
+                                    <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_discounted_daily'], 0, ',', '.') }}</p>
                                     <p class="text-sm text-gray-500">per night</p>
                                 </div>
                             </div>
@@ -107,12 +108,13 @@
                             </span>
                         </div>
                         
-                        <form id="bookingForm" class="space-y-6" method="POST" action="{{ route('bookings.store') }}">
+                        <form id="bookingForm" class="space-y-6" method="POST" action="{{ route('bookings.store') }}" novalidate>
                             @csrf
                             <input type="hidden" name="property_name" value="{{ $room['property_name'] ?? ($property['name'] ?? $room['name']) }}">
                             <input type="hidden" name="room_name" value="{{ $room['name'] }}">
                             <input type="hidden" name="room_id" value="{{ $room['id'] }}">
-                            <input type="hidden" name="prices" value='{{ json_encode(["daily" => $room["price"]["discounted"]["daily"], "monthly" => $room["price"]["discounted"]["monthly"]]) }}'>
+                            <input type="hidden" name="price_daily" id="priceDaily" value="{{ $room['price_discounted_daily'] }}">
+                            <input type="hidden" name="price_monthly" id="priceMonthly" value="{{ $room['price_discounted_monthly'] }}">
                             <!-- Rental Type -->
                             <div class="mb-6">
                                 <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Rental Type</label>
@@ -142,18 +144,18 @@
                                     <!-- Check-in Date -->
                                     <div>
                                         <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
-                                        <input type="date" id="check_in" name="check_in" required
+                                        <input type="date" id="check_in" name="check_in" 
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
-                                            min="{{ date('Y-m-d') }}">
+                                            min="{{ date('Y-m-d') }}" data-required="true">
                                         <div id="check_inError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                                     </div>
 
                                     <!-- Check-out Date -->
-                                    <div>
+                                    <div id="checkOutGroup">
                                         <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
-                                        <input type="date" id="check_out" name="check_out" required
+                                        <input type="date" id="check_out" name="check_out" 
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
-                                            min="{{ date('Y-m-d', strtotime('+1 day')) }}">
+                                            min="{{ date('Y-m-d', strtotime('+1 day')) }}" data-required="true">
                                         <div id="check_outError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                                     </div>
                                 </div>
@@ -161,10 +163,11 @@
 
                             <!-- Price Summary -->
                             <!-- Base Rates Info -->
-                            <!-- <div class="bg-gray-50 rounded-lg p-4 mb-6">
-                                <h4 class="font-medium text-gray-900 mb-3">Rate Information</h4>
-                                <div class="space-y-4">
-                                    
+                             {{--  
+                             <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                                 <h4 class="font-medium text-gray-900 mb-3">Rate Information</h4>
+                                 <div class="space-y-4">
+                                     
                                     <div id="dailyRateInfo" class="hidden">
                                         <div class="flex justify-between items-center">
                                             <span class="text-gray-600">Daily Rate</span>
@@ -175,11 +178,11 @@
                                                 </div>
                                             @else
                                                 <span class="font-semibold">Rp {{ number_format($room['price']['original']['daily'], 0, ',', '.') }}</span>
-                                            @endif
+                                                @endif
+                                            </div>
+                                            <p class="text-sm text-gray-500 mt-1">Rate per night stay</p>
                                         </div>
-                                        <p class="text-sm text-gray-500 mt-1">Rate per night stay</p>
-                                    </div>
-
+                                        
                                     
                                     <div id="monthlyRateInfo" class="hidden">
                                         <div class="flex justify-between items-center">
@@ -196,8 +199,9 @@
                                         <p class="text-sm text-gray-500 mt-1">Rate per month stay</p>
                                     </div>
                                 </div>
-                            </div> -->
-
+                            </div> 
+                            --}}
+                            
                             <!-- Price Summary -->
                             <div class="bg-gray-50 p-4 rounded-lg mb-6">
                                 <h4 class="font-medium text-gray-900 mb-3">Price Summary</h4>
@@ -208,21 +212,21 @@
                                             <div class="text-gray-900" id="rateDisplay">
                                                 <!-- Daily Rate Display -->
                                                 <div id="dailyRateDisplay" class="hidden">
-                                                    @if($room['price']['discounted']['daily'] < $room['price']['original']['daily'])
-                                                        <span class="line-through text-gray-500">Rp {{ number_format($room['price']['original']['daily'], 0, ',', '.') }}</span>
-                                                        <span class="ml-2 text-teal-600">Rp {{ number_format($room['price']['discounted']['daily'], 0, ',', '.') }}</span>
+                                                    @if($room['price_discounted_daily'] < $room['price_original_daily'])
+                                                        <span class="line-through text-gray-500">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
+                                                        <span class="ml-2 text-teal-600">Rp {{ number_format($room['price_discounted_daily'], 0, ',', '.') }}</span>
                                                     @else
-                                                        <span class="text-teal-600">Rp {{ number_format($room['price']['original']['daily'], 0, ',', '.') }}</span>
+                                                        <span class="text-teal-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
                                                     @endif
                                                     <div class="text-xs text-gray-500 mt-1">per night</div>
                                                 </div>
                                                 <!-- Monthly Rate Display -->
                                                 <div id="monthlyRateDisplay" class="hidden">
-                                                    @if($room['price']['discounted']['monthly'] < $room['price']['original']['monthly'])
-                                                        <span class="line-through text-gray-500">Rp {{ number_format($room['price']['original']['monthly'], 0, ',', '.') }}</span>
-                                                        <span class="ml-2 text-teal-600">Rp {{ number_format($room['price']['discounted']['monthly'], 0, ',', '.') }}</span>
+                                                    @if($room['price_discounted_monthly'] < $room['price_original_monthly'])
+                                                        <span class="line-through text-gray-500">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
+                                                        <span class="ml-2 text-teal-600">Rp {{ number_format($room['price_discounted_monthly'], 0, ',', '.') }}</span>
                                                     @else
-                                                        <span class="text-teal-600">Rp {{ number_format($room['price']['original']['monthly'], 0, ',', '.') }}</span>
+                                                        <span class="text-teal-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
                                                     @endif
                                                     <div class="text-xs text-gray-500 mt-1">per month</div>
                                                 </div>
@@ -291,26 +295,26 @@
     @include('components.homepage.footer')
 
     <script>
+        // --- Element references ---
+        let bookingForm, errorAlert, loadingOverlay, submitButton, monthInput, dateInputs, monthsSelect, rentTypeSelect;
+        let checkInInput, checkOutInput;
+        
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Element references ---
-            const bookingForm = document.getElementById('bookingForm');
-            const errorAlert = document.getElementById('errorAlert');
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            const submitButton = bookingForm?.querySelector('button[type="submit"]');
-            const checkInInput = document.getElementById('check_in');
-            const checkOutInput = document.getElementById('check_out');
-            const monthInput = document.getElementById('monthInput');
-            const dateInputs = document.getElementById('dateInputs');
-            const monthsSelect = document.getElementById('months');
-            const rentTypeSelect = document.querySelector('select[name="rent_type"]');
-            const prices = JSON.parse(document.querySelector('input[name="prices"]').value);
-
-            // --- Date defaults ---
-            const today = new Date();
-            const defaultCheckIn = today.toISOString().split('T')[0];
-            const defaultCheckOut = new Date(today);
-            defaultCheckOut.setDate(today.getDate() + 3);
-            const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
+            // Initialize element references
+            bookingForm = document.getElementById('bookingForm');
+            errorAlert = document.getElementById('errorAlert');
+            loadingOverlay = document.getElementById('loadingOverlay');
+            submitButton = bookingForm?.querySelector('button[type="submit"]');
+            checkInInput = document.getElementById('check_in');
+            checkOutInput = document.getElementById('check_out');
+            monthInput = document.getElementById('monthInput');
+            dateInputs = document.getElementById('dateInputs');
+            monthsSelect = document.getElementById('months');
+            rentTypeSelect = document.querySelector('select[name="rent_type"]');
+            
+            // Remove duplicate element references that were declared later
+            const priceDailyInput = document.getElementById('priceDaily');
+            const priceMonthlyInput = document.getElementById('priceMonthly');
 
             // --- Utility functions ---
             function getDaysBetweenDates(start, end) {
@@ -330,26 +334,51 @@
 
             // --- Price summary logic ---
             function updatePriceSummary() {
+                // Get all required elements
+                const rentTypeSelect = document.getElementById('rent_type');
+                const checkInInput = document.getElementById('check_in');
+                const checkOutInput = document.getElementById('check_out');
+                const monthsSelect = document.getElementById('months');
+                const priceDailyInput = document.getElementById('priceDaily');
+                const priceMonthlyInput = document.getElementById('priceMonthly');
+                
+                // Check if all required elements exist
+                if (!rentTypeSelect || !checkInInput || !checkOutInput || !monthsSelect || !priceDailyInput || !priceMonthlyInput) {
+                    console.error('Required form elements not found');
+                    return;
+                }
+                
                 const rentType = rentTypeSelect.value;
+                const rateTypeDisplay = document.getElementById('rateTypeDisplay');
+                const dailyRateDisplay = document.getElementById('dailyRateDisplay');
+                const monthlyRateDisplay = document.getElementById('monthlyRateDisplay');
+                const durationDisplay = document.getElementById('durationDisplay');
+                
                 // Toggle rate display in summary
-                document.getElementById('rateTypeDisplay').textContent = rentType === 'monthly' ? 'Monthly Rate' : 'Daily Rate';
-                document.getElementById('dailyRateDisplay').classList.toggle('hidden', rentType !== 'daily');
-                document.getElementById('monthlyRateDisplay').classList.toggle('hidden', rentType !== 'monthly');
+                if (rateTypeDisplay) rateTypeDisplay.textContent = rentType === 'monthly' ? 'Monthly Rate' : 'Daily Rate';
+                if (dailyRateDisplay) dailyRateDisplay.classList.toggle('hidden', rentType !== 'daily');
+                if (monthlyRateDisplay) monthlyRateDisplay.classList.toggle('hidden', rentType !== 'monthly');
 
                 let duration = 0, rate = 0, roomTotal = 0;
-                if (rentType === 'daily') {
-                    if (!checkInInput.value || !checkOutInput.value) return resetSummary();
-                    const nights = getDaysBetweenDates(checkInInput.value, checkOutInput.value);
-                    if (nights <= 0) return resetSummary();
-                    duration = nights;
-                    rate = prices.daily;
-                    roomTotal = duration * rate;
-                    document.getElementById('durationDisplay').textContent = `${duration} night(s)`;
-                } else {
-                    duration = parseInt(monthsSelect.value || '1', 10);
-                    rate = prices.monthly;
-                    roomTotal = duration * rate;
-                    document.getElementById('durationDisplay').textContent = `${duration} month(s)`;
+                
+                try {
+                    if (rentType === 'daily') {
+                        if (!checkInInput.value || !checkOutInput.value) return resetSummary();
+                        const nights = getDaysBetweenDates(checkInInput.value, checkOutInput.value);
+                        if (nights <= 0) return resetSummary();
+                        duration = nights;
+                        rate = parseFloat(priceDailyInput.value) || 0;
+                        roomTotal = duration * rate;
+                        if (durationDisplay) durationDisplay.textContent = `${duration} night(s)`;
+                    } else {
+                        duration = parseInt(monthsSelect.value || '1', 10);
+                        rate = parseFloat(priceMonthlyInput.value) || 0;
+                        roomTotal = duration * rate;
+                        if (durationDisplay) durationDisplay.textContent = `${duration} month(s)`;
+                    }
+                } catch (error) {
+                    console.error('Error updating price summary:', error);
+                    return resetSummary();
                 }
                 const adminFee = Math.round(roomTotal * 0.1);
                 const grandTotal = roomTotal + adminFee;
@@ -360,15 +389,47 @@
 
             // --- Rental type toggle logic ---
             function updateRentalType() {
+                const rentTypeSelect = document.getElementById('rent_type');
+                const monthInput = document.getElementById('monthInput');
+                const dateInputs = document.getElementById('dateInputs');
+                const checkInInput = document.getElementById('check_in');
+                const checkOutInput = document.getElementById('check_out');
+                const monthsSelect = document.getElementById('months');
+                const checkOutGroup = document.getElementById('checkOutGroup');
+                
+                if (!rentTypeSelect || !monthInput || !dateInputs || !checkInInput || !checkOutInput || !monthsSelect) {
+                    console.error('Required form elements not found');
+                    return;
+                }
+                
                 const isMonthly = rentTypeSelect.value === 'monthly';
                 monthInput.classList.toggle('hidden', !isMonthly);
-                dateInputs.classList.toggle('hidden', isMonthly);
+                // dateInputs.classList.toggle('hidden', isMonthly);
+                
+                // Hide/show check-out group for monthly/daily
+                if (checkOutGroup) {
+                    checkOutGroup.classList.toggle('hidden', isMonthly);
+                }
+                
                 // Reset fields appropriately
                 if (isMonthly) {
-                    checkInInput.value = '';
-                    checkOutInput.value = '';
-                    monthsSelect.value = '1';
+                    monthsSelect.value = monthsSelect.value || '1';
+                    // Set check-out based on check-in and months
+                    if (checkInInput.value) {
+                        const checkInDate = new Date(checkInInput.value);
+                        const months = parseInt(monthsSelect.value, 10) || 1;
+                        const checkOutDate = new Date(checkInDate);
+                        checkOutDate.setMonth(checkOutDate.getMonth() + months);
+                        checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                    }
                 } else {
+                    // Get current date for default values
+                    const today = new Date();
+                    const defaultCheckIn = today.toISOString().split('T')[0];
+                    const defaultCheckOut = new Date(today);
+                    defaultCheckOut.setDate(today.getDate() + 3);
+                    const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
+                    
                     checkInInput.value = defaultCheckIn;
                     checkOutInput.value = defaultCheckOutStr;
                 }
@@ -377,12 +438,24 @@
 
             // --- Date input logic ---
             function handleCheckInChange() {
+                const rentTypeSelect = document.getElementById('rent_type');
+                const monthsSelect = document.getElementById('months');
                 if (!checkInInput.value) return;
-                const minCheckout = new Date(checkInInput.value);
-                minCheckout.setDate(minCheckout.getDate() + 1);
-                checkOutInput.min = minCheckout.toISOString().split('T')[0];
-                if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
-                    checkOutInput.value = minCheckout.toISOString().split('T')[0];
+                if (rentTypeSelect.value === 'monthly') {
+                    // For monthly, update check-out based on months
+                    const checkInDate = new Date(checkInInput.value);
+                    const months = parseInt(monthsSelect.value, 10) || 1;
+                    const checkOutDate = new Date(checkInDate);
+                    checkOutDate.setMonth(checkOutDate.getMonth() + months);
+                    checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                } else {
+                    // For daily, normal logic
+                    const minCheckout = new Date(checkInInput.value);
+                    minCheckout.setDate(minCheckout.getDate() + 1);
+                    checkOutInput.min = minCheckout.toISOString().split('T')[0];
+                    if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                        checkOutInput.value = minCheckout.toISOString().split('T')[0];
+                    }
                 }
                 updatePriceSummary();
             }
@@ -392,26 +465,101 @@
 
             // --- Initialization ---
             function initializeForm() {
+                // Get current date for default values
+                const today = new Date();
+                const defaultCheckIn = today.toISOString().split('T')[0];
+                const defaultCheckOut = new Date(today);
+                defaultCheckOut.setDate(today.getDate() + 1);
+                const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
+                
                 // Set initial values
-                checkInInput.value = defaultCheckIn;
-                checkInInput.min = defaultCheckIn;
-                checkOutInput.value = defaultCheckOutStr;
-                const minCheckout = new Date(defaultCheckIn);
-                minCheckout.setDate(minCheckout.getDate() + 1);
-                checkOutInput.min = minCheckout.toISOString().split('T')[0];
+                const checkInInput = document.getElementById('check_in');
+                const checkOutInput = document.getElementById('check_out');
+                const rentTypeSelect = document.getElementById('rent_type');
+                const monthsSelect = document.getElementById('months');
+                
+                if (checkInInput) {
+                    checkInInput.value = defaultCheckIn;
+                    checkInInput.min = defaultCheckIn;
+                }
+                
+                if (checkOutInput) {
+                    checkOutInput.value = defaultCheckOutStr;
+                    const minCheckout = new Date(defaultCheckIn);
+                    minCheckout.setDate(minCheckout.getDate() + 1);
+                    checkOutInput.min = minCheckout.toISOString().split('T')[0];
+                }
+                
                 // Bind events
-                rentTypeSelect.addEventListener('change', updateRentalType);
-                checkInInput.addEventListener('change', handleCheckInChange);
-                checkOutInput.addEventListener('change', handleCheckOutChange);
-                monthsSelect.addEventListener('change', updatePriceSummary);
+                if (rentTypeSelect) rentTypeSelect.addEventListener('change', updateRentalType);
+                if (checkInInput) checkInInput.addEventListener('change', handleCheckInChange);
+                if (checkOutInput) checkOutInput.addEventListener('change', handleCheckOutChange);
+                if (monthsSelect) monthsSelect.addEventListener('change', function() {
+                    const rentTypeSelect = document.getElementById('rent_type');
+                    const checkInInput = document.getElementById('check_in');
+                    const checkOutInput = document.getElementById('check_out');
+                    if (rentTypeSelect.value === 'monthly' && checkInInput.value) {
+                        const checkInDate = new Date(checkInInput.value);
+                        const months = parseInt(monthsSelect.value, 10) || 1;
+                        const checkOutDate = new Date(checkInDate);
+                        checkOutDate.setMonth(checkOutDate.getMonth() + months);
+                        checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                    }
+                    updatePriceSummary();
+                });
+                
                 // Initial state
                 updateRentalType();
+                updatePriceSummary();
+            }
+
+            // --- Form validation ---
+            function validateForm() {
+                let isValid = true;
+                const rentType = document.getElementById('rent_type').value;
+                
+                // Reset all error states
+                document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('input, select').forEach(input => {
+                    input.classList.remove('border-red-500');
+                });
+                
+                // Only validate date fields for daily rental
+                if (rentType === 'daily') {
+                    const checkInInput = document.getElementById('check_in');
+                    const checkOutInput = document.getElementById('check_out');
+                    
+                    if (!checkInInput.value) {
+                        document.getElementById('check_inError').textContent = 'Check-in date is required';
+                        document.getElementById('check_inError').classList.remove('hidden');
+                        checkInInput.classList.add('border-red-500');
+                        isValid = false;
+                    }
+                    
+                    if (!checkOutInput.value) {
+                        document.getElementById('check_outError').textContent = 'Check-out date is required';
+                        document.getElementById('check_outError').classList.remove('hidden');
+                        checkOutInput.classList.add('border-red-500');
+                        isValid = false;
+                    } else if (checkInInput.value && new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                        document.getElementById('check_outError').textContent = 'Check-out date must be after check-in date';
+                        document.getElementById('check_outError').classList.remove('hidden');
+                        checkOutInput.classList.add('border-red-500');
+                        isValid = false;
+                    }
+                }
+                
+                return isValid;
             }
 
             // --- Booking form submission ---
             async function handleFormSubmit(e) {
                 e.preventDefault();
-                document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
+                
+                if (!validateForm()) {
+                    return;
+                }
+                
                 errorAlert.classList.add('hidden');
                 errorAlert.textContent = '';
                 loadingOverlay.classList.remove('hidden');
@@ -427,12 +575,24 @@
                         headers: {
                             'X-CSRF-TOKEN': csrfToken,
                             'Accept': 'application/json',
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         body: JSON.stringify(formObject)
                     });
 
-                    const data = await response.json();
+                    // First, check if the response is JSON
+                    const contentType = response.headers.get('content-type');
+                    let data;
+                    
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        // If not JSON, get the response as text to see what it is
+                        const text = await response.text();
+                        console.error('Non-JSON response:', text);
+                        throw new Error('Server returned an invalid response. Please try again.');
+                    }
                     
                     if (response.ok && data.redirect_url) {
                         window.location.href = data.redirect_url;
@@ -441,14 +601,23 @@
 
                     if (data.errors) {
                         // Handle validation errors
+                        let errorMessages = [];
                         Object.entries(data.errors).forEach(([field, messages]) => {
                             const errorElement = document.getElementById(`${field}Error`);
+                            const message = Array.isArray(messages) ? messages[0] : messages;
                             if (errorElement) {
-                                errorElement.textContent = Array.isArray(messages) ? messages[0] : messages;
+                                errorElement.textContent = message;
                                 errorElement.classList.remove('hidden');
                             }
+                            errorMessages.push(message);
                         });
-                        errorAlert.textContent = 'Please fix the errors below';
+                        
+                        // Display first error message in the main alert
+                        if (errorMessages.length > 0) {
+                            errorAlert.textContent = errorMessages[0];
+                        } else {
+                            errorAlert.textContent = 'Please fix the errors below';
+                        }
                         errorAlert.classList.remove('hidden');
                     } else if (data.message) {
                         // Handle other error messages
@@ -460,7 +629,7 @@
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    errorAlert.textContent = 'An error occurred while processing your booking. Please try again.';
+                    errorAlert.textContent = error.message || 'An error occurred while processing your booking. Please try again.';
                     errorAlert.classList.remove('hidden');
                 } finally {
                     loadingOverlay.classList.add('hidden');
@@ -468,9 +637,62 @@
                 }
             }
 
-            // --- Run initialization ---
-            initializeForm();
-            if (bookingForm) bookingForm.addEventListener('submit', handleFormSubmit);
+            // Set default dates
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            // Format date as YYYY-MM-DD
+            const formatDate = (date) => date.toISOString().split('T')[0];
+            
+            // Set initial values
+            if (checkInInput) {
+                checkInInput.value = formatDate(today);
+                checkInInput.min = formatDate(today);
+                
+                // Handle check-in date changes
+                checkInInput.addEventListener('change', function() {
+                    if (checkInInput.value) {
+                        const minCheckout = new Date(checkInInput.value);
+                        minCheckout.setDate(minCheckout.getDate() + 1);
+                        
+                        if (checkOutInput) {
+                            checkOutInput.min = formatDate(minCheckout);
+                            // If current check-out is before new min date, update it
+                            if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                                checkOutInput.value = formatDate(minCheckout);
+                            }
+                        }
+                    }
+                    updatePriceSummary();
+                });
+            }
+            
+            if (checkOutInput) {
+                checkOutInput.value = formatDate(tomorrow);
+                checkOutInput.min = formatDate(tomorrow);
+                
+                // Handle check-out date changes
+                checkOutInput.addEventListener('change', updatePriceSummary);
+            }
+            
+            // Initialize other form elements
+            if (rentTypeSelect) {
+                rentTypeSelect.addEventListener('change', updateRentalType);
+            }
+            
+            if (monthsSelect) {
+                monthsSelect.addEventListener('change', updatePriceSummary);
+            }
+            
+            // Initialize form state
+            updateRentalType();
+            updatePriceSummary();
+            
+            // Add form submission handler
+            if (bookingForm) {
+                bookingForm.addEventListener('submit', handleFormSubmit);
+            }
         });
     </script>
 </body>
