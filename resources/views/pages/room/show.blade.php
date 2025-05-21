@@ -481,36 +481,50 @@
                 if (checkInInput) {
                     checkInInput.value = defaultCheckIn;
                     checkInInput.min = defaultCheckIn;
+                    
+                    // Handle check-in date changes
+                    checkInInput.addEventListener('change', function() {
+                        if (checkInInput.value) {
+                            const minCheckout = new Date(checkInInput.value);
+                            minCheckout.setDate(minCheckout.getDate() + 1);
+                            
+                            if (checkOutInput) {
+                                checkOutInput.min = formatDate(minCheckout);
+                                // If current check-out is before new min date, update it
+                                if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                                    checkOutInput.value = formatDate(minCheckout);
+                                }
+                            }
+                        }
+                        updatePriceSummary();
+                    });
                 }
                 
                 if (checkOutInput) {
                     checkOutInput.value = defaultCheckOutStr;
-                    const minCheckout = new Date(defaultCheckIn);
-                    minCheckout.setDate(minCheckout.getDate() + 1);
-                    checkOutInput.min = minCheckout.toISOString().split('T')[0];
+                    checkOutInput.min = defaultCheckOutStr;
+                    
+                    // Handle check-out date changes
+                    checkOutInput.addEventListener('change', updatePriceSummary);
                 }
                 
-                // Bind events
-                if (rentTypeSelect) rentTypeSelect.addEventListener('change', updateRentalType);
-                if (checkInInput) checkInInput.addEventListener('change', handleCheckInChange);
-                if (checkOutInput) checkOutInput.addEventListener('change', handleCheckOutChange);
-                if (monthsSelect) monthsSelect.addEventListener('change', function() {
-                    const rentTypeSelect = document.getElementById('rent_type');
-                    const checkInInput = document.getElementById('check_in');
-                    const checkOutInput = document.getElementById('check_out');
-                    if (rentTypeSelect.value === 'monthly' && checkInInput.value) {
-                        const checkInDate = new Date(checkInInput.value);
-                        const months = parseInt(monthsSelect.value, 10) || 1;
-                        const checkOutDate = new Date(checkInDate);
-                        checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                        checkOutInput.value = checkOutDate.toISOString().split('T')[0];
-                    }
-                    updatePriceSummary();
-                });
+                // Initialize other form elements
+                if (rentTypeSelect) {
+                    rentTypeSelect.addEventListener('change', updateRentalType);
+                }
                 
-                // Initial state
+                if (monthsSelect) {
+                    monthsSelect.addEventListener('change', updatePriceSummary);
+                }
+                
+                // Initialize form state
                 updateRentalType();
                 updatePriceSummary();
+                
+                // Add form submission handler
+                if (bookingForm) {
+                    bookingForm.addEventListener('submit', handleFormSubmit);
+                }
             }
 
             // --- Form validation ---
@@ -570,7 +584,7 @@
                     const formObject = Object.fromEntries(formData);
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
-                    const response = await fetch('{{ route("bookings.store") }}', {
+                    const response = await fetch('{{ secure_url(route("bookings.store")) }}', {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': csrfToken,
