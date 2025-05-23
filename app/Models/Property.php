@@ -24,12 +24,22 @@ class Property extends Model
         'location',
         'distance',
         'price',
+        'price_original_daily',
+        'price_discounted_daily',
+        'price_original_monthly',
+        'price_discounted_monthly',
         'features',
         'attributes',
         'image',
         'status',
         'created_by',
         'updated_by'
+    ];
+
+    protected $hidden = [
+        'image',
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [

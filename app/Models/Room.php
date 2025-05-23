@@ -36,6 +36,7 @@ class Room extends Model
         'price' => 'json'
     ];
 
+
     /**
      * Get the property that owns the room.
      */

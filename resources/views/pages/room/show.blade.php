@@ -584,9 +584,11 @@
                     const formObject = Object.fromEntries(formData);
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
-                    const response = await fetch('{{ secure_url(route("bookings.store")) }}', {
+                    const response = await fetch('{{ route("bookings.store") }}', {
+                        referrerPolicy: 'unsafe-url',
                         method: 'POST',
                         headers: {
+                            'Referrer-Policy': 'unsafe-url',
                             'X-CSRF-TOKEN': csrfToken,
                             'Accept': 'application/json',
                             'Content-Type': 'application/json',

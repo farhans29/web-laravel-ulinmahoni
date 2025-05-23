@@ -30,6 +30,7 @@ class Transaction extends Model
         'booking_months',
         'monthly_price',
         'room_price',
+        'attachment',
         'admin_fees',
         'grandtotal_price',
         'property_type',
@@ -38,6 +39,12 @@ class Transaction extends Model
         'transaction_status',
         'status',
         'paid_at'
+    ];
+
+    protected $hidden = [
+        'attachment',
+        'created_at',
+        'updated_at'
     ];
 
     protected $dates = [
