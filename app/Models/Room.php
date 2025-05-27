@@ -28,6 +28,7 @@ class Room extends Model
         'price_discounted_daily',
         'price_original_monthly',
         'price_discounted_monthly',
+        'admin_fees',
     ];
 
     protected $casts = [

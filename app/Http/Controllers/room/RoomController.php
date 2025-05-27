@@ -225,6 +225,7 @@ class RoomController extends Controller {
                 'price_discounted_daily' => $room->price_discounted_daily,
                 'price_original_monthly' => $room->price_original_monthly,
                 'price_discounted_monthly' => $room->price_discounted_monthly,
+                'admin_fees' => $room->admin_fees,
                 'facility' => is_string($room->facility) ? json_decode(
                     $room->facility, true
                     ) : (

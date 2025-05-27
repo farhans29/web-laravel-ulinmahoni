@@ -87,6 +87,10 @@ class HouseController extends Controller {
                     r.images as room_images,
                     r.periode as room_periode,
                     r.price as room_price,
+                    r.price_original_daily as room_price_original_daily,
+                    r.price_original_monthly as room_price_original_monthly,
+                    r.price_discounted_daily as room_price_discounted_daily,
+                    r.price_discounted_monthly as room_price_discounted_monthly,
                     r.created_at as room_created_at,
                     r.updated_at as room_updated_at,
                     r.created_by as room_created_by,
@@ -125,17 +129,21 @@ class HouseController extends Controller {
                             'weekly' => false,
                             'monthly' => false
                         ],
-                        'price' => is_string($row->room_price) ? json_decode($row->room_price, true) : 
-                        [
-                            'original' => [
-                                'daily' => $row->room_price['original']['daily'] ?? 0,
-                                'monthly' => $row->room_price['original']['monthly'] ?? 0
-                            ],
-                            'discounted' => [
-                                'daily' => $row->room_price['discounted']['daily'] ?? 0,
-                                'monthly' => $row->room_price['discounted']['monthly'] ?? 0
-                            ]
-                        ],
+                        // 'price' => is_string($row->room_price) ? json_decode($row->room_price, true) : 
+                        // [
+                        //     'original' => [
+                        //         'daily' => $row->room_price['original']['daily'] ?? 0,
+                        //         'monthly' => $row->room_price['original']['monthly'] ?? 0
+                        //     ],
+                        //     'discounted' => [
+                        //         'daily' => $row->room_price['discounted']['daily'] ?? 0,
+                        //         'monthly' => $row->room_price['discounted']['monthly'] ?? 0
+                        //     ]
+                        // ],
+                        'price_original_daily' => $row->room_price_original_daily,
+                        'price_original_monthly' => $row->room_price_original_monthly,
+                        'price_discounted_daily' => $row->room_price_discounted_daily,
+                        'price_discounted_monthly' => $row->room_price_discounted_monthly,
                         'created_at' => $row->room_created_at,
                         'updated_at' => $row->room_updated_at,
                         'created_by' => $row->room_created_by,
@@ -154,10 +162,14 @@ class HouseController extends Controller {
                 'location' => $houseData->address,
                 'subLocation' => $houseData->subdistrict . ', ' . $houseData->city,
                 'distance' => $houseData->distance ? "{$houseData->distance} km dari {$houseData->location}" : null,
-                'price' => [
-                    'original' => json_decode($houseData->price)->original ?? 0,
-                    'discounted' => json_decode($houseData->price)->discounted ?? 0
-                ],
+                // 'price' => [
+                //     'original' => json_decode($houseData->price)->original ?? 0,
+                //     'discounted' => json_decode($houseData->price)->discounted ?? 0
+                // ],
+                'price_original_daily' => $houseData->price_original_daily,
+                'price_original_monthly' => $houseData->price_original_monthly,
+                'price_discounted_daily' => $houseData->price_discounted_daily,
+                'price_discounted_monthly' => $houseData->price_discounted_monthly,
                 'features' => is_string($houseData->features) ? json_decode($houseData->features, true) : [],
                 'image' => $houseData->image,
                 'image_2' => $houseData->image_2 ?? null,

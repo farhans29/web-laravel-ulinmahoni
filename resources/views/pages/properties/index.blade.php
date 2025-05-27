@@ -84,7 +84,7 @@
                     'Apartment' => 'apartments.show', 
                     'Villa' => 'villas.show',
                     'Hotel' => 'hotels.show',
-                    default => 'property.show'
+                    default => 'properties.show'
                 }, $property->idrec) }}" class="block">
                     <!-- Image Section -->
                     <div class="relative pb-[56.25%] h-48">
@@ -111,29 +111,33 @@
                         <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $property->name }}</h3>
                         <p class="text-gray-600 text-sm mb-2">{{ $property->address }}</p>
                         @if($property->distance)
-                        <p class="text-gray-500 text-sm mb-3">{{ $property->distance }} km dari {{ $property->location }}</p>
+                         <p class="text-gray-500 text-sm mb-3">{{ $property->distance }} km dari {{ $property->location }}</p>
                         @endif
 
                         <!-- Price Section -->
                         <div class="mt-2">
-                            @if(isset($property->price['discounted']) && $property->price['discounted'] > 0)
-                                <p class="text-sm text-gray-500">
-                                    <span class="line-through">Rp {{ number_format($property->price['original'], 0, ',', '.') }}</span>
+                        {{-- 
+                        @if(isset($property->price_discounted_monthly) && $property->price_discounted_monthly > 0)
+                        <p class="text-sm text-gray-500">
+                          <span class="line-through">Rp {{ number_format($property->price_original_monthly, 0, ',', '.') }}</span>
                                 </p>
                                 <div class="flex items-center space-x-1">
-                                    <span class="text-lg font-bold text-primary-600">
-                                        Rp {{ number_format($property->price['discounted'], 0, ',', '.') }}
-                                    </span>
-                                    <span class="text-sm text-gray-500">/bulan</span>
+                                  <span class="text-lg font-bold text-primary-600">
+                                    Rp {{ number_format($property->price_discounted_monthly, 0, ',', '.') }}
+                                  </span>
+                                  <span class="text-sm text-gray-500">/bulan</span>
                                 </div>
-                            @else
+                                @else
+                            --}}    
                                 <div class="flex items-center space-x-1">
                                     <span class="text-lg font-bold text-primary-600">
-                                        Rp {{ number_format($property->price['original'], 0, ',', '.') }}
+                                        Rp {{ number_format($property->price_original_monthly, 0, ',', '.') }}
                                     </span>
                                     <span class="text-sm text-gray-500">/bulan</span>
                                 </div>
+                          {{-- 
                             @endif
+                          --}}
                         </div>
 
                         <!-- Features -->

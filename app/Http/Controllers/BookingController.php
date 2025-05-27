@@ -147,7 +147,7 @@ class BookingController extends Controller
     {
         try {
             $request->validate([
-                'payment_method' => 'required|in:bca,cash'
+                'payment_method' => 'required'
             ]);
 
             $booking = DB::table('t_transactions')
@@ -274,7 +274,7 @@ class BookingController extends Controller
         }
 
         // Get the price based on rent type
-        $priceField = 'price_discounted_' . $request->rent_type;
+        $priceField = 'price_original_' . $request->rent_type;
         $price = $room->$priceField;
         
         // Log the price being used
@@ -309,7 +309,8 @@ class BookingController extends Controller
             $totalPrice = $price * $duration;
         }
 
-        $adminFee = $totalPrice * 0.1; // 10% admin fee
+        // $adminFee = $totalPrice * 0.1; // 10% admin fee
+        $adminFee = 0;
 
         // Generate order_id in format INV-UM-WEB-yymmddXXXPP
         $propertyInitial = $room->property->initial ?? 'HX';

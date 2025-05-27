@@ -170,14 +170,30 @@
 
                     <!-- Price Section -->
                     <div class="text-center mb-6">
-                        <p class="text-sm text-gray-500 mb-2">
-                            mulai dari <span class="line-through">Rp{{ number_format($house['price']['original'], 0, ',', '.') }}</span>
-                        </p>
-                        <div class="flex items-center justify-center space-x-2">
-                            <p class="text-3xl font-bold text-gray-900">
-                                Rp{{ number_format($house['price']['discounted'], 0, ',', '.') }}
+                        <!-- Daily Price -->
+                        <div class="mb-6">
+                            <p class="text-base text-gray-500 mb-1">
+                                Mulai harian
                             </p>
-                            <span class="text-sm text-gray-500">/bulan</span>
+                            <div class="flex items-center justify-center space-x-2">
+                                <span class="text-3xl font-bold text-gray-900">
+                                    Rp{{ number_format($house['price_original_daily'], 0, ',', '.') }}
+                                </span>
+                                <span class="text-lg text-gray-500">/malam</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Monthly Price -->
+                        <div class="mb-4">
+                            <p class="text-base text-gray-500 mb-1">
+                                Mulai bulanan
+                            </p>
+                            <div class="flex items-center justify-center space-x-2">
+                                <span class="text-4xl font-bold text-gray-900">
+                                    Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}
+                                </span>
+                                <span class="text-lg text-gray-500">/bulan</span>
+                            </div>
                         </div>
 
                         <!-- Features/Promotions -->
@@ -316,37 +332,26 @@
 
                                         <!-- Rental Periods -->
                                         <div class="mb-4">
-                                            <h4 class="text-sm font-semibold text-gray-700 mt-2 mb-2">Available Rental Periods &amp; Prices:</h4>
+                                            <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">Available Rental Periods &amp; Prices:</h4>
                                             <ul class="space-y-2">
                                                 @if(isset($room['periode']['daily']) && $room['periode']['daily'])
                                                     <li class="flex items-center">
                                                         <span class="w-24 text-sm font-semibold text-gray-800">Daily</span>
-                                                        <span>
-                                                            @if(isset($room['price']['discounted']['daily']))
-                                                                <span class="line-through text-gray-400">Rp{{ number_format($room['price']['original']['daily']) }}</span>
-                                                                <span class="text-green-700 ml-1">Rp{{ number_format($room['price']['discounted']['daily']) }}</span>
-                                                            @else
-                                                                <span>Rp{{ number_format($room['price']['original']['daily']) }}</span>
-                                                            @endif
+                                                        <span class="font-medium">
+                                                            Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}
                                                         </span>
                                                     </li>
                                                 @endif
                                                 @if(isset($room['periode']['monthly']) && $room['periode']['monthly'])
                                                     <li class="flex items-center">
                                                         <span class="w-24 text-sm font-semibold text-gray-800">Monthly</span>
-                                                        <span>
-                                                            @if(isset($room['price']['discounted']['monthly']))
-                                                                <span class="line-through text-gray-400">Rp{{ number_format($room['price']['original']['monthly']) }}</span>
-                                                                <span class="text-green-700 ml-1">Rp{{ number_format($room['price']['discounted']['monthly']) }}</span>
-                                                            @else
-                                                                <span>Rp{{ number_format($room['price']['original']['monthly']) }}</span>
-                                                            @endif
+                                                        <span class="font-medium">
+                                                            Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}
                                                         </span>
                                                     </li>
                                                 @endif
                                                 @if(
                                                     (!isset($room['periode']['daily']) || !$room['periode']['daily']) &&
-                                                    (!isset($room['periode']['weekly']) || !$room['periode']['weekly']) &&
                                                     (!isset($room['periode']['monthly']) || !$room['periode']['monthly'])
                                                 )
                                                     <li>

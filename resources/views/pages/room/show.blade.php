@@ -60,7 +60,7 @@
                                 </div>
                                 <div class="text-right">
                                     
-                                    <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_discounted_daily'], 0, ',', '.') }}</p>
+                                    <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</p>
                                     <p class="text-sm text-gray-500">per night</p>
                                 </div>
                             </div>
@@ -113,8 +113,8 @@
                             <input type="hidden" name="property_name" value="{{ $room['property_name'] ?? ($property['name'] ?? $room['name']) }}">
                             <input type="hidden" name="room_name" value="{{ $room['name'] }}">
                             <input type="hidden" name="room_id" value="{{ $room['id'] }}">
-                            <input type="hidden" name="price_daily" id="priceDaily" value="{{ $room['price_discounted_daily'] }}">
-                            <input type="hidden" name="price_monthly" id="priceMonthly" value="{{ $room['price_discounted_monthly'] }}">
+                            <input type="hidden" name="price_daily" id="priceDaily" value="{{ $room['price_original_daily'] }}">
+                            <input type="hidden" name="price_monthly" id="priceMonthly" value="{{ $room['price_original_monthly'] }}">
                             <!-- Rental Type -->
                             <div class="mb-6">
                                 <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Rental Type</label>
@@ -212,22 +212,12 @@
                                             <div class="text-gray-900" id="rateDisplay">
                                                 <!-- Daily Rate Display -->
                                                 <div id="dailyRateDisplay" class="hidden">
-                                                    @if($room['price_discounted_daily'] < $room['price_original_daily'])
-                                                        <span class="line-through text-gray-500">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
-                                                        <span class="ml-2 text-teal-600">Rp {{ number_format($room['price_discounted_daily'], 0, ',', '.') }}</span>
-                                                    @else
-                                                        <span class="text-teal-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
-                                                    @endif
+                                                    <span class="text-black-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
                                                     <div class="text-xs text-gray-500 mt-1">per night</div>
                                                 </div>
                                                 <!-- Monthly Rate Display -->
                                                 <div id="monthlyRateDisplay" class="hidden">
-                                                    @if($room['price_discounted_monthly'] < $room['price_original_monthly'])
-                                                        <span class="line-through text-gray-500">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
-                                                        <span class="ml-2 text-teal-600">Rp {{ number_format($room['price_discounted_monthly'], 0, ',', '.') }}</span>
-                                                    @else
-                                                        <span class="text-teal-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
-                                                    @endif
+                                                    <span class="text-black-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
                                                     <div class="text-xs text-gray-500 mt-1">per month</div>
                                                 </div>
                                             </div>
@@ -244,8 +234,8 @@
                                     </div>
                                     
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Admin Fee (10%):</span>
-                                        <span class="text-gray-900" id="adminFee">-</span>
+                                        <span class="text-gray-600">Admin Fee:</span>
+                                        <span class="text-gray-900" id="adminFee">{{ number_format($room['admin_fees'], 0, ',', '.') }}</span>
                                     </div>
                                     
                                     <div class="flex justify-between font-medium text-lg pt-3 border-t mt-3">
@@ -380,8 +370,9 @@
                     console.error('Error updating price summary:', error);
                     return resetSummary();
                 }
-                const adminFee = Math.round(roomTotal * 0.1);
-                const grandTotal = roomTotal + adminFee;
+                // Get admin fee value from the hidden input or use the default
+                const adminFee = parseFloat(document.getElementById('adminFee').textContent.replace(/\./g, '')) || 0;
+                const grandTotal = roomTotal ;
                 document.getElementById('roomTotal').textContent = formatRupiah(roomTotal);
                 document.getElementById('adminFee').textContent = formatRupiah(adminFee);
                 document.getElementById('grandTotal').textContent = formatRupiah(grandTotal);

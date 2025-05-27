@@ -135,10 +135,14 @@ class PropertyController extends Controller {
                 'location' => $propertyData->address,
                 'subLocation' => $propertyData->subdistrict . ', ' . $propertyData->city,
                 'distance' => $propertyData->distance ? "{$propertyData->distance} km dari {$propertyData->location}" : null,
-                'price' => [
-                    'original' => json_decode($propertyData->price)->original ?? 0,
-                    'discounted' => json_decode($propertyData->price)->discounted ?? 0
-                ],
+                // 'price' => [
+                //     'original' => json_decode($propertyData->price)->original ?? 0,
+                //     'discounted' => json_decode($propertyData->price)->discounted ?? 0
+                // ],
+                'price_original_daily' => $propertyData->price_original_daily,
+                'price_discounted_daily' => $propertyData->price_discounted_daily,
+                'price_original_monthly' => $propertyData->price_original_monthly,
+                'price_discounted_monthly' => $propertyData->price_discounted_monthly,
                 'features' => is_string($propertyData->features) ? json_decode($propertyData->features, true) : [],
                 'image' => $propertyData->image,
                 'image_2' => $propertyData->image_2 ?? null,
