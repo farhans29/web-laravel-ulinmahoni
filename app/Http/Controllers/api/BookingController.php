@@ -110,7 +110,12 @@ class BookingController extends ApiController
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
             'daily_price' => 'nullable|numeric|min:0',
-            'monthly_price' => 'nullable|numeric|min:0'
+            'monthly_price' => 'nullable|numeric|min:0',
+            'booking_days' => 'nullable|integer|min:1|required_without:booking_months',
+            'booking_months' => 'nullable|integer|min:1|required_without:booking_days'
+        ], [
+            'booking_days.required_without' => 'Either booking_days or booking_months is required',
+            'booking_months.required_without' => 'Either booking_days or booking_months is required',
         ]);
 
         if ($validator->fails()) {
@@ -124,14 +129,53 @@ class BookingController extends ApiController
         try {
             DB::beginTransaction();
 
+            $bookingDays = null;
+            $bookingMonths = null;
+            $roomPrice = 0;
+            $adminFees = 0;
+            $grandtotalPrice = 0;
             $checkIn = \Carbon\Carbon::parse($request->check_in);
             $checkOut = \Carbon\Carbon::parse($request->check_out);
-            $bookingDays = $checkOut->diffInDays($checkIn);
 
-            $roomPrice = $request->daily_price * $bookingDays;
-            $adminFees = $roomPrice * 0.10; // 10% admin fee
-            $grandtotalPrice = $roomPrice + $adminFees;
+            if ($request->has('booking_days') && $request->booking_days > 0) {
+                // DAILY BOOKING
+                $calculatedDays = $checkOut->diffInDays($checkIn);
+                
+                // Verify the calculated days match the provided booking_days
+                if ($calculatedDays != $request->booking_days) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'The check-in/check-out dates do not match the provided booking days',
+                        'calculated_days' => $calculatedDays
+                    ], 422);
+                }
+                
+                $bookingDays = $calculatedDays;
+                $roomPrice = $request->daily_price * $bookingDays;
+                // $adminFees = $roomPrice * 0.10;
+                $adminFees = 0;
+                $grandtotalPrice = $roomPrice + $adminFees;
+            } else {
+                // MONTHLY BOOKING
+                $monthlyPrice = $request->monthly_price;
+                $bookingMonths = $request->booking_months;
+                
+                // Verify the booking period matches the number of months
+                $calculatedMonths = $checkOut->diffInMonths($checkIn);
+                if ($calculatedMonths != $bookingMonths) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'The check-in/check-out period does not match the provided booking months',
+                        'calculated_months' => $calculatedMonths
+                    ], 422);
+                }
 
+                $roomPrice = $monthlyPrice * $bookingMonths;
+                // $adminFees = $roomPrice * 0.10;
+                $adminFees = 0;
+                $grandtotalPrice = $roomPrice + $adminFees;
+            }
+            
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
             $property = $request->property_id ? Property::find($request->property_id) : null;
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
@@ -155,9 +199,13 @@ class BookingController extends ApiController
                 // ORDER DETAILS
                 'order_id' => $order_id,
                 'transaction_date' => now(),
+                'booking_type' => $request->booking_type,
                 'booking_days' => $bookingDays,
+                'booking_months' => $bookingMonths,
                 // PRICES
                 'room_price' => $roomPrice,
+                'daily_price' => $request->daily_price,
+                'monthly_price' => $request->monthly_price,
                 'admin_fees' => $adminFees,
                 'grandtotal_price' => $grandtotalPrice,
                 // CODE AND STATUS
@@ -178,8 +226,8 @@ class BookingController extends ApiController
                     'property_id' => $request->property_id,
                     'order_id' => $order_id,
                     'room_id' => $request->room_id,
-                    'check_in_at' => $request->check_in,
-                    'check_out_at' => $request->check_out,
+                    // 'check_in_at' => $request->check_in,
+                    // 'check_out_at' => $request->check_out,
                     'status' => '1',
                     'booking_type' => $request->booking_type
                 ];
