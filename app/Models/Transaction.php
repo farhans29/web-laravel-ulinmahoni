@@ -25,6 +25,7 @@ class Transaction extends Model
         'room_id',
         'room_name',
         'user_email',
+        'booking_type',
         'booking_days',
         'daily_price',
         'booking_months',
@@ -35,6 +36,7 @@ class Transaction extends Model
         'grandtotal_price',
         'property_type',
         'transaction_type',
+        
         'transaction_code',
         'transaction_status',
         'status',

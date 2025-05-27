@@ -106,13 +106,13 @@ class BookingController extends ApiController
             'property_type' => 'required|string',
             'room_name' => 'required|string|max:255',
             'room_id' => 'nullable|integer',
-            'booking_type' => 'nullable|string|max:100',
+            'booking_type' => 'nullable',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
             'daily_price' => 'nullable|numeric|min:0',
             'monthly_price' => 'nullable|numeric|min:0',
-            'booking_days' => 'nullable|integer|min:1|required_without:booking_months',
-            'booking_months' => 'nullable|integer|min:1|required_without:booking_days'
+            'booking_days' => 'nullable|integer|required_without:booking_months',
+            'booking_months' => 'nullable|integer|required_without:booking_days'
         ], [
             'booking_days.required_without' => 'Either booking_days or booking_months is required',
             'booking_months.required_without' => 'Either booking_days or booking_months is required',
@@ -159,16 +159,6 @@ class BookingController extends ApiController
                 // MONTHLY BOOKING
                 $monthlyPrice = $request->monthly_price;
                 $bookingMonths = $request->booking_months;
-                
-                // Verify the booking period matches the number of months
-                $calculatedMonths = $checkOut->diffInMonths($checkIn);
-                if ($calculatedMonths != $bookingMonths) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'The check-in/check-out period does not match the provided booking months',
-                        'calculated_months' => $calculatedMonths
-                    ], 422);
-                }
 
                 $roomPrice = $monthlyPrice * $bookingMonths;
                 // $adminFees = $roomPrice * 0.10;
@@ -199,7 +189,7 @@ class BookingController extends ApiController
                 // ORDER DETAILS
                 'order_id' => $order_id,
                 'transaction_date' => now(),
-                'booking_type' => $request->booking_type,
+                'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly',
                 'booking_days' => $bookingDays,
                 'booking_months' => $bookingMonths,
                 // PRICES
@@ -229,7 +219,7 @@ class BookingController extends ApiController
                     // 'check_in_at' => $request->check_in,
                     // 'check_out_at' => $request->check_out,
                     'status' => '1',
-                    'booking_type' => $request->booking_type
+                    'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
                 ];
                 Booking::create($bookingData);
             }

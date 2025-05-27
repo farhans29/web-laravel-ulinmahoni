@@ -84,7 +84,7 @@ class HouseController extends Controller {
                     r.type as room_type,
                     r.level as room_level,
                     r.facility as room_facility,
-                    r.attachment as room_attachment,
+                    r.images as room_images,
                     r.periode as room_periode,
                     r.price as room_price,
                     r.created_at as room_created_at,
@@ -119,7 +119,7 @@ class HouseController extends Controller {
                         'type' => $row->room_type,
                         'level' => $row->room_level,
                         'facility' => is_string($row->room_facility) ? json_decode($row->room_facility, true) : [],
-                        'attachment' => is_string($row->room_attachment) ? json_decode($row->room_attachment, true) : [],
+                        'images' => is_string($row->room_images) ? json_decode($row->room_images, true) : [],
                         'periode' => is_string($row->room_periode) ? json_decode($row->room_periode, true) : [
                             'daily' => false,
                             'weekly' => false,
@@ -185,8 +185,14 @@ class HouseController extends Controller {
             ]);
 
         } catch (Exception $e) {
-            Log::error('House not found or error occurred: ' . $e->getMessage());
-            abort(404);
+            $errorMessage = 'House not found or error occurred: ' . $e->getMessage();
+            Log::error($errorMessage);
+            
+            // Show 404 page with error message
+            return response()->view('errors.404', [
+                'message' => $errorMessage,
+                'title' => 'House Not Found'
+            ], 404);
         }
     }
 
