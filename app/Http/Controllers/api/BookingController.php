@@ -153,7 +153,7 @@ class BookingController extends ApiController
                 $bookingDays = $calculatedDays;
                 $roomPrice = $request->daily_price * $bookingDays;
                 // $adminFees = $roomPrice * 0.10;
-                $adminFees = 0;
+                $adminFees = $request->admin_fees;
                 $grandtotalPrice = $roomPrice + $adminFees;
             } else {
                 // MONTHLY BOOKING
@@ -162,7 +162,7 @@ class BookingController extends ApiController
 
                 $roomPrice = $monthlyPrice * $bookingMonths;
                 // $adminFees = $roomPrice * 0.10;
-                $adminFees = 0;
+                $adminFees = $request->admin_fees;
                 $grandtotalPrice = $roomPrice + $adminFees;
             }
             
