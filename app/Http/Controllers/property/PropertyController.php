@@ -165,9 +165,9 @@ class PropertyController extends Controller {
                 'price_original_monthly' => $propertyData->price_original_monthly,
                 'price_discounted_monthly' => $propertyData->price_discounted_monthly,
                 'features' => is_string($propertyData->features) ? json_decode($propertyData->features, true) : [],
-                'image' => $propertyData->image,
-                'image_2' => $propertyData->image_2 ?? null,
-                'image_3' => $propertyData->image_3 ?? null,
+                // 'image' => $propertyData->image,
+                // 'image_2' => $propertyData->image_2 ?? null,
+                // 'image_3' => $propertyData->image_3 ?? null,
                 'attributes' => is_string($propertyData->attributes) ? json_decode($propertyData->attributes, true) : [
                     'amenities' => [],
                     'room_facilities' => [],
@@ -183,7 +183,7 @@ class PropertyController extends Controller {
                     'full_address' => $propertyData->address
                 ],
                 'status' => $propertyData->status,
-                'rooms' => $formattedRooms
+                // 'rooms' => $formattedRooms
             ];
 
             // Return the appropriate view based on property type

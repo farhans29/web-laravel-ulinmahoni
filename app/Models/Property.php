@@ -59,14 +59,30 @@ class Property extends Model
         if (!$value) {
             return null;
         }
-        // If the value is already base64 encoded, return it as is
-        if (preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $value)) {
-            return $value;
+
+        try {
+            // If the value is already a valid base64 string, decode it first
+            if (base64_encode(base64_decode($value, true)) === $value) {
+                return $value;
+            }
+
+
+            // If it's a file path, read and encode it
+            if (is_string($value) && file_exists($value)) {
+                $imageData = file_get_contents($value);
+                return base64_encode($imageData);
+            }
+
+            // If it's binary data, encode it
+            if (is_string($value)) {
+                return base64_encode($value);
+            }
+
+            return base64_decode($value);
+            
+        } catch (\Exception $e) {
+            // \Log::error('Error processing image attribute: ' . $e->getMessage());
+            return null;
         }
-        // If it's a file path or binary data, convert to base64
-        if (file_exists($value)) {
-            return base64_encode(file_get_contents($value));
-        }
-        // return base64_encode($value);
     }
 } 
