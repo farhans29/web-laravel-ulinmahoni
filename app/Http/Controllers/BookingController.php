@@ -352,8 +352,8 @@ class BookingController extends Controller
             'property_id' => $room->property_id,
             'order_id' => $order_id,
             'room_id' => $room->id,
-            'check_in_at' => $checkIn,
-            'check_out_at' => $checkOut,
+            // 'check_in_at' => $checkIn,
+            // 'check_out_at' => $checkOut,
             'status' => '1',
             'booking_type' => $request->booking_type
         ];

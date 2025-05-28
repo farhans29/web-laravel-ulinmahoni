@@ -18,7 +18,7 @@ class Room extends Model
         'type',
         'level',
         'facility',
-        'attachment',
+        'images',
         'periode',
         'status',
         'created_by',

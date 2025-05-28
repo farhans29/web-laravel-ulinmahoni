@@ -37,7 +37,7 @@ class Property extends Model
     ];
 
     protected $hidden = [
-        'image',
+        // 'image',
         'created_at',
         'updated_at'
     ];

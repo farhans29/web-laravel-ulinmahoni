@@ -44,61 +44,63 @@
     </div>
 
       <!-- Search Section -->
-      <section class="search-section">
+      <ssection class="search-section">
         <div class="search-container">
-          <div class="search-box">
-            <div class="flex flex-col md:flex-row gap-4">
-              <!-- Property Types -->
-              <div class="md:w-48 relative">
-                <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <select class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                  <option value="">Property Types</option>
-                  <option value="house">House & Room</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="villa">Villa</option>
-                  <option value="hotel">Hotel</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-              </div>
+            <form action="{{ route('properties.index') }}" method="GET" class="search-box">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <!-- Property Types -->
+                    <div class="md:w-48 relative">
+                        <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <select name="type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
+                            <option value="">All Property Types</option>
+                            <option value="house" {{ request('type') == 'house' ? 'selected' : '' }}>House & Room</option>
+                            <option value="apartment" {{ request('type') == 'apartment' ? 'selected' : '' }}>Apartment</option>
+                            <option value="villa" {{ request('type') == 'villa' ? 'selected' : '' }}>Villa</option>
+                            <option value="hotel" {{ request('type') == 'hotel' ? 'selected' : '' }}>Hotel</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
 
-              <!-- Rent Period -->
-              <div class="md:w-48 relative">
-                <i class="fas fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                <select class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                  <option value="">Rent Period</option>
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                </select>
-                <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-              </div>
+                    <!-- Rent Period -->
+                    <div class="md:w-48 relative">
+                        <i class="fas fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        <select name="period" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
+                            <option value="">Rent Period</option>
+                            <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>Daily</option>
+                            <option value="weekly" {{ request('period') == 'weekly' ? 'selected' : '' }}>Weekly</option>
+                            <option value="monthly" {{ request('period') == 'monthly' ? 'selected' : '' }}>Monthly</option>
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                    </div>
 
-              <!-- Check-in Check-out Dates -->
-              <div class="flex-1 flex gap-4">
-                <div class="w-1/2 relative">
-                  <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                  <input type="date" 
-                    placeholder="Check-in" 
-                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                    <!-- Check-in Check-out Dates -->
+                    <div class="flex-1 flex gap-4">
+                        <div class="w-1/2 relative">
+                            <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="date" 
+                                name="check_in" 
+                                value="{{ request('check_in') }}"
+                                class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                        </div>
+                        <div class="w-1/2 relative">
+                            <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="date" 
+                                name="check_out" 
+                                value="{{ request('check_out') }}"
+                                class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                        </div>
+                    </div>
+                    
+                    <div class="md:w-48">
+                        <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
+                            <i class="fas fa-search mr-2"></i>
+                            <span>Cari Hunian</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="w-1/2 relative">
-                  <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                  <input type="date" 
-                    placeholder="Check-out" 
-                    class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
-                </div>
-              </div>
-              
-              <div class="md:w-48">
-                <button class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
-                  <i class="fas fa-search mr-2"></i>
-                  <span>Cari Hunian</span>
-                </button>
-              </div>
-            </div>
-          </div>
+            </form>
         </div>
-      </section>
+    </section>
     </div>
 
     @include('components.homepage.property-types')

@@ -248,18 +248,26 @@
                                                     $status = strtolower($booking->transaction_status);
                                                     $badgeBg = $badgeText = $dot = '';
                                                     if ($status === 'pending') {
-                                                        $badgeBg = 'bg-red-50'; $badgeText = 'text-red-700'; $dot = 'bg-red-500';
+                                                        $badgeBg = 'bg-red-50'; $badgeText = 'text-red-700'; $dot = 'bg-red-400';   
+                                                        $transactionText = 'Waiting Payment';
                                                     } elseif ($status === 'waiting') {
                                                         $badgeBg = 'bg-yellow-50'; $badgeText = 'text-yellow-700'; $dot = 'bg-yellow-400';
+                                                        $transactionText = 'Waiting Confirmation';
                                                     } elseif ($status === 'success' || $status === 'paid') {
                                                         $badgeBg = 'bg-green-50'; $badgeText = 'text-green-700'; $dot = 'bg-green-500';
-                                                    } else {
+                                                        $transactionText = 'Success';
+                                                    } elseif ($status === 'canceled') {
+                                                        $badgeBg = 'bg-gray-50'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-500';
+                                                        $transactionText = 'Canceled';
+                                                    }
+                                                    else {
                                                         $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-400';
+                                                        $transactionText = 'Failed';
                                                     }
                                                 @endphp
                                                 <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm {{ $badgeBg }} {{ $badgeText }} border border-gray-200">
                                                     <span class="w-2 h-2 rounded-full {{ $dot }} inline-block"></span>
-                                                    <span class="tracking-wide capitalize">{{ $booking->transaction_status }}</span>
+                                                    <span class="tracking-wide capitalize text-center">{{ $transactionText }}</span>
                                                 </span>
                                             </div>
                                         </td>

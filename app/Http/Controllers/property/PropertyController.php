@@ -17,7 +17,28 @@ class PropertyController extends Controller {
             // Get properties from the database with active status
             $query = Property::where('status', 1);
             
-            // Add filters if provided in the request
+            // Filter by property type (tags)
+            if ($request->has('type') && !empty($request->type)) {
+                $query->where('tags', $request->type);
+            }
+            
+            // Filter by rent period (price field)
+            if ($request->has('period') && !empty($request->period)) {
+                $priceField = 'price_original_' . $request->period . 'ly';
+                $query->where($priceField, '>', 0);
+            }
+
+            // Filter by check-in and check-out dates (if needed)
+            if ($request->has('check_in') && !empty($request->check_in)) {
+                // Add availability check logic here if needed
+                // This would typically check against a bookings table
+            }
+
+            if ($request->has('check_out') && !empty($request->check_out)) {
+                // Add availability check logic here if needed
+            }
+
+            // Add other filters if provided in the request
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
@@ -31,11 +52,11 @@ class PropertyController extends Controller {
             }
 
             if ($request->has('price_min')) {
-                $query->where('price->original', '>=', $request->price_min);
+                $query->where('price_original_monthly', '>=', $request->price_min);
             }
 
             if ($request->has('price_max')) {
-                $query->where('price->original', '<=', $request->price_max);
+                $query->where('price_original_monthly', '<=', $request->price_max);
             }
 
             // Order by created_at (newest first)

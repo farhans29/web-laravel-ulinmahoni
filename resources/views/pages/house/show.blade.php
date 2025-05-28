@@ -365,7 +365,7 @@
 
                                         <div class="flex items-center justify-between mt-4">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $room['status'] === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $room['status'] === 1 ? 'Available' : 'Booked' }}
+                                                {{ $room['status'] === 1 ? 'Available' : 'Unavailable' }}
                                             </span>
                                             
                                             <a href="{{ route('rooms.show', $room['slug']) }}" 
