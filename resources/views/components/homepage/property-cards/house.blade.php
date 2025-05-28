@@ -11,6 +11,7 @@
                             <div class="relative pb-[56.25%] h-48">
                                 <div class="absolute inset-0">
                                     @if($house['image'])
+                                    <p>{{ $house['image'] }}</p>
                                         <img src="data:image/jpeg;base64,{{ $house['image'] }}" 
                                              alt="{{ $house['name'] }}" 
                                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">

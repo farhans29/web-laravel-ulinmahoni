@@ -67,6 +67,6 @@ class Property extends Model
         if (file_exists($value)) {
             return base64_encode(file_get_contents($value));
         }
-        return base64_encode($value);
+        // return base64_encode($value);
     }
 } 

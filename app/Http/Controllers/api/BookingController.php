@@ -199,6 +199,7 @@ class BookingController extends ApiController
                 'admin_fees' => $adminFees,
                 'grandtotal_price' => $grandtotalPrice,
                 // CODE AND STATUS
+                'transaction_type' => $request->transaction_type,
                 'transaction_code' => 'TRX-' . Str::random(8),
                 'transaction_status' => 'pending',
                 'status' => '1',

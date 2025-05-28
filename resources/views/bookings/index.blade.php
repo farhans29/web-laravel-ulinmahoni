@@ -273,22 +273,88 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             @if(!$booking->attachment)
-                                                <form action="{{ route('bookings.upload-attachment', $booking->idrec) }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2">
+                                                <form action="{{ route('bookings.upload-attachment', $booking->idrec) }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2" id="upload-form-{{ $booking->idrec }}">
                                                     @csrf
                                                     <div class="relative">
                                                         <input type="file"
                                                             name="attachment_file"
-                                                            id="attachment-{{ $booking->id }}"
+                                                            id="attachment-{{ $booking->idrec }}"
                                                             class="hidden"
                                                             accept="image/jpeg, image/png"
-                                                            onchange="confirmFileUpload(this)">
-                                                        <label for="attachment-{{ $booking->id }}"
+                                                            onchange="handleFileUpload(this, '{{ $booking->idrec }}')">
+                                                        <label for="attachment-{{ $booking->idrec }}"
                                                             class="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
                                                             <i class="fas fa-paperclip mr-2"></i>
-                                                            Upload
+                                                            <span class="upload-text">Upload</span>
+                                                            <span class="upload-loader hidden ml-2">
+                                                                <i class="fas fa-spinner fa-spin"></i> Uploading...
+                                                            </span>
                                                         </label>
                                                     </div>
                                                 </form>
+                                                <script>
+                                                function handleFileUpload(input, bookingId) {
+                                                    if (!input.files || input.files.length === 0) {
+                                                        return;
+                                                    }
+
+                                                    const file = input.files[0];
+                                                    const validTypes = ['image/jpeg', 'image/png'];
+                                                    const maxSize = 10 * 1024 * 1024; // 10MB
+
+                                                    // Check file type
+                                                    if (!validTypes.includes(file.type)) {
+                                                        Swal.fire({
+                                                            icon: 'error',
+                                                            title: 'Invalid file type',
+                                                            text: 'Please upload a JPEG or PNG image.',
+                                                        });
+                                                        input.value = '';
+                                                        return;
+                                                    }
+
+                                                    // Check file size
+                                                    if (file.size > maxSize) {
+                                                        Swal.fire({
+                                                            icon: 'error',
+                                                            title: 'File too large',
+                                                            text: 'Maximum file size is 10MB.',
+                                                        });
+                                                        input.value = '';
+                                                        return;
+                                                    }
+
+
+                                                    // Show confirmation
+                                                    Swal.fire({
+                                                        title: 'Upload Payment Proof',
+                                                        text: 'Are you sure you want to upload this file?',
+                                                        icon: 'question',
+                                                        showCancelButton: true,
+                                                        confirmButtonText: 'Yes, upload it!',
+                                                        cancelButtonText: 'Cancel',
+                                                        reverseButtons: true
+                                                    }).then((result) => {
+                                                        if (result.isConfirmed) {
+                                                            // Show loading state
+                                                            const form = document.getElementById(`upload-form-${bookingId}`);
+                                                            const uploadText = form.querySelector('.upload-text');
+                                                            const uploadLoader = form.querySelector('.upload-loader');
+                                                            const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
+                                                            
+                                                            if (submitButton) submitButton.disabled = true;
+                                                            if (uploadText) uploadText.classList.add('hidden');
+                                                            if (uploadLoader) uploadLoader.classList.remove('hidden');
+
+                                                            // Submit the form
+                                                            form.submit();
+                                                        } else {
+                                                            // Reset the file input if user cancels
+                                                            input.value = '';
+                                                        }
+                                                    });
+                                                }
+                                                </script>
                                             @else
                                                 <!-- Original image display (commented for reference)
                                                 <div class="flex justify-center items-center h-full">

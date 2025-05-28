@@ -30,6 +30,13 @@ class BookingController extends Controller
      * @param string $id
      * @return \Illuminate\Http\RedirectResponse
      */
+    /**
+     * Upload attachment for a booking
+     * 
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
     public function uploadAttachment(Request $request, $id)
     {
         try {
@@ -37,36 +44,109 @@ class BookingController extends Controller
                 'attachment_file' => 'required|file|mimes:jpg,jpeg,png|max:10240', // 10MB max
             ]);
 
+            // Find the booking
             $booking = DB::table('t_transactions')
                 ->where('idrec', $id)
                 ->where('user_id', Auth::id())
                 ->first();
 
             if (!$booking) {
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Booking not found.'
+                    ], 404);
+                }
                 return back()->with('error', 'Booking not found.');
             }
 
-            // Delete old attachment if exists
-            if ($booking->attachment) {
-                Storage::disk('public')->delete($booking->attachment);
-            }
-
+            // Handle file upload
             if ($request->hasFile('attachment_file') && $request->file('attachment_file')->isValid()) {
                 $file = $request->file('attachment_file');
+                
+                // Validate file type
+                $validTypes = ['image/jpeg', 'image/png'];
+                if (!in_array($file->getMimeType(), $validTypes)) {
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Invalid file type. Please upload a JPEG or PNG image.'
+                        ], 400);
+                    }
+                    return back()->with('error', 'Invalid file type. Please upload a JPEG or PNG image.');
+                }
+
+                // Validate file size (10MB)
+                if ($file->getSize() > 10 * 1024 * 1024) {
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'File is too large. Maximum size is 10MB.'
+                        ], 400);
+                    }
+                    return back()->with('error', 'File is too large. Maximum size is 10MB.');
+                }
+
+
+                // Read file contents and convert to base64
                 $fileContents = file_get_contents($file->getRealPath());
                 $base64 = base64_encode($fileContents);
 
-                // Store the base64 string directly in the attachment column
-                DB::table('t_transactions')
+                // Update the booking with the new attachment
+                $updated = DB::table('t_transactions')
                     ->where('idrec', $id)
-                    ->update(['attachment' => $base64]);
+                    ->update([
+                        'attachment' => $base64,
+                        'updated_at' => now(),
+                    ]);
 
-                return back()->with('success', 'Attachment uploaded successfully.');
+                if ($updated) {
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'status' => 'success',
+                            'message' => 'Payment proof uploaded successfully.',
+                            'data' => [
+                                'booking_id' => $id,
+                                'has_attachment' => true
+                            ]
+                        ]);
+                    }
+                    return back()->with('success', 'Payment proof uploaded successfully.');
+                }
+
+
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Failed to update booking with attachment.'
+                    ], 500);
+                }
+                return back()->with('error', 'Failed to update booking with attachment.');
+
             } else {
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Invalid file upload.'
+                    ], 400);
+                }
                 return back()->with('error', 'Invalid file upload.');
             }
-        } catch (Exception $e) {
-            return back()->with('error', 'Error uploading attachment: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Error uploading attachment: ' . $e->getMessage(), [
+                'booking_id' => $id,
+                'user_id' => Auth::id(),
+                'exception' => $e
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'An error occurred while uploading the file.',
+                    'error' => config('app.debug') ? $e->getMessage() : null
+                ], 500);
+            }
+            return back()->with('error', 'An error occurred while uploading the file. Please try again.');
         }
     }
 

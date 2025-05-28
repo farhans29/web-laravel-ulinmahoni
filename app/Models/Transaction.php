@@ -36,7 +36,6 @@ class Transaction extends Model
         'grandtotal_price',
         'property_type',
         'transaction_type',
-        
         'transaction_code',
         'transaction_status',
         'status',
@@ -44,7 +43,7 @@ class Transaction extends Model
     ];
 
     protected $hidden = [
-        'attachment',
+        // 'attachment',
         'created_at',
         'updated_at'
     ];
