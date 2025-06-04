@@ -87,7 +87,6 @@ class BookingController extends Controller
                     return back()->with('error', 'File is too large. Maximum size is 10MB.');
                 }
 
-
                 // Read file contents and convert to base64
                 $fileContents = file_get_contents($file->getRealPath());
                 $base64 = base64_encode($fileContents);

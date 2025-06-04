@@ -7,7 +7,7 @@
                 <img src="images/assets/bogor.jpg" alt="Bogor Area" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-black bg-opacity-40"></div>
                 <div class="absolute bottom-4 left-4 text-white">
-                    <h3 class="text-xl font-medium">Bogor Utara</h3>
+                    <h3 class="text-xl font-medium">Bogor Kota</h3>
                     <p class="text-sm">25+ properties available</p>
                 </div>
             </div>

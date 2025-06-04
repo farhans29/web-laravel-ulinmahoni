@@ -16,17 +16,9 @@
                 <button class="area-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="jakarta">
                     Jakarta
                 </button>
-                <button class="area-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="tangerang">
-                    Tangerang
-                </button>
+                
                 <button class="area-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="bogor">
                     Bogor
-                </button>
-                <button class="area-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="depok">
-                    Depok
-                </button>
-                <button class="area-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="bekasi">
-                    Bekasi
                 </button>
             </div>
 

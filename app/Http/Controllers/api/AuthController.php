@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Rules\Password;
 use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Support\Str;
-use Illuminate\Support\Carbon\Carbon;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -82,28 +83,37 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $status = PasswordFacade::sendResetLink(
-            $request->only('email')
+        // Get the user
+        $user = User::where('email', $request->email)->first();
+
+        // Generate a token
+        $token = Str::random(60);
+        
+        // Save the token in the password_resets table
+        DB::table('password_resets')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'email' => $user->email,
+                'token' => Hash::make($token),
+                'created_at' => now()
+            ]
         );
 
-        if ($status === PasswordFacade::RESET_LINK_SENT) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Password reset link sent successfully'
-            ], 200);
-        }
+        // Send the reset link email
+        $user->sendPasswordResetNotification($token);
 
         return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to send password reset link'
-        ], 422);
+            'status' => 'success',
+            'message' => 'Password reset link sent successfully',
+            'token' => $token // For testing, remove in production
+        ], 200);
     }
 
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'token' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email|exists:users,email',
             'password' => ['required', 'string', new Password],
             'password_confirmation' => 'required|same:password'
         ]);
@@ -116,28 +126,47 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $status = PasswordFacade::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password)
-                ])->save();
+        // Get the password reset record
+        $reset = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->first();
 
-                $user->setRememberToken(Str::random(60));
-            }
-        );
-
-        if ($status === PasswordFacade::PASSWORD_RESET) {
+        if (!$reset) {
             return response()->json([
-                'status' => 'success',
-                'message' => 'Password reset successfully'
-            ], 200);
+                'status' => 'error',
+                'message' => 'Invalid password reset token'
+            ], 422);
         }
 
+        // Check if token is valid
+        if (!Hash::check($request->token, $reset->token)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid password reset token'
+            ], 422);
+        }
+
+        // Check if token is expired (1 hour)
+        if (Carbon::parse($reset->created_at)->addHour()->isPast()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Password reset token has expired'
+            ], 422);
+        }
+
+        // Update user's password
+        $user = User::where('email', $request->email)->first();
+        $user->update([
+            'password' => Hash::make($request->password)
+        ]);
+
+        // Delete the used token
+        DB::table('password_resets')->where('email', $request->email)->delete();
+
         return response()->json([
-            'status' => 'error',
-            'message' => 'Failed to reset password'
-        ], 422);
+            'status' => 'success',
+            'message' => 'Password has been reset successfully'
+        ], 200);
     }
 
     public function login(Request $request)
