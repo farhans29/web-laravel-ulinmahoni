@@ -233,10 +233,10 @@
                                         <span class="text-gray-900" id="roomTotal">-</span>
                                     </div>
                                     
-                                    <div class="flex justify-between">
+                                    {{-- <div class="flex justify-between">
                                         <span class="text-gray-600">Admin Fee:</span>
                                         <span class="text-gray-900" id="adminFee">{{ number_format($room['admin_fees'], 0, ',', '.') }}</span>
-                                    </div>
+                                    </div> --}}
                                     
                                     <div class="flex justify-between font-medium text-lg pt-3 border-t mt-3">
                                         <span>Total:</span>
@@ -371,10 +371,10 @@
                     return resetSummary();
                 }
                 // Get admin fee value from the hidden input or use the default
-                const adminFee = parseFloat(document.getElementById('adminFee').textContent.replace(/\./g, '')) || 0;
+                const adminFee = 0;
                 const grandTotal = roomTotal ;
                 document.getElementById('roomTotal').textContent = formatRupiah(roomTotal);
-                document.getElementById('adminFee').textContent = formatRupiah(adminFee);
+                // document.getElementById('adminFee').textContent = formatRupiah(adminFee);
                 document.getElementById('grandTotal').textContent = formatRupiah(grandTotal);
             }
 

@@ -28,13 +28,6 @@ class BookingController extends Controller
      * 
      * @param Request $request
      * @param string $id
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    /**
-     * Upload attachment for a booking
-     * 
-     * @param Request $request
-     * @param string $id
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function uploadAttachment(Request $request, $id)
@@ -400,6 +393,7 @@ class BookingController extends Controller
         $transactionData = [
             'property_id' => $room->property_id,
             'room_id' => $room->idrec,
+            // 'room_id' => $request->room_id,
             'order_id' => $order_id,
             'user_id' => $user->id,
             'user_name' => $user->name,
@@ -430,7 +424,7 @@ class BookingController extends Controller
         $bookingData = [
             'property_id' => $room->property_id,
             'order_id' => $order_id,
-            'room_id' => $room->id,
+            'room_id' => $room->idrec,
             // 'check_in_at' => $checkIn,
             // 'check_out_at' => $checkOut,
             'status' => '1',

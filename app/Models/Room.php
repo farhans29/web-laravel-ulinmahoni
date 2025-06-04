@@ -10,6 +10,7 @@ class Room extends Model
     protected $primaryKey = 'idrec';
 
     protected $fillable = [
+        'idrec',
         'property_id',
         'property_name',
         'name',

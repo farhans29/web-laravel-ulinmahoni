@@ -72,7 +72,7 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email'
+            'email' => 'required|email'
         ]);
 
         if ($validator->fails()) {
@@ -85,6 +85,13 @@ class AuthController extends Controller
 
         // Get the user
         $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Email not found'
+            ], 404);
+        }
 
         // Generate a token
         $token = Str::random(60);
@@ -113,7 +120,7 @@ class AuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'token' => 'required',
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|email',
             'password' => ['required', 'string', new Password],
             'password_confirmation' => 'required|same:password'
         ]);
@@ -121,7 +128,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Validation failed',
+                'message' => 'Email is not valid',
                 'errors' => $validator->errors()
             ], 422);
         }
