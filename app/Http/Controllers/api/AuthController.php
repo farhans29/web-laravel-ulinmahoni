@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Rules\Password;
+use Illuminate\Support\Facades\Password as PasswordFacade;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -63,6 +66,78 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $status = PasswordFacade::sendResetLink(
+            $request->only('email')
+        );
+
+        if ($status === PasswordFacade::RESET_LINK_SENT) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password reset link sent successfully'
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to send password reset link'
+        ], 422);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => ['required', 'string', new Password],
+            'password_confirmation' => 'required|same:password'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $status = PasswordFacade::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => Hash::make($password)
+                ])->save();
+
+                $user->setRememberToken(Str::random(60));
+            }
+        );
+
+        if ($status === PasswordFacade::PASSWORD_RESET) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password reset successfully'
+            ], 200);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Failed to reset password'
+        ], 422);
     }
 
     public function login(Request $request)
