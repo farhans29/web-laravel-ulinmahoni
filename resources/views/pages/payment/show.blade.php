@@ -141,6 +141,7 @@
                                 <h4 class="font-medium">Stay Period</h4>
                                 <p class="text-sm text-gray-600">Check-in: {{ $booking->check_in->format('d M Y') }}</p>
                                 <p class="text-sm text-gray-600">Check-out: {{ $booking->check_out->format('d M Y') }}</p>
+                                <p class="text-sm text-gray-600">Duration: {{ $booking->booking_months }} months</p>
                                 <p class="text-sm text-gray-600">Duration: {{ $booking->booking_days }} days</p>
                             </div>
 

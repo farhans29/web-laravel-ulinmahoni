@@ -129,13 +129,14 @@
                             <!-- Months Selection (Hidden by default) -->
                             <div id="monthInput" class="hidden">
                                 <label for="months" class="block text-sm font-medium text-gray-700 mb-2">Number of Months</label>
-                                <select id="months" name="booking_months" 
+                                <select id="months" name="months" 
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updatePriceSummary()">
                                     @for ($i = 1; $i <= 12; $i++)
                                         <option value="{{ $i }}">{{ $i }} {{ $i == 1 ? 'Month' : 'Months' }}</option>
                                     @endfor
                                 </select>
+                                <input type="hidden" name="booking_months" id="bookingMonths" value="1">
                             </div>
 
                             <!-- Dates (Visible by default) -->
@@ -572,6 +573,12 @@
                 
                 try {
                     const formData = new FormData(bookingForm);
+                    // Ensure booking_months is set to the same value as months for monthly bookings
+                    const rentType = document.getElementById('rent_type').value;
+                    if (rentType === 'monthly') {
+                        const months = document.getElementById('months').value;
+                        formData.set('booking_months', months);
+                    }
                     const formObject = Object.fromEntries(formData);
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     

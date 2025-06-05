@@ -22,6 +22,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone_number' => ['required', 'string', 'max:20', 'unique:users'],
             'password' => ['required', 'string', new Password],
         ]);
 
@@ -38,6 +39,7 @@ class AuthController extends Controller
                 'name' => $request->username,
                 'username' => $request->username,
                 'email' => $request->email,
+                'phone_number' => $request->phone_number,
                 'password' => Hash::make($request->password),
                 'status' => 1,
                 'is_admin' => 0
@@ -179,7 +181,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
+            'login' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -191,8 +193,10 @@ class AuthController extends Controller
             ], 422);
         }
 
+        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
+        
         $credentials = [
-            'email' => $request->email,
+            $loginField => $request->login,
             'password' => $request->password
         ];
 

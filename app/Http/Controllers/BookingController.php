@@ -299,167 +299,169 @@ class BookingController extends Controller
     }
 
     public function store(Request $request)
-{
-    $response = ['success' => false, 'message' => '', 'redirect_url' => null];
+    {
+        $response = ['success' => false, 'message' => '', 'redirect_url' => null];
 
-    $validator = \Validator::make($request->all(), [
-        'rent_type' => 'required|in:daily,monthly',
-        'check_in' => 'nullable|date|after_or_equal:today',
-        'check_out' => 'nullable|date|after:check_in',
-        'property_name' => 'required|string',
-        'room_name' => 'nullable|string',
-        'room_id' => 'required|integer|exists:m_rooms,idrec',
-        'booking_type' => 'nullable|string|max:100',
-        'months' => 'nullable|integer'
-    ]);
+        $validator = \Validator::make($request->all(), [
+            'rent_type' => 'required|in:daily,monthly',
+            'check_in' => 'nullable|date|after_or_equal:today',
+            'check_out' => 'nullable|date|after:check_in',
+            'property_name' => 'required|string',
+            'room_name' => 'nullable|string',
+            'room_id' => 'required|integer|exists:m_rooms,idrec',
+            'booking_type' => 'nullable|string|max:100',
+            'months' => 'nullable|integer'
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Validation error',
-            'errors' => $validator->errors()
-        ], 422);
-    }
-
-    try {
-        DB::beginTransaction();
-
-        $user = Auth::user();
-        if (!$user) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Please login to make a booking.',
-                'redirect_url' => route('login')
-            ], 401);
-        }
-
-        // Get room with property relationship
-        $room = Room::with('property')->findOrFail($request->room_id);
-
-        // Verify room name matches (prevent tampering)
-        if ($room->name !== $request->room_name) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Room information mismatch',
-                'errors' => ['room_name' => ['The room information does not match.']]
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
             ], 422);
         }
 
-        // Get the price based on rent type
-        $priceField = 'price_original_' . $request->rent_type;
-        $price = $room->$priceField;
-        
-        // Log the price being used
-        \Log::info('Room price selected:', [
-            'room_id' => $room->id,
-            'rent_type' => $request->rent_type,
-            'price_field' => $priceField,
-            'price' => $price
-        ]);
+        try {
+            DB::beginTransaction();
 
-        if (!$price || $price <= 0) {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please login to make a booking.',
+                    'redirect_url' => route('login')
+                ], 401);
+            }
+
+            // Get room with property relationship
+            $room = Room::with('property')->findOrFail($request->room_id);
+
+            // Verify room name matches (prevent tampering)
+            if ($room->name !== $request->room_name) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Room information mismatch',
+                    'errors' => ['room_name' => ['The room information does not match.']]
+                ], 422);
+            }
+
+            // Get the price based on rent type
+            $priceField = 'price_original_' . $request->rent_type;
+            $price = $room->$priceField;
+            
+            // Log the price being used
+            \Log::info('Room price selected:', [
+                'room_id' => $room->id,
+                'rent_type' => $request->rent_type,
+                'price_field' => $priceField,
+                'price' => $price
+            ]);
+
+            if (!$price || $price <= 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This room is not available for booking at the moment. No valid price found.',
+                    'errors' => [
+                        'price' => ["No valid {$request->rent_type} rate found for this room."]
+                    ]
+                ], 400);
+            }
+
+            // Calculate dates and prices
+            $checkIn = Carbon::parse($request->check_in);
+            $checkOut = Carbon::parse($request->check_out);
+            $bookingMonths = 0;
+            $bookingDays = 0;
+
+            if ($request->rent_type === 'monthly') {
+                $bookingMonths = (int) $request->months;
+                $checkOut = $checkIn->copy()->addMonths($bookingMonths);
+                $bookingDays = $checkIn->diffInDays($checkOut);
+                $totalPrice = $price * $bookingMonths;
+            } else {
+                $bookingDays = $checkIn->diffInDays($checkOut);
+                $totalPrice = $price * $bookingDays;
+            }
+
+            // $adminFee = $totalPrice * 0.1; // 10% admin fee
+            $adminFee = 0;
+
+            // Generate order_id in format INV-UM-WEB-yymmddXXXPP
+            $propertyInitial = $room->property->initial ?? 'HX';
+            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+            $order_id = 'INV-UM-WEB-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+
+            // Prepare transaction data
+            $transactionData = [
+                'property_id' => $room->property_id,
+                'room_id' => $room->idrec,
+                // 'room_id' => $request->room_id,
+                'order_id' => $order_id,
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'user_email' => $user->email,
+                'user_phone_number' => $user->phone,
+                'property_name' => $room->property->name ?? $request->property_name,
+                'transaction_date' => now(),
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                'room_name' => $room->name,
+                'booking_days' => $bookingDays,
+                'booking_months' => $request->rent_type === 'monthly' ? $bookingMonths : null,
+                'daily_price' => $price,
+                'monthly_price'=> $request->rent_type === 'monthly' ? $price : null,
+                'room_price' => $totalPrice,
+                'admin_fees' => $adminFee,
+                'grandtotal_price' => $totalPrice + $adminFee,
+                'property_type' => $room->type ?? $request->property_type ?? 'room',
+                'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
+                'transaction_status' => 'pending',
+                'status' => '1',
+            ];
+
+            // Create transaction
+            $transaction = Transaction::create($transactionData);
+
+            // Create booking
+            $bookingData = [
+                'property_id' => $room->property_id,
+                'order_id' => $order_id,
+                'room_id' => $room->idrec,
+                // 'check_in_at' => $checkIn,
+                // 'check_out_at' => $checkOut,
+                'status' => '1',
+                'booking_type' => $request->booking_type
+            ];
+            $booking = Booking::create($bookingData);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Booking created successfully',
+                'redirect_url' => route('payment.show', ['booking' => $transaction->order_id])
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'This room is not available for booking at the moment. No valid price found.',
-                'errors' => [
-                    'price' => ["No valid {$request->rent_type} rate found for this room."]
-                ]
-            ], 400);
+                'message' => 'The requested room is not available.',
+                'errors' => ['room_id' => ['The requested room is not available.']]
+            ], 404);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Booking creation failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_id' => Auth::id(),
+                'room_id' => $request->room_id ?? null
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Failed to create booking',
+                'errors' => ['server' => [$e->getMessage() ?: 'An unexpected error occurred']]
+            ], 500);
         }
-
-        // Calculate dates and prices
-        $checkIn = Carbon::parse($request->check_in);
-        $checkOut = Carbon::parse($request->check_out);
-
-        if ($request->rent_type === 'monthly') {
-            $months = (int) $request->months;
-            $checkOut = $checkIn->copy()->addMonths($months);
-            $duration = $months;
-            $totalPrice = $price * $months;
-        } else {
-            $duration = $checkIn->diffInDays($checkOut);
-            $totalPrice = $price * $duration;
-        }
-
-        // $adminFee = $totalPrice * 0.1; // 10% admin fee
-        $adminFee = 0;
-
-        // Generate order_id in format INV-UM-WEB-yymmddXXXPP
-        $propertyInitial = $room->property->initial ?? 'HX';
-        $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-        $order_id = 'INV-UM-WEB-' . now()->format('ymd') . $randomNumber . $propertyInitial;
-
-        // Prepare transaction data
-        $transactionData = [
-            'property_id' => $room->property_id,
-            'room_id' => $room->idrec,
-            // 'room_id' => $request->room_id,
-            'order_id' => $order_id,
-            'user_id' => $user->id,
-            'user_name' => $user->name,
-            'user_email' => $user->email,
-            'user_phone_number' => $user->phone,
-            'property_name' => $room->property->name ?? $request->property_name,
-            'transaction_date' => now(),
-            'check_in' => $checkIn,
-            'check_out' => $checkOut,
-            'room_name' => $room->name,
-            'booking_days' => $duration,
-            'booking_months' => $request->rent_type === 'monthly' ? $request->months : null,
-            'daily_price' => $price,
-            'monthly_price'=> $request->rent_type === 'monthly' ? $price : null,
-            'room_price' => $totalPrice,
-            'admin_fees' => $adminFee,
-            'grandtotal_price' => $totalPrice + $adminFee,
-            'property_type' => $room->type ?? $request->property_type ?? 'room',
-            'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
-            'transaction_status' => 'pending',
-            'status' => '1',
-        ];
-
-        // Create transaction
-        $transaction = Transaction::create($transactionData);
-
-        // Create booking
-        $bookingData = [
-            'property_id' => $room->property_id,
-            'order_id' => $order_id,
-            'room_id' => $room->idrec,
-            // 'check_in_at' => $checkIn,
-            // 'check_out_at' => $checkOut,
-            'status' => '1',
-            'booking_type' => $request->booking_type
-        ];
-        $booking = Booking::create($bookingData);
-
-        DB::commit();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Booking created successfully',
-            'redirect_url' => route('payment.show', ['booking' => $transaction->order_id])
-        ]);
-
-    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-        DB::rollBack();
-        return response()->json([
-            'success' => false,
-            'message' => 'The requested room is not available.',
-            'errors' => ['room_id' => ['The requested room is not available.']]
-        ], 404);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        \Log::error('Booking creation failed: ' . $e->getMessage(), [
-            'exception' => $e,
-            'user_id' => Auth::id(),
-            'room_id' => $request->room_id ?? null
-        ]);
-        
-        return response()->json([
-            'success' => false,
-            'message' => $e->getMessage() ?: 'Failed to create booking',
-            'errors' => ['server' => [$e->getMessage() ?: 'An unexpected error occurred']]
-        ], 500);
     }
-}
 }
