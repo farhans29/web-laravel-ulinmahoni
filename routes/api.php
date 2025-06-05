@@ -79,6 +79,7 @@ Route::get('booking/{id}', [BookingController::class, 'show']);
 Route::get('booking/order/{order_id}', [BookingController::class, 'showByOrderId']);
 Route::get('booking/userId/{user_id}', [BookingController::class, 'showByUserId']);
 Route::post('booking', [BookingController::class, 'store']);
+Route::get('booking/check-availability', [BookingController::class, 'checkAvailability']);
 Route::put('booking/{id}', [BookingController::class, 'update']);
 Route::post('booking/{id}/upload', [BookingController::class, 'uploadAttachment']);
 Route::put('booking/{id}/payment-method', [BookingController::class, 'updatePaymentMethod']);

@@ -18,6 +18,63 @@ use Illuminate\Support\Facades\Storage;
 
 class BookingController extends Controller
 {
+    /**
+     * Check room availability
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkAvailability(Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'property_id' => 'required|integer|exists:m_properties,idrec',
+            'room_id' => 'required|integer|exists:m_rooms,idrec',
+            'check_in' => 'required|date|after_or_equal:today',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $propertyId = $request->property_id;
+        $roomId = $request->room_id;
+        $checkIn = Carbon::parse($request->check_in)->startOfDay();
+        $checkOut = Carbon::parse($request->check_out)->endOfDay();
+
+        // Check for conflicting bookings
+        $conflictingBookings = DB::table('t_transactions')
+            ->where('property_id', $propertyId)
+            ->where('room_id', $roomId)
+            ->where('status', '1')  // Active/confirmed booking
+            ->whereNotIn('transaction_status', ['cancelled', 'finished'])
+            ->where(function($query) use ($checkIn, $checkOut) {
+                $query->where(function($q) use ($checkIn, $checkOut) {
+                    $q->where('check_in', '<', $checkOut)
+                      ->where('check_out', '>', $checkIn);
+                });
+            })
+            ->limit(5)
+            ->get();
+
+        $isAvailable = $conflictingBookings->isEmpty();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'is_available' => $isAvailable,
+                'conflicting_bookings' => $isAvailable ? [] : $conflictingBookings,
+                'check_in' => $checkIn->format('Y-m-d H:i:s'),
+                'check_out' => $checkOut->format('Y-m-d H:i:s'),
+                'property_id' => $propertyId,
+                'room_id' => $roomId
+            ]
+        ]);
+    }
     public function __construct()
     {
         $this->middleware('auth');
