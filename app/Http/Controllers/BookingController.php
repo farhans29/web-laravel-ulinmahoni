@@ -46,18 +46,14 @@ class BookingController extends Controller
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
-        // Check for conflicting bookings
+        // Check for conflicting bookings using simplified query
         $conflictingBookings = DB::table('t_transactions')
             ->where('property_id', $propertyId)
             ->where('room_id', $roomId)
             ->where('status', '1')  // Active/confirmed booking
             ->whereNotIn('transaction_status', ['cancelled', 'finished'])
-            ->where(function($query) use ($checkIn, $checkOut) {
-                $query->where(function($q) use ($checkIn, $checkOut) {
-                    $q->where('check_in', '<', $checkOut)
-                      ->where('check_out', '>', $checkIn);
-                });
-            })
+            ->where('check_in', '<', $checkOut)
+            ->where('check_out', '>', $checkIn)
             ->limit(5)
             ->get();
 
