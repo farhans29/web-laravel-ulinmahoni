@@ -71,6 +71,56 @@ class AuthController extends Controller
         }
     }
 
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'login' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
+        
+        $credentials = [
+            $loginField => $request->login,
+            'password' => $request->password
+        ];
+
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login successful',
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'username' => $user->username,
+                        'email' => $user->email,
+                        'status' => $user->status,
+                        'is_admin' => $user->is_admin,
+                        'profile_photo_url' => $user->profile_photo_url,
+                    ],
+                    'token' => $token
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Invalid credentials'
+        ], 401);
+    }
+
     public function forgotPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -178,55 +228,7 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function login(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'login' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
-        
-        $credentials = [
-            $loginField => $request->login,
-            'password' => $request->password
-        ];
-
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            $token = $user->createToken('auth-token')->plainTextToken;
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Login successful',
-                'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'username' => $user->username,
-                        'email' => $user->email,
-                        'status' => $user->status,
-                        'is_admin' => $user->is_admin,
-                        'profile_photo_url' => $user->profile_photo_url,
-                    ],
-                    'token' => $token
-                ]
-            ]);
-        }
-
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Invalid credentials'
-        ], 401);
-    }
+    
 
     public function logout(Request $request)
     {
@@ -265,9 +267,10 @@ class AuthController extends Controller
         ]);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request, $id)
     {
-        $user = $request->user();
+        // $user = $request->user() ;
+        $user = User::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
@@ -286,6 +289,9 @@ class AuthController extends Controller
         try {
             $user->update([
                 'name' => $request->name,
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'phone_number' => $request->phone_number,
                 'username' => $request->username,
                 'email' => $request->email,
             ]);

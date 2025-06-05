@@ -40,10 +40,10 @@ Route::middleware('guest:sanctum')->group(function () {
 
 // Protected authentication routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-    Route::get('profile', [AuthController::class, 'profile']);
-    Route::put('profile', [AuthController::class, 'updateProfile']);
-    Route::put('profile/password', [AuthController::class, 'updatePassword']);
+    // Route::post('logout', [AuthController::class, 'logout']);
+    // Route::get('profile', [AuthController::class, 'profile']);
+    // Route::put('profile', [AuthController::class, 'updateProfile']);
+    // Route::put('profile/password', [AuthController::class, 'updatePassword']);
 });
 
 // Version 1 API routes
@@ -97,3 +97,9 @@ Route::get('rooms/{id}', [RoomController::class, 'show']);
 Route::post('rooms', [RoomController::class, 'store']);
 Route::put('rooms/{id}', [RoomController::class, 'update']);
 Route::delete('rooms/{id}', [RoomController::class, 'destroy']);
+
+// Profile API
+Route::post('logout', [AuthController::class, 'logout']);
+Route::get('profile', [AuthController::class, 'profile']);
+Route::put('profile/{id}', [AuthController::class, 'updateProfile']);
+Route::put('profile/{id}/password', [AuthController::class, 'updatePassword']);
