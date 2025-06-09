@@ -30,6 +30,8 @@ class User extends Authenticatable
         'email',
         'phone_number',
         'password',
+        'status',
+        'is_admin',
     ];
 
     protected $guarded = ['id'];
