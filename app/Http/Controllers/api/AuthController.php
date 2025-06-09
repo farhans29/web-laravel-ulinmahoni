@@ -173,6 +173,12 @@ class AuthController extends Controller
         ], 200);
     }
 
+    /**
+     * Reset the user's password using a token
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -328,7 +334,14 @@ class AuthController extends Controller
         }
     }
 
-    public function updatePassword(Request $request)
+    /**
+     * Update the user's password.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id  User ID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updatePassword(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'current_password' => ['required', 'string'],
@@ -343,8 +356,17 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = $request->user();
+        // Find the user by ID
+        $user = User::find($id);
 
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        // Verify current password
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'status' => 'error',
@@ -353,6 +375,7 @@ class AuthController extends Controller
         }
 
         try {
+            // Update the user's password
             $user->update([
                 'password' => Hash::make($request->password),
             ]);

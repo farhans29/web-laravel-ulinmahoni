@@ -103,4 +103,4 @@ Route::delete('rooms/{id}', [RoomController::class, 'destroy']);
 Route::post('logout', [AuthController::class, 'logout']);
 Route::get('profile', [AuthController::class, 'profile']);
 Route::put('profile/{id}', [AuthController::class, 'updateProfile']);
-Route::put('profile/{id}/password', [AuthController::class, 'updatePassword']);
+Route::put('profile/{id}/update-password', [AuthController::class, 'updatePassword']);
