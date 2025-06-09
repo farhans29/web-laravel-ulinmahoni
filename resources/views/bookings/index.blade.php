@@ -167,11 +167,12 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @php
-                                    $all = $bookings->filter(function($booking) {
-                                        return strtolower($booking->transaction_status) !== 'paid';
+                                    $filteredBookings = $allBookings->filter(function($booking) {
+                                        $status = strtolower($booking->transaction_status);
+                                        return !in_array($status, ['paid', 'completed']);
                                     });
                                 @endphp
-                                @forelse ($all as $booking)
+                                @forelse ($filteredBookings as $booking)
                                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col space-y-1">
@@ -412,11 +413,14 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @php
-                                    $completed = $bookings->filter(function($booking) {
-                                        return strtolower($booking->transaction_status) === 'paid';
+                                    // Filter to only show paid and completed bookings in this tab
+                                    $filteredBookings = $allBookings->filter(function($booking) {
+                                        $status = strtolower($booking->transaction_status);
+                                        return in_array($status, ['paid', 'completed']);
                                     });
+                                    
                                 @endphp
-                                @forelse ($completed as $booking)
+                                @forelse ($filteredBookings as $booking)
                                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col space-y-1">
@@ -483,10 +487,17 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex justify-center items-center h-full">
+                                                @if(strtolower($booking->transaction_status) === 'paid')
                                                 <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm bg-green-50 text-green-700 border border-gray-200">
                                                     <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
                                                     <span class="tracking-wide capitalize">Paid</span>
                                                 </span>
+                                                @else
+                                                <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm bg-blue-50 text-blue-700 border border-gray-200">
+                                                    <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+                                                    <span class="tracking-wide capitalize">{{ ucfirst($booking->transaction_status) }}</span>
+                                                </span>
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">

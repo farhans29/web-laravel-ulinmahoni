@@ -318,35 +318,37 @@ class BookingController extends Controller
     public function index()
     {
         $tab = request()->get('tab', 'all');
+        $userId = Auth::id();
         
-        // Get all bookings with relationships
-        $query = Transaction::with(['user', 'room', 'property'])
-            ->where('user_id', Auth::id())
-            ->when($tab === 'all', function($query) {
-                return $query->whereIn('transaction_status', ['pending', 'waiting']);
-            })
-            ->when($tab === 'completed', function($query) {
-                return $query->where('transaction_status', ['completed','paid']);
-            })
-            ->orderBy('created_at', 'desc');
-            
-        $bookings = $query->get();
+        // Debug: Log the tab and user ID
+        \Log::info('Bookings index', [
+            'tab' => $tab,
+            'user_id' => $userId,
+            'url' => request()->fullUrl()
+        ]);
         
-        // Get counts for tabs using the model
-        $completedCount = Transaction::where('user_id', Auth::id())
-            ->where('status', '1')
-            ->where('transaction_status', 'paid')
-            ->count();
-
-        $activeCount = Transaction::where('user_id', Auth::id())
-            ->where('status', '1')
-            ->where('transaction_status', '!=', 'paid')
-            ->count();
+        // Get all bookings for the user with relationships
+        $bookings = Transaction::with(['user', 'room', 'property'])
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Debug: Log the query results
+        \Log::info('All user bookings', [
+            'count' => $bookings->count(),
+            'statuses' => $bookings->pluck('transaction_status')->toArray()
+        ]);
+        
+        // Get counts for tabs
+        $completedCount = $bookings->whereIn('transaction_status', ['paid', 'completed'])->count();
+        $activeCount = $bookings->whereNotIn('transaction_status', ['paid', 'completed', 'cancelled'])->count();
+        $cancelledCount = $bookings->where('transaction_status', 'cancelled')->count();
 
         return view('bookings.index', [
-            'bookings' => $bookings,
+            'allBookings' => $bookings,  // Pass all bookings to the view
             'completedCount' => $completedCount,
             'activeCount' => $activeCount,
+            'cancelledCount' => $cancelledCount,
             'activeTab' => $tab
         ]);
     }

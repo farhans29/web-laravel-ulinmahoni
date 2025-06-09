@@ -48,6 +48,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Version 1 API routes
 Route::prefix('v1')->group(function () {
+    // Booking availability check - public endpoint
+    Route::post('check-availability', [BookingController::class, 'checkAvailability']);
+    
     // Banner routes - using resource for cleaner structure
     Route::apiResource('banners', BannerController::class);
     
@@ -62,18 +65,21 @@ Route::prefix('v1')->group(function () {
 
 // Legacy API routes (if needed for backward compatibility)
 // These will be accessible without the v1 prefix
+// Banner API
 Route::get('banner', [BannerController::class, 'index']);
 Route::get('banner/{id}', [BannerController::class, 'show']);
 Route::post('banner', [BannerController::class, 'store']);
 Route::put('banner/{id}', [BannerController::class, 'update']);
 Route::delete('banner/{id}', [BannerController::class, 'destroy']);
 
+// Property API
 Route::get('property', [PropertyController::class, 'index']);
 Route::get('property/{id}', [PropertyController::class, 'show']);
 Route::post('property', [PropertyController::class, 'store']);
 Route::put('property/{id}', [PropertyController::class, 'update']);
 Route::delete('property/{id}', [PropertyController::class, 'destroy']);
 
+// Booking API
 Route::get('booking', [BookingController::class, 'index']);
 Route::get('booking/{id}', [BookingController::class, 'show']);
 Route::get('booking/order/{order_id}', [BookingController::class, 'showByOrderId']);
@@ -83,6 +89,7 @@ Route::get('booking/check-availability', [BookingController::class, 'checkAvaila
 Route::put('booking/{id}', [BookingController::class, 'update']);
 Route::post('booking/{id}/upload', [BookingController::class, 'uploadAttachment']);
 Route::put('booking/{id}/payment-method', [BookingController::class, 'updatePaymentMethod']);
+Route::post('booking/check-availability', [BookingController::class, 'checkAvailability']);
 
 // User API
 Route::get('users', [UserController::class, 'index']);

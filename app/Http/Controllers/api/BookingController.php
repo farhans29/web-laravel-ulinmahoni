@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 use App\Http\Controllers\ApiController;
 
@@ -66,6 +67,54 @@ class BookingController extends ApiController
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function checkAvailability(Request $request)
+    {
+        $validator = \Validator::make($request->all(), [
+            'property_id' => 'required|integer|exists:m_properties,idrec',
+            'room_id' => 'required|integer|exists:m_rooms,idrec',
+            'check_in' => 'required|date|after_or_equal:today',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $propertyId = $request->property_id;
+        $roomId = $request->room_id;
+        $checkIn = Carbon::parse($request->check_in)->startOfDay();
+        $checkOut = Carbon::parse($request->check_out)->endOfDay();
+
+        // Check for conflicting bookings using simplified query
+        $conflictingBookings = DB::table('t_transactions')
+            ->where('property_id', $propertyId)
+            ->where('room_id', $roomId)
+            ->where('status', '1')  // Active/confirmed booking
+            ->whereNotIn('transaction_status', ['cancelled', 'finished', 'completed'])
+            ->where('check_in', '<', $checkOut)
+            ->where('check_out', '>', $checkIn)
+            ->limit(5)
+            ->get();
+
+        $isAvailable = $conflictingBookings->isEmpty();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'is_available' => $isAvailable,
+                'conflicting_bookings' => $isAvailable ? [] : $conflictingBookings,
+                'check_in' => $checkIn->format('Y-m-d H:i:s'),
+                'check_out' => $checkOut->format('Y-m-d H:i:s'),
+                'property_id' => $propertyId,
+                'room_id' => $roomId
+            ]
+        ]);
     }
 
     public function show($id)
@@ -134,8 +183,8 @@ class BookingController extends ApiController
             $roomPrice = 0;
             $adminFees = 0;
             $grandtotalPrice = 0;
-            $checkIn = \Carbon\Carbon::parse($request->check_in);
-            $checkOut = \Carbon\Carbon::parse($request->check_out);
+            $checkIn = Carbon::parse($request->check_in);
+            $checkOut = Carbon::parse($request->check_out);
 
             if ($request->has('booking_days') && $request->booking_days > 0) {
                 // DAILY BOOKING
