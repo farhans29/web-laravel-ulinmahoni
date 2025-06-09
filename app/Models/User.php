@@ -23,11 +23,14 @@ class User extends Authenticatable
      *
      * @var string[]
      */
-    // protected $fillable = [
-    //     'name',
-    //     'email',
-    //     'password',
-    // ];
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'username',
+        'email',
+        'phone_number',
+        'password',
+    ];
 
     protected $guarded = ['id'];
 
@@ -59,8 +62,23 @@ class User extends Authenticatable
      */
     protected $appends = [
         'profile_photo_url',
+        'first_name',
+        'last_name'
     ];
 
+    // If you still need the full name somewhere in your application, you can keep this method
+    // but it won't be included in JSON responses unless explicitly called
+    public function getFullNameAttribute()
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
+     * Set the user's password.
+     *
+     * @param  string  $password
+     * @return void
+     */
     public function setPasswordAttribute($password)
     {
         $this->attributes['password'] = ($password);
