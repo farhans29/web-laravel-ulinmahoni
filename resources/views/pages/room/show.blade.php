@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Styles -->
     @include('components.property.styles')
+    <style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    .fa-spin {
+        animation: spin 1s linear infinite;
+    }
+</style>
 </head>
 <body class="font-inter antialiased bg-white text-gray-900 tracking-tight">
     <!-- Header -->
