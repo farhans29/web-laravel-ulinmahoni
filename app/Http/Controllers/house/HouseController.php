@@ -174,11 +174,6 @@ class HouseController extends Controller {
                 'image' => $houseData->image,
                 'image_2' => $houseData->image_2 ?? null,
                 'image_3' => $houseData->image_3 ?? null,
-                'attributes' => is_string($houseData->attributes) ? json_decode($houseData->attributes, true) : [
-                    'amenities' => [],
-                    'room_facilities' => [],
-                    'rules' => []
-                ],
                 'description' => $houseData->description,
                 'address' => [
                     'province' => $houseData->province,
