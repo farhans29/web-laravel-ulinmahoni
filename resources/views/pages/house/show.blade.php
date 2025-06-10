@@ -284,8 +284,8 @@
                                         $lat + $bboxPadding
                                     );
                                 @endphp
-                                <iframe g
-                                    class="w-full h-[400px] rounded-lg border border-gray-200"
+                                <iframe 
+                                    class="w-full h-[800px] rounded-lg border border-gray-200"
                                     src="https://www.openstreetmap.org/export/embed.html?bbox={{ $bbox }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}">
                                 </iframe>
                                 <div class="mt-2 text-right">
