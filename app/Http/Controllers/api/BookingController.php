@@ -112,7 +112,11 @@ class BookingController extends ApiController
                 'check_in' => $checkIn->format('Y-m-d H:i:s'),
                 'check_out' => $checkOut->format('Y-m-d H:i:s'),
                 'property_id' => $propertyId,
-                'room_id' => $roomId
+                'room_id' => $roomId,
+                // 'room_name' => 
+                'user_name' => $conflictingBookings->user_name,
+                'user_phone_number' => $conflictingBookings->user_phone_number,
+                'user_email' => $conflictingBookings->user_email,
             ]
         ]);
     }

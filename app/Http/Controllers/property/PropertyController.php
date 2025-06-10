@@ -168,11 +168,6 @@ class PropertyController extends Controller {
                 // 'image' => $propertyData->image,
                 // 'image_2' => $propertyData->image_2 ?? null,
                 // 'image_3' => $propertyData->image_3 ?? null,
-                'attributes' => is_string($propertyData->attributes) ? json_decode($propertyData->attributes, true) : [
-                    'amenities' => [],
-                    'room_facilities' => [],
-                    'rules' => []
-                ],
                 'description' => $propertyData->description,
                 'address' => [
                     'province' => $propertyData->province,
