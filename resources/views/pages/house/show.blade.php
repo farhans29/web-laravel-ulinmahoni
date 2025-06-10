@@ -230,20 +230,20 @@
                     </div>
 
                     <!-- Room Facilities -->
-                    <div class="mt-8">
+                    <!-- <div class="mt-8">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Room Facilities</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- House Rules -->
-                    <div class="mt-8">
+                    <!-- <div class="mt-8">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">House Rules</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Location Map -->
                     <div class="mt-8">
@@ -371,12 +371,12 @@
                 </div>
 
                 <!-- Amenities -->
-                <div>
+                <!-- <div>
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Property Amenities</h2>
                     <ul class="space-y-3">
                         
                     </ul>
-                </div>
+                </div> -->
             </div>
         </div>
     </main>
