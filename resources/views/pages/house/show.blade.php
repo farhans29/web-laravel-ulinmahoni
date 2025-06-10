@@ -250,14 +250,51 @@
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Location</h3>
                         <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
                             <div class="aspect-w-16 aspect-h-9">
-                                <iframe 
-                                    class="w-full h-[400px] rounded-lg"
-                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.6421430731284!2d106.78854527648083!3d-6.178633360545854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f6f59fa97dbb%3A0x9cdcd956ab8be06e!2sCentral%20Park%20Mall%2C%20Jl.%20Letjen%20S.%20Parman%20No.RT.12%2C%20RW.1%2C%20Tj.%20Duren%20Sel.%2C%20Kec.%20Grogol%20petamburan%2C%20Kota%20Jakarta%20Barat%2C%20Daerah%20Khusus%20Ibukota%20Jakarta%2011470!5e0!3m2!1sen!2sid!4v1744776680642!5m2!1sen!2sid"
-                                    style="border:0"
-                                    loading="lazy"
-                                    allowfullscreen
-                                    referrerpolicy="no-referrer-when-downgrade">
+                                @php
+                                    // Default Jakarta coordinates (Monas)
+                                    $defaultLat = -6.1754;
+                                    $defaultLng = 106.8272;
+                                    
+                                    // Initialize variables with default values
+                                    $lat = $defaultLat;
+                                    $lng = $defaultLng;
+                                    
+                                    // Check if location exists and is in correct format
+                                    if (!empty($house['location']) && str_contains($house['location'], ',')) {
+                                        $coordinates = explode(',', $house['location']);
+                                        if (count($coordinates) >= 2) {
+                                            $parsedLat = trim($coordinates[0]);
+                                            $parsedLng = trim($coordinates[1]);
+                                            
+                                            // Validate if coordinates are numeric
+                                            if (is_numeric($parsedLat) && is_numeric($parsedLng)) {
+                                                $lat = (float)$parsedLat;
+                                                $lng = (float)$parsedLng;
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Set bounding box with padding
+                                    $bboxPadding = 0.01; // Adjust this value to control the zoom level
+                                    $bbox = sprintf(
+                                        '%f,%f,%f,%f',
+                                        $lng - $bboxPadding,
+                                        $lat - $bboxPadding,
+                                        $lng + $bboxPadding,
+                                        $lat + $bboxPadding
+                                    );
+                                @endphp
+                                <iframe g
+                                    class="w-full h-[400px] rounded-lg border border-gray-200"
+                                    src="https://www.openstreetmap.org/export/embed.html?bbox={{ $bbox }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}">
                                 </iframe>
+                                <div class="mt-2 text-right">
+                                    <small class="text-sm">
+                                        <a href="https://www.openstreetmap.org/?mlat={{ $lat }}&amp;mlon={{ $lng }}#map=18/{{ $lat }}/{{ $lng }}" target="_blank" class="text-teal-600 hover:underline">
+                                            View Larger Map
+                                        </a>
+                                    </small>
+                                </div>
                             </div>
                             <div class="mt-4">
                                 <h4 class="font-semibold text-gray-900">Address</h4>

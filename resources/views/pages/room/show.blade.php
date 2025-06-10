@@ -67,11 +67,30 @@
                                     <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $room['name'] }}</h1>
                                     <p class="text-gray-500 uppercase tracking-wide">{{ $room['type'] }}</p>
                                 </div>
-                                <div class="text-right">
-                                    
+                                <div class="space-y-4 text-right">
+                                @if(!empty($room['price_original_daily']) && $room['price_original_daily'] > 0)
+                                <div class="mt-4">
                                     <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</p>
                                     <p class="text-sm text-gray-500">per night</p>
                                 </div>
+                                @else
+                                <div class="mt-4">
+                                    <p class="text-3xl font-bold text-teal-600">Contact Us</p>
+                                    <p class="text-sm text-gray-500">for daily rate</p>
+                                </div>
+                                @endif
+                                @if(!empty($room['price_original_monthly']) && $room['price_original_monthly'] > 0)
+                                <div class="mt-4">
+                                    <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</p>
+                                    <p class="text-sm text-gray-500">per month</p>
+                                </div>
+                                @else
+                                <div class="mt-4">
+                                    <p class="text-3xl font-bold text-teal-600">Contact Us</p>
+                                    <p class="text-sm text-gray-500">for monthly rate</p>
+                                </div>
+                                @endif
+                            </div>
                             </div>
 
                             <!-- Room Facilities -->
