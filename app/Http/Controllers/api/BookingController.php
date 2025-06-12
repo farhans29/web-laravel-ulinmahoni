@@ -104,6 +104,9 @@ class BookingController extends ApiController
 
         $isAvailable = $conflictingBookings->isEmpty();
 
+        // Get the first booking if available
+        $firstBooking = $conflictingBookings->first();
+        
         return response()->json([
             'status' => 'success',
             'data' => [
@@ -113,10 +116,11 @@ class BookingController extends ApiController
                 'check_out' => $checkOut->format('Y-m-d H:i:s'),
                 'property_id' => $propertyId,
                 'room_id' => $roomId,
-                // 'room_name' => 
-                'user_name' => $conflictingBookings->user_name,
-                'user_phone_number' => $conflictingBookings->user_phone_number,
-                'user_email' => $conflictingBookings->user_email,
+                'user_info' => $firstBooking ? [
+                    'user_name' => $firstBooking->user_name ?? null,
+                    'user_phone_number' => $firstBooking->user_phone_number ?? null,
+                    'user_email' => $firstBooking->user_email ?? null,
+                ] : null,
             ]
         ]);
     }
