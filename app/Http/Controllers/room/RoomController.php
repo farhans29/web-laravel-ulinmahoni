@@ -36,7 +36,6 @@ class RoomController extends Controller {
                     'attachment' => is_string($room->attachment) ? json_decode($room->attachment, true) : ($room->attachment ?? []),
                     'periode' => is_string($room->periode) ? json_decode($room->periode, true) : ($room->periode ?? [
                         'daily' => false,
-                        'weekly' => false,
                         'monthly' => false
                     ]),
                     'status' => $room->status
@@ -51,6 +50,10 @@ class RoomController extends Controller {
                 'location' => $property->address ?? null,
                 'subLocation' => ($property->subdistrict ?? '') . (isset($property->subdistrict, $property->city) ? ', ' : '') . ($property->city ?? ''),
                 'distance' => isset($property->distance, $property->location) ? "{$property->distance} km dari {$property->location}" : null,
+                'price_original_daily' => $property->price_original_daily,
+                'price_original_monthly' => $property->price_original_monthly,
+                'price_discounted_daily' => $property->price_discounted_daily,
+                'price_discounted_monthly' => $property->price_discounted_monthly,
                 'price' => [
                     'original' => (is_array($property->price ?? null) ? ($property->price['original'] ?? 0) : 0),
                     'discounted' => (is_array($property->price ?? null) ? ($property->price['discounted'] ?? 0) : 0)

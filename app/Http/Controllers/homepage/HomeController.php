@@ -161,6 +161,10 @@ class HomeController extends Controller {
             'location' => $property->address,
             'subLocation' => $property->subdistrict . ', ' . $property->city,
             'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+            'price_original_daily' => $property->price_original_daily,
+            'price_original_monthly' => $property->price_original_monthly,
+            'price_discounted_daily' => $property->price_discounted_daily,
+            'price_discounted_monthly' => $property->price_discounted_monthly,
             'price' => [
                 'original' => $price['original'] ?? 0,
                 'discounted' => $price['discounted'] ?? 0

@@ -40,11 +40,11 @@
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-xs text-gray-500">
-                                            mulai dari <span class="line-through">Rp{{ number_format($house['price']['original'], 0, ',', '.') }}</span>
+                                            mulai dari <span class="line-through">Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}</span>
                                         </p>
                                         <div class="flex items-center">
                                             <p class="text-lg font-bold text-gray-800">
-                                                Rp{{ number_format($house['price']['discounted'], 0, ',', '.') }} 
+                                                Rp{{ number_format($house['price_discounted_monthly'], 0, ',', '.') }} 
                                                 <span class="text-xs font-normal">/bulan</span>
                                             </p>
                                         </div>

@@ -22,7 +22,6 @@
                     <select class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
                         <option value="">Rent Period</option>
                         <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
                         <option value="monthly">Monthly</option>
                     </select>
                     <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>

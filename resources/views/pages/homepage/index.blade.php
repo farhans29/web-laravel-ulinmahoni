@@ -52,7 +52,7 @@
                     <div class="md:w-48 relative">
                         <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <select name="type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                            <option value="">All Property Types</option>
+                            <option value="">Semua Properti</option>
                             <option value="house" {{ request('type') == 'house' ? 'selected' : '' }}>House & Room</option>
                             <option value="apartment" {{ request('type') == 'apartment' ? 'selected' : '' }}>Apartment</option>
                             <option value="villa" {{ request('type') == 'villa' ? 'selected' : '' }}>Villa</option>
@@ -65,9 +65,8 @@
                     <div class="md:w-48 relative">
                         <i class="fas fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <select name="period" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                            <option value="">Rent Period</option>
+                            <option value="">Semua Periode</option>
                             <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>Daily</option>
-                            <option value="weekly" {{ request('period') == 'weekly' ? 'selected' : '' }}>Weekly</option>
                             <option value="monthly" {{ request('period') == 'monthly' ? 'selected' : '' }}>Monthly</option>
                         </select>
                         <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
@@ -77,19 +76,49 @@
                     <div class="flex-1 flex gap-4">
                         <div class="w-1/2 relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="date" 
+                            <input type="text" 
                                 name="check_in" 
                                 value="{{ request('check_in') }}"
+                                onfocus="(this.type='date')" 
+                                onblur="if(!this.value) this.type='text'"
+                                placeholder="Tanggal Check In"
                                 class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                         <div class="w-1/2 relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="date" 
+                            <input type="text" 
                                 name="check_out" 
                                 value="{{ request('check_out') }}"
+                                onfocus="(this.type='date')" 
+                                onblur="if(!this.value) this.type='text'"
+                                placeholder="Tanggal Check Out"
                                 class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                     </div>
+                    
+                    <script>
+                        // Ensure date inputs work correctly with the placeholder solution
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const checkInInput = document.querySelector('input[name="check_in"]');
+                            const checkOutInput = document.querySelector('input[name="check_out"]');
+                            
+                            // Initialize input types based on value
+                            if (checkInInput && !checkInInput.value) checkInInput.type = 'text';
+                            if (checkOutInput && !checkOutInput.value) checkOutInput.type = 'text';
+                            
+                            // Add min attribute to check-out date when check-in is selected
+                            if (checkInInput && checkOutInput) {
+                                checkInInput.addEventListener('change', function() {
+                                    if (this.value) {
+                                        checkOutInput.min = this.value;
+                                        if (checkOutInput.value && checkOutInput.value < this.value) {
+                                            checkOutInput.value = '';
+                                        }
+                                    }
+                                });
+                            }
+                        });
+                    </script>
                     
                     <div class="md:w-48">
                         <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">

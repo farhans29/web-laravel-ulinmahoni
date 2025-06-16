@@ -70,7 +70,12 @@ class PropertyController extends Controller {
                     'name' => $property->name,
                     'type' => $property->tags,
                     'subLocation' => $property->subdistrict . ', ' . $property->city,
-                    'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                    'distance' => $property->distance,
+                    'location' => $property->location,
+                    'price_original_daily' => $property->price_original_daily,
+                    'price_original_monthly' => $property->price_original_monthly,
+                    'price_discounted_daily' => $property->price_discounted_daily,
+                    'price_discounted_monthly' => $property->price_discounted_monthly,
                     'price' => [
                         'original' => json_decode($property->price)->original ?? 0,
                         'discounted' => json_decode($property->price)->discounted ?? 0

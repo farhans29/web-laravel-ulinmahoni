@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Property;
 
 class HouseController extends Controller {
-    public function index(Request $request){
+    public function index(Request $request) 
+    {
         try {
             // Get houses from the database
             $query = Property::where('status', 1);
@@ -52,7 +53,12 @@ class HouseController extends Controller {
                     'name' => $house->name,
                     'type' => $house->tags,
                     'subLocation' => $house->subdistrict . ', ' . $house->city,
-                    'distance' => $house->distance ? "{$house->distance} km dari {$house->location}" : null,
+                    'distance' => $house->distance,
+                    'location' => $house->location,
+                    'price_original_daily' => $house->price_original_daily,
+                    'price_original_monthly' => $house->price_original_monthly,
+                    'price_discounted_daily' => $house->price_discounted_daily,
+                    'price_discounted_monthly' => $house->price_discounted_monthly,
                     'price' => [
                         'original' => json_decode($house->price)->original ?? 0,
                         'discounted' => json_decode($house->price)->discounted ?? 0
