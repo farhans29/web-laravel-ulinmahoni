@@ -43,38 +43,44 @@ class RoomController extends Controller {
                 ];
             });
 
-            // Format property data (using your existing format)
+            // Format property data with null safety
             $formattedHouse = [
-                'id' => $property->idrec,
-                'name' => $property->name,
-                'type' => $property->tags,
-                'location' => $property->address,
-                'subLocation' => $property->subdistrict . ', ' . $property->city,
-                'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                'id' => $property->idrec ?? null,
+                'name' => $property->name ?? null,
+                'type' => $property->tags ?? null,
+                'location' => $property->address ?? null,
+                'subLocation' => ($property->subdistrict ?? '') . (isset($property->subdistrict, $property->city) ? ', ' : '') . ($property->city ?? ''),
+                'distance' => isset($property->distance, $property->location) ? "{$property->distance} km dari {$property->location}" : null,
                 'price' => [
-                    'original' => $property->price['original'] ?? 0,
-                    'discounted' => $property->price['discounted'] ?? 0
+                    'original' => (is_array($property->price ?? null) ? ($property->price['original'] ?? 0) : 0),
+                    'discounted' => (is_array($property->price ?? null) ? ($property->price['discounted'] ?? 0) : 0)
                 ],
-                'features' => is_string($property->features) ? json_decode($property->features, true) : ($property->features ?? []),
-                'image' => $property->image,
+                'features' => is_string($property->features ?? null) ? json_decode($property->features, true) ?? [] : ($property->features ?? []),
+                'image' => $property->image ?? null,
                 'image_2' => $property->image_2 ?? null,
                 'image_3' => $property->image_3 ?? null,
-                'attributes' => is_string($property->attributes) ? json_decode($property->attributes, true) : ($property->attributes ?? [
-                    'amenities' => [],
-                    'room_facilities' => [],
-                    'rules' => []
-                ]),
-                'description' => $property->description,
+                'attributes' => is_string($property->attributes ?? null) 
+                    ? (json_decode($property->attributes, true) ?? [
+                        'amenities' => [],
+                        'room_facilities' => [],
+                        'rules' => []
+                    ]) 
+                    : ($property->attributes ?? [
+                        'amenities' => [],
+                        'room_facilities' => [],
+                        'rules' => []
+                    ]),
+                'description' => $property->description ?? null,
                 'address' => [
-                    'province' => $property->province,
-                    'city' => $property->city,
-                    'subdistrict' => $property->subdistrict,
-                    'village' => $property->village,
-                    'postal_code' => $property->postal_code,
-                    'full_address' => $property->address
+                    'province' => $property->province ?? null,
+                    'city' => $property->city ?? null,
+                    'subdistrict' => $property->subdistrict ?? null,
+                    'village' => $property->village ?? null,
+                    'postal_code' => $property->postal_code ?? null,
+                    'full_address' => $property->address ?? null
                 ],
-                'status' => $property->status,
-                'rooms' => $formattedRooms // Add the formatted rooms data
+                'status' => $property->status ?? null,
+                'rooms' => $formattedRooms ?? []
             ];
 
             return view('pages.house.show', [

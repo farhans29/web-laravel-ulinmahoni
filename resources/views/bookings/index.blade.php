@@ -243,27 +243,71 @@
                                             </div>
                                             --}}
                                         </td>
+                                        <!-- Transaction StatusS -->
                                         <td class="px-6 py-4">
                                             <div class="flex justify-center items-center h-full">
                                                 @php
                                                     $status = strtolower($booking->transaction_status);
                                                     $badgeBg = $badgeText = $dot = '';
+                                                    $transactionDate = \Carbon\Carbon::parse($booking->transaction_date);
+                                                    $currentTime = now();
+                                                    $hoursDifference = $currentTime->diffInHours($transactionDate);
+                                                    $shouldShowTimer = false;
+                                                    $expiresAt = $transactionDate->copy()->addHour();
+                                                    $remainingMinutes = $currentTime->diffInMinutes($expiresAt, false);
+
+                                                    // Handle status-specific styling and text
                                                     if ($status === 'pending') {
-                                                        $badgeBg = 'bg-red-50'; $badgeText = 'text-red-700'; $dot = 'bg-red-400';   
+                                                        $badgeBg = 'bg-red-50'; $badgeText = 'text-red-700'; $dot = 'bg-red-400';
                                                         $transactionText = 'Waiting Payment';
-                                                    } elseif ($status === 'waiting') {
+                                                        $shouldShowTimer = true;
+                                                        
+                                                        // Check if expired
+                                                        if ($hoursDifference >= 1) {
+                                                            $status = 'expired';
+                                                            $shouldShowTimer = false;
+                                                            // Update database status to expired
+                                                            $booking->update(['transaction_status' => 'expired']);
+                                                        }
+                                                    } 
+                                                    elseif ($status === 'waiting') {
                                                         $badgeBg = 'bg-yellow-50'; $badgeText = 'text-yellow-700'; $dot = 'bg-yellow-400';
                                                         $transactionText = 'Waiting Confirmation';
-                                                    } elseif ($status === 'success' || $status === 'paid') {
+                                                        $shouldShowTimer = true;
+                                                        
+                                                        // Check if expired
+                                                        if ($hoursDifference >= 1) {
+                                                            $status = 'expired';
+                                                            $shouldShowTimer = false;
+                                                            // Update database status to expired
+                                                            $booking->update(['transaction_status' => 'expired']);
+                                                        }
+                                                    }
+                                                    elseif ($status === 'success' || $status === 'paid') {
                                                         $badgeBg = 'bg-green-50'; $badgeText = 'text-green-700'; $dot = 'bg-green-500';
                                                         $transactionText = 'Success';
-                                                    } elseif ($status === 'canceled') {
+                                                    } 
+                                                    elseif ($status === 'canceled') {
                                                         $badgeBg = 'bg-gray-50'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-500';
                                                         $transactionText = 'Canceled';
-                                                    }
+                                                    } 
+                                                    elseif ($status === 'expired') {
+                                                        $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-500'; $dot = 'bg-gray-400';
+                                                        $transactionText = 'Expired';
+                                                    } 
                                                     else {
                                                         $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-400';
                                                         $transactionText = 'Failed';
+                                                    }
+                                                    
+                                                    // Add countdown timer if needed
+                                                    if ($shouldShowTimer && $remainingMinutes > 0) {
+                                                        $remainingTime = $expiresAt->diffForHumans($currentTime, [
+                                                            'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+                                                            'parts' => 3,
+                                                            'short' => true
+                                                        ]);
+                                                        $transactionText .= ' (' . $remainingTime . ')';
                                                     }
                                                 @endphp
                                                 <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm {{ $badgeBg }} {{ $badgeText }} border border-gray-200">

@@ -84,7 +84,9 @@ class HouseController extends Controller {
                     r.type as room_type,
                     r.level as room_level,
                     r.facility as room_facility,
-                    r.images as room_images,
+                    r.image as room_image,
+                    r.image2 as room_image_2,
+                    r.image3 as room_image_3,
                     r.periode as room_periode,
                     r.price as room_price,
                     r.price_original_daily as room_price_original_daily,
@@ -123,7 +125,9 @@ class HouseController extends Controller {
                         'type' => $row->room_type,
                         'level' => $row->room_level,
                         'facility' => is_string($row->room_facility) ? json_decode($row->room_facility, true) : [],
-                        'images' => is_string($row->room_images) ? json_decode($row->room_images, true) : [],
+                        'image' => $row->room_image ?? null,
+                        'image2' => $row->room_image_2 ?? null,
+                        'image3' => $row->room_image_3 ?? null,
                         'periode' => is_string($row->room_periode) ? json_decode($row->room_periode, true) : [
                             'daily' => false,
                             'weekly' => false,
@@ -172,8 +176,8 @@ class HouseController extends Controller {
                 'price_discounted_monthly' => $houseData->price_discounted_monthly,
                 'features' => is_string($houseData->features) ? json_decode($houseData->features, true) : [],
                 'image' => $houseData->image,
-                'image_2' => $houseData->image_2 ?? null,
-                'image_3' => $houseData->image_3 ?? null,
+                'image2' => $houseData->image_2 ?? null,
+                'image3' => $houseData->image_3 ?? null,
                 'description' => $houseData->description,
                 'address' => [
                     'province' => $houseData->province,
@@ -195,10 +199,10 @@ class HouseController extends Controller {
             $errorMessage = 'House not found or error occurred: ' . $e->getMessage();
             Log::error($errorMessage);
             
-            // Show 404 page with error message
-            return response()->view('errors.404', [
-                'message' => $errorMessage,
-                'title' => 'House Not Found'
+            // Return JSON response with error message
+            return response()->json([
+                'status' => 'error',
+                'message' => $errorMessage
             ], 404);
         }
     }
