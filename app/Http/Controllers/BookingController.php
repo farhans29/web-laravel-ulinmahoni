@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Transaction;
 use App\Models\Property;
@@ -291,7 +292,7 @@ class BookingController extends Controller
                 ->where('idrec', $id)
                 ->update([
                     'transaction_type' => $request->payment_method,
-                    'transaction_status' => 'waiting',
+                    'transaction_status' => 'pending',
                     'paid_at' => null
                 ]);
 
@@ -488,6 +489,20 @@ class BookingController extends Controller
                 'booking_type' => $request->booking_type
             ];
             $booking = Booking::create($bookingData);
+
+            // Create payment record
+            $paymentData = [
+                'property_id' => $room->property_id,
+                'room_id' => $room->idrec,
+                'order_id' => $order_id,
+                'user_id' => $user->id,
+                'grandtotal_price' => $totalPrice + $adminFee,
+                'payment_status' => 'pending',
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+            ];
+
+            Payment::create($paymentData);
 
             DB::commit();
 

@@ -161,59 +161,89 @@
 
             <!-- Property Info Section -->
             <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
-                <div class="max-w-3xl mx-auto">
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $house['name'] }}</h1>
-                        <p class="text-gray-600 mb-1">{{ $house['location'] }}</p>
-                        <p class="text-gray-500 text-sm">{{ $house['distance'] }}</p>
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Left Column - Property Info -->
+                    <div class="lg:w-1/2">
+                        <div class="mb-6">
+                            <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $house['name'] }}</h1>
+                            <p class="text-gray-600 mb-1">{{ $house['location'] }}</p>
+                            <p class="text-gray-500 text-sm">{{ $house['distance'] }}</p>
+                        </div>
+
+                        <!-- Features/Promotions -->
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Fasilitas</h3>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($house['features'] as $feature)
+                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
+                                        {{ $feature }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-3 mt-8">
+                            <button onclick="scrollToRooms()" class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center">
+                                <i class="fas fa-calendar-check mr-2"></i> Pesan Sekarang
+                            </button>
+                            <a href="https://wa.me/6289699670912/" target="_blank" class="flex-1 border border-teal-600 text-teal-600 py-3 px-6 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center">
+                                <i class="fab fa-whatsapp mr-2"></i> Hubungi untuk Info Lebih Lanjut
+                            </a>
+                        </div>
                     </div>
 
-                    <!-- Price Section -->
-                    <div class="text-center mb-6">
+                    <!-- Right Column - Price Section -->
+                    <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Harga Sewa</h3>
+                        
                         <!-- Daily Price -->
-                        <div class="mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
                             <p class="text-base text-gray-500 mb-1">
-                                Mulai harian
+                                <i class="far fa-calendar mr-2"></i>Harian
                             </p>
-                            <div class="flex items-center justify-center space-x-2">
-                                <span class="text-3xl font-bold text-gray-900">
-                                    Rp{{ number_format($house['price_original_daily'], 0, ',', '.') }}
-                                </span>
-                                <span class="text-lg text-gray-500">/malam</span>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-baseline">
+                                    <span class="text-2xl font-bold text-gray-900">
+                                        Rp{{ number_format($house['price_original_daily'], 0, ',', '.') }}
+                                    </span>
+                                    <span class="text-gray-500 ml-2">/malam</span>
+                                </div>
+                                <!-- <span class="text-sm text-green-600 bg-green-100 px-2 py-1 rounded">
+                                    <i class="fas fa-check-circle mr-1"></i> Tersedia
+                                </span> -->
                             </div>
                         </div>
                         
                         <!-- Monthly Price -->
-                        <div class="mb-4">
-                            <p class="text-base text-gray-500 mb-1">
-                                Mulai bulanan
+                        <div class="bg-teal-50 border border-teal-100 p-4 rounded-lg">
+                            <p class="text-base text-gray-600 mb-1">
+                                <i class="far fa-calendar-alt mr-2"></i>Bulanan
                             </p>
-                            <div class="flex items-center justify-center space-x-2">
-                                <span class="text-4xl font-bold text-gray-900">
-                                    Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}
-                                </span>
-                                <span class="text-lg text-gray-500">/bulan</span>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-baseline">
+                                    <span class="text-2xl font-bold text-teal-700">
+                                        Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}
+                                    </span>
+                                    <span class="text-gray-500 ml-2">/bulan</span>
+                                </div>
+                                <!-- <span class="text-sm text-teal-700 bg-teal-100 px-2 py-1 rounded">
+                                    <i class="fas fa-percentage mr-1"></i> Hemat
+                                </span> -->
                             </div>
                         </div>
 
-                        <!-- Features/Promotions -->
-                        <div class="mt-4 flex flex-wrap justify-center gap-2">
-                            @foreach($house['features'] as $feature)
-                                <span class="border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-gray-600">
-                                    {{ $feature }}
-                                </span>
-                            @endforeach
+                        <!-- Additional Info -->
+                        <div class="mt-4 text-sm text-gray-500">
+                            <p class="flex items-center">
+                                <i class="fas fa-info-circle mr-2 text-teal-600"></i>
+                                Harga sudah termasuk PPN
+                            </p>
+                            <p class="flex items-center mt-1">
+                                <i class="fas fa-credit-card mr-2 text-teal-600"></i>
+                                Pembayaran dengan metode transfer bank
+                            </p>
                         </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="flex justify-center space-x-4 max-w-md mx-auto">
-                        <button onclick="scrollToRooms()" class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors">
-                            Book Now
-                        </button>
-                        <button class="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors">
-                            Contact Agent
-                        </button>
                     </div>
                 </div>
             </div>
@@ -222,7 +252,7 @@
             <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Property Description -->
                 <div class="lg:col-span-2">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">About this property</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Tentang Properti</h2>
                     <div class="prose max-w-none">
                         <p class="text-gray-600">
                             {{ $house['description'] }}
@@ -247,7 +277,7 @@
 
                     <!-- Location Map -->
                     <div class="mt-8">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">Location</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Lokasi</h3>
                         <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
                             <div class="aspect-w-16 aspect-h-9">
                                 @php
@@ -312,7 +342,7 @@
 
                     <!-- Rooms Section -->
                     <div id="rooms-section" class="mt-12">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Available Rooms</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Kamar Tersedia</h2>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             @forelse($house['rooms'] as $room)

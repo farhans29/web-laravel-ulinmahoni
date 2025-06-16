@@ -14,7 +14,7 @@
     <main class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
             <div>
-                <h2 class="text-4xl font-light text-center text-gray-900 mb-2">Welcome Back</h2>
+                <h2 class="text-4xl font-light text-center text-gray-900 mb-2">Selamat Datang</h2>
                 <p class="text-center text-gray-600 text-lg">#UlinMahoni</p>
             </div>
 

@@ -2,26 +2,26 @@
 <footer class="bg-gray-800 text-white py-12 px-4">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
-            <h4 class="text-xl font-medium mb-4">Ulin Mahoni</h4>
+            <h4 class="text-2xl font-bold mb-6 text-white">Ulin Mahoni</h4>
             <p class="text-gray-400 text-sm">
-                Luxury living redefined for those who appreciate the finer things in life.
+                Tempat tinggal yang nyaman dan modern untuk para pencinta keindahan kota.
             </p>
         </div>
 
         <div>
-            <h4 class="text-xl font-medium mb-4">Quick Links</h4>
+            <h4 class="text-xl font-semibold mb-5 text-white">Quick Links</h4>
             <ul class="space-y-2 text-gray-400 text-sm">
                 <li>
-                    <a href="#" class="hover:text-white transition">
+                    <a href="{{ route('homepage') }}" class="hover:text-white transition">
                         Home
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="hover:text-white transition">
-                        About Us
+                    <a href="{{ route('properties.index') }}" class="hover:text-white transition">
+                        Properti
                     </a>
                 </li>
-                <li>
+                <!-- <li>
                     <a href="#" class="hover:text-white transition">
                         Rooms
                     </a>
@@ -30,12 +30,12 @@
                     <a href="#" class="hover:text-white transition">
                         Facilities
                     </a>
-                </li>
+                </li> -->
             </ul>
         </div>
 
         <div>
-            <h4 class="text-xl font-medium mb-4">Contact</h4>
+            <h4 class="text-xl font-semibold mb-5 text-white">Kontak Kami</h4>
             <ul class="space-y-2 text-gray-400 text-sm">
                 <li>Jl. Luxury Boulevard No. 123</li>
                 <li>+62 123 4567 890</li>
@@ -44,19 +44,25 @@
         </div>
 
         <div>
-            <h4 class="text-xl font-medium mb-4">Follow Us</h4>
+            <h4 class="text-xl font-semibold mb-5 text-white">Ikuti Kami</h4>
             <div class="flex space-x-4">
-                <a href="#" class="text-gray-400 hover:text-white transition">
-                    <div class="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">F</div>
+                <!-- Facebook -->
+                <a href="#" class="text-gray-400 hover:text-blue-500 transition-colors duration-200" aria-label="Facebook">
+                    <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
+                        <i class="fa-brands fa-facebook-f text-lg"></i>
+                    </div>
                 </a>
-                <a href="#" class="text-gray-400 hover:text-white transition">
-                    <div class="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">I</div>
+                <!-- Instagram -->
+                <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors duration-200" aria-label="Instagram">
+                    <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
+                        <i class="fa-brands fa-instagram text-lg"></i>
+                    </div>
                 </a>
-                <a href="#" class="text-gray-400 hover:text-white transition">
-                    <div class="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">T</div>
-                </a>
-                <a href="#" class="text-gray-400 hover:text-white transition">
-                    <div class="w-8 h-8 rounded-full border border-gray-600 flex items-center justify-center">Y</div>
+                <!-- Twitter (X) -->
+                <a href="#" class="text-gray-400 hover:text-black transition-colors duration-200" aria-label="Twitter">
+                    <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
+                        <i class="fa-brands fa-twitter text-lg"></i>
+                    </div>
                 </a>
             </div>
         </div>
