@@ -39,21 +39,32 @@
                             <div class="mt-auto">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="text-xs text-gray-500">
+                                        <!-- <p class="text-xs text-gray-500">
                                             mulai dari <span class="line-through">Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}</span>
-                                        </p>
+                                        </p> -->
                                         <div class="flex items-center">
                                             <p class="text-lg font-bold text-gray-800">
-                                                Rp{{ number_format($house['price_discounted_monthly'], 0, ',', '.') }} 
+                                                Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }} 
                                                 <span class="text-xs font-normal">/bulan</span>
                                             </p>
                                         </div>
                                     </div>
 
                                     <div class="flex flex-col space-y-1 text-xs text-gray-500">
-                                        @foreach($house['features'] as $feature)
-                                            <span class="border border-gray-300 rounded-lg px-2 py-1 text-center">{{ $feature }}</span>
+                                        @php
+                                            $features = $house['features'] ?? [];
+                                            $featureCount = count($features);
+                                            $displayFeatures = array_slice($features, 0, 2);
+                                            $remainingFeatures = $featureCount - 2;
+                                        @endphp
+                                        @foreach($displayFeatures as $feature)
+                                            <span class="border border-gray-300 rounded-lg px-2 py-1 text-center whitespace-nowrap">{{ $feature }}</span>
                                         @endforeach
+                                        @if($featureCount > 2)
+                                            <span class="border border-gray-300 rounded-lg px-2 py-1 text-center bg-gray-100 text-gray-500 cursor-default" title="{{ implode(', ', $features) }}">
+                                                +{{ $remainingFeatures }} more
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
