@@ -63,16 +63,39 @@ class User extends Authenticatable
      * @var array
      */
     protected $appends = [
-        'profile_photo_url',
-        'first_name',
-        'last_name'
+        'profile_photo_url'
     ];
 
     // If you still need the full name somewhere in your application, you can keep this method
     // but it won't be included in JSON responses unless explicitly called
+    /**
+     * Get the user's first name.
+     *
+     * @return string
+     */
+    public function getFirstNameAttribute($value)
+    {
+        return $value ?? '';
+    }
+
+    /**
+     * Get the user's last name.
+     *
+     * @return string
+     */
+    public function getLastNameAttribute($value)
+    {
+        return $value ?? '';
+    }
+
+    /**
+     * Get the user's full name.
+     *
+     * @return string
+     */
     public function getFullNameAttribute()
     {
-        return "{$this->first_name} {$this->last_name}";
+        return trim("{$this->first_name} {$this->last_name}");
     }
 
     /**
