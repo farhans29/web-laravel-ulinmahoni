@@ -497,7 +497,7 @@ class BookingController extends Controller
                 'order_id' => $order_id,
                 'user_id' => $user->id,
                 'grandtotal_price' => $totalPrice + $adminFee,
-                'payment_status' => 'pending',
+                'payment_status' => 'unpaid',
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
             ];

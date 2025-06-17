@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App\Http\Controllers\ApiController;
 
 use App\Models\Booking;
+use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Transaction;
 
@@ -281,6 +282,22 @@ class BookingController extends ApiController
                 ];
                 Booking::create($bookingData);
             }
+
+            // Create payment record
+            $paymentData = [
+                'property_id' => $request->property_id,
+                'room_id' => $request->room_id,
+                'order_id' => $order_id,
+                'user_id' => $request->user_id,
+                'grandtotal_price' => $grandtotalPrice,
+                'payment_status' => 'unpaid',
+                'created_by' => $request->user_id,
+                'updated_by' => $request->user_id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+            Payment::create($paymentData);
 
             DB::commit();
 

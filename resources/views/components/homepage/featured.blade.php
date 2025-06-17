@@ -2,7 +2,7 @@
 <section class="py-12 px-4 bg-[#f5f2ea]">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-10">
-            <h2 class="text-4xl font-medium text-gray-800 mb-2">Featured Properties</h2>
+            <h2 class="text-4xl font-medium text-gray-800 mb-2">Properti Pilihan</h2>
             <div class="flex items-center justify-center">
                 <div class="w-12 h-px bg-gray-300"></div>
                 <p class="mx-4 text-teal-600 italic">Discover Our Featured Properties</p>
@@ -18,7 +18,7 @@
                 <div class="absolute inset-0 gradient-overlay"></div>
                 <div class="absolute bottom-4 left-4">
                     <button class="bg-transparent border border-white text-white px-4 py-2 rounded hover:bg-white/20 transition flex items-center">
-                        BOOK NOW
+                        SEWA
                         <i class="fas fa-arrow-right ml-2"></i>
                     </button>
                 </div>
@@ -31,7 +31,7 @@
                 <div class="absolute inset-0 gradient-overlay"></div>
                 <div class="absolute bottom-4 left-4">
                     <button class="bg-transparent border border-white text-white px-4 py-2 rounded hover:bg-white/20 transition flex items-center">
-                        BOOK NOW
+                        SEWA
                         <i class="fas fa-arrow-right ml-2"></i>
                     </button>
                 </div>
@@ -45,7 +45,7 @@
             <div class="absolute inset-0 gradient-overlay"></div>
             <div class="absolute bottom-4 left-4">
                 <button class="bg-transparent border border-white text-white px-4 py-2 rounded hover:bg-white/20 transition flex items-center">
-                    BOOK NOW
+                    SEWA
                     <i class="fas fa-arrow-right ml-2"></i>
                 </button>
             </div>

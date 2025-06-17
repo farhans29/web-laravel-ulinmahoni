@@ -2,7 +2,7 @@
 <section class="py-12 px-4 bg-white">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-10">
-            <h3 class="text-4xl font-medium text-gray-800 mb-2">Special Features</h3>
+            <h3 class="text-4xl font-medium text-gray-800 mb-2">Fitur-fitur Spesial</h3>
             <div class="flex items-center justify-center">
                 <div class="w-12 h-px bg-gray-300"></div>
                 <p class="mx-4 text-teal-600 italic">Provided Features in our Properties</p>
@@ -19,10 +19,10 @@
                          class="w-full h-full object-cover">
                 </div>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-800">SPA AREAS</h3>
-                    <p class="text-gray-500 text-sm mb-2">A journey of wellness and relaxation</p>
+                    <h3 class="text-lg font-medium text-gray-800">AREA SPA</h3>
+                    <p class="text-gray-500 text-sm mb-2">Untuk relaksasi dan kesehatan</p>
                     <p class="text-gray-600 text-sm mb-10">
-                        The Spa at the newest luxury hotel is a 500 sqm heaven of wellness and relaxation.
+                        Area Spa berukuran 500 sqm, menjadi tempat untuk relaksasi dan kesehatan.
                     </p>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">LEARN MORE</button>
                 </div>
@@ -36,11 +36,11 @@
                          class="w-full h-full object-cover">
                 </div>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-800">RESTAURANTS</h3>
-                    <p class="text-gray-500 text-sm mb-2">Waterfront dining under the stars</p>
+                    <h3 class="text-lg font-medium text-gray-800">RESTO</h3>
+                    <p class="text-gray-500 text-sm mb-2">Makanan yang lezat</p>
                     <p class="text-gray-600 text-sm mb-10">
-                        A new, sensational gastronomic concept with tradition inspired, seafood-based
-                        contemporary greek cuisine.
+                        Resto dengan konsep yang baru dan menarik, dengan makanan tradisional, berbasis ikan
+                        dan tersedia makanan modern.
                     </p>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">LEARN MORE</button>
                 </div>
@@ -54,11 +54,10 @@
                          class="w-full h-full object-cover">
                 </div>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-800">POOL CLUB</h3>
-                    <p class="text-gray-500 text-sm mb-2">An all day dining spot</p>
+                    <h3 class="text-lg font-medium text-gray-800">KOLAM BERENANG</h3>
+                    <p class="text-gray-500 text-sm mb-2">Fasilitias berenang yang indah</p>
                     <p class="text-gray-600 text-sm mb-10">
-                        Start with a healthy breakfast, served at your leisure until 11:30 am. Choose from an extensive
-                        casual all-day menu.
+                        Kolam berenang yang luas dan indah, dengan berbagai fasilitas yang lengkap.
                     </p>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">LEARN MORE</button>
                 </div>
@@ -72,10 +71,10 @@
                          class="w-full h-full object-cover">
                 </div>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-800">PRIVATE BALCONY AREAS</h3>
-                    <p class="text-gray-500 text-sm mb-2">Dine under starlit sky</p>
+                    <h3 class="text-lg font-medium text-gray-800">AREA PRIVATE</h3>
+                    <p class="text-gray-500 text-sm mb-2">Area Private yang indah</p>
                     <p class="text-gray-600 text-sm mb-10">
-                        The Suites with their beautiful outdoor barbecue setup are ideal for personalized experience.
+                        Area Private dengan fasilitas yang lengkap, ideal untuk pengalaman pribadi.
                     </p>
                     <button class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded">LEARN MORE</button>
                 </div>
