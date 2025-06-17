@@ -20,10 +20,24 @@ use App\Http\Controllers\Api\RoomController;
 |
 */
 
-// Authentication routes
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+// Social Authentication Routes
+Route::prefix('auth')->group(function () {
+    // Google OAuth
+    Route::get('/google', [\App\Http\Controllers\Api\Auth\SocialAuthController::class, 'redirectToGoogle']);
+    Route::post('/google/callback', [\App\Http\Controllers\Api\Auth\SocialAuthController::class, 'handleGoogleCallback']);
+    
+    // Logout
+    Route::post('/logout', [\App\Http\Controllers\Api\Auth\SocialAuthController::class, 'logout'])
+        ->middleware('auth:sanctum');
+});
+
+// Protected routes
+Route::middleware('auth:sanctum')->group(function () {
+    // User info endpoint
+    Route::get('/user', function (Request $request) {
+        return response()->json($request->user());
+    });
+});
 
 // Health check endpoint (no version prefix)
 Route::get('health-check', function () {

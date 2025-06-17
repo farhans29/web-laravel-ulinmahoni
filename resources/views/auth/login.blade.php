@@ -123,6 +123,21 @@
                 </div>
             </form>
 
+            <!-- Divider with "or" text -->
+            <div class="flex items-center my-6">
+                <div class="flex-1 border-t border-gray-200"></div>
+                <span class="px-4 text-sm text-gray-500">atau</span>
+                <div class="flex-1 border-t border-gray-200"></div>
+            </div>
+
+            <!-- Google Login Button -->
+            <div class="mt-6">
+                <a href="{{ route('login.google') }}" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200">
+                    <img class="h-5 w-5 mr-2" src="https://www.google.com/favicon.ico" alt="Google">
+                    Masuk dengan Google
+                </a>
+            </div>
+
             <x-jet-validation-errors class="mt-4"/>
 
             <div class="text-center mt-4">

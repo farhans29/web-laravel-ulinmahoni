@@ -415,43 +415,50 @@
                 const checkInInput = document.getElementById('check_in');
                 const checkOutInput = document.getElementById('check_out');
                 const monthsSelect = document.getElementById('months');
-                const checkOutGroup = document.getElementById('checkOutGroup');
-                
-                if (!rentTypeSelect || !monthInput || !dateInputs || !checkInInput || !checkOutInput || !monthsSelect) {
-                    console.error('Required form elements not found');
-                    return;
-                }
-                
-                const isMonthly = rentTypeSelect.value === 'monthly';
-                monthInput.classList.toggle('hidden', !isMonthly);
-                // dateInputs.classList.toggle('hidden', isMonthly);
-                
-                // Hide/show check-out group for monthly/daily
-                if (checkOutGroup) {
-                    checkOutGroup.classList.toggle('hidden', isMonthly);
-                }
-                
-                // Reset fields appropriately
-                if (isMonthly) {
-                    monthsSelect.value = monthsSelect.value || '1';
-                    // Set check-out based on check-in and months
-                    if (checkInInput.value) {
-                        const checkInDate = new Date(checkInInput.value);
-                        const months = parseInt(monthsSelect.value, 10) || 1;
-                        const checkOutDate = new Date(checkInDate);
-                        checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                        checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                const dailyRateDisplay = document.getElementById('dailyRateDisplay');
+                const monthlyRateDisplay = document.getElementById('monthlyRateDisplay');
+                const rateTypeDisplay = document.getElementById('rateTypeDisplay');
+                const savedSearch = localStorage.getItem('propertySearch');
+                const searchState = savedSearch ? JSON.parse(savedSearch) : null;
+
+                if (rentTypeSelect.value === 'monthly') {
+                    monthInput.classList.remove('hidden');
+                    // Show only check-in date for monthly rentals
+                    dateInputs.classList.remove('hidden');
+                    const checkOutGroup = document.getElementById('checkOutGroup');
+                    if (checkOutGroup) checkOutGroup.classList.add('hidden');
+                    dailyRateDisplay.classList.add('hidden');
+                    monthlyRateDisplay.classList.remove('hidden');
+                    rateTypeDisplay.textContent = 'Monthly Rate';
+                    
+                    // Set months from saved search or default to 1
+                    if (monthsSelect) {
+                        monthsSelect.value = searchState?.period === 'monthly' && searchState?.months 
+                            ? searchState.months 
+                            : 1;
+                        document.getElementById('bookingMonths').value = monthsSelect.value;
                     }
                 } else {
-                    // Get current date for default values
-                    const today = new Date();
-                    const defaultCheckIn = today.toISOString().split('T')[0];
-                    const defaultCheckOut = new Date(today);
-                    defaultCheckOut.setDate(today.getDate() + 3);
-                    const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
+                    monthInput.classList.add('hidden');
+                    dateInputs.classList.remove('hidden');
+                    dailyRateDisplay.classList.remove('hidden');
+                    monthlyRateDisplay.classList.add('hidden');
+                    rateTypeDisplay.textContent = 'Daily Rate';
                     
-                    checkInInput.value = defaultCheckIn;
-                    checkOutInput.value = defaultCheckOutStr;
+                    // Set dates from saved search or use defaults
+                    const today = new Date();
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
+                    if (checkInInput) {
+                        checkInInput.value = searchState?.check_in || today.toISOString().split('T')[0];
+                        checkInInput.dispatchEvent(new Event('change'));
+                    }
+                    
+                    if (checkOutInput) {
+                        checkOutInput.value = searchState?.check_out || tomorrow.toISOString().split('T')[0];
+                        checkOutInput.dispatchEvent(new Event('change'));
+                    }
                 }
                 updatePriceSummary();
             }
@@ -485,10 +492,23 @@
 
             // --- Initialization ---
             function initializeForm() {
+                // Get saved search state
+                const savedSearch = localStorage.getItem('propertySearch');
+                const searchState = savedSearch ? JSON.parse(savedSearch) : null;
+                
                 // Get current date for default values
                 const today = new Date();
-                const defaultCheckIn = today.toISOString().split('T')[0];
-                const defaultCheckOut = new Date(today);
+                const defaultCheckIn = searchState?.check_in || today.toISOString().split('T')[0];
+                const defaultCheckOut = searchState?.check_out || new Date(today);
+                
+                // Set rent type from saved search if available
+                if (searchState?.period) {
+                    const rentTypeSelect = document.getElementById('rent_type');
+                    if (rentTypeSelect) {
+                        rentTypeSelect.value = searchState.period;
+                        updateRentalType(); // Update UI based on rent type
+                    }
+                }
                 defaultCheckOut.setDate(today.getDate() + 1);
                 const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
                 
@@ -593,6 +613,9 @@
                 if (!validateForm()) {
                     return;
                 }
+                
+                // Clear the search state from localStorage when booking is submitted
+                localStorage.removeItem('propertySearch');
                 
                 errorAlert.classList.add('hidden');
                 errorAlert.textContent = '';

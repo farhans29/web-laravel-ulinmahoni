@@ -255,6 +255,7 @@
                                                     $shouldShowTimer = false;
                                                     $expiresAt = $transactionDate->copy()->addHour();
                                                     $remainingMinutes = $currentTime->diffInMinutes($expiresAt, false);
+                                                    $isExpired = false;
 
                                                     // Handle status-specific styling and text
                                                     if ($status === 'pending') {
@@ -264,24 +265,15 @@
                                                         
                                                         // Check if expired
                                                         if ($hoursDifference >= 1) {
+                                                            $isExpired = true;
                                                             $status = 'expired';
                                                             $shouldShowTimer = false;
-                                                            // Update database status to expired
-                                                            $booking->update(['transaction_status' => 'expired']);
                                                         }
                                                     } 
                                                     elseif ($status === 'waiting') {
                                                         $badgeBg = 'bg-yellow-50'; $badgeText = 'text-yellow-700'; $dot = 'bg-yellow-400';
                                                         $transactionText = 'Waiting Confirmation';
-                                                        $shouldShowTimer = true;
-                                                        
-                                                        // Check if expired
-                                                        if ($hoursDifference >= 1) {
-                                                            $status = 'expired';
-                                                            $shouldShowTimer = false;
-                                                            // Update database status to expired
-                                                            $booking->update(['transaction_status' => 'expired']);
-                                                        }
+                                                        $shouldShowTimer = false;
                                                     }
                                                     elseif ($status === 'success' || $status === 'paid') {
                                                         $badgeBg = 'bg-green-50'; $badgeText = 'text-green-700'; $dot = 'bg-green-500';
@@ -590,6 +582,58 @@
                 cancelButton: 'px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ml-3'
             },
             buttonsStyling: false
+        });
+
+        // Function to mark a booking as expired via AJAX
+        function markBookingAsExpired(bookingId) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+            fetch(`/bookings/${bookingId}/mark-expired`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ _method: 'POST' })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw err; });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    // Reload the page to reflect the changes
+                    window.location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Failed to update booking status',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message || 'An error occurred while updating the booking status',
+                    confirmButtonText: 'OK'
+                });
+            });
+        }
+
+        // Check for expired bookings on page load
+        document.querySelectorAll('.booking-row[data-expired="true"]').forEach(row => {
+            const bookingId = row.dataset.bookingId;
+            if (bookingId) {
+                markBookingAsExpired(bookingId);
+            }
         });
     });
 </script>

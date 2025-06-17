@@ -44,7 +44,7 @@
     </div>
 
       <!-- Search Section -->
-      <ssection class="search-section">
+      <section class="search-section">
         <div class="search-container">
             <form action="{{ route('properties.index') }}" method="GET" class="search-box">
                 <div class="flex flex-col md:flex-row gap-4">
@@ -101,6 +101,7 @@
                         document.addEventListener('DOMContentLoaded', function() {
                             const checkInInput = document.querySelector('input[name="check_in"]');
                             const checkOutInput = document.querySelector('input[name="check_out"]');
+                            const searchForm = document.querySelector('form.search-box');
                             
                             // Initialize input types based on value
                             if (checkInInput && !checkInInput.value) checkInInput.type = 'text';
@@ -115,6 +116,20 @@
                                             checkOutInput.value = '';
                                         }
                                     }
+                                });
+                            }
+
+                            // Save search state when form is submitted
+                            if (searchForm) {
+                                searchForm.addEventListener('submit', function(e) {
+                                    // Save search state to localStorage
+                                    const searchState = {
+                                        type: this.elements.type.value,
+                                        period: this.elements.period.value,
+                                        check_in: this.elements.check_in.type === 'date' ? this.elements.check_in.value : '',
+                                        check_out: this.elements.check_out.type === 'date' ? this.elements.check_out.value : ''
+                                    };
+                                    localStorage.setItem('propertySearch', JSON.stringify(searchState));
                                 });
                             }
                         });

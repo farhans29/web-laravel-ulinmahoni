@@ -32,8 +32,11 @@
             {{ __('Saved.') }}
         </x-jet-action-message>
 
-        <x-jet-button>
-            {{ __('Save') }}
-        </x-jet-button>
+        <button type="submit" class="inline-flex items-center px-4 py-2 bg-teal-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-teal-700 active:bg-teal-800 focus:outline-none focus:border-teal-900 focus:ring focus:ring-teal-200 disabled:opacity-25 transition ease-in-out duration-150">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            {{ __('Update Password') }}
+        </button>
     </x-slot>
 </x-jet-form-section>

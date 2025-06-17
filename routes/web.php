@@ -115,6 +115,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         ->name('attachments.view')
         ->middleware('signed');
     Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
+    // Mark booking as expired
+    Route::post('/bookings/{id}/mark-expired', [BookingController::class, 'markExpired'])->name('bookings.mark-expired');
     Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 });
@@ -314,6 +316,10 @@ Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {
     });
 
 });
+
+// Google OAuth Routes
+Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleGoogleCallback']);
 
 Route::get('/login', function () {
     return view('auth.login');

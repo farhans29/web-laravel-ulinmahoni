@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
@@ -143,6 +144,7 @@ class BookingController extends Controller
                     ->where('idrec', $id)
                     ->update([
                         'attachment' => $base64,
+                        'transaction_status' => 'waiting',
                         'updated_at' => now(),
                     ]);
 
@@ -462,9 +464,9 @@ class BookingController extends Controller
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'room_name' => $room->name,
-                'booking_days' => $bookingDays,
+                'booking_days' => $request->rent_type === 'daily' ? $bookingDays : null,
                 'booking_months' => $request->rent_type === 'monthly' ? $bookingMonths : null,
-                'daily_price' => $price,
+                'daily_price' => $request->rent_type === 'daily' ? $price : null,
                 'monthly_price'=> $request->rent_type === 'monthly' ? $price : null,
                 'room_price' => $totalPrice,
                 'admin_fees' => $adminFee,
@@ -532,6 +534,87 @@ class BookingController extends Controller
                 'message' => $e->getMessage() ?: 'Failed to create booking',
                 'errors' => ['server' => [$e->getMessage() ?: 'An unexpected error occurred']]
             ], 500);
+        }
+    }
+
+    /**
+     * Mark a booking as expired
+     *
+     * @param string $id Booking ID
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    public function markExpired($id)
+    {
+        try {
+            // Find the booking with related data
+            $booking = Booking::with(['user', 'room', 'property'])
+                ->where('idrec', $id)
+                ->firstOrFail();
+
+            // Check if the booking belongs to the authenticated user
+            if (auth()->id() !== $booking->user_id) {
+                if (request()->wantsJson()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'You are not authorized to update this booking.'
+                    ], 403);
+                }
+                return back()->with('error', 'You are not authorized to update this booking.');
+            }
+
+            // Check if booking is still pending
+            if ($booking->transaction_status !== 'pending') {
+                $message = 'Only pending bookings can be marked as expired.';
+                if (request()->wantsJson()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => $message
+                    ], 400);
+                }
+                return back()->with('error', $message);
+            }
+
+            // Update the status to expired
+            $booking->update([
+                'transaction_status' => 'expired',
+                'updated_at' => now()
+            ]);
+
+            // Log the action
+            Log::info("Booking #{$booking->idrec} marked as expired by user #" . auth()->id());
+
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Booking has been marked as expired.',
+                    'data' => [
+                        'booking_id' => $booking->idrec,
+                        'status' => 'expired'
+                    ]
+                ]);
+            }
+
+            return back()->with('success', 'Booking has been marked as expired.');
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            $message = 'Booking not found.';
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $message
+                ], 404);
+            }
+            return back()->with('error', $message);
+        } catch (\Exception $e) {
+            Log::error('Error marking booking as expired: ' . $e->getMessage());
+            
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'An error occurred while processing your request.'
+                ], 500);
+            }
+            return back()->with('error', 'An error occurred while processing your request.');
         }
     }
 }
