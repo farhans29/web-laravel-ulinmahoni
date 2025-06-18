@@ -24,7 +24,7 @@ class ContentServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->CRM_ISS = DB::table('m_company')->select('nilai')->where('kunci', 'Nama OS')->first();
+        $this->CRM_ISS = DB::table('global_title')->select('key')->where('key', 'OS Name')->first();
         
         view()->composer('*', function ($view) {
             $view->with([

@@ -196,6 +196,7 @@ return [
          */
         Yajra\DataTables\DataTablesServiceProvider::class,
         RealRashid\SweetAlert\SweetAlertServiceProvider::class,
+        Laravel\Socialite\SocialiteServiceProvider::class,
         /*
          * Application Service Providers...
          */
@@ -225,6 +226,7 @@ return [
         'Helper' => App\Helpers\Helper::class,
         'Divider' => App\Helpers\Divider::class,
         'Alert' => RealRashid\SweetAlert\Facades\Alert::class,
+        'Socialite' => Laravel\Socialite\Facades\Socialite::class,
     ])->toArray(),
 
 ];

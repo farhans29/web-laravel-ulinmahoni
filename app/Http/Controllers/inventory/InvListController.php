@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 class InvListController extends Controller
 {
     protected $saveImageUrl;
-    protected $baseImageUrl;
+    protected $baseImageUrl;    
 
     public function __construct()
     {
