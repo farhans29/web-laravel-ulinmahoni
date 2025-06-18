@@ -118,7 +118,7 @@
                 alt="Bookings Hero" 
                 class="w-full h-full object-cover" >
             <div class="absolute inset-0 gradient-overlay flex items-center justify-center">
-                <h1 class="text-2xl text-white font-medium">My Bookings</h1>
+                <h1 class="text-2xl text-white font-medium">Pemesanan Saya</h1>
             </div>
         </div>
 
@@ -129,14 +129,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-4 flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded">
             <i class="fas fa-exclamation-triangle"></i>
-            <span class="font-semibold">Please upload your payment proof to avoid missed payment and to confirm your booking!</span>
+            <span class="font-semibold">Mohon upload bukti pembayaran Anda untuk menghindari pembayaran yang terlewat dan untuk memastikan pesanan Anda!</span>
         </div>
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <div x-data="{ tab: 'all' }">
                     <div class="flex border-b border-gray-200 mb-4">
-                        <button @click="tab = 'all'" :class="tab === 'all' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">All Bookings</button>
-                        <button @click="tab = 'completed'" :class="tab === 'completed' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">Completed</button>
+                        <button @click="tab = 'all'" :class="tab === 'all' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">Mendatang</button>
+                        <button @click="tab = 'completed'" :class="tab === 'completed' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">Selesai</button>
                     </div>
 
                     <!-- All Bookings Tab -->
@@ -425,8 +425,8 @@
                                         <td colspan="6" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center justify-center text-gray-500">
                                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
-                                                <p class="text-lg">No bookings found</p>
-                                                <p class="text-sm mt-2">Your booking history will appear here</p>
+                                                <p class="text-lg">Tidak ada pemesanan</p>
+                                                <p class="text-sm mt-2">Pemesanan Anda akan muncul di sini</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -553,8 +553,8 @@
                                         <td colspan="6" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center justify-center text-gray-500">
                                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
-                                                <p class="text-lg">No completed bookings found</p>
-                                                <p class="text-sm mt-2">Completed bookings will appear here</p>
+                                                <p class="text-lg">Tidak ada pemesanan selesai</p>
+                                                <p class="text-sm mt-2">Pemesanan selesai akan muncul di sini</p>
                                             </div>
                                         </td>
                                     </tr>

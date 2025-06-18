@@ -9,22 +9,40 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
+use App\Http\Requests\Api\GoogleCallbackRequest;
 
 class SocialAuthController extends Controller
 {
     /**
-     * Redirect to Google OAuth URL
-     * 
+     * Get the Google OAuth URL
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function redirectToGoogle()
     {
-        return response()->json([
-            'url' => Socialite::driver('google')
-                ->stateless()
+        try {
+            $url = Socialite::driver('google')
+                ->with(['prompt' => 'select_account'])
                 ->redirect()
-                ->getTargetUrl()
-        ]);
+                ->getTargetUrl();
+                
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'url' => $url
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Google Redirect Error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to generate Google OAuth URL',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 
     /**
@@ -35,22 +53,31 @@ class SocialAuthController extends Controller
      */
     public function handleGoogleCallback(GoogleCallbackRequest $request)
     {
-
         try {
+            // Check for error in the OAuth response
+            if ($request->has('error')) {
+                throw new \Exception($request->error);
+            }
+
+            // Get the user from Google
             $googleUser = Socialite::driver('google')
                 ->stateless()
                 ->user();
-            
+
+            if (!$googleUser->getEmail()) {
+                throw new \Exception('No email returned from Google');
+            }
+
             // Check if user already exists
             $user = User::where('email', $googleUser->getEmail())->first();
-            
+
             if (!$user) {
-                // Extract username from email (everything before @)
+                // Create a new user
                 $email = $googleUser->getEmail();
                 $username = strstr($email, '@', true) ?: $email;
                 
                 $user = User::create([
-                    'name' => $googleUser->getName(),
+                    'name' => $googleUser->getName() ?: $username,
                     'username' => $username,
                     'email' => $email,
                     'password' => bcrypt(Str::random(16)),
@@ -83,11 +110,26 @@ class SocialAuthController extends Controller
             Log::error('Google OAuth API Error: ' . $e->getMessage());
             Log::error('Error Trace: ' . $e->getTraceAsString());
             
+            $errorMessage = 'Authentication failed';
+            $statusCode = 401;
+            
+            // Handle specific error cases
+            if (str_contains($e->getMessage(), 'Invalid state')) {
+                $errorMessage = 'Session expired. Please try again.';
+                $statusCode = 400;
+            } elseif (str_contains($e->getMessage(), 'Invalid verification code')) {
+                $errorMessage = 'Invalid verification code. Please try again.';
+                $statusCode = 400;
+            } elseif (str_contains($e->getMessage(), 'No email returned')) {
+                $errorMessage = 'No email address found in Google account. Please use a Google account with a verified email.';
+                $statusCode = 400;
+            }
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to authenticate with Google',
-                'error' => config('app.debug') ? $e->getMessage() : 'Authentication failed'
-            ], 401);
+                'message' => $errorMessage,
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], $statusCode);
         }
     }
 

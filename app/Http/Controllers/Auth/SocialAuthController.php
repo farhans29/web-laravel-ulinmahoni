@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class SocialAuthController extends Controller
 {
@@ -16,26 +17,35 @@ class SocialAuthController extends Controller
         return Socialite::driver('google')->redirect();
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         try {
+            // Check for error in the OAuth response
+            if ($request->has('error')) {
+                throw new \Exception($request->error);
+            }
+
+            // Get the user from Google
             $googleUser = Socialite::driver('google')->user();
+            
+            if (!$googleUser->getEmail()) {
+                throw new \Exception('No email returned from Google');
+            }
             
             // Check if user already exists
             $user = User::where('email', $googleUser->getEmail())->first();
             
             if (!$user) {
                 // Create a new user
-                // Extract username from email (everything before @)
                 $email = $googleUser->getEmail();
                 $username = strstr($email, '@', true) ?: $email;
                 
                 $user = User::create([
-                    'name' => $googleUser->getName(),
+                    'name' => $googleUser->getName() ?: $username,
                     'username' => $username,
                     'email' => $email,
-                    'password' => bcrypt(Str::random(16)), // Random password
-                    // 'email_verified_at' => now(), // Mark email as verified
+                    'password' => bcrypt(Str::random(16)),
+                    'email_verified_at' => now(),
                 ]);
             }
             
@@ -45,27 +55,22 @@ class SocialAuthController extends Controller
             return redirect()->intended('/');
             
         } catch (\Exception $e) {
-            // Log the full error to the Laravel log
-            \Log::error('Google OAuth Error: ' . $e->getMessage());
-            \Log::error('Error Trace: ' . $e->getTraceAsString());
+            Log::error('Google OAuth Error: ' . $e->getMessage());
+            Log::error('Error Trace: ' . $e->getTraceAsString());
             
-            // Also log the request details that might be helpful
-            if (isset($googleUser)) {
-                \Log::info('Google User Data: ' . json_encode($googleUser));
-            }
+            $errorMessage = 'Unable to login using Google. ';
             
-            // For debugging in development, you can also dd() the error
-            if (config('app.debug')) {
-                dd([
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => $e->getTraceAsString()
-                ]);
+            // Add more specific error messages based on the exception
+            if (str_contains($e->getMessage(), 'Invalid state')) {
+                $errorMessage .= 'Session expired. Please try again.';
+            } elseif (str_contains($e->getMessage(), 'Invalid verification code')) {
+                $errorMessage .= 'Invalid verification code. Please try again.';
+            } else {
+                $errorMessage .= $e->getMessage();
             }
             
             return redirect()->route('login')
-                ->withErrors(['error' => 'Unable to login using Google. Please try again.']);
+                ->withErrors(['error' => $errorMessage]);
         }
     }
 }

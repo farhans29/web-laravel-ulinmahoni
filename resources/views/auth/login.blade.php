@@ -89,7 +89,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-envelope text-gray-400"></i>
                             </div>
-                            <input id="email" name="email" type="email" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Email address" :value="old('email')" />
+                            <input id="email" name="email" type="email" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Email" :value="old('email')" />
                         </div>
                     </div>
                     <div>
@@ -107,7 +107,7 @@
                     @if (Route::has('password.request'))
                         <div class="text-sm">
                             <a href="{{ route('password.request') }}" class="font-medium text-teal-600 hover:text-teal-500">
-                                {{ __('Forgot Password?') }}
+                                {{ __('Lupa Password?') }}
                             </a>
                         </div>
                     @endif
@@ -118,7 +118,7 @@
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                             <i class="fas fa-sign-in-alt text-teal-500 group-hover:text-teal-400"></i>
                         </span>
-                        {{ __('Sign in') }}
+                        {{ __('Masuk') }}
                     </button>
                 </div>
             </form>
@@ -142,9 +142,9 @@
 
             <div class="text-center mt-4">
                 <p class="text-sm text-gray-600">
-                    {{ __("Don't have an account?") }}
+                    {{ __("Belum Punya Akun?") }}
                     <a href="{{ route('register') }}" class="font-medium text-teal-600 hover:text-teal-500">
-                        {{ __('Sign up') }}
+                        {{ __('Daftar') }}
                     </a>
                 </p>
             </div>

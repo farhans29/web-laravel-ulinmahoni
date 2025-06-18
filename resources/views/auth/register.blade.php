@@ -82,7 +82,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-user text-gray-400"></i>
                             </div>
-                            <input id="name" name="name" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Full Name" :value="old('name')" />
+                            <input id="name" name="name" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Nama Lengkap" :value="old('name')" />
                         </div>
                     </div>
 
@@ -102,7 +102,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-envelope text-gray-400"></i>
                             </div>
-                            <input id="email" name="email" type="email" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Email address" :value="old('email')" />
+                            <input id="email" name="email" type="email" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Email" :value="old('email')" />
                         </div>
                     </div>
 
@@ -122,17 +122,17 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-lock text-gray-400"></i>
                             </div>
-                            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Confirm Password" />
+                            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Ketik Ulang Password" />
                         </div>
                     </div>
                 </div>
 
-                <div class="flex items-center">
+                <!-- <div class="flex items-center">
                     <input id="newsletter" name="newsletter" type="checkbox" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded">
                     <label for="newsletter" class="ml-2 block text-sm text-gray-900">
                         Email me about product news
                     </label>
-                </div>
+                </div> -->
 
                 @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                     <div class="flex items-center">
@@ -151,7 +151,7 @@
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                             <i class="fas fa-user-plus text-teal-500 group-hover:text-teal-400"></i>
                         </span>
-                        {{ __('Sign Up') }}
+                        {{ __('Daftar') }}
                     </button>
                 </div>
             </form>
@@ -160,9 +160,9 @@
 
             <div class="text-center mt-4">
                 <p class="text-sm text-gray-600">
-                    {{ __('Already have an account?') }}
+                    {{ __('Sudah Punya Akun?') }}
                     <a href="{{ route('login') }}" class="font-medium text-teal-600 hover:text-teal-500">
-                        {{ __('Sign in') }}
+                        {{ __('Masuk') }}
                     </a>
                 </p>
             </div>
