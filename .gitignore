@@ -16,5 +16,7 @@ yarn-error.log
 /.vscode
 /.zip
 *.zip
+
 *.DS_Store
 cursor_mac_id_modifier.sh
+
