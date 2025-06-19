@@ -19,6 +19,16 @@ class PropertyController extends ApiController
         try {
             $query = Property::query();
             
+            // Join with property images
+            $query->leftJoin('m_property_images', 'm_property_images.property_id', '=', 'm_properties.idrec')
+                ->select([
+                    'm_properties.*',
+                    'm_property_images.idrec as image_id',
+                    'm_property_images.image',
+                    'm_property_images.caption',
+                ]);
+
+            
             // Add filters if provided
             if ($request->has('tags')) {
                 $query->where('tags', $request->tags);
@@ -43,25 +53,62 @@ class PropertyController extends ApiController
             if ($request->has('price_max')) {
                 $query->where('price', '<=', $request->price_max);
             }
-
             
             // Order by created_at (newest first)
-            $query->orderBy('created_at', 'desc');
+            $query->orderBy('m_properties.created_at', 'desc');
             
-            // Check if pagination is requested
-            if ($request->has('limit') && $request->has('page')) {
-                $properties = $query->paginate($request->limit);
+            // Get all properties with their images
+            $properties = $query->get();
+            
+            // Group images by property
+            $groupedProperties = $properties->groupBy('idrec')->map(function ($propertyGroup) {
+                $property = $propertyGroup->first();
+                $images = $propertyGroup->filter(function ($item) {
+                    return $item->image_id !== null;
+                })->map(function ($imageItem) {
+                    return [
+                        'id' => $imageItem->image_id,
+                        'image' => $imageItem->image,
+                        'caption' => $imageItem->caption,
+                    ];
+                })->values();
                 
-                return $this->respondWithPagination($properties, [
-                    'data' => $properties->items()
+                $propertyArray = $property->toArray();
+                $propertyArray['images'] = $images;
+                
+                // Remove image-related fields from the main property object
+                unset(
+                    $propertyArray['image_id'],
+                    $propertyArray['image'],
+                    $propertyArray['caption']
+                );
+                
+                return $propertyArray;
+            })->values();
+            
+            // Handle pagination if requested
+            if ($request->has('limit') && $request->has('page')) {
+                $page = $request->page;
+                $perPage = $request->limit;
+                $offset = ($page - 1) * $perPage;
+                
+                $paginatedItems = $groupedProperties->slice($offset, $perPage)->values();
+                
+                $response = new \Illuminate\Pagination\LengthAwarePaginator(
+                    $paginatedItems,
+                    $groupedProperties->count(),
+                    $perPage,
+                    $page,
+                    ['path' => $request->url(), 'query' => $request->query()]
+                );
+                
+                return $this->respondWithPagination($response, [
+                    'data' => $response->items()
                 ]);
             }
             
-            // Get all properties
-            $properties = $query->get();
-            
             return $this->respond([
-                'data' => $properties
+                'data' => $groupedProperties
             ]);
         } catch (\Exception $e) {
             return $this->respondInternalError($e->getMessage());
