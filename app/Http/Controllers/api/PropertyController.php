@@ -24,7 +24,7 @@ class PropertyController extends ApiController
                 ->select([
                     'm_properties.*',
                     'm_property_images.idrec as image_id',
-                    'm_property_images.image',
+                    'm_property_images.image as image_data',
                     'm_property_images.caption',
                 ]);
 
@@ -68,7 +68,7 @@ class PropertyController extends ApiController
                 })->map(function ($imageItem) {
                     return [
                         'id' => $imageItem->image_id,
-                        'image' => $imageItem->image,
+                        'image_data' => $imageItem->image_data,
                         'caption' => $imageItem->caption,
                     ];
                 })->values();
@@ -79,7 +79,7 @@ class PropertyController extends ApiController
                 // Remove image-related fields from the main property object
                 unset(
                     $propertyArray['image_id'],
-                    $propertyArray['image'],
+                    $propertyArray['image_data'],
                     $propertyArray['caption']
                 );
                 
