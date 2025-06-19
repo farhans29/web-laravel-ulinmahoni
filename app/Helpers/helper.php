@@ -1,5 +1,6 @@
 <?php
 namespace App\Helpers;
+
 class Helper{
     public static function formatCurrency($value, $beforeValue = "IDR ", $afterValue = "")
     {
@@ -7,4 +8,13 @@ class Helper{
         return $output;
     }
     
+    /**
+     * Get the current application version.
+     *
+     * @return string
+     */
+    public static function version()
+    {
+        return \App\Helpers\VersionHelper::getVersion();
+    }
 }
