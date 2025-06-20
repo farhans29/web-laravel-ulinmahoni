@@ -124,14 +124,48 @@ class PropertyController extends ApiController
     public function show($id)
     {
         try {
-            $property = Property::find($id);
+            $property = Property::leftJoin('m_property_images', 'm_property_images.property_id', '=', 'm_properties.idrec')
+                ->where('m_properties.idrec', $id)
+                ->select([
+                    'm_properties.*',
+                    'm_property_images.idrec as image_id',
+                    'm_property_images.image as image_data',
+                    'm_property_images.caption',
+                ])
+                ->get();
             
-            if (!$property) {
+            if ($property->isEmpty()) {
                 return $this->respondNotFound('Property not found');
             }
             
+            // Group images by property
+            $groupedProperty = $property->groupBy('idrec')->map(function ($propertyGroup) {
+                $property = $propertyGroup->first();
+                $images = $propertyGroup->filter(function ($item) {
+                    return $item->image_id !== null;
+                })->map(function ($imageItem) {
+                    return [
+                        'id' => $imageItem->image_id,
+                        'image_data' => $imageItem->image_data,
+                        'caption' => $imageItem->caption,
+                    ];
+                })->values();
+                
+                $propertyArray = $property->toArray();
+                $propertyArray['images'] = $images;
+                
+                // Remove image-related fields from the main property object
+                unset(
+                    $propertyArray['image_id'],
+                    $propertyArray['image_data'],
+                    $propertyArray['caption']
+                );
+                
+                return $propertyArray;
+            })->first();
+            
             return $this->respond([
-                'data' => $property
+                'data' => $groupedProperty
             ]);
         } catch (\Exception $e) {
             return $this->respondInternalError($e->getMessage());
