@@ -451,8 +451,102 @@ class BookingController extends ApiController
                 ], 404);
             }
 
+
             $validator = Validator::make($request->all(), [
                 'attachment_file' => 'required|string', // Changed from file to string
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+
+            $base64Image = $request->input('attachment_file');
+            
+            // Remove data URL prefix if present
+            if (strpos($base64Image, ';base64,') !== false) {
+                [$_, $base64Image] = explode(';', $base64Image);
+                [$_, $base64Image] = explode(',', $base64Image);
+            }
+
+
+            // Validate base64 image
+            $imageData = base64_decode($base64Image, true);
+            if ($imageData === false) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid base64 image'
+                ], 422);
+            }
+
+
+            // Validate image type
+            $f = finfo_open();
+            $mimeType = finfo_buffer($f, $imageData, FILEINFO_MIME_TYPE);
+            if (!in_array($mimeType, ['image/jpeg', 'image/png'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid image type. Only JPEG and PNG are allowed.'
+                ], 422);
+            }
+
+
+            // Update the booking with the base64 image
+            $updated = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->update(['attachment' => $base64Image]);
+
+            if (!$updated) {
+                throw new \Exception('Failed to update booking with attachment');
+            }
+
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Attachment uploaded successfully',
+                'data' => [
+                    'booking_id' => $id,
+                    'attachment_uploaded' => true
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error uploading attachment',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update attachment for a booking
+     *
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateAttachment(Request $request, $id)
+    {
+        try {
+            // Validate the ID first
+            $booking = DB::table('t_transactions')
+                ->where('idrec', $id)
+                ->first();
+
+            if (!$booking) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking not found'
+                ], 404);
+            }
+
+            $validator = Validator::make($request->all(), [
+                'attachment_file' => 'required|string',
             ]);
 
             if ($validator->fails()) {
@@ -490,28 +584,31 @@ class BookingController extends ApiController
                 ], 422);
             }
 
-            // Update the booking with the base64 image
+            // Update the booking with the new base64 image
             $updated = DB::table('t_transactions')
                 ->where('idrec', $id)
-                ->update(['attachment' => $base64Image]);
+                ->update([
+                    'attachment' => $base64Image,
+                    'updated_at' => now()
+                ]);
 
             if (!$updated) {
-                throw new \Exception('Failed to update booking with attachment');
+                throw new \Exception('Failed to update booking attachment');
             }
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Attachment uploaded successfully',
+                'message' => 'Attachment updated successfully',
                 'data' => [
                     'booking_id' => $id,
-                    'attachment_uploaded' => true
+                    'attachment_updated' => true
                 ]
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Error uploading attachment',
+                'message' => 'Error updating attachment',
                 'error' => $e->getMessage()
             ], 500);
         }
