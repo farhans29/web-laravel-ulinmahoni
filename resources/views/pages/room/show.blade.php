@@ -43,9 +43,9 @@
                         <!-- Room Image Gallery -->
                         <div class="relative h-96">
                             <div class="absolute inset-0">
-                                @if(isset($room['attachment']['images'][0]) && $room['attachment']['images'][0])
-                                    <img src="{{ asset($room['attachment']['images'][0]) }}"
-                                        alt="{{ $room['name'] }}"
+                                @if(isset($room['image']) && $room['image'])
+                                    <img src="data:image/jpeg;base64,{{ $room['image'] }}" 
+                                        alt="{{ $room['name'] }}" 
                                         class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
                                 @else
                                     <div class="bg-gray-100 w-full h-full flex items-center justify-center">

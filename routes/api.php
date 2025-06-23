@@ -102,6 +102,7 @@ Route::post('booking', [BookingController::class, 'store']);
 Route::get('booking/check-availability', [BookingController::class, 'checkAvailability']);
 Route::put('booking/{id}', [BookingController::class, 'update']);
 Route::post('booking/{id}/upload', [BookingController::class, 'uploadAttachment']);
+Route::put('booking/{id}/update-attachment', [BookingController::class, 'updateAttachment']);
 Route::put('booking/{id}/payment-method', [BookingController::class, 'updatePaymentMethod']);
 Route::post('booking/check-availability', [BookingController::class, 'checkAvailability']);
 

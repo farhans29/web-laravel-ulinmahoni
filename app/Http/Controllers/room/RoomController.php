@@ -245,6 +245,7 @@ class RoomController extends Controller {
                     ) : (
                         $room->attachment ?? []
                     ),
+                'image' => $room->image,
                 'periode' => is_string($room->periode) ? json_decode(
                     $room->periode, true
                     ) : (
