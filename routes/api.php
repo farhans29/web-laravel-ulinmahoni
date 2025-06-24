@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoomController;
-
+use App\Http\Controllers\Api\Auth\SocialAuthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -23,11 +23,11 @@ use App\Http\Controllers\Api\RoomController;
 // Social Authentication Routes
 Route::prefix('auth')->group(function () {
     // Google OAuth
-    Route::get('/google', [\App\Http\Controllers\Api\Auth\SocialAuthController::class, 'redirectToGoogle']);
-    Route::post('/google/callback', [\App\Http\Controllers\Api\Auth\SocialAuthController::class, 'handleGoogleCallback']);
+    Route::get('/google', [SocialAuthController::class, 'redirectToGoogle']);
+    Route::post('/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
     
     // Logout
-    Route::post('/logout', [\App\Http\Controllers\Api\Auth\SocialAuthController::class, 'logout'])
+    Route::post('/logout', [SocialAuthController::class, 'logout'])
         ->middleware('auth:sanctum');
 });
 
@@ -37,6 +37,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return response()->json($request->user());
     });
+    
+    // Update profile picture
+    Route::post('/user/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);
 });
 
 // Health check endpoint (no version prefix)
@@ -126,3 +129,4 @@ Route::post('logout', [AuthController::class, 'logout']);
 Route::get('profile', [AuthController::class, 'profile']);
 Route::put('profile/{id}', [AuthController::class, 'updateProfile']);
 Route::put('profile/{id}/update-password', [AuthController::class, 'updatePassword']);
+Route::post('profile/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);

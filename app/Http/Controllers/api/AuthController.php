@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Api;
-
+namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\PasswordReset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -336,6 +337,56 @@ class AuthController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Profile update failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update the user's profile picture.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id  User ID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateProfilePicture(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'profile_picture' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = User::findOrFail($id);
+            $base64Image = $request->input('profile_picture');
+            
+            // Use the model method to handle the profile picture update
+            $user->updateProfilePhotoFromBase64($base64Image);
+            
+            // Refresh the user instance to get the latest data
+            $user->refresh();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Profile picture updated successfully',
+                'data' => [
+                    'profile_picture' => $user->profile_picture,
+                    'profile_photo_path' => $user->profile_photo_path,
+                    'profile_photo_url' => $user->profile_photo_url
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update profile picture',
                 'error' => $e->getMessage()
             ], 500);
         }

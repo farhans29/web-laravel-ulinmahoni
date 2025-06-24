@@ -22,10 +22,23 @@ class SocialAuthController extends Controller
     public function redirectToGoogle()
     {
         try {
-            $url = Socialite::driver('google')
-                ->with(['prompt' => 'select_account'])
-                ->redirect()
-                ->getTargetUrl();
+            // Generate the URL manually to avoid session dependency
+            $scopes = [
+                'https://www.googleapis.com/auth/userinfo.email',
+                'https://www.googleapis.com/auth/userinfo.profile',
+                'openid'
+            ];
+            
+            $parameters = [
+                'client_id' => config('services.google.client_id'),
+                'redirect_uri' => config('services.google.redirect'),
+                'response_type' => 'code',
+                'scope' => implode(' ', $scopes),
+                'access_type' => 'offline',
+                'prompt' => 'select_account',
+            ];
+
+            $url = 'https://accounts.google.com/o/oauth2/auth?' . http_build_query($parameters);
                 
             return response()->json([
                 'success' => true,
