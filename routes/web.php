@@ -28,6 +28,9 @@ use App\Http\Controllers\villa\VillaController;
 use App\Http\Controllers\hotel\HotelController;
 use App\Http\Controllers\AllPropertiesController;
 use Faker\Guesser\Name;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +44,24 @@ use Faker\Guesser\Name;
 */
 
 // Route::get('/inventory', [SearchProductController::class, 'index'])->name('search-product');
+
+// Route to serve storage files
+Route::get('storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    
+    if (!File::exists($filePath)) {
+        abort(404);
+    }
+
+    $file = File::get($filePath);
+    $type = File::mimeType($filePath);
+
+    $response = Response::make($file, 200);
+    $response->header("Content-Type", $type);
+    $response->header("Cache-Control", "public, max-age=31536000, immutable");
+    
+    return $response;
+})->where('path', '.*');
 // Route::get('/inventory/getdata', [SearchProductController::class, 'getData'])->name('search-product.getdata');
 // Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
 
