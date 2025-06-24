@@ -349,13 +349,23 @@ class AuthController extends Controller
      * @param  int  $id  User ID
      * @return \Illuminate\Http\JsonResponse
      */
+    /**
+     * Update the user's profile picture.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id  User ID
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function updateProfilePicture(Request $request, $id)
     {
+        \Log::info('Starting profile picture update', ['user_id' => $id]);
+        
         $validator = Validator::make($request->all(), [
             'profile_picture' => ['required', 'string'],
         ]);
 
         if ($validator->fails()) {
+            \Log::error('Validation failed', ['errors' => $validator->errors()]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Validation failed',
@@ -367,11 +377,58 @@ class AuthController extends Controller
             $user = User::findOrFail($id);
             $base64Image = $request->input('profile_picture');
             
-            // Use the model method to handle the profile picture update
-            $user->updateProfilePhotoFromBase64($base64Image);
+            \Log::debug('Processing profile picture update', [
+                'user_id' => $user->id,
+                'has_previous_photo' => !empty($user->profile_photo_path),
+                'base64_length' => strlen($base64Image)
+            ]);
             
-            // Refresh the user instance to get the latest data
+            // Decode the base64 string
+            $data = base64_decode($base64Image, true);
+            if ($data === false) {
+                throw new \Exception('Invalid base64 string');
+            }
+            
+            // Detect the image type
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->buffer($data);
+            $mimeParts = explode('/', $mime);
+            $type = strtolower(end($mimeParts));
+            
+            if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                throw new \Exception('Invalid image type. Only JPG, PNG, and GIF are allowed.');
+            }
+            
+            // Generate unique filename with proper extension
+            $filename = 'profile-photos/' . uniqid() . '.' . $type;
+            
+            // Get the storage disk
+            $disk = Storage::disk('public');
+            
+            // Delete old profile picture if exists
+            if ($user->profile_photo_path && $disk->exists($user->profile_photo_path)) {
+                \Log::debug('Deleting old profile photo', [
+                    'old_path' => $user->profile_photo_path,
+                    'exists' => $disk->exists($user->profile_photo_path)
+                ]);
+                $disk->delete($user->profile_photo_path);
+            }
+            
+            // Store the new image
+            $disk->put($filename, $data);
+            \Log::debug('New profile photo stored', ['path' => $filename]);
+            
+            // Update user's profile photo path
+            $user->profile_photo_path = $filename;
+            $user->save();
+            
+            // Refresh to get updated attributes
             $user->refresh();
+            
+            \Log::info('Profile picture updated successfully', [
+                'user_id' => $user->id,
+                'new_path' => $filename
+            ]);
 
             return response()->json([
                 'status' => 'success',
@@ -379,15 +436,24 @@ class AuthController extends Controller
                 'data' => [
                     'profile_picture' => $user->profile_picture,
                     'profile_photo_path' => $user->profile_photo_path,
-                    'profile_photo_url' => $user->profile_photo_url
+                    'profile_photo_url' => $user->profile_photo_url,
+                    'storage_path' => $filename,
                 ]
             ]);
             
         } catch (\Exception $e) {
+            \Log::error('Failed to update profile picture', [
+                'user_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to update profile picture',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ], 500);
         }
     }

@@ -133,52 +133,9 @@ class User extends Authenticatable
     }
 
     /**
-     * Update the user's profile photo from base64 string.
-     *
-     * @param string $base64Image
-     * @return $this
-     * @throws \Exception
-     */
-    public function updateProfilePhotoFromBase64($base64Image)
-    {
-        // Decode the base64 string
-        $data = base64_decode($base64Image, true);
-        if ($data === false) {
-            throw new \Exception('Invalid base64 string');
-        }
-        
-        // Detect the image type
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->buffer($data);
-        $mimeParts = explode('/', $mime);
-        $type = strtolower(end($mimeParts));
-        
-        if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
-            throw new \Exception('Invalid image type. Only JPG, PNG, and GIF are allowed.');
-        }
-        
-        // Generate unique filename with proper extension
-        $filename = 'profile-photos/' . uniqid() . '.' . $type;
-        
-        // Delete old profile picture if exists
-        if ($this->profile_photo_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($this->profile_photo_path);
-        }
-        
-        // Store the new image
-        \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $data);
-        
-        // Update user's profile photo path directly without triggering events
-        $this->profile_photo_path = $filename;
-        $this->save();
-        
-        return $this;
-    }
-
-    /**
      * Set the user's password.
      *
-     * @param  string  $password
+     * @param  string  $value
      * @return void
      */
     public function setPasswordAttribute($password)
