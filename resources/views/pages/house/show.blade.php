@@ -197,53 +197,66 @@
                     <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
                         <h3 class="text-xl font-semibold text-gray-800 mb-6">Harga Sewa</h3>
                         
-                        <!-- Daily Price -->
-                        <div class="bg-gray-50 p-4 rounded-lg mb-4">
-                            <p class="text-base text-gray-500 mb-1">
-                                <i class="far fa-calendar mr-2"></i>Harian
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-baseline">
-                                    <span class="text-2xl font-bold text-gray-900">
-                                        Rp{{ number_format($house['price_original_daily'], 0, ',', '.') }}
-                                    </span>
-                                    <span class="text-gray-500 ml-2">/malam</span>
-                                </div>
-                                <!-- <span class="text-sm text-green-600 bg-green-100 px-2 py-1 rounded">
-                                    <i class="fas fa-check-circle mr-1"></i> Tersedia
-                                </span> -->
-                            </div>
-                        </div>
+                        @php
+                            $hasDailyPrice = !empty($house['price_original_daily']) && $house['price_original_daily'] > 0;
+                            $hasMonthlyPrice = !empty($house['price_original_monthly']) && $house['price_original_monthly'] > 0;
+                        @endphp
                         
-                        <!-- Monthly Price -->
-                        <div class="bg-teal-50 border border-teal-100 p-4 rounded-lg">
-                            <p class="text-base text-gray-600 mb-1">
-                                <i class="far fa-calendar-alt mr-2"></i>Bulanan
-                            </p>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-baseline">
-                                    <span class="text-2xl font-bold text-teal-700">
-                                        Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}
-                                    </span>
-                                    <span class="text-gray-500 ml-2">/bulan</span>
+                        @if(!$hasDailyPrice && !$hasMonthlyPrice)
+                            <div class="bg-gray-50 p-6 rounded-lg text-center">
+                                <div class="text-gray-400 mb-2">
+                                    <i class="fas fa-info-circle text-2xl"></i>
                                 </div>
-                                <!-- <span class="text-sm text-teal-700 bg-teal-100 px-2 py-1 rounded">
-                                    <i class="fas fa-percentage mr-1"></i> Hemat
-                                </span> -->
+                                <p class="text-gray-600 font-medium">Harga sewa belum tersedia</p>
+                                <p class="text-sm text-gray-500 mt-1">Silakan hubungi kami untuk informasi lebih lanjut</p>
                             </div>
-                        </div>
+                        @else
+                            @if($hasDailyPrice)
+                            <!-- Daily Price -->
+                            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                                <p class="text-base text-gray-500 mb-1">
+                                    <i class="far fa-calendar mr-2"></i>Harian
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-baseline">
+                                        <span class="text-2xl font-bold text-gray-900">
+                                            Rp{{ number_format($house['price_original_daily'], 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-gray-500 ml-2">/malam</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            @if($hasMonthlyPrice)
+                            <!-- Monthly Price -->
+                            <div class="{{ $hasDailyPrice ? 'mt-4' : '' }} bg-teal-50 border border-teal-100 p-4 rounded-lg">
+                                <p class="text-base text-gray-600 mb-1">
+                                    <i class="far fa-calendar-alt mr-2"></i>Bulanan
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-baseline">
+                                        <span class="text-2xl font-bold text-teal-700">
+                                            Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}
+                                        </span>
+                                        <span class="text-gray-500 ml-2">/bulan</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
 
-                        <!-- Additional Info -->
-                        <div class="mt-4 text-sm text-gray-500">
-                            <p class="flex items-center">
-                                <i class="fas fa-info-circle mr-2 text-teal-600"></i>
-                                Harga sudah termasuk PPN
-                            </p>
-                            <p class="flex items-center mt-1">
-                                <i class="fas fa-credit-card mr-2 text-teal-600"></i>
-                                Pembayaran dengan metode transfer bank
-                            </p>
-                        </div>
+                            <!-- Additional Info -->
+                            <div class="mt-4 text-sm text-gray-500">
+                                <p class="flex items-center">
+                                    <i class="fas fa-info-circle mr-2 text-teal-600"></i>
+                                    Harga sudah termasuk PPN
+                                </p>
+                                <p class="flex items-center mt-1">
+                                    <i class="fas fa-credit-card mr-2 text-teal-600"></i>
+                                    Pembayaran dengan metode transfer bank
+                                </p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -373,13 +386,15 @@
                                         <div class="mb-4">
                                             <h4 class="text-sm font-semibold text-gray-700 mb-2">Room Facilities:</h4>
                                             <div class="flex flex-wrap gap-2">
-                                                @foreach($room['facility'] as $facility => $value)
-                                                    @if($value === true)
+                                                @if(!empty($room['facility']))
+                                                    @foreach($room['facility'] as $facility)
                                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
                                                             {{ strtoupper($facility) }}
                                                         </span>
-                                                    @endif
-                                                @endforeach
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-gray-500 text-sm">No facilities listed</span>
+                                                @endif
                                             </div>
                                         </div>
 
@@ -387,7 +402,12 @@
                                         <div class="mb-4">
                                             <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">Available Rental Periods &amp; Prices:</h4>
                                             <ul class="space-y-2">
-                                                @if(isset($room['periode']['daily']) && $room['periode']['daily'])
+                                                @php
+                                                    $hasValidPeriod = false;
+                                                @endphp
+                                                
+                                                @if(!empty($room['periode']['daily']) && !empty($room['price_original_daily']))
+                                                    @php $hasValidPeriod = true; @endphp
                                                     <li class="flex items-center">
                                                         <span class="w-24 text-sm font-semibold text-gray-800">Daily</span>
                                                         <span class="font-medium">
@@ -395,7 +415,8 @@
                                                         </span>
                                                     </li>
                                                 @endif
-                                                @if(isset($room['periode']['monthly']) && $room['periode']['monthly'])
+                                                @if(!empty($room['periode']['monthly']) && !empty($room['price_original_monthly']))
+                                                    @php $hasValidPeriod = true; @endphp
                                                     <li class="flex items-center">
                                                         <span class="w-24 text-sm font-semibold text-gray-800">Monthly</span>
                                                         <span class="font-medium">
@@ -403,10 +424,8 @@
                                                         </span>
                                                     </li>
                                                 @endif
-                                                @if(
-                                                    (!isset($room['periode']['daily']) || !$room['periode']['daily']) &&
-                                                    (!isset($room['periode']['monthly']) || !$room['periode']['monthly'])
-                                                )
+                                                
+                                                @if(!$hasValidPeriod)
                                                     <li>
                                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                             No periods available
