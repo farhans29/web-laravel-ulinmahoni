@@ -44,8 +44,15 @@
                                         </p> -->
                                         <div class="flex items-center">
                                             <p class="text-lg font-bold text-gray-800">
-                                                Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }} 
-                                                <span class="text-xs font-normal">/bulan</span>
+                                                @php
+                                                    $roomPrice = $house['room_price_original_monthly'];
+                                                @endphp
+                                                @if(empty($roomPrice))
+                                                    <span class="text-lg font-bold">(Kamar blm tersedia)</span>
+                                                @else
+                                                    Rp{{ number_format($roomPrice, 0, ',', '.') }}
+                                                    <span class="text-xs font-normal">/bulan</span>
+                                                @endif
                                             </p>
                                         </div>
                                     </div>

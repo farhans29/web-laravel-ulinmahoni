@@ -28,6 +28,9 @@ use App\Http\Controllers\villa\VillaController;
 use App\Http\Controllers\hotel\HotelController;
 use App\Http\Controllers\AllPropertiesController;
 use Faker\Guesser\Name;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +44,40 @@ use Faker\Guesser\Name;
 */
 
 // Route::get('/inventory', [SearchProductController::class, 'index'])->name('search-product');
+
+// Route to serve storage files
+Route::get('storage/{path}', function ($path) {
+    // Remove any URL parameters if present
+    $path = explode('?', $path)[0];
+    
+    // Build the full file path
+    $filePath = storage_path('app/public/' . ltrim($path, '/'));
+    
+    // Log the path for debugging (check Laravel logs)
+    \Log::info('Accessing file:', ['path' => $filePath]);
+    
+    if (!File::exists($filePath)) {
+        \Log::error('File not found:', ['path' => $filePath]);
+        abort(404, 'File not found at path ' . $filePath);
+    }
+
+    try {
+        $file = File::get($filePath);
+        $type = File::mimeType($filePath);
+
+        $response = Response::make($file, 200);
+        $response->header("Content-Type", $type);
+        $response->header("Cache-Control", "public, max-age=31536000, immutable");
+        
+        return $response;
+    } catch (\Exception $e) {
+        \Log::error('Error serving file:', [
+            'path' => $filePath,
+            'error' => $e->getMessage()
+        ]);
+        abort(500, 'Error serving file');
+    }
+})->where('path', '.*');
 // Route::get('/inventory/getdata', [SearchProductController::class, 'getData'])->name('search-product.getdata');
 // Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
 

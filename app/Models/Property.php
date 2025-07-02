@@ -49,6 +49,14 @@ class Property extends Model
     ];
 
     /**
+     * Get the rooms for the property.
+     */
+    public function rooms()
+    {
+        return $this->hasMany(Room::class, 'property_id', 'idrec');
+    }
+
+    /**
      * Get the image attribute.
      *
      * @param  string  $value

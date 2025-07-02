@@ -12,7 +12,7 @@ class AllPropertiesController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Property::query();
+            $query = Property::query()->where('status', 1);
             
             // Apply filters if provided
             if ($request->has('type')) {
