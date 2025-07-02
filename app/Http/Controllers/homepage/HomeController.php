@@ -81,10 +81,15 @@ class HomeController extends Controller {
             ];
 
             foreach ($properties as $property) {
-                $tag = $property->tags; // Direct string comparison
+                // $tag = $property->tags; // Direct string comparison
                 
-                if (array_key_exists($tag, $propertyTypes)) {
-                    $propertyTypes[$tag][] = $this->formatProperty($property);
+                // if (array_key_exists($tag, $propertyTypes)) {
+                //     $propertyTypes[$tag][] = $this->formatProperty($property);
+                // }
+                $normalizedTag = ucfirst(strtolower(trim($property->tags)));
+
+                if (array_key_exists($normalizedTag, $propertyTypes)) {
+                    $propertyTypes[$normalizedTag][] = $this->formatProperty($property);
                 }
             }
 
@@ -139,20 +144,16 @@ class HomeController extends Controller {
      */
     private function formatProperty($property)
     {
-        // Handle price data
-        $price = is_string($property->price) ? json_decode($property->price, true) : $property->price;
-        if (!is_array($price)) {
-            $price = [
-                'original' => $price ?? 0,
-                'discounted' => $price ?? 0
-            ];
-        }
-
-        // Handle features data
-        $features = is_string($property->features) ? json_decode($property->features, true) : $property->features;
-        if (!is_array($features)) {
-            $features = [];
-        }
+        // Get the lowest room price if available
+        $roomPrice = $property->rooms()
+            ->whereNotNull('price_original_monthly')
+            ->min('price_original_monthly');
+        
+        // Get price data (already cast to array by the model)
+        $price = is_array($property->price) ? $property->price : [];
+        
+        // Get features data (already cast to array by the model)
+        $features = is_array($property->features) ? $property->features : [];
 
         return [
             'id' => $property->idrec,
@@ -165,6 +166,7 @@ class HomeController extends Controller {
             'price_original_monthly' => $property->price_original_monthly,
             'price_discounted_daily' => $property->price_discounted_daily,
             'price_discounted_monthly' => $property->price_discounted_monthly,
+            'room_price_original_monthly' => $roomPrice ?? $property->price_original_monthly,
             'price' => [
                 'original' => $price['original'] ?? 0,
                 'discounted' => $price['discounted'] ?? 0
