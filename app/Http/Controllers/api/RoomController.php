@@ -20,13 +20,52 @@ class RoomController extends ApiController
     {
         try {
             $query = Room::query();
+            
+            // Join with room images
+            $query->leftJoin('m_room_images', 'm_room_images.room_id', '=', 'm_rooms.idrec')
+                ->select([
+                    'm_rooms.*',
+                    'm_room_images.idrec as image_id',
+                    'm_room_images.image as image_data',
+                    'm_room_images.caption',
+                ]);
 
             // Add filters if provided
             if ($request->has('idrec')) {
-                $query->where('idrec', $request->idrec);
+                $query->where('m_rooms.idrec', $request->idrec);
             }
 
-            return $this->respond($query->get());
+            $rooms = $query->get();
+            
+            // Group images by room
+            $groupedRooms = $rooms->groupBy('idrec')->map(function ($roomGroup) {
+                $room = $roomGroup->first();
+                $images = $roomGroup->filter(function ($item) {
+                    return $item->image_id !== null;
+                })->map(function ($imageItem) {
+                    return [
+                        'id' => $imageItem->image_id,
+                        'image_data' => $imageItem->image_data,
+                        'caption' => $imageItem->caption,
+                    ];
+                })->values();
+                
+                $roomArray = $room->toArray();
+                $roomArray['images'] = $images;
+                
+                // Remove image-related fields from the main room object
+                unset(
+                    $roomArray['image_id'],
+                    $roomArray['image_data'],
+                    $roomArray['caption']
+                );
+                
+                return $roomArray;
+            })->values();
+
+            return $this->respond([
+                'data' => $groupedRooms
+            ]);
         } catch (\Exception $e) {
             return $this->respondInternalError($e->getMessage());
         }
@@ -35,11 +74,53 @@ class RoomController extends ApiController
     // GET /api/v1/rooms/{id}
     public function show($id)
     {
-        $room = Room::find($id);
-        if (!$room) {
-            return response()->json(['message' => 'Room not found'], 404);
+        try {
+            $room = Room::leftJoin('m_room_images', 'm_room_images.room_id', '=', 'm_rooms.idrec')
+                ->where('m_rooms.idrec', $id)
+                ->select([
+                    'm_rooms.*',
+                    'm_room_images.idrec as image_id',
+                    'm_room_images.image as image_data',
+                    'm_room_images.caption',
+                ])
+                ->get();
+            
+            if ($room->isEmpty()) {
+                return $this->respondNotFound('Room not found');
+            }
+            
+            // Group images by room
+            $groupedRoom = $room->groupBy('idrec')->map(function ($roomGroup) {
+                $room = $roomGroup->first();
+                $images = $roomGroup->filter(function ($item) {
+                    return $item->image_id !== null;
+                })->map(function ($imageItem) {
+                    return [
+                        'id' => $imageItem->image_id,
+                        'image_data' => $imageItem->image_data,
+                        'caption' => $imageItem->caption,
+                    ];
+                })->values();
+                
+                $roomArray = $room->toArray();
+                $roomArray['images'] = $images;
+                
+                // Remove image-related fields from the main room object
+                unset(
+                    $roomArray['image_id'],
+                    $roomArray['image_data'],
+                    $roomArray['caption']
+                );
+                
+                return $roomArray;
+            })->first();
+            
+            return $this->respond([
+                'data' => $groupedRoom
+            ]);
+        } catch (\Exception $e) {
+            return $this->respondInternalError($e->getMessage());
         }
-        return response()->json($room);
     }
 
     // POST /api/v1/rooms
