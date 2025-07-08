@@ -15,12 +15,12 @@
 
     <main>
         <!-- Hero Section -->
-        <div class="hero-section h-64 relative">
+        <div class="hero-section-booking h-72 relative">
             <img src="{{ asset('images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg') }}" 
                 alt="Payment Hero" 
                 class="w-full h-full object-cover">
             <div class="absolute inset-0 gradient-overlay flex items-center justify-center">
-                <h1 class="text-4xl text-white font-light">Payment Details</h1>
+                <h1 class="text-4xl text-white font-medium">Payment Details</h1>
             </div>
         </div>
 

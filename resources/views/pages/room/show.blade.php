@@ -295,7 +295,7 @@
                                     <button type="submit" id="submitButton"
                                         class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
                                         {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        {{ $room['status'] == 1 ? 'Book Now' : 'Room Not Available' }}
+                                        {{ $room['status'] == 1 ? 'Pesan Sekarang' : 'Kamar Tidak Tersedia' }}
                                     </button>
                                 @endguest
                             </div>
