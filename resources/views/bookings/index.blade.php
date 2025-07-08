@@ -118,7 +118,7 @@
                 alt="Bookings Hero" 
                 class="w-full h-full object-cover" >
             <div class="absolute inset-0 gradient-overlay flex items-center justify-center">
-                <h1 class="text-2xl text-white font-medium">Pemesanan Saya</h1>
+                <h1 class="text-4xl text-white font-medium">Pemesanan Saya</h1>
             </div>
         </div>
 

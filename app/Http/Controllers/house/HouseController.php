@@ -130,7 +130,7 @@ class HouseController extends Controller {
                         'descriptions' => $row->room_descriptions,
                         'type' => $row->room_type,
                         'level' => $row->room_level,
-                        'facility' => is_string($row->room_facility) ? json_decode($row->room_facility, true) : [],
+                        'facility' => is_string($row->room_facility) ? (json_decode($row->room_facility, true) ?? []) : [],
                         'image' => $row->room_image ?? null,
                         'image2' => $row->room_image_2 ?? null,
                         'image3' => $row->room_image_3 ?? null,
