@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\Auth\SocialAuthController;
+use App\Http\Controllers\Api\HealthCheckController; 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -42,10 +44,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);
 });
 
-// Health check endpoint (no version prefix)
-Route::get('health-check', function () {
-    return response()->json(['status' => 'ok']);
-});
+// Health check endpoint (public, no API key required)
+Route::get('health-check', [HealthCheckController::class, 'check'])
+    ->withoutMiddleware(['api.key']);   
+
+// All routes below require API key in the URL
+// Format: /api/your-api-key/route
 
 // Public authentication routes
 Route::middleware('guest:sanctum')->group(function () {

@@ -7,6 +7,7 @@ use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\HealthCheckController;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -29,10 +30,12 @@ class RouteServiceProvider extends ServiceProvider
         $this->configureRateLimiting();
 
         $this->routes(function () {
-            Route::middleware('api')
-                ->prefix('api')
+            // API routes with API key in URL
+            Route::prefix('api/{api_key?}')
+                ->middleware(['api', 'api.key'])
                 ->group(base_path('routes/api.php'));
 
+            // Web routes
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
         });
