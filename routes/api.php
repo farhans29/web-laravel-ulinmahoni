@@ -3,7 +3,7 @@
 use App\Http\Controllers\Api\BookingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\api\AuthController;
 use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\UserController;
@@ -102,37 +102,45 @@ Route::prefix('property')->group(function () {
     Route::delete('/{id}', [PropertyController::class, 'destroy']);
 });
 
-// Booking API
-Route::get('booking', [BookingController::class, 'index']);
-Route::get('booking/{id}', [BookingController::class, 'show']);
-Route::get('booking/order/{order_id}', [BookingController::class, 'showByOrderId']);
-Route::get('booking/userId/{user_id}', [BookingController::class, 'showByUserId']);
-Route::post('booking', [BookingController::class, 'store']);
-Route::get('booking/check-availability', [BookingController::class, 'checkAvailability']);
-Route::put('booking/{id}', [BookingController::class, 'update']);
-Route::post('booking/{id}/upload', [BookingController::class, 'uploadAttachment']);
-Route::put('booking/{id}/update-attachment', [BookingController::class, 'updateAttachment']);
-Route::put('booking/{id}/payment-method', [BookingController::class, 'updatePaymentMethod']);
-Route::post('booking/check-availability', [BookingController::class, 'checkAvailability']);
+// Booking API routes
+Route::prefix('booking')->group(function () {
+    Route::get('/', [BookingController::class, 'index']);
+    Route::get('/{id}', [BookingController::class, 'show']);
+    Route::get('/order/{order_id}', [BookingController::class, 'showByOrderId']);
+    Route::get('/userId/{user_id}', [BookingController::class, 'showByUserId']);
+    Route::post('/', [BookingController::class, 'store']);
+    Route::get('/check-availability', [BookingController::class, 'checkAvailability']);
+    Route::put('/{id}', [BookingController::class, 'update']);
+    Route::post('/{id}/upload', [BookingController::class, 'uploadAttachment']);
+    Route::put('/{id}/update-attachment', [BookingController::class, 'updateAttachment']);
+    Route::put('/{id}/payment-method', [BookingController::class, 'updatePaymentMethod']);
+    // Removed duplicate check-availability route
+});
 
-// User API
-Route::get('users', [UserController::class, 'index']);
-Route::get('users/{id}', [UserController::class, 'show']);
-Route::post('users', [UserController::class, 'store']);
-Route::put('users/{id}', [UserController::class, 'update']);
-Route::delete('users/{id}', [UserController::class, 'destroy']);
+// User API routes
+Route::prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::put('/{id}', [UserController::class, 'update']);
+    Route::delete('/{id}', [UserController::class, 'destroy']);
+});
 
-// Room API
-Route::get('rooms', [RoomController::class, 'index']);
-Route::get('rooms/propertyId/{property_id}', [RoomController::class, 'byPropertyId']);
-Route::get('rooms/{id}', [RoomController::class, 'show']);
-Route::post('rooms', [RoomController::class, 'store']);
-Route::put('rooms/{id}', [RoomController::class, 'update']);
-Route::delete('rooms/{id}', [RoomController::class, 'destroy']);
+// Room API routes
+Route::prefix('rooms')->group(function () {
+    Route::get('/', [RoomController::class, 'index']);
+    Route::get('/propertyId/{property_id}', [RoomController::class, 'byPropertyId']);
+    Route::get('/{id}', [RoomController::class, 'show']);
+    Route::post('/', [RoomController::class, 'store']);
+    Route::put('/{id}', [RoomController::class, 'update']);
+    Route::delete('/{id}', [RoomController::class, 'destroy']);
+});
 
-// Profile API
-Route::post('logout', [AuthController::class, 'logout']);
-Route::get('profile', [AuthController::class, 'profile']);
-Route::put('profile/{id}', [AuthController::class, 'updateProfile']);
-Route::put('profile/{id}/update-password', [AuthController::class, 'updatePassword']);
-Route::post('profile/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);
+// Profile API routes
+Route::prefix('profile')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/', [AuthController::class, 'profile']);
+    Route::put('/{id}', [AuthController::class, 'updateProfile']);
+    Route::put('/{id}/update-password', [AuthController::class, 'updatePassword']);
+    Route::post('/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);
+});

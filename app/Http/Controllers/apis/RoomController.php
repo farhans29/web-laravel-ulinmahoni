@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\ApiController;
+use App\Http\Controllers\Controller;
 use App\Models\Room;
 use Illuminate\Http\Request;
 
-
-class RoomController extends ApiController
+class RoomController extends Controller
 {
     // GET /api/rooms/property/{property_id}
     public function byPropertyId($property_id)
