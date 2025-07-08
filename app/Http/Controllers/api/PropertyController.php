@@ -30,6 +30,9 @@ class PropertyController extends ApiController
 
             
             // Add filters if provided
+            if ($request->has('idrec')) {
+                $query->where('m_properties.idrec', $request->idrec);
+            }
             if ($request->has('tags')) {
                 $query->where('tags', $request->tags);
             }

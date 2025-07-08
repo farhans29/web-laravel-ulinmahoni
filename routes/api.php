@@ -93,12 +93,14 @@ Route::post('banner', [BannerController::class, 'store']);
 Route::put('banner/{id}', [BannerController::class, 'update']);
 Route::delete('banner/{id}', [BannerController::class, 'destroy']);
 
-// Property API
-Route::get('property', [PropertyController::class, 'index']);
-Route::get('property/{id}', [PropertyController::class, 'show']);
-Route::post('property', [PropertyController::class, 'store']);
-Route::put('property/{id}', [PropertyController::class, 'update']);
-Route::delete('property/{id}', [PropertyController::class, 'destroy']);
+// Property API - these routes will be accessible at /api/your-api-key/property
+Route::prefix('property')->group(function () {
+    Route::get('/', [PropertyController::class, 'index']);
+    Route::get('/{id}', [PropertyController::class, 'show']);
+    Route::post('/', [PropertyController::class, 'store']);
+    Route::put('/{id}', [PropertyController::class, 'update']);
+    Route::delete('/{id}', [PropertyController::class, 'destroy']);
+});
 
 // Booking API
 Route::get('booking', [BookingController::class, 'index']);
