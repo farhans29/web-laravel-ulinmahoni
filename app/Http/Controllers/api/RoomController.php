@@ -12,8 +12,51 @@ class RoomController extends ApiController
     // GET /api/rooms/property/{property_id}
     public function byPropertyId($property_id)
     {
-        $rooms = Room::where('property_id', $property_id)->get();
-        return response()->json($rooms);
+        try {
+            $query = Room::query()
+                ->where('m_rooms.property_id', $property_id)
+                ->leftJoin('m_room_images', 'm_room_images.room_id', '=', 'm_rooms.idrec')
+                ->select([
+                    'm_rooms.*',
+                    'm_room_images.idrec as image_id',
+                    'm_room_images.image as image_data',
+                    'm_room_images.caption',
+                ]);
+
+            $rooms = $query->get();
+            
+            // Group images by room
+            $groupedRooms = $rooms->groupBy('idrec')->map(function ($roomGroup) {
+                $room = $roomGroup->first();
+                $images = $roomGroup->filter(function ($item) {
+                    return $item->image_id !== null;
+                })->map(function ($imageItem) {
+                    return [
+                        'id' => $imageItem->image_id,
+                        'image_data' => $imageItem->image_data,
+                        'caption' => $imageItem->caption,
+                    ];
+                })->values();
+                
+                $roomArray = $room->toArray();
+                $roomArray['images'] = $images;
+                
+                // Remove image-related fields from the main room object
+                unset(
+                    $roomArray['image_id'],
+                    $roomArray['image_data'],
+                    $roomArray['caption']
+                );
+                
+                return $roomArray;
+            })->values();
+
+            return $this->respond([
+                'data' => $groupedRooms
+            ]);
+        } catch (\Exception $e) {
+            return $this->respondInternalError($e->getMessage());
+        }
     }
     // GET /api/v1/rooms
     public function index(Request $request)
