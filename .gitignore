@@ -21,3 +21,6 @@ yarn-error.log
 cursor_mac_id_modifier.sh
 
 README.md
+
+Dockerfile
+docker-compose.yml

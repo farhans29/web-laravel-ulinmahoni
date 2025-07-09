@@ -109,7 +109,7 @@ Route::prefix('booking')->group(function () {
     Route::get('/order/{order_id}', [BookingController::class, 'showByOrderId']);
     Route::get('/userId/{user_id}', [BookingController::class, 'showByUserId']);
     Route::post('/', [BookingController::class, 'store']);
-    Route::get('/check-availability', [BookingController::class, 'checkAvailability']);
+    Route::post('/check-availability', [BookingController::class, 'checkAvailability']);
     Route::put('/{id}', [BookingController::class, 'update']);
     Route::post('/{id}/upload', [BookingController::class, 'uploadAttachment']);
     Route::put('/{id}/update-attachment', [BookingController::class, 'updateAttachment']);
