@@ -315,6 +315,46 @@ class AuthController extends Controller
                 'email' => $request->email,
             ]);
 
+            // Handle profile picture update if present
+            if ($request->has('profile_picture') && $request->profile_picture) {
+                $base64Image = $request->input('profile_picture');
+                // Validate base64 string
+                $data = base64_decode($base64Image, true);
+                if ($data === false) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Invalid base64 string for profile picture.'
+                    ], 422);
+                }
+
+                // Detect image type
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mime = $finfo->buffer($data);
+                $mimeParts = explode('/', $mime);
+                $type = strtolower(end($mimeParts));
+
+                if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Invalid image type. Only JPG, PNG, and GIF are allowed.'
+                    ], 422);
+                }
+
+                $filename = 'profile-photos/' . uniqid() . '.' . $type;
+                $disk = \Storage::disk('public');
+
+                // Delete old profile picture if exists
+                if ($user->profile_photo_path && $disk->exists($user->profile_photo_path)) {
+                    $disk->delete($user->profile_photo_path);
+                }
+
+                // Store the new image
+                $disk->put($filename, $data);
+                $user->profile_photo_path = $filename;
+                $user->save();
+                $user->refresh();
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Profile updated successfully',
@@ -342,13 +382,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Update the user's profile picture.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id  User ID
-     * @return \Illuminate\Http\JsonResponse
-     */
     /**
      * Update the user's profile picture.
      *
