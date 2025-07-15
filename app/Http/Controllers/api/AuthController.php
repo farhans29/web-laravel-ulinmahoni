@@ -333,10 +333,10 @@ class AuthController extends Controller
                 $mimeParts = explode('/', $mime);
                 $type = strtolower(end($mimeParts));
 
-                if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'Invalid image type. Only JPG, PNG, and GIF are allowed.'
+                        'message' => 'Invalid image type. Only JPG, PNG, GIF, and WebP are allowed.'
                     ], 422);
                 }
 

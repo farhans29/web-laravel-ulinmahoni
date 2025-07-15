@@ -129,7 +129,8 @@ class User extends Authenticatable
             $baseUrl = rtrim(config('app.url', 'http://localhost:8000'), '/');
             return $baseUrl . '/storage/' . ltrim($this->profile_photo_path, '/');
         }
-        return $this->profile_photo_url;
+        // If profile_photo_url is empty, use ui-avatars.com with username
+        // return $this->profile_photo_url ?: "https://ui-avatars.com/api/?name={$this->username}.png";
     }
 
     /**
