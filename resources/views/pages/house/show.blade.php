@@ -132,7 +132,7 @@
                 <!-- Main Large Image -->
                 <div class="gallery-item main-image md:col-span-2 bg-gray-100 rounded-lg overflow-hidden relative">
                     @if($primaryImage)
-                        <img src="data:image/jpeg;base64,{{ $primaryImage }}" 
+                        <img src="{{ $primaryImage }}" 
                              alt="{{ $house['name'] ?? 'Property Image' }}"
                              class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
                              onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
@@ -161,7 +161,7 @@
                         @foreach($secondaryImages as $index => $image)
                             @if($index < 2) <!-- Limit to 2 secondary images -->
                                 <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
-                                    <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
+                                    <img src="{{ $image['image'] ?? $primaryImage }}"
                                          alt="{{ $house['name'] ?? 'Property Image' }}"
                                          class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
                                          onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
@@ -175,7 +175,7 @@
                         @if(count($secondaryImages) === 0 && $primaryImage)
                             <!-- Fallback if no secondary images but main image exists -->
                             <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
-                                <img src="data:image/jpeg;base64,{{ $primaryImage }}"
+                                <img src="{{ $primaryImage }}"
                                      alt="{{ $house['name'] ?? 'Property Image' }}"
                                      class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
                                      onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
