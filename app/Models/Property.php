@@ -63,26 +63,45 @@ class Property extends Model
      */
     public function getImagesAttribute()
     {
-        $images = \DB::select("
-            SELECT 
-                idrec,
-                property_id,
-                image,
-                caption
-            FROM m_property_images 
-            WHERE property_id = ? 
-            AND status = 1
-        ", [$this->idrec]);
+        try {
+            $images = \DB::select("
+                SELECT 
+                    idrec,
+                    property_id,
+                    image,
+                    caption
+                FROM m_property_images 
+                WHERE property_id = ? 
+            ", [$this->idrec]);
 
-        // Process each image to ensure proper base64 encoding
-        return array_map(function($image) {
-            return [
-                'id' => $image->idrec,
-                'property_id' => $image->property_id,
-                'image' => $this->getProcessedImage($image->image),
-                'caption' => $image->caption
-            ];
-        }, $images);
+            if (empty($images)) {
+                return [];
+            }
+
+            // Process each image to ensure proper base64 encoding
+            return array_filter(array_map(function($image) {
+                try {
+                    if (!is_object($image) || !isset($image->idrec)) {
+                        return null;
+                    }
+
+                    return [
+                        'id' => $image->idrec ?? null,
+                        'property_id' => $image->property_id ?? $this->idrec,
+                        'image' => $this->getProcessedImage($image->image ?? null),
+                        'caption' => $image->caption ?? ''
+                    ];
+                } catch (\Exception $e) {
+                    // Log error and skip this image
+                    \Log::error('Error processing property image: ' . $e->getMessage());
+                    return null;
+                }
+            }, $images));
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching property images: ' . $e->getMessage());
+            return [];
+        }
     }
 
     /**
