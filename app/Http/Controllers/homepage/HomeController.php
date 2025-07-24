@@ -147,6 +147,7 @@ class HomeController extends Controller {
         // Get the lowest room price if available
         $roomPrice = $property->rooms()
             ->whereNotNull('price_original_monthly')
+            ->where('price_original_monthly', '>', 0)
             ->min('price_original_monthly');
         
         // Get price data (already cast to array by the model)
