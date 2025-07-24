@@ -77,138 +77,98 @@ class HouseController extends Controller {
     public function show($id)
     {
         try {
-            // Raw query to get property with its rooms
-            $house = DB::select("
-                SELECT 
-                    p.*,
-                    r.idrec as room_id,
-                    r.property_id,
-                    r.property_name,
-                    r.slug as room_slug,
-                    r.name as room_name,
-                    r.descriptions as room_descriptions,
-                    r.type as room_type,
-                    r.level as room_level,
-                    r.facility as room_facility,
-                    r.image as room_image,
-                    r.periode as room_periode,
-                    r.price as room_price,
-                    r.price_original_daily as room_price_original_daily,
-                    r.price_original_monthly as room_price_original_monthly,
-                    r.price_discounted_daily as room_price_discounted_daily,
-                    r.price_discounted_monthly as room_price_discounted_monthly,
-                    r.created_at as room_created_at,
-                    r.updated_at as room_updated_at,
-                    r.created_by as room_created_by,
-                    r.updated_by as room_updated_by,
-                    r.status as room_status
-                FROM m_properties p
-                LEFT JOIN m_rooms r ON p.idrec = r.property_id
-                WHERE p.tags = 'House' 
-                AND p.idrec = ?
-                ORDER BY idrec ASC
-            ", [$id]);
-
-            if (empty($house)) {
-                throw new Exception('House not found');
-            }
-
-            // Get the first row for house data (since it's repeated in the join)
-            $houseData = $house[0];
-
-            // Format rooms data
-            $formattedRooms = collect($house)->map(function($row) {
-                if ($row->room_id) {
-                    return [
-                        'id' => $row->room_id,
-                        'property_id' => $row->property_id,
-                        'property_name' => $row->property_name,
-                        'slug' => $row->room_slug,
-                        'name' => $row->room_name,
-                        'descriptions' => $row->room_descriptions,
-                        'type' => $row->room_type,
-                        'level' => $row->room_level,
-                        'facility' => is_string($row->room_facility) ? (json_decode($row->room_facility, true) ?? []) : [],
-                        'image' => $row->room_image ?? null,
-                        'image2' => $row->room_image_2 ?? null,
-                        'image3' => $row->room_image_3 ?? null,
-                        'periode' => is_string($row->room_periode) ? json_decode($row->room_periode, true) : [
-                            'daily' => false,
-                            'weekly' => false,
-                            'monthly' => false
-                        ],
-                        // 'price' => is_string($row->room_price) ? json_decode($row->room_price, true) : 
-                        // [
-                        //     'original' => [
-                        //         'daily' => $row->room_price['original']['daily'] ?? 0,
-                        //         'monthly' => $row->room_price['original']['monthly'] ?? 0
-                        //     ],
-                        //     'discounted' => [
-                        //         'daily' => $row->room_price['discounted']['daily'] ?? 0,
-                        //         'monthly' => $row->room_price['discounted']['monthly'] ?? 0
-                        //     ]
-                        // ],
-                        'price_original_daily' => $row->room_price_original_daily,
-                        'price_original_monthly' => $row->room_price_original_monthly,
-                        'price_discounted_daily' => $row->room_price_discounted_daily,
-                        'price_discounted_monthly' => $row->room_price_discounted_monthly,
-                        'created_at' => $row->room_created_at,
-                        'updated_at' => $row->room_updated_at,
-                        'created_by' => $row->room_created_by,
-                        'updated_by' => $row->room_updated_by,
-                        'status' => $row->room_status
-                    ];
-                }
-            })->filter();
-
-            // Format the data for the view
+            // Get the property with its images using the Property model
+            $property = Property::findOrFail($id);
+            
+            // Get all images using the Property model's accessor
+            $propertyImages = $property->images;
+            
+            // Get the main image (first image or fallback to property image)
+            $mainImage = !empty($propertyImages[0]['image']) ? $propertyImages[0]['image'] : $property->image;
+            
+            // Get secondary images (skip the first one if it was used as main)
+            $secondaryImages = array_slice($propertyImages, !empty($propertyImages[0]['image']) ? 1 : 0);
+            
+            // Format the property data for the view
             $formattedHouse = [
-                'id' => $houseData->idrec,
-                'slug' => $houseData->slug,
-                'name' => $houseData->name,
-                'type' => $houseData->tags,
-                'location' => $houseData->address,
-                'subLocation' => $houseData->subdistrict . ', ' . $houseData->city,
-                'distance' => $houseData->distance ? "{$houseData->distance} km dari {$houseData->location}" : null,
-                // 'price' => [
-                //     'original' => json_decode($houseData->price)->original ?? 0,
-                //     'discounted' => json_decode($houseData->price)->discounted ?? 0
-                // ],
-                'price_original_daily' => $houseData->price_original_daily,
-                'price_original_monthly' => $houseData->price_original_monthly,
-                'price_discounted_daily' => $houseData->price_discounted_daily,
-                'price_discounted_monthly' => $houseData->price_discounted_monthly,
-                'features' => is_string($houseData->features) ? json_decode($houseData->features, true) : [],
-                'image' => $houseData->image,
-                'image2' => $houseData->image_2 ?? null,
-                'image3' => $houseData->image_3 ?? null,
-                'description' => $houseData->description,
+                'id' => $property->idrec,
+                'slug' => $property->slug,
+                'name' => $property->name,
+                'type' => $property->tags,
+                'location' => $property->address,
+                'subLocation' => $property->subdistrict . ', ' . $property->city,
+                'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                'price_original_daily' => $property->price_original_daily,
+                'price_original_monthly' => $property->price_original_monthly,
+                'price_discounted_daily' => $property->price_discounted_daily,
+                'price_discounted_monthly' => $property->price_discounted_monthly,
+                'features' => is_string($property->features) ? json_decode($property->features, true) : [],
+                'image' => $mainImage,
+                'images' => $propertyImages,
+                'description' => $property->description,
                 'address' => [
-                    'province' => $houseData->province,
-                    'city' => $houseData->city,
-                    'subdistrict' => $houseData->subdistrict,
-                    'village' => $houseData->village,
-                    'postal_code' => $houseData->postal_code,
-                    'full_address' => $houseData->address
+                    'province' => $property->province,
+                    'city' => $property->city,
+                    'subdistrict' => $property->subdistrict,
+                    'village' => $property->village,
+                    'postal_code' => $property->postal_code,
+                    'full_address' => $property->address
                 ],
-                'status' => $houseData->status,
-                'rooms' => $formattedRooms
+                'status' => $property->status,
+                'rooms' => $this->getPropertyRooms($property->idrec)
             ];
 
             return view('pages.house.show', [
-                'house' => $formattedHouse
+                'house' => $formattedHouse,
+                'primaryImage' => $mainImage,
+                'secondaryImages' => $secondaryImages,
+                'totalImages' => count($propertyImages) > 0 ? count($propertyImages) : ($mainImage ? 1 : 0)
             ]);
 
         } catch (Exception $e) {
             $errorMessage = 'House not found or error occurred: ' . $e->getMessage();
             Log::error($errorMessage);
             
-            // Return JSON response with error message
             return response()->json([
                 'status' => 'error',
                 'message' => $errorMessage
             ], 404);
         }
+    }
+    
+    /**
+     * Get rooms for a property
+     */
+    protected function getPropertyRooms($propertyId)
+    {
+        $rooms = DB::table('m_rooms')
+            ->where('property_id', $propertyId)
+            ->get();
+            
+        return $rooms->map(function($room) {
+            return [
+                'id' => $room->idrec,
+                'property_id' => $room->property_id,
+                'property_name' => $room->property_name,
+                'slug' => $room->slug,
+                'name' => $room->name,
+                'descriptions' => $room->descriptions,
+                'type' => $room->type,
+                'level' => $room->level,
+                'facility' => is_string($room->facility) ? (json_decode($room->facility, true) ?? []) : [],
+                'image' => $room->image,
+                'periode' => is_string($room->periode) ? json_decode($room->periode, true) : [
+                    'daily' => false,
+                    'weekly' => false,
+                    'monthly' => false
+                ],
+                'price_original_daily' => $room->price_original_daily,
+                'price_original_monthly' => $room->price_original_monthly,
+                'price_discounted_daily' => $room->price_discounted_daily,
+                'price_discounted_monthly' => $room->price_discounted_monthly,
+                'status' => $room->status
+            ];
+        })->toArray();
     }
 
     /**

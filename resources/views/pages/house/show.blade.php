@@ -129,18 +129,6 @@
 
             <!-- Image Gallery Section -->
             <div class="image-gallery grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                @php
-                    // Get all available images
-                    $images = $house['images'] ?? [];
-                    $mainImage = $house['image'] ?? null;
-                    $totalImages = count($images) > 0 ? count($images) : ($mainImage ? 1 : 0);
-                    
-                    // Prepare the main image (first in array or fallback to single image)
-                    $primaryImage = !empty($images[0]['image']) ? $images[0]['image'] : $mainImage;
-                    // Get secondary images (skip first if it was used as primary)
-                    $secondaryImages = array_slice($images, !empty($images[0]['image']) ? 1 : 0, 2);
-                @endphp
-                
                 <!-- Main Large Image -->
                 <div class="gallery-item main-image md:col-span-2 bg-gray-100 rounded-lg overflow-hidden relative">
                     @if($primaryImage)
@@ -173,7 +161,7 @@
                         @foreach($secondaryImages as $index => $image)
                             @if($index < 2) <!-- Limit to 2 secondary images -->
                                 <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
-                                    <img src="data:image/jpeg;base64,{{ $image['image'] ?? $mainImage }}"
+                                    <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
                                          alt="{{ $house['name'] ?? 'Property Image' }}"
                                          class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
                                          onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
@@ -184,10 +172,10 @@
                             @endif
                         @endforeach
                         
-                        @if(count($secondaryImages) === 0 && $mainImage)
+                        @if(count($secondaryImages) === 0 && $primaryImage)
                             <!-- Fallback if no secondary images but main image exists -->
                             <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
-                                <img src="data:image/jpeg;base64,{{ $mainImage }}"
+                                <img src="data:image/jpeg;base64,{{ $primaryImage }}"
                                      alt="{{ $house['name'] ?? 'Property Image' }}"
                                      class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
                                      onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
