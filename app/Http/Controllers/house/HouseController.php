@@ -91,8 +91,6 @@ class HouseController extends Controller {
                     r.level as room_level,
                     r.facility as room_facility,
                     r.image as room_image,
-                    r.image2 as room_image_2,
-                    r.image3 as room_image_3,
                     r.periode as room_periode,
                     r.price as room_price,
                     r.price_original_daily as room_price_original_daily,
