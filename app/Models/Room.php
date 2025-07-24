@@ -115,25 +115,23 @@ class Room extends Model
      */
     protected function getProcessedImage($imageData)
     {
-        if (empty($imageData)) {
+        if (!$imageData) {
             return null;
         }
 
-        // If it's already base64 encoded, return as is
-        if (is_string($imageData) && strpos($imageData, 'base64,') !== false) {
+        // If already base64, return as is
+        if (base64_encode(base64_decode($imageData, true)) === $imageData) {
             return $imageData;
         }
 
-        // If it's binary data, encode it
-        if (!empty($imageData)) {
-            // Check if it's a file path or binary data
-            if (is_string($imageData) && file_exists($imageData)) {
-                $imageData = file_get_contents($imageData);
-            }
-            return 'data:image/jpeg;base64,' . base64_encode($imageData);
+        // If it's a file path, read and encode it
+        if (is_string($imageData) && file_exists($imageData)) {
+            $imageData = file_get_contents($imageData);
+            return base64_encode($imageData);
         }
 
-        return null;
+        // If it's binary data, encode it
+        return base64_encode($imageData);
     }
 
     /**
