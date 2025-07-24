@@ -10,17 +10,21 @@
                         <div class="relative">
                             <div class="relative pb-[56.25%] h-48">
                                 <div class="absolute inset-0">
-                                    @if($house['image'])
+                                    @if(!empty($house['image']))
                                         <img src="data:image/jpeg;base64,{{ $house['image'] }}" 
                                              alt="{{ $house['name'] }}" 
                                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                                        @if(count($house['images'] ?? []) > 1)
+                                            <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                                                +{{ count($house['images']) - 1 }} more
+                                            </div>
+                                        @endif
                                     @else
                                         <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                             <i class="fas fa-image text-4xl text-gray-400"></i>
                                             <span class="ml-2 text-gray-500">No Image</span>
                                         </div>
                                     @endif
-                                    <!-- <p>{{ $house['image'] }}</p> -->
                                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
                                 </div>
                                 <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">

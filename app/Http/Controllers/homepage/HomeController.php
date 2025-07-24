@@ -155,6 +155,12 @@ class HomeController extends Controller {
         // Get features data (already cast to array by the model)
         $features = is_array($property->features) ? $property->features : [];
 
+        // Get all property images using the accessor
+        $images = $property->images;
+
+        // Use the first image from the images array as the main image, fallback to property image
+        $mainImage = !empty($images) ? $images[0]['image'] : $property->image;
+        
         return [
             'id' => $property->idrec,
             'name' => $property->name,
@@ -172,7 +178,8 @@ class HomeController extends Controller {
                 'discounted' => $price['discounted'] ?? 0
             ],
             'features' => $features,
-            'image' => $property->image,
+            'image' => $mainImage,  // Use the first image as main image
+            'images' => $images,    // Keep all images array for gallery
             'status' => $property->status
         ];
     }

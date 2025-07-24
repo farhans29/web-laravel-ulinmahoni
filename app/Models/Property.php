@@ -57,6 +57,62 @@ class Property extends Model
     }
 
     /**
+     * Get all images for each property using raw query.
+     *
+     * @return array
+     */
+    public function getImagesAttribute()
+    {
+        $images = \DB::select("
+            SELECT 
+                idrec,
+                property_id,
+                image,
+                caption
+            FROM m_property_images 
+            WHERE property_id = ? 
+            AND status = 1
+        ", [$this->idrec]);
+
+        // Process each image to ensure proper base64 encoding
+        return array_map(function($image) {
+            return [
+                'id' => $image->idrec,
+                'property_id' => $image->property_id,
+                'image' => $this->getProcessedImage($image->image),
+                'caption' => $image->caption
+            ];
+        }, $images);
+    }
+
+    /**
+     * Process the image data to ensure it's properly base64 encoded.
+     *
+     * @param mixed $imageData
+     * @return string|null
+     */
+    protected function getProcessedImage($imageData)
+    {
+        if (!$imageData) {
+            return null;
+        }
+
+        // If already base64, return as is
+        if (base64_encode(base64_decode($imageData, true)) === $imageData) {
+            return $imageData;
+        }
+
+        // If it's a file path, read and encode it
+        if (is_string($imageData) && file_exists($imageData)) {
+            $imageData = file_get_contents($imageData);
+            return base64_encode($imageData);
+        }
+
+        // If it's binary data, encode it
+        return base64_encode($imageData);
+    }
+
+    /**
      * Get the image attribute.
      *
      * @param  string  $value
