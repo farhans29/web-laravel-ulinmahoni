@@ -51,7 +51,7 @@
                             <!-- Main Image -->
                             <div class="absolute inset-0">
                                 @if($mainImage)
-                                    <img src="data:image/jpeg;base64,{{ $mainImage }}" 
+                                    <img src="{{ $mainImage }}" 
                                         alt="{{ $room['name'] }}" 
                                         class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                         onclick="openRoomGallery(0)">
@@ -83,7 +83,7 @@
                                 <div class="absolute bottom-4 left-4 right-4 flex space-x-2 overflow-x-auto pb-2">
                                     @foreach($roomImages as $index => $image)
                                         <div class="flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 border-white shadow-md">
-                                            <img src="data:image/jpeg;base64,{{ $image['image'] }}" 
+                                            <img src="{{ $image['image'] }}" 
                                                 alt="{{ $room['name'] }} - Image {{ $index + 1 }}" 
                                                 class="w-full h-full object-cover cursor-pointer hover:opacity-80"
                                                 onclick="openRoomGallery({{ $index }}); event.stopPropagation();">

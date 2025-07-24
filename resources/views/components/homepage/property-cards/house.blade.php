@@ -60,7 +60,9 @@
                                                 @if(empty($roomPrice))
                                                     <span class="text-lg font-bold">(Kamar blm tersedia)</span>
                                                 @else
-                                                    Rp{{ number_format($roomPrice, 0, ',', '.') }}
+                                                <!-- Rp{{ number_format($roomPrice, 0, ',', '.') }}
+                                                    <span class="text-xs font-normal">/malam</span>     -->
+                                                Rp{{ number_format($roomPrice, 0, ',', '.') }}
                                                     <span class="text-xs font-normal">/bulan</span>
                                                 @endif
                                             </p>

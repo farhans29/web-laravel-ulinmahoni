@@ -404,7 +404,7 @@
                                             @endphp
                                             
                                             @if(!empty($roomMainImage) && is_string($roomMainImage))
-                                                <img src="data:image/jpeg;base64,{{ $roomMainImage }}" 
+                                                <img src="{{ $roomMainImage }}" 
                                                     alt="{{ $room['name'] ?? 'Room image' }}" 
                                                     class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                                     onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
