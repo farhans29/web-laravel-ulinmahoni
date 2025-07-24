@@ -128,35 +128,73 @@
             </nav>
 
             <!-- Image Gallery Section -->
-            <div class="image-gallery grid grid-cols-3 gap-4 mb-8">
+            <div class="image-gallery grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                @php
+                    // Get all available images
+                    $images = $house['images'] ?? [];
+                    $mainImage = $house['image'] ?? null;
+                    $totalImages = count($images) > 0 ? count($images) : ($mainImage ? 1 : 0);
+                    
+                    // Prepare the main image (first in array or fallback to single image)
+                    $primaryImage = !empty($images[0]['image']) ? $images[0]['image'] : $mainImage;
+                    // Get secondary images (skip first if it was used as primary)
+                    $secondaryImages = array_slice($images, !empty($images[0]['image']) ? 1 : 0, 2);
+                @endphp
+                
                 <!-- Main Large Image -->
-                <div class="gallery-item main-image col-span-2">
-                    <img src="data:image/jpeg;base64,{{ $house['image'] }}" 
-                         alt="{{ $house['name'] }}">
-                    <span class="type-badge">
-                        {{ $house['type'] }}
-                    </span>
-                    <span class="image-count">
-                        <i class="fas fa-camera mr-1"></i> 1/3
-                    </span>
+                <div class="gallery-item main-image md:col-span-2 bg-gray-100 rounded-lg overflow-hidden relative">
+                    @if($primaryImage)
+                        <img src="data:image/jpeg;base64,{{ $primaryImage }}" 
+                             alt="{{ $house['name'] ?? 'Property Image' }}"
+                             class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
+                    @else
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <span class="text-gray-400">No Image Available</span>
+                        </div>
+                    @endif
+                    
+                    @if(isset($house['type']))
+                        <span class="type-badge bg-primary-600 text-white px-3 py-1 text-sm font-medium rounded-full absolute top-4 left-4">
+                            {{ $house['type'] }}
+                        </span>
+                    @endif
+                    
+                    @if($totalImages > 0)
+                        <span class="image-count bg-black bg-opacity-60 text-white px-3 py-1 text-sm rounded-full absolute bottom-4 right-4">
+                            <i class="fas fa-camera mr-1"></i> {{ $totalImages }}
+                        </span>
+                    @endif
                 </div>
+                
                 <!-- Right Side Smaller Images -->
-                <div class="flex flex-col gap-4">
-                    <div class="gallery-item side-image">
-                        <img src="data:image/jpeg;base64,{{ $house['image_2'] ?? $house['image'] }}"
-                             alt="{{ $house['name'] }}">
-                        <span class="image-count">
-                            <i class="fas fa-camera mr-1"></i> 2/3
-                        </span>
+                @if(count($secondaryImages) > 0 || $totalImages > 1)
+                    <div class="flex flex-col gap-4">
+                        @foreach($secondaryImages as $index => $image)
+                            @if($index < 2) <!-- Limit to 2 secondary images -->
+                                <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
+                                    <img src="data:image/jpeg;base64,{{ $image['image'] ?? $mainImage }}"
+                                         alt="{{ $house['name'] ?? 'Property Image' }}"
+                                         class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                                         onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
+                                    <span class="image-count bg-black bg-opacity-60 text-white px-2 py-1 text-xs rounded-full absolute bottom-2 right-2">
+                                        {{ $index + 2 }}/{{ $totalImages }}
+                                    </span>
+                                </div>
+                            @endif
+                        @endforeach
+                        
+                        @if(count($secondaryImages) === 0 && $mainImage)
+                            <!-- Fallback if no secondary images but main image exists -->
+                            <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
+                                <img src="data:image/jpeg;base64,{{ $mainImage }}"
+                                     alt="{{ $house['name'] ?? 'Property Image' }}"
+                                     class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                                     onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
+                            </div>
+                        @endif
                     </div>
-                    <div class="gallery-item side-image">
-                        <img src="data:image/jpeg;base64,{{ $house['image_3'] ?? $house['image'] }}"
-                             alt="{{ $house['name'] }}">
-                        <span class="image-count">
-                            <i class="fas fa-camera mr-1"></i> 3/3
-                        </span>
-                    </div>
-                </div>
+                @endif
             </div>
 
             <!-- Property Info Section -->
