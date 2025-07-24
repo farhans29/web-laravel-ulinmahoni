@@ -14,7 +14,7 @@
             <!-- Property Type Tabs -->
             <div class="flex border-b border-gray-200 mb-6">
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="house">
-                    House
+                    Kos
                 </button>
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="apartment">
                     Apartment

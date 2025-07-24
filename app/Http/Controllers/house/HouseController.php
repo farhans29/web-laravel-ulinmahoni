@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Property;
+use App\Models\Room;
 
 class HouseController extends Controller {
     public function index(Request $request) 
@@ -141,11 +142,13 @@ class HouseController extends Controller {
      */
     protected function getPropertyRooms($propertyId)
     {
-        $rooms = DB::table('m_rooms')
-            ->where('property_id', $propertyId)
-            ->get();
+        $rooms = Room::where('property_id', $propertyId)->get();
             
         return $rooms->map(function($room) {
+            // Get all room images using the Room model's accessor
+            $roomImages = $room->images;
+            $mainImage = !empty($roomImages[0]['image']) ? $roomImages[0]['image'] : $room->image;
+            
             return [
                 'id' => $room->idrec,
                 'property_id' => $room->property_id,
@@ -156,7 +159,8 @@ class HouseController extends Controller {
                 'type' => $room->type,
                 'level' => $room->level,
                 'facility' => is_string($room->facility) ? (json_decode($room->facility, true) ?? []) : [],
-                'image' => $room->image,
+                'image' => $mainImage,
+                'images' => $roomImages,
                 'periode' => is_string($room->periode) ? json_decode($room->periode, true) : [
                     'daily' => false,
                     'weekly' => false,

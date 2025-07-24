@@ -41,7 +41,7 @@
             <!-- Profile dropdown -->
             <div x-data="{ open: false }" class="relative">
                 <button @click="open = !open" type="button" class="flex items-center space-x-2 rounded-lg p-1 hover:bg-gray-50 transition-colors duration-200">
-                    <img class="w-8 h-8 rounded-full border-2 border-gray-200" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}">
+                    <!-- <img class="w-8 h-8 rounded-full border-2 border-gray-200" src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}"> -->
                     <span class="text-sm font-medium text-gray-700">{{ Auth::user()->username }}</span>
                     <svg class="w-4 h-4 text-gray-400" :class="{ 'transform rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>

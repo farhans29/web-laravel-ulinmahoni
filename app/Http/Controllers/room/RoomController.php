@@ -216,6 +216,10 @@ class RoomController extends Controller {
             // Find the room by slug and eager load the property relationship
             $room = Room::with('property')->where('slug', $slug)->firstOrFail();
             
+            // Get room images using the accessor
+            $roomImages = $room->images;
+            $mainImage = !empty($roomImages[0]['image']) ? $roomImages[0]['image'] : $room->image;
+            
             // Format the room data
             $formattedRoom = [
                 'id' => $room->idrec,
@@ -226,10 +230,6 @@ class RoomController extends Controller {
                 'descriptions' => $room->descriptions,
                 'type' => $room->type,
                 'level' => $room->level,
-                // 'price' => is_string($room->price) ? json_decode($room->price, true) : ($room->price ?? [
-                //     'original' => 0,
-                //     'discounted' => null
-                // ]),
                 'price_original_daily' => $room->price_original_daily,
                 'price_discounted_daily' => $room->price_discounted_daily,
                 'price_original_monthly' => $room->price_original_monthly,
@@ -245,7 +245,8 @@ class RoomController extends Controller {
                     ) : (
                         $room->attachment ?? []
                     ),
-                'image' => $room->image,
+                'image' => $mainImage,
+                'images' => $roomImages,
                 'periode' => is_string($room->periode) ? json_decode(
                     $room->periode, true
                     ) : (

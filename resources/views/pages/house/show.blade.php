@@ -388,21 +388,39 @@
                                 <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                                     <div class="relative pb-[56.25%] h-48">
                                         <div class="absolute inset-0">
-                                            @if(isset($room['image']) && $room['image'])
-                                                <img src="data:image/jpeg;base64,{{ $room['image'] }}" 
-                                                    alt="{{ $room['name'] }}" 
-                                                    class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                                            @php
+                                                $roomImages = $room['images'] ?? [];
+                                                $roomMainImage = null;
+                                                
+                                                // Safely get the first image if it exists
+                                                if (!empty($roomImages) && is_array($roomImages) && isset($roomImages[0]['image'])) {
+                                                    $roomMainImage = $roomImages[0]['image'];
+                                                } elseif (isset($room['image'])) {
+                                                    // Fallback to room's main image if available
+                                                    $roomMainImage = $room['image'];
+                                                }
+                                                
+                                                $roomTotalImages = count($roomImages) > 0 ? count($roomImages) : ($roomMainImage ? 1 : 0);
+                                            @endphp
+                                            
+                                            @if(!empty($roomMainImage) && is_string($roomMainImage))
+                                                <img src="data:image/jpeg;base64,{{ $roomMainImage }}" 
+                                                    alt="{{ $room['name'] ?? 'Room image' }}" 
+                                                    class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
+                                                    onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }">
                                             @else
                                                 <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                                     <i class="fas fa-image text-4xl text-gray-400"></i>
                                                     <span class="ml-2 text-gray-500">No Image</span>
                                                 </div>
                                             @endif
-                                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
+                                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16">
+                                                <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
+                                                    {{ ucfirst($room['type']) }}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
-                                            {{ ucfirst($room['type']) }}
-                                        </span>
                                     </div>
 
                                     <div class="p-6">
@@ -491,7 +509,40 @@
                 </div> -->
             </div>
         </div>
-    </main>
+    </section>
+
+    <!-- Debug: Room Images in House View -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rooms = @json($house['rooms'] ?? []);
+            
+            console.log('=== ROOM IMAGES DEBUG ===');
+            console.log('Total Rooms:', rooms.length);
+            
+            rooms.forEach((room, roomIndex) => {
+                const roomImages = room.images || [];
+                console.group(`Room ${roomIndex + 1}: ${room.name || 'Unnamed Room'}`);
+                console.log('Room ID:', room.id || 'N/A');
+                console.log('Total Images:', roomImages.length);
+                
+                if (roomImages.length > 0) {
+                    console.log('Image Details:');
+                    roomImages.forEach((img, imgIndex) => {
+                        console.group(`Image ${imgIndex + 1}`);
+                        console.log('Has Image Data:', !!img.image ? 'Yes' : 'No');
+                        console.log('Caption:', img.caption || 'No caption');
+                        console.log('Image Preview:', img.image ? img.image.substring(0, 30) + '...' : 'No image data');
+                        console.groupEnd();
+                    });
+                } else {
+                    console.log('No images found for this room');
+                }
+                
+                console.groupEnd();
+            });
+            console.log('=========================');
+        });
+    </script>
 
     <!-- Footer -->
     @include('components.homepage.footer')

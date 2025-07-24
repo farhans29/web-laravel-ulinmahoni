@@ -42,22 +42,55 @@
                     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                         <!-- Room Image Gallery -->
                         <div class="relative h-96">
+                            @php
+                                $roomImages = $room['images'] ?? [];
+                                $mainImage = $room['image'] ?? null;
+                                $totalImages = count($roomImages) > 0 ? count($roomImages) : ($mainImage ? 1 : 0);
+                            @endphp
+                            
+                            <!-- Main Image -->
                             <div class="absolute inset-0">
-                                @if(isset($room['image']) && $room['image'])
-                                    <img src="data:image/jpeg;base64,{{ $room['image'] }}" 
+                                @if($mainImage)
+                                    <img src="data:image/jpeg;base64,{{ $mainImage }}" 
                                         alt="{{ $room['name'] }}" 
-                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                        onclick="openRoomGallery(0)">
                                 @else
                                     <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                         <i class="fas fa-image text-4xl text-gray-400"></i>
                                         <span class="ml-2 font-medium text-gray-500">No Image</span>
                                     </div>
                                 @endif
-                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
+                                
+                                <!-- Image Counter -->
+                                @if($totalImages > 1)
+                                    <div class="absolute bottom-4 right-4">
+                                        <span class="bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm">
+                                            <i class="fas fa-camera mr-1"></i> {{ $totalImages }}
+                                        </span>
+                                    </div>
+                                @endif
+                                
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16">
+                                    <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
+                                        {{ ucfirst($room['type']) }}
+                                    </span>
+                                </div>
                             </div>
-                            <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
-                                {{ ucfirst($room['type']) }}
-                            </span>
+                            
+                            <!-- Thumbnails (if multiple images) -->
+                            @if(count($roomImages) > 1)
+                                <div class="absolute bottom-4 left-4 right-4 flex space-x-2 overflow-x-auto pb-2">
+                                    @foreach($roomImages as $index => $image)
+                                        <div class="flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 border-white shadow-md">
+                                            <img src="data:image/jpeg;base64,{{ $image['image'] }}" 
+                                                alt="{{ $room['name'] }} - Image {{ $index + 1 }}" 
+                                                class="w-full h-full object-cover cursor-pointer hover:opacity-80"
+                                                onclick="openRoomGallery({{ $index }}); event.stopPropagation();">
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
 
                         <div class="p-8">
