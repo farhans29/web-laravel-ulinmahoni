@@ -299,7 +299,7 @@
             </div>
 
             <!-- Additional Details -->
-            <div class="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Property Description -->
                 <div class="lg:col-span-2">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Tentang Properti</h2>
@@ -328,7 +328,7 @@
                     <!-- Location Map -->
                     <div class="mt-8">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Lokasi</h3>
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
                             <div class="aspect-w-16 aspect-h-9">
                                 @php
                                     // Default Jakarta coordinates (Monas)
@@ -365,7 +365,7 @@
                                     );
                                 @endphp
                                 <iframe 
-                                    class="w-full h-[800px] rounded-lg border border-gray-200"
+                                    class="w-full h-[1400px] rounded-lg border border-gray-200"
                                     src="https://www.openstreetmap.org/export/embed.html?bbox={{ $bbox }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}">
                                 </iframe>
                                 <div class="mt-2 text-right">
@@ -394,7 +394,7 @@
                     <div id="rooms-section" class="mt-12">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">Kamar Tersedia</h2>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             @forelse($house['rooms'] as $room)
                                 <a href="{{ route('rooms.show', $room['slug']) }}" class="group">
                                     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group-hover:ring-2 group-hover:ring-teal-500">
