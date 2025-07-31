@@ -130,64 +130,79 @@
             </nav>
 
             <!-- Image Gallery Section -->
-            <div x-data="{ showModal: false, modalImg: '', modalAlt: '' }" class="image-gallery relative mb-8">
+            <div x-data="{ showModal: false, modalImg: '', modalAlt: '' }" class="image-gallery overflow-x-auto flex gap-4 mb-8 pb-2">
                 <!-- Image Popup Modal -->
                 <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" style="display: none;" @click.away="showModal=false" @keydown.escape.window="showModal=false">
                     <img :src="modalImg" :alt="modalAlt" class="max-h-[80vh] max-w-[90vw] rounded shadow-lg border-4 border-white object-contain" @click.stop>
                     <button @click="showModal=false" class="absolute top-4 right-6 text-white text-3xl font-bold focus:outline-none">&times;</button>
                 </div>
                 
-                <!-- Main Image with overlay badges -->
-<div class="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden max-w-xl w-full mx-auto">
-    @if($primaryImage)
-        <img src="data:image/jpeg;base64,{{ $primaryImage }}"
-            alt="{{ $house['name'] ?? 'Property Image' }}"
-            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
-            @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
-            onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
-    @else
-        <div class="w-full h-full flex items-center justify-center">
-            <i class="fas fa-image text-4xl text-gray-400"></i>
-            <span class="ml-2 font-medium text-gray-500">No Image</span>
-        </div>
-    @endif
+                <!-- Main and Secondary Images as Scrollable Row -->
+                @if($primaryImage)
+                    <div class="gallery-item bg-gray-100 rounded-lg overflow-hidden relative aspect-[16/9] min-w-[384px] max-w-lg cursor-pointer flex-shrink-0"
+                        @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
+                        <img src="data:image/jpeg;base64,{{ $primaryImage }}"
+                            alt="{{ $house['name'] ?? 'Property Image' }}"
+                            class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                            onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
+                        @if(isset($house['type']))
+                            <span class="type-badge bg-primary-600 text-white px-3 py-1 text-sm font-medium rounded-full absolute top-4 left-4">
+                                {{ $house['type'] }}
+                            </span>
+                        @endif
+                        @if($totalImages > 0)
+                            <span class="image-count bg-black bg-opacity-60 text-white px-3 py-1 text-sm rounded-full absolute bottom-4 right-4">
+                                <i class="fas fa-camera mr-1"></i> {{ $totalImages }}
+                            </span>
+                        @endif
+                    </div>
+                @endif
+                @if(!empty($secondaryImages))
+                    @foreach($secondaryImages as $index => $image)
+                        <div class="gallery-item bg-gray-100 rounded-lg overflow-hidden relative aspect-[16/9] min-w-[384px] max-w-lg cursor-pointer flex-shrink-0"
+                            @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
+                            <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
+                                alt="{{ $house['name'] ?? 'Property Image' }}"
+                                class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                                onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
+                            <span class="image-count bg-black bg-opacity-60 text-white px-2 py-1 text-xs rounded-full absolute bottom-2 right-2">
+                                {{ $index + 2 }}/{{ $totalImages }}
+                            </span>
+                        </div>
+                    @endforeach
+                @endif
 
-    @if($totalImages > 1)
-        <div class="absolute bottom-4 right-4">
-            <span class="bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm">
-                <i class="fas fa-camera mr-1"></i> {{ $totalImages }}
-            </span>
-        </div>
-    @endif
-
-    @if(isset($house['type']))
-        <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
-            {{ ucfirst($house['type']) }}
-        </span>
-    @endif
-</div>
-
-<!-- Thumbnails (if multiple images) -->
-@if(count($secondaryImages) > 0)
-    <div class="flex space-x-2 overflow-x-auto pb-2 mt-3">
-        <!-- Main image as first thumb -->
-        <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-            <img src="data:image/jpeg;base64,{{ $primaryImage }}"
-                alt="{{ $house['name'] ?? 'Property Image' }} - Main"
-                class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
-        </div>
-        @foreach($secondaryImages as $index => $image)
-            <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-                <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
-                    alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
-                    class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                    @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'">
-            </div>
-        @endforeach
-    </div>
-@endif
-
+                <!-- Right Side Smaller Images -->
+                @if(count($secondaryImages) > 0 || $totalImages > 1)
+                    <div class="flex flex-col gap-4">
+                        @foreach($secondaryImages as $index => $image)
+                        <!-- Limit to 2 secondary images -->
+                        @if($index < 2) 
+                                <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full cursor-pointer"
+                                    @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
+                                    <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
+                                         alt="{{ $house['name'] ?? 'Property Image' }}"
+                                         class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                                         onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
+                                    <span class="image-count bg-black bg-opacity-60 text-white px-2 py-1 text-xs rounded-full absolute bottom-2 right-2">
+                                        {{ $index + 2 }}/{{ $totalImages }}
+                                    </span>
+                                </div>
+                            @endif
+                        @endforeach
+                        
+                        @if(count($secondaryImages) === 0 && $primaryImage)
+                            <!-- Fallback if no secondary images but main image exists -->
+                            <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full cursor-pointer"
+        @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
+                                <img src="data:image/jpeg;base64,{{ $primaryImage }}"
+                                     alt="{{ $house['name'] ?? 'Property Image' }}"
+                                     class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
+                                     onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
+                            </div>
+                        @endif
+                    </div>
+                @endif
             </div>
 
             <!-- Property Info Section -->
