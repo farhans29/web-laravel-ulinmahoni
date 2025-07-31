@@ -62,6 +62,7 @@
             background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.2) 100%);
             opacity: 0;
             transition: var(--transition);
+            pointer-events: none;
         }
 
         .gallery-item:hover::after {
@@ -71,8 +72,8 @@
         .type-badge {
             position: absolute;
             top: 1rem;
-            left: 1rem;
             z-index: 10;
+            left: 1rem;
             padding: 0.375rem 0.75rem;
             background-color: rgb(13 148 136);
             color: white;
@@ -109,6 +110,7 @@
             transform: translateY(0);
         }
     </style>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="font-inter antialiased bg-white text-gray-900 tracking-tight">
     <!-- Header -->
@@ -128,9 +130,15 @@
             </nav>
 
             <!-- Image Gallery Section -->
-            <div class="image-gallery grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div x-data="{ showModal: false, modalImg: '', modalAlt: '' }" class="image-gallery grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <!-- Image Popup Modal -->
+                <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" style="display: none;" @click.away="showModal=false" @keydown.escape.window="showModal=false">
+                    <img :src="modalImg" :alt="modalAlt" class="max-h-[80vh] max-w-[90vw] rounded shadow-lg border-4 border-white object-contain" @click.stop>
+                    <button @click="showModal=false" class="absolute top-4 right-6 text-white text-3xl font-bold focus:outline-none">&times;</button>
+                </div>
                 <!-- Main Large Image -->
-                <div class="gallery-item main-image md:col-span-2 bg-gray-100 rounded-lg overflow-hidden relative">
+                <div class="gallery-item main-image md:col-span-2 bg-gray-100 rounded-lg overflow-hidden relative cursor-pointer"
+     @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
                     @if($primaryImage)
                         <img src="data:image/jpeg;base64,{{ $primaryImage }}" 
                              alt="{{ $house['name'] ?? 'Property Image' }}"
@@ -159,8 +167,10 @@
                 @if(count($secondaryImages) > 0 || $totalImages > 1)
                     <div class="flex flex-col gap-4">
                         @foreach($secondaryImages as $index => $image)
-                            @if($index < 2) <!-- Limit to 2 secondary images -->
-                                <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
+                        <!-- Limit to 2 secondary images -->
+                        @if($index < 2) 
+                                <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full cursor-pointer"
+     @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
                                     <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
                                          alt="{{ $house['name'] ?? 'Property Image' }}"
                                          class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
@@ -174,7 +184,8 @@
                         
                         @if(count($secondaryImages) === 0 && $primaryImage)
                             <!-- Fallback if no secondary images but main image exists -->
-                            <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full">
+                            <div class="gallery-item side-image bg-gray-100 rounded-lg overflow-hidden relative h-full cursor-pointer"
+     @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
                                 <img src="data:image/jpeg;base64,{{ $primaryImage }}"
                                      alt="{{ $house['name'] ?? 'Property Image' }}"
                                      class="w-full h-full object-cover transition-opacity duration-300 hover:opacity-90"
@@ -385,7 +396,8 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             @forelse($house['rooms'] as $room)
-                                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                                <a href="{{ route('rooms.show', $room['slug']) }}" class="group">
+                                    <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group-hover:ring-2 group-hover:ring-teal-500">
                                     <div class="relative pb-[56.25%] h-48">
                                         <div class="absolute inset-0">
                                             @php
@@ -483,14 +495,10 @@
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $room['status'] === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                                 {{ $room['status'] === 1 ? 'Available' : 'Unavailable' }}
                                             </span>
-                                            
-                                            <a href="{{ route('rooms.show', $room['slug']) }}" 
-                                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                                                View Details
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
+                                </a>
                             @empty
                                 <div class="col-span-full text-center py-8">
                                     <p class="text-gray-500">No rooms available for this property at the moment.</p>

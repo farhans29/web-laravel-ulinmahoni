@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -41,7 +42,12 @@
                 <div class="lg:col-span-7">
                     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
                         <!-- Room Image Gallery -->
-                        <div class="relative h-96">
+                        <div class="relative h-96" x-data="{ showModal: false, modalImg: '', modalAlt: '' }">
+                            <!-- Modal Popup -->
+                            <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" style="display: none;" @click.away="showModal=false" @keydown.escape.window="showModal=false">
+                                <img :src="modalImg" :alt="modalAlt" class="max-h-[80vh] max-w-[90vw] rounded shadow-lg border-4 border-white object-contain" @click.stop>
+                                <button @click="showModal=false" class="absolute top-4 right-6 text-white text-3xl font-bold focus:outline-none">&times;</button>
+                            </div>
                             @php
                                 $roomImages = $room['images'] ?? [];
                                 $mainImage = $room['image'] ?? null;
@@ -53,8 +59,8 @@
                                 @if($mainImage)
                                     <img src="data:image/jpeg;base64,{{ $mainImage }}" 
                                         alt="{{ $room['name'] }}" 
-                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                        onclick="openRoomGallery(0)">
+                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
+                                        @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $mainImage }}'; modalAlt='{{ $room['name'] }}'">
                                 @else
                                     <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                         <i class="fas fa-image text-4xl text-gray-400"></i>
@@ -86,7 +92,7 @@
                                             <img src="data:image/jpeg;base64,{{ $image['image'] }}" 
                                                 alt="{{ $room['name'] }} - Image {{ $index + 1 }}" 
                                                 class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                                onclick="openRoomGallery({{ $index }}); event.stopPropagation();">
+                                                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] }}'; modalAlt='{{ $room['name'] }} - Image {{ $index + 1 }}'">
                                         </div>
                                     @endforeach
                                 </div>
@@ -317,13 +323,12 @@
                             <div>
                                 @guest
                                     <button type="button" 
-                                        class="w-full bg-gray-400 text-white py-4 px-6 rounded-lg cursor-not-allowed text-lg font-medium flex items-center justify-center gap-2"
-                                        disabled
-                                        onclick="window.location.href = '{{ route('login') }}'">
+                                        class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium flex items-center justify-center gap-2"
+                                        onclick="window.location.href = '/login'">
                                         <i class="fas fa-lock"></i>
-                                        Login to Book
+                                        Masuk untuk memesan
                                     </button>
-                                    <p class="text-sm text-gray-500 text-center mt-2">Please login or register to make a booking</p>
+                                    <p class="text-sm text-gray-500 text-center mt-2">Mohon login atau register untuk membuat pemesanan</p>
                                 @else
                                     <button type="submit" id="submitButton"
                                         class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
