@@ -1,9 +1,67 @@
 <!-- Header Component -->
 <header class="site-header py-4 px-6 flex items-center justify-between bg-white shadow-md sticky top-0 z-50">
     <div class="flex items-center space-x-8">
-        <a href="/homepage">
+        <!-- Mobile Menu Button (Hidden on desktop) -->
+        <div x-data="{ mobileMenuOpen: false }" class="md:hidden">
+            <button @click="mobileMenuOpen = true" class="text-gray-600 hover:text-gray-900 p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+
+            <!-- Mobile Sidebar -->
+            <div x-show="mobileMenuOpen"
+                 x-transition:enter="transition ease-in-out duration-300 transform"
+                 x-transition:enter-start="-translate-x-full"
+                 x-transition:enter-end="translate-x-0"
+                 x-transition:leave="transition ease-in-out duration-300 transform"
+                 x-transition:leave-start="translate-x-0"
+                 x-transition:leave-end="-translate-x-full"
+                 class="fixed inset-y-0 left-0 w-64 bg-white shadow-lg z-50"
+                 style="display: none;"
+                 @click.away="mobileMenuOpen = false">
+                <div class="flex items-center justify-between p-4 border-b">
+                    <a href="/homepage" class="flex items-center">
+                        <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-8 w-auto">
+                    </a>
+                    <button @click="mobileMenuOpen = false" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="p-4">
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="/sewa" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Sewa Berjangka</a>
+                        </li>
+                        <li>
+                            <a href="/kerjasama" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Kerjasama Ulin Mahoni</a>
+                        </li>
+                        <li>
+                            <a href="/business" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Ulin Mahoni untuk Bisnis</a>
+                        </li>
+                        <li>
+                            <a href="/tentang" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Tentang Ulin Mahoni</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- Overlay -->
+            <div x-show="mobileMenuOpen" 
+                 x-transition.opacity
+                 class="fixed inset-0 bg-black bg-opacity-50 z-40"
+                 style="display: none;"
+                 @click="mobileMenuOpen = false">
+            </div>
+        </div>
+
+        <!-- Logo for Desktop -->
+        <a href="/homepage" class="hidden md:flex items-center">
             <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-10 w-auto">
         </a>
+        
+        <!-- Navigation -->
         <nav class="hidden md:flex">
             <ul class="flex space-x-6">
                 <li>
@@ -29,6 +87,8 @@
             </ul>
         </nav>
     </div>
+
+    <!-- Language -->
     <div class="flex items-center space-x-4">
         <div class="flex items-center space-x-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M31,8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4v9H31V8Z" fill="#ea3323"></path><path d="M5,28H27c2.209,0,4-1.791,4-4v-8H1v8c0,2.209,1.791,4,4,4Z" fill="#fff"></path><path d="M5,28H27c2.209,0,4-1.791,4-4V8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4V24c0,2.209,1.791,4,4,4ZM2,8c0-1.654,1.346-3,3-3H27c1.654,0,3,1.346,3,3V24c0,1.654-1.346,3-3,3H5c-1.654,0-3-1.346-3-3V8Z" opacity=".15"></path><path d="M27,5H5c-1.657,0-3,1.343-3,3v1c0-1.657,1.343-3,3-3H27c1.657,0,3,1.343,3,3v-1c0-1.657-1.343-3-3-3Z" fill="#fff" opacity=".2"></path></svg>
@@ -103,42 +163,5 @@
     </div>
 </header>
 
-<!-- Mobile Menu Button (Hidden on desktop) -->
-<div x-data="{ mobileMenuOpen: false }" class="md:hidden">
-    <button @click="mobileMenuOpen = !mobileMenuOpen" class="fixed bottom-4 right-4 bg-teal-600 text-white p-3 rounded-full shadow-lg z-50">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-        </svg>
-    </button>
-
-    <!-- Mobile Menu -->
-    <div x-show="mobileMenuOpen"
-         @click.away="mobileMenuOpen = false"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 transform translate-y-full"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform translate-y-full"
-         class="fixed inset-x-0 bottom-0 bg-white shadow-lg rounded-t-xl z-40"
-         style="display: none;">
-        <nav class="px-4 py-6">
-            <ul class="space-y-4">
-                <li>
-                    <a href="/sewa" class="block text-base text-gray-600 hover:text-gray-900">Sewa Berjangka</a>
-                </li>
-                <li>
-                    <a href="/kerjasama" class="block text-base text-gray-600 hover:text-gray-900">Kerjasama Ulin Mahoni</a>
-                </li>
-                <li>
-                    <a href="/business" class="block text-base text-gray-600 hover:text-gray-900">Ulin Mahoni untuk Bisnis</a>
-                </li>
-                <li>
-                    <a href="/tentang" class="block text-base text-gray-600 hover:text-gray-900">Tentang Ulin Mahoni</a>
-                </li>
-            </ul>
-        </nav>
-    </div>
-</div>
 
 <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sewa Berjangka - Ulin Mahoni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Styles -->
+    @include('components.property.styles')
 </head>
 <body class="font-inter antialiased bg-white text-gray-900 tracking-tight">
     <!-- Header -->
@@ -96,7 +98,7 @@
 
                 <!-- CTA Section -->
                 <div class="text-center mt-16">
-                    <a href="{{ route('properties.index') }}" class="btn text-white bg-teal-600 hover:bg-teal-700 rounded-lg px-8 py-4 text-lg font-semibold">
+                    <a href="{{ route('homepage') }}" class="btn text-white bg-teal-600 hover:bg-teal-700 rounded-lg px-8 py-4 text-lg font-semibold">
                         Mulai Mencari Properti
                     </a>
                 </div>

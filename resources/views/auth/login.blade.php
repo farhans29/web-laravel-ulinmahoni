@@ -71,7 +71,7 @@
 
             <div>
                 <h2 class="text-4xl font-light text-center text-gray-900 mb-2">Selamat Datang</h2>
-                <p class="text-center text-gray-600 text-lg">#UlinMahoni</p>
+                <p class="text-center text-gray-600 text-lg">UlinMahoni</p>
             </div>
 
             @if (session('status'))
