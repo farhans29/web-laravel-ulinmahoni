@@ -69,9 +69,12 @@
         
         <div class="login-box">
 
-            <div>
-                <h2 class="text-4xl font-light text-center text-gray-900 mb-2">Selamat Datang</h2>
-                <p class="text-center text-gray-600 text-lg">UlinMahoni</p>
+            <div class="text-center mb-6">
+                <div class="flex justify-center mb-4">
+                    <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-16 w-auto">
+                </div>
+                <h2 class="text-4xl font-light text-gray-900 mb-2">Selamat Datang</h2>
+                <p class="text-gray-600 text-lg">UlinMahoni</p>
             </div>
 
             @if (session('status'))
