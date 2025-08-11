@@ -7,12 +7,65 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <!-- Styles -->
     @include('components.property.styles')
+    <style>
+        .video-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .video-background {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.1) 100%);
+            z-index: 2;
+        }
+    </style>
 </head>
 <body class="font-inter antialiased bg-white text-gray-900 tracking-tight">
     <!-- Header -->
     @include('components.homepage.header')
 
-    <main class="flex-grow">
+    <main class="relative">
+        <!-- Video Background -->
+        <div class="video-wrapper">
+            <video class="video-background" autoplay loop muted playsinline>
+                <source src="{{ asset('images/assets/My_Movie.mp4') }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-overlay"></div>
+        </div>
+        
+        <div class="min-h-screen flex flex-col">
+            <!-- Hero Section -->
+            <section class="py-16 md:py-24 px-4">
+                <div class="max-w-4xl mx-auto text-center bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-white/20">
+                    <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
+                        Tentang Kami
+                    </h1>
+                    <p class="text-xl text-gray-700 max-w-3xl mx-auto">
+                        Menyediakan solusi properti terbaik dengan layanan berkualitas tinggi
+                    </p>
+                </div>
+            </section>
+        
         <!-- Hero Section -->
         <section class="relative pt-32 pb-12 md:pt-40 md:pb-20">
             <div class="max-w-6xl mx-auto px-4 sm:px-6">
@@ -89,43 +142,41 @@
                 </div>
 
                 <!-- Team Section -->
-                <!-- <div class="text-center mb-16">
+                <div class="text-center mb-16">
                     <h2 class="text-3xl font-bold mb-8">Tim Kami</h2>
                     <div class="grid md:grid-cols-3 gap-8">
-                        <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-md border border-white/20 hover:bg-white/90 transition-all duration-300 mb-8">
                             <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4"></div>
                             <h3 class="font-bold text-xl mb-1">John Doe</h3>
                             <p class="text-gray-600 mb-4">CEO & Founder</p>
                             <p class="text-gray-600 text-sm">10+ tahun pengalaman di industri properti</p>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-md border border-white/20 hover:bg-white/90 transition-all duration-300 mb-8">
                             <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4"></div>
                             <h3 class="font-bold text-xl mb-1">Jane Smith</h3>
                             <p class="text-gray-600 mb-4">Head of Operations</p>
                             <p class="text-gray-600 text-sm">8+ tahun pengalaman manajemen operasional</p>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-md border border-white/20 hover:bg-white/90 transition-all duration-300 mb-8">
                             <div class="w-24 h-24 rounded-full bg-gray-200 mx-auto mb-4"></div>
                             <h3 class="font-bold text-xl mb-1">Mike Johnson</h3>
                             <p class="text-gray-600 mb-4">Head of Technology</p>
                             <p class="text-gray-600 text-sm">12+ tahun pengalaman teknologi properti</p>
                         </div>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- Contact Section -->
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold mb-4">Hubungi Kami</h2>
-                    <p class="text-gray-600 mb-8">Ada pertanyaan? Tim kami siap membantu Anda</p>
-                    <div class="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-                        <div class="p-4">
-                            <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
-                            <h3 class="font-bold mb-2">Email</h3>
-                            <p class="text-gray-600">info@ulinmahoni.com</p>
+                <div class="text-center mt-16">
+                    <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-md border border-white/20">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-6">Hubungi Kami</h3>
+                        <p class="text-gray-700 mb-8 max-w-2xl mx-auto">Kami siap membantu Anda menemukan properti impian</p>
+                        <a href="#" class="inline-flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-semibold text-lg px-8 py-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl">
+                            Kontak Sekarang
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </a>
                         </div>
                         <div class="p-4">
                             <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">

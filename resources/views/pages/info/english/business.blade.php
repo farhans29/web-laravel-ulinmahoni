@@ -5,12 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ulin Mahoni for Business - Property Solutions for Business</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .login-container {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.5) 100%);
+            z-index: 2;
+        }
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2.5rem;
+            max-width: 28rem;
+            width: 100%;
+            margin: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        @media (max-width: 640px) {
+            .login-box {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body class="font-inter antialiased bg-white text-gray-900 tracking-tight">
     <!-- Header -->
     @include('components.homepage.header')
 
-    <main class="flex-grow">
+    <main class="flex-grow relative">
+        <!-- Video Background -->
+        <div class="video-wrapper">
+            <video class="video-background" autoplay loop muted playsinline>
+                <source src="{{ asset('images/assets/My_Movie.mp4') }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            <div class="video-overlay"></div>
+        </div>
+        
         <!-- Hero Section -->
         <section class="relative pt-32 pb-12 md:pt-40 md:pb-20">
             <div class="max-w-6xl mx-auto px-4 sm:px-6">
