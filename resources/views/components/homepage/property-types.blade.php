@@ -16,9 +16,9 @@
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="kos">
                     Kos
                 </button>
-                <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="house">
+                <!-- <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="house">
                     House
-                </button>
+                </button> -->
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="apartment">
                     Apartment
                 </button>
@@ -35,9 +35,9 @@
                 <div class="property-tab-content active" data-tab="kos">
                     @include('components.homepage.property-cards.kos')
                 </div>
-                <div class="property-tab-content hidden" data-tab="house">
+                <!-- <div class="property-tab-content hidden" data-tab="house">
                     @include('components.homepage.property-cards.house')
-                </div>
+                </div> -->
                 <div class="property-tab-content hidden" data-tab="apartment">
                     @include('components.homepage.property-cards.apartment')
                 </div>
