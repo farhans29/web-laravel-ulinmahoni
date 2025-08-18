@@ -74,10 +74,11 @@ class HomeController extends Controller {
 
             // Prepare property data by type
             $propertyTypes = [
+                'Kos' => [],
                 'House' => [],
                 'Apartment' => [],
                 'Villa' => [],
-                'Hotel' => []
+                'Hotel' => [],
             ];
 
             foreach ($properties as $property) {
@@ -96,12 +97,14 @@ class HomeController extends Controller {
             // Log the final data for debugging
             Log::info('Property data by type:', [
                 'houses_count' => count($propertyTypes['House']),
+                'kos_count' => count($propertyTypes['Kos']),
                 'apartments_count' => count($propertyTypes['Apartment']),
                 'villas_count' => count($propertyTypes['Villa']),
                 'hotels_count' => count($propertyTypes['Hotel'])
             ]);
 
             return view("pages.homepage.index", [
+                'kos' => $propertyTypes['Kos'],
                 'houses' => $propertyTypes['House'],
                 'apartments' => $propertyTypes['Apartment'],
                 'villas' => $propertyTypes['Villa'],
@@ -116,6 +119,7 @@ class HomeController extends Controller {
             ]);
             
             return view("pages.homepage.index", [
+                'kos' => [],
                 'houses' => [],
                 'apartments' => [],
                 'villas' => [],

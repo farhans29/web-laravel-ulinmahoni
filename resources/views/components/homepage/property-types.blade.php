@@ -13,8 +13,11 @@
         <div class="w-full">
             <!-- Property Type Tabs -->
             <div class="flex border-b border-gray-200 mb-6">
-                <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="house">
+                <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="kos">
                     Kos
+                </button>
+                <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="house">
+                    House
                 </button>
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="apartment">
                     Apartment
@@ -29,10 +32,21 @@
 
             <!-- Property Type Content -->
             <div class="property-tab-contents">
-                @include('components.homepage.property-cards.house')
-                @include('components.homepage.property-cards.apartment')
-                @include('components.homepage.property-cards.villa')
-                @include('components.homepage.property-cards.hotel')
+                <div class="property-tab-content active" data-tab="kos">
+                    @include('components.homepage.property-cards.kos')
+                </div>
+                <div class="property-tab-content hidden" data-tab="house">
+                    @include('components.homepage.property-cards.house')
+                </div>
+                <div class="property-tab-content hidden" data-tab="apartment">
+                    @include('components.homepage.property-cards.apartment')
+                </div>
+                <div class="property-tab-content hidden" data-tab="villa">
+                    @include('components.homepage.property-cards.villa')
+                </div>
+                <div class="property-tab-content hidden" data-tab="hotel">
+                    @include('components.homepage.property-cards.hotel')
+                </div>
                 <!-- Browse All Button -->
                 <div class="text-center py-8">
                     <a href="{{ route('properties.index') }}" class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-teal-600/20">

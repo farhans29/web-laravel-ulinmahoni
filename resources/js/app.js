@@ -48,6 +48,7 @@ import salesGlobalChart from './customs/sales-global-chart';
 import dashboardSalesChart from './customs/dashboard-sales-chart';
 import yourSalesChart from './customs/your-sales-chart';
 import teamSalesChart from './customs/team-sales-chart';
+import propertyTabs from './customs/property-tabs';
 import KpiSales from './customs/kpi-sales-chart';
 
 
@@ -116,6 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
   dashboardCard06();
   dashboardCard08();
   dashboardCard09();
+  
+  // Initialize property tabs
+  propertyTabs();
   analyticsCard01();
   analyticsCard02();
   analyticsCard03();

@@ -1,25 +1,25 @@
 <!-- Swiper container -->
 <div class="swiper property-swiper">
         <div class="swiper-wrapper mb-8">
-            @forelse($houses as $house)
+            @forelse($kos as $kosan)
             <div class="swiper-slide">
-                <a href="{{ route('houses.show', ['id' => $house['id']]) }}" class="block h-full">
+                <a href="{{ route('houses.show', ['id' => $kosan['id']]) }}" class="block h-full">
                     <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
                         <div class="relative">
                             <div class="relative pb-[56.25%] h-48">
                                 <div class="absolute inset-0">
                                     @php
-                                        $mainImage = $house['images'][0]['image'] ?? $house['image'] ?? null;
+                                        $mainImage = $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
                                     @endphp
                                     
                                     @if($mainImage)
                                         <img src="data:image/jpeg;base64,{{ $mainImage }}" 
-                                             alt="{{ $house['name'] }}" 
+                                             alt="{{ $kosan['name'] }}" 
                                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
                                         
-                                        @if(count($house['images'] ?? []) > 1)
+                                        @if(count($kosan['images'] ?? []) > 1)
                                             <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-                                                +{{ count($house['images']) - 1 }} more
+                                                +{{ count($kosan['images']) - 1 }} more
                                             </div>
                                         @endif
                                     @else
@@ -28,32 +28,32 @@
                                             <span class="ml-2 text-gray-500">No Image</span>
                                         </div>
                                     @endif
-                                    <!-- <p>{{ $house['image'] }}</p> -->
+                                    <!-- <p>{{ $kosan['image'] }}</p> -->
                                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
                                 </div>
                                 <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
-                                    {{ $house['type'] }}
+                                    {{ $kosan['type'] }}
                                 </span>
                             </div>
                         </div>
 
                         <div class="p-4 flex-1 flex flex-col">
                             <div class="flex-1">
-                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $house['name'] }}</h3>
-                                <p class="text-gray-500 text-sm mb-1">{{ $house['subLocation'] }}</p>
-                                <p class="text-gray-500 text-xs mb-3">{{ $house['distance'] }}</p>
+                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $kosan['name'] }}</h3>
+                                <p class="text-gray-500 text-sm mb-1">{{ $kosan['subLocation'] }}</p>
+                                <p class="text-gray-500 text-xs mb-3">{{ $kosan['distance'] }}</p>
                             </div>
 
                             <div class="mt-auto">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <!-- <p class="text-xs text-gray-500">
-                                            mulai dari <span class="line-through">Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}</span>
+                                            mulai dari <span class="line-through">Rp{{ number_format($kosan['price_original_monthly'], 0, ',', '.') }}</span>
                                         </p> -->
                                         <div class="flex items-center">
                                             <p class="text-lg font-bold text-gray-800">
                                                 @php
-                                                    $roomPrice = $house['room_price_original_monthly'];
+                                                    $roomPrice = $kosan['room_price_original_monthly'];
                                                 @endphp
                                                 @if(empty($roomPrice))
                                                     <span class="text-lg font-bold">(Kamar blm tersedia)</span>
@@ -69,7 +69,7 @@
 
                                     <div class="flex flex-col space-y-1 text-xs text-gray-500">
                                         @php
-                                            $features = $house['features'] ?? [];
+                                            $features = $kosan['features'] ?? [];
                                             $featureCount = count($features);
                                             $displayFeatures = array_slice($features, 0, 2);
                                             $remainingFeatures = $featureCount - 2;
