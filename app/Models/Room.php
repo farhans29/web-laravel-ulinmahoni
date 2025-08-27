@@ -164,7 +164,17 @@ class Room extends Model
      */
     public function getPeriodeAttribute($value)
     {
-        return json_decode($value, true) ?? [
+        if (is_string($value) && !empty($value)) {
+            // Handle both JSON string and already decoded array
+            $decoded = is_string($value) ? json_decode($value, true) : $value;
+            return [
+                'daily' => $decoded['daily'] ?? false,
+                'weekly' => $decoded['weekly'] ?? false,
+                'monthly' => $decoded['monthly'] ?? false
+            ];
+        }
+        
+        return [
             'daily' => false,
             'weekly' => false,
             'monthly' => false
