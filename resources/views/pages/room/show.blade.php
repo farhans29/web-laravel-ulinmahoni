@@ -330,9 +330,9 @@
                                     </button>
                                     <p class="text-sm text-gray-500 text-center mt-2">Mohon login atau register untuk membuat pemesanan</p>
                                 @else
-                                    <button type="button" id="bookNowButton"
+                                    <button type="submit" id="submitButton"
                                         class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
-                                        {{ $room['status'] == 0 ? 'disabled' : '' }} data-room-id="{{ $room['id'] }}" data-property-id="{{ $room['property_id'] }}">
+                                        {{ $room['status'] == 0 ? 'disabled' : '' }}>
                                         {{ $room['status'] == 1 ? 'Pesan Sekarang' : 'Kamar Tidak Tersedia' }}
                                     </button>
                                 @endguest
@@ -356,7 +356,7 @@
 
     <script>
         // --- Element references ---
-        let bookingForm, errorAlert, loadingOverlay, submitButton, monthInput, dateInputs, monthsSelect, rentTypeSelect, rulesModal, closeRulesModal, showRulesButton, confirmBooking, cancelBooking, agreeTerms, bookNowButton;
+        let bookingForm, errorAlert, loadingOverlay, submitButton, monthInput, dateInputs, monthsSelect, rentTypeSelect;
         let checkInInput, checkOutInput;
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -364,17 +364,6 @@
             bookingForm = document.getElementById('bookingForm');
             errorAlert = document.getElementById('errorAlert');
             loadingOverlay = document.getElementById('loadingOverlay');
-            bookNowButton = document.getElementById('bookNowButton');
-            
-            // Add click event to bookNowButton
-            if (bookNowButton) {
-                bookNowButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    handleFormSubmit(e);
-                });
-            }
-            
-            // Initialize other element references
             submitButton = bookingForm?.querySelector('button[type="submit"]');
             checkInInput = document.getElementById('check_in');
             checkOutInput = document.getElementById('check_out');
@@ -665,153 +654,94 @@
                 if (!validateForm()) {
                     return;
                 }
-
-                // Show loading state
+                
+                // Clear the search state from localStorage when booking is submitted
+                localStorage.removeItem('propertySearch');
+                
+                errorAlert.classList.add('hidden');
+                errorAlert.textContent = '';
                 loadingOverlay.classList.remove('hidden');
                 if (submitButton) submitButton.disabled = true;
-                if (bookNowButton) bookNowButton.disabled = true;
                 
                 try {
                     const formData = new FormData(bookingForm);
+                    // Ensure booking_months is set to the same value as months for monthly bookings
                     const rentType = document.getElementById('rent_type').value;
-                    
-                    // Set booking_months for monthly rentals
                     if (rentType === 'monthly') {
                         const months = document.getElementById('months').value;
                         formData.set('booking_months', months);
                     }
-                    
-                    // Add property_id to the form data if not already present
-                    if (!formData.has('property_id') && bookNowButton) {
-                        formData.set('property_id', bookNowButton.dataset.propertyId);
-                    }
-                    
                     const formObject = Object.fromEntries(formData);
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
-                    const response = await fetch('{{ route('api.booking.check-availability') }}', {
+                    const response = await fetch('{{ route("bookings.store") }}', {
+                        referrerPolicy: 'unsafe-url',
                         method: 'POST',
                         headers: {
+                            'Referrer-Policy': 'unsafe-url',
                             'X-CSRF-TOKEN': csrfToken,
                             'Accept': 'application/json',
                             'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         body: JSON.stringify(formObject)
                     });
 
-                    const data = await response.json();
-                    console.log('API Response:', data); // Log the complete response for debugging
+                    // First, check if the response is JSON
+                    const contentType = response.headers.get('content-type');
+                    let data;
                     
-                    if (!response.ok) {
-                        throw new Error(data.message || 'Failed to check room availability');
+                    if (contentType && contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        // If not JSON, get the response as text to see what it is
+                        const text = await response.text();
+                        console.error('Non-JSON response:', text);
+                        throw new Error('Server returned an invalid response. Please try again.');
+                    }
+                    
+                    if (response.ok && data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                        return;
                     }
 
-                    // Handle response based on availability
-                    if (data.status === 'success') {
-                        if (data.data.is_available) {
-                        // Build booking URL with all necessary parameters
-                        const checkIn = formData.get('check_in');
-                        const checkOut = formData.get('check_out');
-                        const roomId = formData.get('room_id');
-                        const propertyId = formData.get('property_id');
-                        const bookingMonths = formData.get('booking_months') || '';
-                        
-                        const bookingUrl = new URL('{{ route("bookings.store") }}');
-                        const bookingParams = new URLSearchParams();
-                        
-                        bookingParams.append('room_id', roomId);
-                        bookingParams.append('property_id', propertyId);
-                        bookingParams.append('check_in', checkIn);
-                        bookingParams.append('check_out', checkOut);
-                        bookingParams.append('rent_type', rentType);
-                        
-                        if (rentType === 'monthly' && bookingMonths) {
-                            bookingParams.append('booking_months', bookingMonths);
-                        }
-                        
-                        // Append all parameters to the URL
-                        window.location.href = `${bookingUrl}?${bookingParams.toString()}`;
-                            return;
-                        } else {
-                            // Room is not available
-                            let errorMessage = 'Maaf, kamar tidak tersedia untuk tanggal yang dipilih.';
-                            if (data.data.conflicting_bookings && data.data.conflicting_bookings.length > 0) {
-                                errorMessage += ' Sudah ada pemesanan untuk tanggal tersebut.';
-                                console.log('Conflicting bookings:', data.data.conflicting_bookings);
+                    if (data.errors) {
+                        // Handle validation errors
+                        let errorMessages = [];
+                        Object.entries(data.errors).forEach(([field, messages]) => {
+                            const errorElement = document.getElementById(`${field}Error`);
+                            const message = Array.isArray(messages) ? messages[0] : messages;
+                            if (errorElement) {
+                                errorElement.textContent = message;
+                                errorElement.classList.remove('hidden');
                             }
-                            errorAlert.textContent = errorMessage;
-                            errorAlert.classList.remove('hidden');
-                        }
+                            errorMessages.push(message);
+                        });
                         
-                        // Log conflicting bookings if available
-                        if (data.data && data.data.conflicting_bookings) {
-                            console.log('Conflicting bookings:', data.data.conflicting_bookings);
+                        // Display first error message in the main alert
+                        if (errorMessages.length > 0) {
+                            errorAlert.textContent = errorMessages[0];
+                        } else {
+                            errorAlert.textContent = 'Please fix the errors below';
                         }
+                        errorAlert.classList.remove('hidden');
+                    } else if (data.message) {
+                        // Handle other error messages
+                        errorAlert.textContent = data.message;
+                        errorAlert.classList.remove('hidden');
                     } else {
-                        throw new Error('Invalid response from server');
+                        errorAlert.textContent = 'An unexpected error occurred. Please try again.';
+                        errorAlert.classList.remove('hidden');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    errorAlert.textContent = error.message || 'Terjadi kesalahan saat memeriksa ketersediaan kamar. Silakan coba lagi.';
+                    errorAlert.textContent = error.message || 'An error occurred while processing your booking. Please try again.';
                     errorAlert.classList.remove('hidden');
                 } finally {
                     loadingOverlay.classList.add('hidden');
                     if (submitButton) submitButton.disabled = false;
-                    if (bookNowButton) bookNowButton.disabled = false;
                 }
             }
-
-            // Modal functionality
-            if (showRulesButton) {
-                showRulesButton.addEventListener('click', function() {
-                    if (validateForm()) {
-                        rulesModal.classList.remove('hidden');
-                        document.body.style.overflow = 'hidden';
-                    }
-                });
-            }
-
-            if (closeRulesModal) {
-                closeRulesModal.addEventListener('click', function() {
-                    rulesModal.classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                });
-            }
-
-            if (cancelBooking) {
-                cancelBooking.addEventListener('click', function() {
-                    rulesModal.classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                });
-            }
-
-            if (agreeTerms && confirmBooking) {
-                agreeTerms.addEventListener('change', function() {
-                    const isChecked = this.checked;
-                    confirmBooking.disabled = !isChecked;
-                    confirmBooking.classList.toggle('bg-teal-600', isChecked);
-                    confirmBooking.classList.toggle('bg-gray-400', !isChecked);
-                });
-            }
-
-            if (confirmBooking) {
-                confirmBooking.addEventListener('click', function() {
-                    if (agreeTerms.checked) {
-                        rulesModal.classList.add('hidden');
-                        document.body.style.overflow = 'auto';
-                        // Trigger form submission
-                        bookingForm.requestSubmit();
-                    }
-                });
-            }
-
-            // Close modal when clicking outside
-            window.addEventListener('click', function(event) {
-                if (event.target === rulesModal) {
-                    rulesModal.classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                }
-            });
 
             // Set default dates
             const today = new Date();
@@ -871,101 +801,5 @@
             }
         });
     </script>
-
-    @push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const bookButton = document.getElementById('bookNowButton');
-            
-            if (bookButton) {
-                bookButton.addEventListener('click', function() {
-                    const roomId = this.dataset.roomId;
-                    const propertyId = this.dataset.propertyId;
-                    
-                    // Get check-in and check-out dates from your date picker
-                    // Replace these with your actual date picker selectors
-                    const checkIn = document.querySelector('input[name="check_in"]')?.value;
-                    const checkOut = document.querySelector('input[name="check_out"]')?.value;
-                    
-                    if (!checkIn || !checkOut) {
-                        alert('Silakan pilih tanggal check-in dan check-out terlebih dahulu');
-                        return;
-                    }
-                    
-                    // Show loading state
-                    const originalText = bookButton.innerHTML;
-                    bookButton.disabled = true;
-                    bookButton.innerHTML = 'Memeriksa ketersediaan...';
-                    
-                    // Make API call to check availability
-                    fetch('{{ route('api.booking.check-availability') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            property_id: propertyId,
-                            room_id: roomId,
-                            check_in: checkIn,
-                            check_out: checkOut
-                        })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => {
-                                console.error('API Error:', err);
-                                throw new Error(err.message || 'Failed to check availability');
-                            }).catch(() => {
-                                throw new Error(`HTTP error! status: ${response.status}`);
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('API Response:', data);
-                        if (data.status === 'success' && data.data.is_available) {
-                            // If available, redirect to booking page or show booking form
-                            const rentType = document.getElementById('rent_type').value;
-                            let url = '{{ route("bookings.store") }}';
-                            const params = new URLSearchParams({
-                                property_id: propertyId,
-                                room_id: roomId,
-                                check_in: checkIn,
-                                check_out: checkOut,
-                                rent_type: rentType
-                            });
-
-                            if (rentType === 'monthly') {
-                                const months = document.getElementById('months').value;
-                                params.append('booking_months', months);
-                            }
-
-                            window.location.href = `${url}?${params.toString()}`;
-                        } else {
-                            const errorMessage = data.data.message || 'Maaf, kamar tidak tersedia untuk tanggal yang dipilih';
-                            alert(errorMessage);
-                            
-                            // Show conflicting bookings if any
-                            if (data.data.conflicting_bookings && data.data.conflicting_bookings.length > 0) {
-                                console.log('Conflicting bookings:', data.data.conflicting_bookings);
-                                // You can show this in a more user-friendly way if needed
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Terjadi kesalahan: ' + (error.message || 'Gagal memeriksa ketersediaan kamar'));
-                    })
-                    .finally(() => {
-                        bookButton.disabled = false;
-                        bookButton.innerHTML = originalText;
-                    });
-                });
-            }
-        });
-    </script>
-    @endpush
 </body>
 </html>
