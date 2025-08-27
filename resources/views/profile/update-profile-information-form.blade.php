@@ -27,14 +27,18 @@
 
                 <!-- Current Profile Photo -->
                 <div class="mt-2" x-show="! photoPreview">
-                    <img src="{{ $this->user->profile_photo_url }}" alt="{{ $this->user->name }}" class="rounded-full h-20 w-20 object-cover">
+                    <div class="bg-gray-100 p-4 rounded-lg w-full max-w-md">
+                        <img src="{{ $this->user->profile_photo_url }}" alt="{{ $this->user->name }}" class="rounded-lg w-full h-48 object-cover">
+                    </div>
                 </div>
 
                 <!-- New Profile Photo Preview -->
                 <div class="mt-2" x-show="photoPreview" style="display: none;">
-                    <span class="block rounded-full w-20 h-20 bg-cover bg-no-repeat bg-center"
-                          x-bind:style="'background-image: url(\'' + photoPreview + '\');'">
-                    </span>
+                    <div class="bg-gray-100 p-4 rounded-lg w-full max-w-md">
+                        <div class="w-full h-48 bg-cover bg-no-repeat bg-center rounded-lg"
+                             x-bind:style="'background-image: url(\'' + photoPreview + '\');'">
+                        </div>
+                    </div>
                 </div>
 
                 <x-jet-secondary-button class="mt-2 mr-2" type="button" x-on:click.prevent="$refs.photo.click()">

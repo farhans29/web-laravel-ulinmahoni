@@ -94,13 +94,13 @@ class BookingController extends ApiController
 
         // Check for conflicting bookings using simplified query
         $conflictingBookings = DB::table('t_transactions')
-            ->where('property_id', $propertyId)
-            ->where('room_id', $roomId)
-            ->where('status', '1')  // Active/confirmed booking
-            ->whereNotIn('transaction_status', ['cancelled', 'finished', 'completed'])
-            ->where('check_in', '<', $checkOut)
-            ->where('check_out', '>', $checkIn)
-            ->limit(5)
+            ->where('property_id', $propertyId) //property_id from the m_properties
+            ->where('room_id', $roomId) //room_id from the m_rooms
+            ->where('status', '1')  // if the status = 1
+            ->whereNotIn('transaction_status', ['cancelled', 'finished', 'completed', 'paid']) // if the transaction_status is not cancelled, finished, completed, paid
+            ->where('check_in', '<', $checkOut) // if the check_in is less than the check_out
+            ->where('check_out', '>', $checkIn) // if the check_out is greater than the check_in
+            ->limit(5) // limit the result to 5
             ->get();
 
         $isAvailable = $conflictingBookings->isEmpty();
