@@ -110,23 +110,23 @@
                                 @if(!empty($room['price_original_daily']) && $room['price_original_daily'] > 0)
                                 <div class="mt-4">
                                     <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</p>
-                                    <p class="text-sm text-gray-500">per malam</p>
+                                    <p class="text-sm text-gray-500">per night</p>
                                 </div>
                                 @else
                                 <div class="mt-4">
-                                    <p class="text-3xl font-bold text-teal-600">Hubungi Kami</p>
-                                    <p class="text-sm text-gray-500">untuk harga per malam</p>
+                                    <p class="text-3xl font-bold text-teal-600">Contact Us</p>
+                                    <p class="text-sm text-gray-500">for nightly rate</p>
                                 </div>
                                 @endif
                                 @if(!empty($room['price_original_monthly']) && $room['price_original_monthly'] > 0)
                                 <div class="mt-4">
                                     <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</p>
-                                    <p class="text-sm text-gray-500">per bulan</p>
+                                    <p class="text-sm text-gray-500">per month</p>
                                 </div>
                                 @else
                                 <div class="mt-4">
-                                    <p class="text-3xl font-bold text-teal-600">Hubungi Kami</p>
-                                    <p class="text-sm text-gray-500">untuk harga per bulan</p>
+                                    <p class="text-3xl font-bold text-teal-600">Contact Us</p>
+                                    <p class="text-sm text-gray-500">for monthly rate</p>
                                 </div>
                                 @endif
                             </div>
@@ -135,7 +135,7 @@
                             <!-- Room Facilities -->
                             @if(!empty($room['facility']) && is_array($room['facility']) && count($room['facility']) > 0)
                             <div class="mb-8">
-                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Fasilitas Kamar</h2>
+                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Room Facilities</h2>
                                 <div class="grid grid-cols-2 gap-6">
                                     @foreach($room['facility'] as $facility)
                                         <div class="flex items-center space-x-3 py-2">
@@ -147,15 +147,15 @@
                             </div>
                             @else
                             <div class="mb-8">
-                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Fasilitas Kamar</h2>
-                                <p class="text-gray-500">Tidak ada fasilitas yang tercantum</p>
+                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Room Facilities</h2>
+                                <p class="text-gray-500">No facilities listed</p>
                             </div>
                             @endif
 
                             <!-- Room Description -->
                             <div class="space-y-6">
                                 <div class="prose prose-lg max-w-none">
-                                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Deskripsi Kamar</h3>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Room Description</h3>
                                     <p class="text-gray-600 leading-relaxed">{{ $room['descriptions'] }}</p>
                                 </div>
                             </div>
@@ -169,12 +169,12 @@
                         <!-- Status and Price Summary -->
                         <div class="flex items-center justify-between mb-8">
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900 mb-2">Pesan Kamar</h2>
-                                <p class="text-gray-500">Isi detail dibawah ini</p>
+                                <h2 class="text-2xl font-bold text-gray-900 mb-2">Book Room</h2>
+                                <p class="text-gray-500">Fill in the details below</p>
                             </div>
                             <span class="px-4 py-2 rounded-full text-sm font-medium
                                 {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $room['status'] == 1 ? 'Tersedia' : 'Tidak Tersedia' }}
+                                {{ $room['status'] == 1 ? 'Available' : 'Not Available' }}
                             </span>
                         </div>
                         
@@ -192,22 +192,22 @@
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updateRentalType()">
                                     @if($room['periode_daily'] == 1)
-                                        <option value="daily" {{ $room['periode_monthly'] == 1 ? '' : 'selected' }}>Harian</option>
+                                        <option value="daily" {{ $room['periode_monthly'] == 1 ? '' : 'selected' }}>Daily</option>
                                     @endif
                                     @if($room['periode_monthly'] == 1)
-                                        <option value="monthly" {{ $room['periode_daily'] == 1 ? '' : 'selected' }}>Bulanan</option>
+                                        <option value="monthly" {{ $room['periode_daily'] == 1 ? '' : 'selected' }}>Monthly</option>
                                     @endif
                                 </select>
                             </div>
 
                             <!-- Months Selection (Hidden by default) -->
                             <div id="monthInput" class="hidden">
-                                <label for="months" class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bulan</label>
+                                <label for="months" class="block text-sm font-medium text-gray-700 mb-2">Number of Months</label>
                                 <select id="months" name="months" 
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updatePriceSummary()">
                                     @for ($i = 1; $i <= 12; $i++)
-                                        <option value="{{ $i }}">{{ $i }} {{ $i == 1 ? 'Bulan' : 'Bulan' }}</option>
+                                        <option value="{{ $i }}">{{ $i }} {{ $i == 1 ? 'Month' : 'Months' }}</option>
                                     @endfor
                                 </select>
                                 <input type="hidden" name="booking_months" id="bookingMonths" value="1">
@@ -279,7 +279,7 @@
                             
                             <!-- Price Summary -->
                             <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                                <h4 class="font-medium text-gray-900 mb-3">Harga Keseluruhan</h4>
+                                <h4 class="font-medium text-gray-900 mb-3">Total Price</h4>
                                 <div class="space-y-3 text-sm">
                                     <div class="flex items-center justify-between">
                                         <span class="text-gray-600" id="rateTypeDisplay">Daily Rate: </span>
@@ -288,23 +288,23 @@
                                                 <!-- Daily Rate Display -->
                                                 <div id="dailyRateDisplay" class="hidden">
                                                     <span class="text-black-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
-                                                    <div class="text-xs text-gray-500 mt-1">per malam</div>
+                                                    <div class="text-xs text-gray-500 mt-1">per night</div>
                                                 </div>
                                                 <!-- Monthly Rate Display -->
                                                 <div id="monthlyRateDisplay" class="hidden">
                                                     <span class="text-black-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
-                                                    <div class="text-xs text-gray-500 mt-1">per bulan</div>
+                                                    <div class="text-xs text-gray-500 mt-1">per month</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Durasi: </span>
+                                        <span class="text-gray-600">Duration: </span>
                                         <span class="text-gray-900" id="durationDisplay">-</span>
                                     </div>
 
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Total Harga Kamar:</span>
+                                        <span class="text-gray-600">Total Room Price:</span>
                                         <span class="text-gray-900" id="roomTotal">-</span>
                                     </div>
                                     
@@ -330,14 +330,14 @@
                                         class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium flex items-center justify-center gap-2"
                                         onclick="window.location.href = '/login'">
                                         <i class="fas fa-lock"></i>
-                                        Masuk untuk memesan
+                                        Sign in to book
                                     </button>
-                                    <p class="text-sm text-gray-500 text-center mt-2">Mohon login atau register untuk membuat pemesanan</p>
+                                    <p class="text-sm text-gray-500 text-center mt-2">Please login or register to make a booking</p>
                                 @else
                                     <button type="submit" id="submitButton"
                                         class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
                                         {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        {{ $room['status'] == 1 ? 'Pesan Sekarang' : 'Kamar Tidak Tersedia' }}
+                                        {{ $room['status'] == 1 ? 'Book Now' : 'Room Not Available' }}
                                     </button>
                                 @endguest
                             </div>
@@ -433,12 +433,12 @@
                         duration = nights;
                         rate = parseFloat(priceDailyInput.value) || 0;
                         roomTotal = duration * rate;
-                        if (durationDisplay) durationDisplay.textContent = `${duration} malam`;
+                        if (durationDisplay) durationDisplay.textContent = `${duration} night${duration > 1 ? 's' : ''}`;
                     } else {
                         duration = parseInt(monthsSelect.value || '1', 10);
                         rate = parseFloat(priceMonthlyInput.value) || 0;
                         roomTotal = duration * rate;
-                        if (durationDisplay) durationDisplay.textContent = `${duration} bulan`;
+                        if (durationDisplay) durationDisplay.textContent = `${duration} month${duration > 1 ? 's' : ''}`;
                     }
                 } catch (error) {
                     console.error('Error updating price summary:', error);
@@ -474,7 +474,7 @@
                     if (checkOutGroup) checkOutGroup.classList.add('hidden');
                     dailyRateDisplay.classList.add('hidden');
                     monthlyRateDisplay.classList.remove('hidden');
-                    rateTypeDisplay.textContent = 'Harga Bulanan';
+                    rateTypeDisplay.textContent = 'Monthly Rate';
                     
                     // Set months from saved search or default to 1
                     if (monthsSelect) {
@@ -488,7 +488,7 @@
                     dateInputs.classList.remove('hidden');
                     dailyRateDisplay.classList.remove('hidden');
                     monthlyRateDisplay.classList.add('hidden');
-                    rateTypeDisplay.textContent = 'Harga Harian';
+                    rateTypeDisplay.textContent = 'Daily Rate';
                     
                     // Set dates from saved search or use defaults
                     const today = new Date();
@@ -672,10 +672,11 @@
                     // Ensure booking_months is set to the same value as months for monthly bookings
                     const rentType = document.getElementById('rent_type').value;
                     if (rentType === 'monthly') {
-                        const months = document.getElementById('months').value;
-                        formData.set('booking_months', months);
+                        if (!document.getElementById('months').value) {
+                            showError('Please select number of months');
+                            return false;
+                        }
                     }
-                    const formObject = Object.fromEntries(formData);
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     
                     const response = await fetch('{{ route("bookings.store") }}', {
@@ -688,7 +689,7 @@
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
                         },
-                        body: JSON.stringify(formObject)
+                        body: JSON.stringify(Object.fromEntries(formData))
                     });
 
                     // First, check if the response is JSON

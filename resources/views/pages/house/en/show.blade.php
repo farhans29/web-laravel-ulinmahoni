@@ -202,7 +202,7 @@
 
                         <!-- Features/Promotions -->
                         <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Fasilitas</h3>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Facilities</h3>
                             <div class="flex flex-wrap gap-2">
                                 @foreach($house['features'] as $feature)
                                     <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
@@ -215,17 +215,17 @@
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row gap-3 mt-8">
                             <button onclick="scrollToRooms()" class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center">
-                                <i class="fas fa-calendar-check mr-2"></i> Pesan Sekarang
+                                <i class="fas fa-calendar-check mr-2"></i> Book Now
                             </button>
                             <a href="https://wa.me/6289699670912/" target="_blank" class="flex-1 border border-teal-600 text-teal-600 py-3 px-6 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center">
-                                <i class="fab fa-whatsapp mr-2"></i> Hubungi untuk Info Lebih Lanjut
+                                <i class="fab fa-whatsapp mr-2"></i> Contact for More Information
                             </a>
                         </div>
                     </div>
 
                     <!-- Right Column - Price Section -->
                     <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Harga Sewa</h3>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Rental Price</h3>
                         
                         @php
                             $hasDailyPrice = !empty($house['price_original_daily']) && $house['price_original_daily'] > 0;
@@ -237,22 +237,22 @@
                                 <div class="text-gray-400 mb-2">
                                     <i class="fas fa-info-circle text-2xl"></i>
                                 </div>
-                                <p class="text-gray-600 font-medium">Harga sewa belum tersedia</p>
-                                <p class="text-sm text-gray-500 mt-1">Silakan hubungi kami untuk informasi lebih lanjut</p>
+                                <p class="text-gray-600 font-medium">Rental price not available</p>
+                                <p class="text-sm text-gray-500 mt-1">Please contact us for more information</p>
                             </div>
                         @else
                             @if($hasDailyPrice)
                             <!-- Daily Price -->
                             <div class="bg-gray-50 p-4 rounded-lg mb-4">
                                 <p class="text-base text-gray-500 mb-1">
-                                    <i class="far fa-calendar mr-2"></i>Harian
+                                    <i class="far fa-calendar mr-2"></i>Daily
                                 </p>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-baseline">
                                         <span class="text-2xl font-bold text-gray-900">
                                             Rp{{ number_format($house['price_original_daily'], 0, ',', '.') }}
                                         </span>
-                                        <span class="text-gray-500 ml-2">/malam</span>
+                                        <span class="text-gray-500 ml-2">/night</span>
                                     </div>
                                 </div>
                             </div>
@@ -262,14 +262,14 @@
                             <!-- Monthly Price -->
                             <div class="{{ $hasDailyPrice ? 'mt-4' : '' }} bg-teal-50 border border-teal-100 p-4 rounded-lg">
                                 <p class="text-base text-gray-600 mb-1">
-                                    <i class="far fa-calendar-alt mr-2"></i>Bulanan
+                                    <i class="far fa-calendar-alt mr-2"></i>Monthly
                                 </p>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-baseline">
                                         <span class="text-2xl font-bold text-teal-700">
                                             Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}
                                         </span>
-                                        <span class="text-gray-500 ml-2">/bulan</span>
+                                        <span class="text-gray-500 ml-2">/month</span>
                                     </div>
                                 </div>
                             </div>
@@ -279,11 +279,11 @@
                             <div class="mt-4 text-sm text-gray-500">
                                 <p class="flex items-center">
                                     <i class="fas fa-info-circle mr-2 text-teal-600"></i>
-                                    Harga sudah termasuk PPN
+                                    Price includes VAT
                                 </p>
                                 <p class="flex items-center mt-1">
                                     <i class="fas fa-credit-card mr-2 text-teal-600"></i>
-                                    Pembayaran dengan metode transfer bank
+                                    Payment via bank transfer
                                 </p>
                             </div>
                         @endif
@@ -295,7 +295,7 @@
             <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Property Description -->
                 <div class="lg:col-span-2">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Tentang Properti</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">About the Property</h2>
                     <div class="prose max-w-none">
                         <p class="text-gray-600">
                             {{ $house['description'] }}
@@ -320,7 +320,7 @@
 
                     <!-- Location Map -->
                     <div class="mt-8">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">Lokasi</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Location</h3>
                         <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
                             <div class="aspect-w-16 aspect-h-9">
                                 @php
@@ -385,7 +385,7 @@
 
                     <!-- Rooms Section -->
                     <div id="rooms-section" class="mt-12">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Kamar Tersedia</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Available Rooms</h2>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             @forelse($house['rooms'] as $room)
@@ -433,7 +433,7 @@
                                         <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p>
 
                                         <div class="mb-4">
-                                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Fasilitas Kamar:</h4>
+                                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Room Facilities:</h4>
                                             <div class="flex flex-wrap gap-2">
                                                 @if(!empty($room['facility']))
                                                     @foreach($room['facility'] as $facility)
@@ -442,14 +442,14 @@
                                                         </span>
                                                     @endforeach
                                                 @else
-                                                    <span class="text-gray-500 text-sm">Fasilitas Tidak Tersedia</span>
+                                                    <span class="text-gray-500 text-sm">No Facilities Available</span>
                                                 @endif
                                             </div>
                                         </div>
 
                                         <!-- Rental Periods -->
                                         <div class="mb-4">
-                                            <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">Periode Sewa &amp; Harga:</h4>
+                                            <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">Rental Period &amp; Price:</h4>
                                             <ul class="space-y-2">
                                                 @php
                                                     $hasValidPeriod = false;
@@ -477,7 +477,7 @@
                                                 @if(!$hasValidPeriod)
                                                     <li>
                                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                            Periode Belum Tersedia
+                                                            Period Not Available
                                                             <i class="fas fa-exclamation-circle ml-1"></i>
                                                         </span>
                                                     </li>
@@ -487,7 +487,7 @@
 
                                         <div class="flex items-center justify-between mt-4">
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $room['status'] === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $room['status'] === 1 ? 'Tersedia' : 'Tidak Tersedia' }}
+                                                {{ $room['status'] === 1 ? 'Available' : 'Not Available' }}
                                             </span>
                                         </div>
                                     </div>

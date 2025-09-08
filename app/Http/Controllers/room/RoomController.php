@@ -256,6 +256,8 @@ class RoomController extends Controller {
                             'monthly' => false
                         ]
                     ),
+                'periode_daily' => $room->periode_daily,
+                'periode_monthly' => $room->periode_monthly,
                 'property' => [
                     'id' => $room->property->idrec,
                     'name' => $room->property_name,
@@ -270,6 +272,146 @@ class RoomController extends Controller {
             ];
 
             return view('pages.room.show', [
+                'room' => $formattedRoom
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Room not found or error occurred: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Room not found');
+        }
+    }
+        public function showId($slug)
+    {
+        try {
+            // Find the room by slug and eager load the property relationship
+            $room = Room::with('property')->where('slug', $slug)->firstOrFail();
+            
+            // Get room images using the accessor
+            $roomImages = $room->images;
+            $mainImage = !empty($roomImages[0]['image']) ? $roomImages[0]['image'] : $room->image;
+            
+            // Format the room data
+            $formattedRoom = [
+                'id' => $room->idrec,
+                'property_id' => $room->property_id,
+                'property_name' => $room->property_name,
+                'slug' => $room->slug,
+                'name' => $room->name,
+                'descriptions' => $room->descriptions,
+                'type' => $room->type,
+                'level' => $room->level,
+                'price_original_daily' => $room->price_original_daily,
+                'price_discounted_daily' => $room->price_discounted_daily,
+                'price_original_monthly' => $room->price_original_monthly,
+                'price_discounted_monthly' => $room->price_discounted_monthly,
+                'admin_fees' => $room->admin_fees,
+                'facility' => is_string($room->facility) ? json_decode(
+                    $room->facility, true
+                    ) : (
+                        $room->facility ?? []
+                    ),
+                'attachment' => is_string($room->attachment) ? json_decode(
+                    $room->attachment, true
+                    ) : (
+                        $room->attachment ?? []
+                    ),
+                'image' => $mainImage,
+                'images' => $roomImages,
+                'periode' => is_string($room->periode) ? json_decode(
+                    $room->periode, true
+                    ) : (
+                        $room->periode ?? [
+                            'daily' => false,
+                            'weekly' => false,
+                            'monthly' => false
+                        ]
+                    ),
+                'periode_daily' => $room->periode_daily,
+                'periode_monthly' => $room->periode_monthly,
+                'property' => [
+                    'id' => $room->property->idrec,
+                    'name' => $room->property_name,
+                    'location' => $room->property->address,
+                    'subLocation' => $room->property->subdistrict . ', ' . $room->property->city,
+                ],
+                'created_at' => $room->created_at,
+                'updated_at' => $room->updated_at,
+                'created_by' => $room->created_by,
+                'updated_by' => $room->updated_by,
+                'status' => $room->status
+            ];
+
+            return view('pages.room.id.show', [
+                'room' => $formattedRoom
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Room not found or error occurred: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Room not found');
+        }
+    }
+        public function showEn($slug)
+    {
+        try {
+            // Find the room by slug and eager load the property relationship
+            $room = Room::with('property')->where('slug', $slug)->firstOrFail();
+            
+            // Get room images using the accessor
+            $roomImages = $room->images;
+            $mainImage = !empty($roomImages[0]['image']) ? $roomImages[0]['image'] : $room->image;
+            
+            // Format the room data
+            $formattedRoom = [
+                'id' => $room->idrec,
+                'property_id' => $room->property_id,
+                'property_name' => $room->property_name,
+                'slug' => $room->slug,
+                'name' => $room->name,
+                'descriptions' => $room->descriptions,
+                'type' => $room->type,
+                'level' => $room->level,
+                'price_original_daily' => $room->price_original_daily,
+                'price_discounted_daily' => $room->price_discounted_daily,
+                'price_original_monthly' => $room->price_original_monthly,
+                'price_discounted_monthly' => $room->price_discounted_monthly,
+                'admin_fees' => $room->admin_fees,
+                'facility' => is_string($room->facility) ? json_decode(
+                    $room->facility, true
+                    ) : (
+                        $room->facility ?? []
+                    ),
+                'attachment' => is_string($room->attachment) ? json_decode(
+                    $room->attachment, true
+                    ) : (
+                        $room->attachment ?? []
+                    ),
+                'image' => $mainImage,
+                'images' => $roomImages,
+                'periode' => is_string($room->periode) ? json_decode(
+                    $room->periode, true
+                    ) : (
+                        $room->periode ?? [
+                            'daily' => false,
+                            'weekly' => false,
+                            'monthly' => false
+                        ]
+                    ),
+                'periode_daily' => $room->periode_daily,
+                'periode_monthly' => $room->periode_monthly,
+                'property' => [
+                    'id' => $room->property->idrec,
+                    'name' => $room->property_name,
+                    'location' => $room->property->address,
+                    'subLocation' => $room->property->subdistrict . ', ' . $room->property->city,
+                ],
+                'created_at' => $room->created_at,
+                'updated_at' => $room->updated_at,
+                'created_by' => $room->created_by,
+                'updated_by' => $room->updated_by,
+                'status' => $room->status
+            ];
+
+            return view('pages.room.en.show', [
                 'room' => $formattedRoom
             ]);
 

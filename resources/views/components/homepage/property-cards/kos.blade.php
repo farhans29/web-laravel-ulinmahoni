@@ -56,7 +56,7 @@
                                                     $roomPrice = $kosan['room_price_original_monthly'];
                                                 @endphp
                                                 @if(empty($roomPrice))
-                                                    <span class="text-lg font-bold">(Kamar blm tersedia)</span>
+                                                    <span class="text-lg font-bold"></span>
                                                 @else
                                                 <!-- Rp{{ number_format($roomPrice, 0, ',', '.') }}
                                                     <span class="text-xs font-normal">/malam</span>     -->

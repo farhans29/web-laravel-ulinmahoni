@@ -444,10 +444,10 @@ class BookingController extends Controller
             // $adminFee = $totalPrice * 0.1; // 10% admin fee
             $adminFee = 0;
 
-            // Generate order_id in format INV-UM-WEB-yymmddXXXPP
+            // Generate order_id in format UMW-yymmddXXXPP
             $propertyInitial = $room->property->initial ?? 'HX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'INV-UM-WEB-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            $order_id = 'UMW-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
             // Prepare transaction data
             $transactionData = [
@@ -472,7 +472,7 @@ class BookingController extends Controller
                 'admin_fees' => $adminFee,
                 'grandtotal_price' => $totalPrice + $adminFee,
                 'property_type' => $room->type ?? $request->property_type ?? 'room',
-                'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
+                // 'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
                 'transaction_status' => 'pending',
                 'status' => '1',
             ];

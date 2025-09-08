@@ -82,7 +82,7 @@ Route::get('storage/{path}', function ($path) {
 // Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
 
 // Route::redirect('/', 'login');
-Route::redirect('/','homepage');
+Route::redirect('/','/id/homepage');
 Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
 
@@ -92,6 +92,10 @@ Route::prefix('id')->group(function () {
     Route::view('/kerjasama', 'pages.info.indonesia.kerjasama')->name('id.kerjasama');
     Route::view('/business', 'pages.info.indonesia.business')->name('id.business');
     Route::view('/tentang', 'pages.info.indonesia.tentang')->name('id.tentang');
+
+    Route::get('/homepage', [HomeController::class, 'index'])->name('id.homepage');
+    Route::get('/houses/{id}', [HouseController::class, 'showId'])->name('id.houses.show');
+    Route::get('/rooms/{slug}', [RoomController::class, 'showId'])->name('id.rooms.show');
 });
 
 Route::prefix('en')->group(function () {
@@ -99,6 +103,10 @@ Route::prefix('en')->group(function () {
     Route::view('/partnership', 'pages.info.english.partnership')->name('en.partnership');
     Route::view('/business', 'pages.info.english.business')->name('en.business');
     Route::view('/about', 'pages.info.english.about')->name('en.about');
+
+    Route::get('/homepage', [HomeController::class, 'index'])->name('en.homepage');
+    Route::get('/houses/{id}', [HouseController::class, 'showEn'])->name('en.houses.show');
+    Route::get('/rooms/{slug}', [RoomController::class, 'showEn'])->name('en.rooms.show');
 });
 
 // Default routes (redirect to preferred language)

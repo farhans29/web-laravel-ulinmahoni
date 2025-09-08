@@ -23,6 +23,8 @@ class Room extends Model
         'image2',
         'image3',
         'periode',
+        'periode_daily',
+        'periode_monthly',
         'status',
         'created_by',
         'updated_by',
@@ -164,13 +166,25 @@ class Room extends Model
      */
     public function getPeriodeAttribute($value)
     {
-        if (is_string($value) && !empty($value)) {
-            // Handle both JSON string and already decoded array
-            $decoded = is_string($value) ? json_decode($value, true) : $value;
+        if (empty($value)) {
             return [
-                'daily' => $decoded['daily'] ?? false,
-                'weekly' => $decoded['weekly'] ?? false,
-                'monthly' => $decoded['monthly'] ?? false
+                'daily' => false,
+                'weekly' => false,
+                'monthly' => false
+            ];
+        }
+
+        // If it's a JSON string, decode it
+        if (is_string($value)) {
+            $value = json_decode($value, true);
+        }
+
+        // If we have an array, use its values
+        if (is_array($value)) {
+            return [
+                'daily' => $value['daily'] ?? false,
+                'weekly' => $value['weekly'] ?? false,
+                'monthly' => $value['monthly'] ?? false
             ];
         }
         

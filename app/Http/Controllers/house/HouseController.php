@@ -136,6 +136,128 @@ class HouseController extends Controller {
             ], 404);
         }
     }
+    public function showId($id)
+    {
+        try {
+            // Get the property with its images using the Property model
+            $property = Property::findOrFail($id);
+            
+            // Get all images using the Property model's accessor
+            $propertyImages = $property->images;
+            
+            // Get the main image (first image or fallback to property image)
+            $mainImage = !empty($propertyImages[0]['image']) ? $propertyImages[0]['image'] : $property->image;
+            
+            // Get secondary images (skip the first one if it was used as main)
+            $secondaryImages = array_slice($propertyImages, !empty($propertyImages[0]['image']) ? 1 : 0);
+            
+            // Format the property data for the view
+            $formattedHouse = [
+                'id' => $property->idrec,
+                'slug' => $property->slug,
+                'name' => $property->name,
+                'type' => $property->tags,
+                'location' => $property->address,
+                'subLocation' => $property->subdistrict . ', ' . $property->city,
+                'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                'price_original_daily' => $property->price_original_daily,
+                'price_original_monthly' => $property->price_original_monthly,
+                'price_discounted_daily' => $property->price_discounted_daily,
+                'price_discounted_monthly' => $property->price_discounted_monthly,
+                'features' => is_string($property->features) ? json_decode($property->features, true) : [],
+                'image' => $mainImage,
+                'images' => $propertyImages,
+                'description' => $property->description,
+                'address' => [
+                    'province' => $property->province,
+                    'city' => $property->city,
+                    'subdistrict' => $property->subdistrict,
+                    'village' => $property->village,
+                    'postal_code' => $property->postal_code,
+                    'full_address' => $property->address
+                ],
+                'status' => $property->status,
+                'rooms' => $this->getPropertyRooms($property->idrec)
+            ];
+
+            return view('pages.house.id.show', [
+                'house' => $formattedHouse,
+                'primaryImage' => $mainImage,
+                'secondaryImages' => $secondaryImages,
+                'totalImages' => count($propertyImages) > 0 ? count($propertyImages) : ($mainImage ? 1 : 0)
+            ]);
+
+        } catch (Exception $e) {
+            $errorMessage = 'House not found or error occurred: ' . $e->getMessage();
+            Log::error($errorMessage);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => $errorMessage
+            ], 404);
+        }
+    }
+    public function showEn($id)
+    {
+        try {
+            // Get the property with its images using the Property model
+            $property = Property::findOrFail($id);
+            
+            // Get all images using the Property model's accessor
+            $propertyImages = $property->images;
+            
+            // Get the main image (first image or fallback to property image)
+            $mainImage = !empty($propertyImages[0]['image']) ? $propertyImages[0]['image'] : $property->image;
+            
+            // Get secondary images (skip the first one if it was used as main)
+            $secondaryImages = array_slice($propertyImages, !empty($propertyImages[0]['image']) ? 1 : 0);
+            
+            // Format the property data for the view
+            $formattedHouse = [
+                'id' => $property->idrec,
+                'slug' => $property->slug,
+                'name' => $property->name,
+                'type' => $property->tags,
+                'location' => $property->address,
+                'subLocation' => $property->subdistrict . ', ' . $property->city,
+                'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                'price_original_daily' => $property->price_original_daily,
+                'price_original_monthly' => $property->price_original_monthly,
+                'price_discounted_daily' => $property->price_discounted_daily,
+                'price_discounted_monthly' => $property->price_discounted_monthly,
+                'features' => is_string($property->features) ? json_decode($property->features, true) : [],
+                'image' => $mainImage,
+                'images' => $propertyImages,
+                'description' => $property->description,
+                'address' => [
+                    'province' => $property->province,
+                    'city' => $property->city,
+                    'subdistrict' => $property->subdistrict,
+                    'village' => $property->village,
+                    'postal_code' => $property->postal_code,
+                    'full_address' => $property->address
+                ],
+                'status' => $property->status,
+                'rooms' => $this->getPropertyRooms($property->idrec)
+            ];
+
+            return view('pages.house.en.show', [
+                'house' => $formattedHouse,
+                'primaryImage' => $mainImage,
+                'secondaryImages' => $secondaryImages,
+                'totalImages' => count($propertyImages) > 0 ? count($propertyImages) : ($mainImage ? 1 : 0)
+            ]);
+
+        } catch (Exception $e) {
+            $errorMessage = 'House not found or error occurred: ' . $e->getMessage();
+            Log::error($errorMessage);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => $errorMessage
+            ], 404);
+        }
+    }
     
     /**
      * Get rooms for a property
@@ -166,6 +288,8 @@ class HouseController extends Controller {
                     'weekly' => false,
                     'monthly' => false
                 ],
+                'periode_daily' => $room->periode_daily,
+                'periode_monthly' => $room->periode_monthly,
                 'price_original_daily' => $room->price_original_daily,
                 'price_original_monthly' => $room->price_original_monthly,
                 'price_discounted_daily' => $room->price_discounted_daily,

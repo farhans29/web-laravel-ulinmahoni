@@ -46,7 +46,14 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div class="relative">
                                             <button type="button" id="bankTransferBtn" class="w-full text-left border rounded-lg p-4 hover:border-teal-500 transition-colors flex items-center justify-between">
-                                                <span class="text-lg font-semibold text-gray-800">Transfer Bank</span>
+                                                <div class="flex items-center">
+                                                    <span id="selectedBankLogo" class="mr-2">
+                                                        <svg class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                                        </svg>
+                                                    </span>
+                                                    <span id="selectedBankName" class="text-lg font-semibold text-gray-800">Pilih Bank</span>
+                                                </div>
                                                 <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="bankArrow">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                                 </svg>
@@ -54,28 +61,28 @@
                                             <div id="bankOptions" class="hidden mt-2 border rounded-lg p-4 bg-white shadow-lg absolute z-10 w-full">
                                                 <p class="text-sm text-gray-500 mb-3">Pilih Bank Tujuan</p>
                                                 <div class="space-y-3">
-                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer">
+                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer bank-option" data-bank="bca" data-bank-name="BCA" data-bank-logo="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg">
                                                         <input type="radio" name="bank_selection" value="bca" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300">
                                                         <div class="ml-3 flex items-center">
                                                             <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" alt="BCA" class="h-6 mr-2">
                                                             <span class="font-bold text-gray-700">BCA</span>
                                                         </div>
                                                     </label>
-                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer">
+                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer bank-option" data-bank="mandiri" data-bank-name="Mandiri" data-bank-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png">
                                                         <input type="radio" name="bank_selection" value="mandiri" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300">
                                                         <div class="ml-3 flex items-center">
                                                             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png" alt="Mandiri" class="h-6 mr-2">
                                                             <span class="font-bold text-gray-700">Mandiri</span>
                                                         </div>
                                                     </label>
-                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer">
+                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer bank-option" data-bank="bni" data-bank-name="BNI" data-bank-logo="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg">
                                                         <input type="radio" name="bank_selection" value="bni" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300">
                                                         <div class="ml-3 flex items-center">
                                                             <img src="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" alt="BNI" class="h-6 mr-2">
                                                             <span class="font-bold text-gray-700">BNI</span>
                                                         </div>
                                                     </label>
-                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer">
+                                                    <label class="flex items-center p-3 rounded-lg border hover:bg-gray-50 cursor-pointer bank-option" data-bank="bri" data-bank-name="BRI" data-bank-logo="https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg">
                                                         <input type="radio" name="bank_selection" value="bri" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300">
                                                         <div class="ml-3 flex items-center">
                                                             <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg" alt="BRI" class="h-6 mr-2">
