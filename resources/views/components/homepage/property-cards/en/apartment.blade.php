@@ -63,7 +63,7 @@
             @empty
             <div class="swiper-slide">
                 <div class="text-center p-6">
-                    <p class="text-gray-500">Tidak ada apartemen yang tersedia.</p>
+                    <p class="text-gray-500">No apartments available at the moment.</p>
                 </div>
             </div>
             @endforelse

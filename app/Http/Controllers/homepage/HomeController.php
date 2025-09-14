@@ -129,6 +129,181 @@ class HomeController extends Controller {
             ]);
         }
     }
+    public function indexId()
+    {
+        $heroMedia = [
+            'type' => 'video',
+            'sources' => [
+                'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg',
+                'video' => 'images/assets/My_Movie.mp4'
+            ]
+        ];
+
+        // Get promos data from DB
+        $promos = \App\Models\Promo::where('status', 1)
+            ->orderByDesc('idrec')
+            ->get()
+            ->map(function ($promo) {
+                return [
+                    'id' => $promo->idrec,
+                    'title' => $promo->title,
+                    'image' => $promo->image,
+                    'badge' => 'Promo',
+                    'description' => $promo->descriptions,
+                ];
+            });
+
+        try {
+            // Get active properties (status = 1)
+            $properties = Property::where('status', 1)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Prepare property data by type
+            $propertyTypes = [
+                'Kos' => [],
+                'House' => [],
+                'Apartment' => [],
+                'Villa' => [],
+                'Hotel' => [],
+            ];
+
+            foreach ($properties as $property) {
+                // $tag = $property->tags; // Direct string comparison
+                
+                // if (array_key_exists($tag, $propertyTypes)) {
+                //     $propertyTypes[$tag][] = $this->formatProperty($property);
+                // }
+                $normalizedTag = ucfirst(strtolower(trim($property->tags)));
+
+                if (array_key_exists($normalizedTag, $propertyTypes)) {
+                    $propertyTypes[$normalizedTag][] = $this->formatProperty($property);
+                }
+            }
+
+            // Log the final data for debugging
+            Log::info('Property data by type:', [
+                'houses_count' => count($propertyTypes['House']),
+                'kos_count' => count($propertyTypes['Kos']),
+                'apartments_count' => count($propertyTypes['Apartment']),
+                'villas_count' => count($propertyTypes['Villa']),
+                'hotels_count' => count($propertyTypes['Hotel'])
+            ]);
+
+            return view("pages.homepage.id.index", [
+                'kos' => $propertyTypes['Kos'],
+                'houses' => $propertyTypes['House'],
+                'apartments' => $propertyTypes['Apartment'],
+                'villas' => $propertyTypes['Villa'],
+                'hotels' => $propertyTypes['Hotel'],
+                'heroMedia' => $heroMedia,
+                'promos' => $promos
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error fetching properties: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+            
+            return view("pages.homepage.id.index", [
+                'kos' => [],
+                'houses' => [],
+                'apartments' => [],
+                'villas' => [],
+                'hotels' => [],
+                'heroMedia' => $heroMedia,
+                'promos' => $promos
+            ]);
+        }
+    }
+
+    public function indexEn()
+    {
+        $heroMedia = [
+            'type' => 'video',
+            'sources' => [
+                'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg',
+                'video' => 'images/assets/My_Movie.mp4'
+            ]
+        ];
+
+        // Get promos data from DB
+        $promos = \App\Models\Promo::where('status', 1)
+            ->orderByDesc('idrec')
+            ->get()
+            ->map(function ($promo) {
+                return [
+                    'id' => $promo->idrec,
+                    'title' => $promo->title,
+                    'image' => $promo->image,
+                    'badge' => 'Promo',
+                    'description' => $promo->descriptions,
+                ];
+            });
+
+        try {
+            // Get active properties (status = 1)
+            $properties = Property::where('status', 1)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Prepare property data by type
+            $propertyTypes = [
+                'Kos' => [],
+                'House' => [],
+                'Apartment' => [],
+                'Villa' => [],
+                'Hotel' => [],
+            ];
+
+            foreach ($properties as $property) {
+                // $tag = $property->tags; // Direct string comparison
+                
+                // if (array_key_exists($tag, $propertyTypes)) {
+                //     $propertyTypes[$tag][] = $this->formatProperty($property);
+                // }
+                $normalizedTag = ucfirst(strtolower(trim($property->tags)));
+
+                if (array_key_exists($normalizedTag, $propertyTypes)) {
+                    $propertyTypes[$normalizedTag][] = $this->formatProperty($property);
+                }
+            }
+
+            // Log the final data for debugging
+            Log::info('Property data by type:', [
+                'houses_count' => count($propertyTypes['House']),
+                'kos_count' => count($propertyTypes['Kos']),
+                'apartments_count' => count($propertyTypes['Apartment']),
+                'villas_count' => count($propertyTypes['Villa']),
+                'hotels_count' => count($propertyTypes['Hotel'])
+            ]);
+
+            return view("pages.homepage.en.index", [
+                'kos' => $propertyTypes['Kos'],
+                'houses' => $propertyTypes['House'],
+                'apartments' => $propertyTypes['Apartment'],
+                'villas' => $propertyTypes['Villa'],
+                'hotels' => $propertyTypes['Hotel'],
+                'heroMedia' => $heroMedia,
+                'promos' => $promos
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Error fetching properties: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+            
+            return view("pages.homepage.en.index", [
+                'kos' => [],
+                'houses' => [],
+                'apartments' => [],
+                'villas' => [],
+                'hotels' => [],
+                'heroMedia' => $heroMedia,
+                'promos' => $promos
+            ]);
+        }
+    }
 
     /**
      * Format a property model instance into a standardized array structure.

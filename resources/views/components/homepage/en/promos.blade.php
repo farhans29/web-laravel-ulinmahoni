@@ -2,10 +2,10 @@
 <section class="section-dark">
     <div class="section-container">
         <div class="section-title">
-            <h3 class="text-4xl font-medium">Promo Berlangsung</h3>
+            <h3 class="text-4xl font-medium">Ongoing Promos</h3>
             <div class="divider mt-2 md-2">
                 <div class="divider-line"></div>
-                <p class="divider-text">Penawaran Terbatas</p>
+                <p class="divider-text">Limited Offers</p>
                 <div class="divider-line"></div>
             </div>
         </div>

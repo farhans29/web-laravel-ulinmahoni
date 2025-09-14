@@ -93,7 +93,7 @@ Route::prefix('id')->group(function () {
     Route::view('/business', 'pages.info.indonesia.business')->name('id.business');
     Route::view('/tentang', 'pages.info.indonesia.tentang')->name('id.tentang');
 
-    Route::get('/homepage', [HomeController::class, 'index'])->name('id.homepage');
+    Route::get('/homepage', [HomeController::class, 'indexId'])->name('id.homepage');
     Route::get('/houses/{id}', [HouseController::class, 'showId'])->name('id.houses.show');
     Route::get('/rooms/{slug}', [RoomController::class, 'showId'])->name('id.rooms.show');
 });
@@ -104,7 +104,7 @@ Route::prefix('en')->group(function () {
     Route::view('/business', 'pages.info.english.business')->name('en.business');
     Route::view('/about', 'pages.info.english.about')->name('en.about');
 
-    Route::get('/homepage', [HomeController::class, 'index'])->name('en.homepage');
+    Route::get('/homepage', [HomeController::class, 'indexEn'])->name('en.homepage');
     Route::get('/houses/{id}', [HouseController::class, 'showEn'])->name('en.houses.show');
     Route::get('/rooms/{slug}', [RoomController::class, 'showEn'])->name('en.rooms.show');
 });

@@ -92,7 +92,7 @@
             @empty
             <div class="swiper-slide">
                 <div class="text-center p-6">
-                    <p class="text-gray-500">No houses available at the moment.</p>
+                    <p class="text-gray-500">Tidak ada rumah yang tersedia.</p>
                 </div>
             </div>
             @endforelse

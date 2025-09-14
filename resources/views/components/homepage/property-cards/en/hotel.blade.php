@@ -1,18 +1,18 @@
-<!-- Apartment Content -->
-<div class="property-tab-content hidden" data-tab="apartment">
+<!-- Hotel Content -->
+<div class="property-tab-content hidden" data-tab="hotel">
     <!-- Swiper container -->
     <div class="swiper property-swiper">
         <div class="swiper-wrapper mb-8">
-            @forelse($apartments as $apartment)
+            @forelse($hotels as $hotel)
             <div class="swiper-slide">
-                <a href="{{ route('apartments.show', ['id' => $apartment['id']]) }}" class="block h-full">
+                <a href="{{ route('hotels.show', ['id' => $hotel['id']]) }}" class="block h-full">
                     <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
                         <div class="relative">
                             <div class="relative pb-[56.25%] h-48">
                                 <div class="absolute inset-0">
-                                    @if($apartment['image'])
-                                        <img src="data:image/jpeg;base64,{{ $apartment['image'] }}" 
-                                             alt="{{ $apartment['name'] }}" 
+                                    @if($hotel['image'])
+                                        <img src="data:image/jpeg;base64,{{ $hotel['image'] }}" 
+                                             alt="{{ $hotel['name'] }}" 
                                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
                                     @else
                                         <div class="bg-gray-100 w-full h-full flex items-center justify-center">
@@ -23,34 +23,34 @@
                                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
                                 </div>
                                 <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
-                                    {{ $apartment['type'] }}
+                                    {{ $hotel['type'] }}
                                 </span>
                             </div>
                         </div>
 
                         <div class="p-4 flex-1 flex flex-col">
                             <div class="flex-1">
-                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $apartment['name'] }}</h3>
-                                <p class="text-gray-500 text-sm mb-1">{{ $apartment['subLocation'] }}</p>
-                                <p class="text-gray-500 text-xs mb-3">{{ $apartment['distance'] }}</p>
+                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $hotel['name'] }}</h3>
+                                <p class="text-gray-500 text-sm mb-1">{{ $hotel['subLocation'] }}</p>
+                                <p class="text-gray-500 text-xs mb-3">{{ $hotel['distance'] }}</p>
                             </div>
 
                             <div class="mt-auto">
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-xs text-gray-500">
-                                            mulai dari <span class="line-through">Rp{{ number_format($apartment['price']['original'], 0, ',', '.') }}</span>
+                                            mulai dari <span class="line-through">Rp{{ number_format($hotel['price']['original'], 0, ',', '.') }}</span>
                                         </p>
                                         <div class="flex items-center">
                                             <p class="text-lg font-bold text-gray-800">
-                                                Rp{{ number_format($apartment['price']['discounted'], 0, ',', '.') }} 
+                                                Rp{{ number_format($hotel['price']['discounted'], 0, ',', '.') }} 
                                                 <span class="text-xs font-normal">/bulan</span>
                                             </p>
                                         </div>
                                     </div>
 
                                     <div class="flex flex-col space-y-1 text-xs text-gray-500">
-                                        @foreach($apartment['features'] as $feature)
+                                        @foreach($hotel['features'] as $feature)
                                             <span class="border border-gray-300 rounded-lg px-2 py-1 text-center">{{ $feature }}</span>
                                         @endforeach
                                     </div>
@@ -63,7 +63,7 @@
             @empty
             <div class="swiper-slide">
                 <div class="text-center p-6">
-                    <p class="text-gray-500">Tidak ada apartemen yang tersedia.</p>
+                    <p class="text-gray-500">No hotels available at the moment.</p>
                 </div>
             </div>
             @endforelse

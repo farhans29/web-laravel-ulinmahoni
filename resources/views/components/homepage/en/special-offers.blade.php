@@ -2,10 +2,10 @@
 <section class="py-12 px-4 bg-white">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-10">
-            <h3 class="text-4xl font-medium text-gray-800 mb-2">Fitur-fitur Spesial</h3>
+            <h3 class="text-4xl font-medium text-gray-800 mb-2">Special Features</h3>
             <div class="flex items-center justify-center">
                 <div class="w-12 h-px bg-gray-300"></div>
-                <p class="mx-4 text-teal-600 italic">Fitur-fitur Spesial di Properti Kami</p>
+                <p class="mx-4 text-teal-600 italic">Provided Features in our Properties</p>
                 <div class="w-12 h-px bg-gray-300"></div>
             </div>
         </div>

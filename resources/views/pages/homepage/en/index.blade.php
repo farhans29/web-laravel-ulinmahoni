@@ -148,11 +148,11 @@
     </section>
     </div>
 
-    @include('components.homepage.property-types')
-    @include('components.homepage.promos')
-    @include('components.homepage.areas')
-    @include('components.homepage.featured')
-    @include('components.homepage.special-offers')
+    @include('components.homepage.en.property-types')
+    @include('components.homepage.en.promos')
+    @include('components.homepage.en.areas')
+    @include('components.homepage.en.featured')
+    @include('components.homepage.en.special-offers')
     {{-- @include('components.homepage.liu-house') --}}
   </main>
 
