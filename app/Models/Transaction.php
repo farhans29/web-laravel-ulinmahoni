@@ -33,6 +33,7 @@ class Transaction extends Model
         'room_price',
         'attachment',
         'admin_fees',
+        'service_fees',
         'grandtotal_price',
         'property_type',
         'transaction_type',
@@ -63,6 +64,7 @@ class Transaction extends Model
         'monthly_price' => 'decimal:2',
         'room_price' => 'decimal:2',
         'admin_fees' => 'decimal:2',
+        'service_fees' => 'decimal:2',
         'booking_days' => 'integer'
     ];
 

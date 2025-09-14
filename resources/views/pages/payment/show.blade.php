@@ -157,6 +157,7 @@
                                 <p class="text-sm text-gray-600">Daily Price: {{ number_format($booking->daily_price, 0) }}</p>
                                 <p class="text-sm text-gray-600">Room Price: {{ number_format($booking->room_price, 0) }}</p>
                                 <p class="text-sm text-gray-600">Admin Fees: {{ number_format($booking->admin_fees, 0) }}</p>
+                                <p class="text-sm text-gray-600">Service Fees: {{ number_format($booking->service_fees, 0) }}</p>
                                 <p class="text-sm font-medium text-gray-900 mt-2">Total: {{ number_format($booking->grandtotal_price, 0) }}</p>
                             </div>
                         </div>

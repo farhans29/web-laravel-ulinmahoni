@@ -185,9 +185,10 @@
                             <input type="hidden" name="room_id" value="{{ $room['id'] }}">
                             <input type="hidden" name="price_daily" id="priceDaily" value="{{ $room['price_original_daily'] }}">
                             <input type="hidden" name="price_monthly" id="priceMonthly" value="{{ $room['price_original_monthly'] }}">
+                            <!-- <input type="hidden" name="service_fees" id="serviceFees" value="{{ $room['service_fees'] }}"> -->
                             <!-- Rental Type -->
                             <div class="mb-6">
-                                <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Rental Type</label>
+                                <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pemesanan</label>
                                 <select id="rent_type" name="rent_type" 
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updateRentalType()">
@@ -301,6 +302,10 @@
                                     <div class="flex justify-between">
                                         <span class="text-gray-600">Durasi: </span>
                                         <span class="text-gray-900" id="durationDisplay">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Service Fees: </span>
+                                        <span class="text-gray-900" id="serviceFeesDisplay">-</span>
                                     </div>
 
                                     <div class="flex justify-between">
@@ -446,8 +451,10 @@
                 }
                 // Get admin fee value from the hidden input or use the default
                 const adminFee = 0;
-                const grandTotal = roomTotal ;
+                const serviceFees= 2000;
+                const grandTotal = roomTotal + serviceFees ;
                 document.getElementById('roomTotal').textContent = formatRupiah(roomTotal);
+                document.getElementById('serviceFeesDisplay').textContent = formatRupiah(serviceFees);
                 // document.getElementById('adminFee').textContent = formatRupiah(adminFee);
                 document.getElementById('grandTotal').textContent = formatRupiah(grandTotal);
             }

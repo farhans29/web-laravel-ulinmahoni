@@ -191,6 +191,7 @@ class BookingController extends ApiController
             $bookingMonths = null;
             $roomPrice = 0;
             $adminFees = 0;
+            $serviceFees = 0;
             $grandtotalPrice = 0;
             $checkIn = Carbon::parse($request->check_in);
             $checkOut = Carbon::parse($request->check_out);
@@ -212,7 +213,7 @@ class BookingController extends ApiController
                 $roomPrice = $request->daily_price * $bookingDays;
                 // $adminFees = $roomPrice * 0.10;
                 $adminFees = $request->admin_fees;
-                $grandtotalPrice = $roomPrice + $adminFees;
+                $grandtotalPrice = $roomPrice + $adminFees ;
             } else {
                 // MONTHLY BOOKING
                 $monthlyPrice = $request->monthly_price;
@@ -221,7 +222,7 @@ class BookingController extends ApiController
                 $roomPrice = $monthlyPrice * $bookingMonths;
                 // $adminFees = $roomPrice * 0.10;
                 $adminFees = $request->admin_fees;
-                $grandtotalPrice = $roomPrice + $adminFees;
+                $grandtotalPrice = $roomPrice + $adminFees ;
             }
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
@@ -255,6 +256,7 @@ class BookingController extends ApiController
                 'daily_price' => $request->daily_price,
                 'monthly_price' => $request->monthly_price,
                 'admin_fees' => $adminFees,
+                'service_fees' => $serviceFees,
                 'grandtotal_price' => $grandtotalPrice,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type,

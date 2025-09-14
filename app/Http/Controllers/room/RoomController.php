@@ -235,6 +235,7 @@ class RoomController extends Controller {
                 'price_original_monthly' => $room->price_original_monthly,
                 'price_discounted_monthly' => $room->price_discounted_monthly,
                 'admin_fees' => $room->admin_fees,
+                'service_fees' => $room->service_fees,
                 'facility' => is_string($room->facility) ? json_decode(
                     $room->facility, true
                     ) : (
@@ -305,6 +306,7 @@ class RoomController extends Controller {
                 'price_original_monthly' => $room->price_original_monthly,
                 'price_discounted_monthly' => $room->price_discounted_monthly,
                 'admin_fees' => $room->admin_fees,
+                'service_fees' => $room->service_fees,
                 'facility' => is_string($room->facility) ? json_decode(
                     $room->facility, true
                     ) : (
@@ -375,6 +377,7 @@ class RoomController extends Controller {
                 'price_original_monthly' => $room->price_original_monthly,
                 'price_discounted_monthly' => $room->price_discounted_monthly,
                 'admin_fees' => $room->admin_fees,
+                'service_fees' => $room->service_fees,
                 'facility' => is_string($room->facility) ? json_decode(
                     $room->facility, true
                     ) : (
