@@ -42,6 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Update profile picture
     Route::post('/user/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);
+    
 });
 
 // Health check endpoint (public, no API key required)
@@ -124,6 +125,7 @@ Route::prefix('users')->group(function () {
     Route::post('/', [UserController::class, 'store']);
     Route::put('/{id}', [UserController::class, 'update']);
     Route::delete('/{id}', [UserController::class, 'destroy']);
+    Route::post('/{id}/deactivate', [UserController::class, 'deactivate']);
 });
 
 // Room API routes

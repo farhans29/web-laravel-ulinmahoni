@@ -150,4 +150,30 @@ class UserController extends ApiController
             ], 500);
         }
     }
+
+    public function deactivate($id)
+    {
+        try {
+            $user = User::find($id);
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not found'
+                ], 404);
+            }
+            $user->update([
+                'status' => 0
+            ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User deactivated successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error deactivating user',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
