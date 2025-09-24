@@ -24,3 +24,7 @@ README.md
 
 Dockerfile
 docker-compose.yml
+
+# RUBY GENERATE FILE FOR APPLE LOGIN
+client_secret.rb
+AuthKey_L8MLZ4X864p8.txt

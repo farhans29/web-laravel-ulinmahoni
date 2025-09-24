@@ -94,23 +94,55 @@
             $currentPath = request()->path();
             $isEn = str_starts_with($currentPath, 'en/') || $currentPath === 'en';
             
-            if ($isEn) {
-                // If currently in EN, switch to ID
-                $togglePath = preg_replace('/^en\/?/', '', $currentPath);
-                $togglePath = $togglePath === '' ? '/' : $togglePath;
-                $otherLang = 'ID';
-                $flagSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M31,8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4v9H31V8Z" fill="#ea3323"></path><path d="M5,28H27c2.209,0,4-1.791,4-4v-8H1v8c0,2.209,1.791,4,4,4Z" fill="#fff"></path><path d="M5,28H27c2.209,0,4-1.791,4-4V8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4V24c0,2.209,1.791,4,4,4ZM2,8c0-1.654,1.346-3,3-3H27c1.654,0,3,1.346,3,3V24c0,1.654-1.346,3-3,3H5c-1.654,0-3-1.346-3-3V8Z" opacity=".15"></path><path d="M27,5H5c-1.657,0-3,1.343-3,3v1c0-1.657,1.343-3,3-3H27c1.657,0,3,1.343,3,3v-1c0-1.657-1.343-3-3-3Z" fill="#fff" opacity=".2"></path></svg>';
-            } else {
-                // If not in EN (default to ID), switch to EN
-                $togglePath = 'en' . ($currentPath === '/' ? '' : '/') . $currentPath;
-                $otherLang = 'EN';
-                $flagSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 60 30"><clipPath id="a"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="b"><path d="M30 15h30v15zv15H0zH0V0z"/></clipPath><g clip-path="url(#a)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#b)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M0 15h60M30 0v30" stroke="#C8102E" stroke-width="6"/></g></svg>';
-            }
+            // Define paths for both languages
+            $idPath = preg_replace('/^en\/?/', '', $currentPath);
+            $idPath = $idPath === '' ? '/' : $idPath;
+            $enPath = 'en' . ($currentPath === '/' ? '' : '/') . $currentPath;
+            
+            // Define flag SVGs
+            $idFlag = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><path d="M31,8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4v9H31V8Z" fill="#ea3323"></path><path d="M5,28H27c2.209,0,4-1.791,4-4v-8H1v8c0,2.209,1.791,4,4,4Z" fill="#fff"></path><path d="M5,28H27c2.209,0,4-1.791,4-4V8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4V24c0,2.209,1.791,4,4,4ZM2,8c0-1.654,1.346-3,3-3H27c1.654,0,3,1.346,3,3V24c0,1.654-1.346,3-3,3H5c-1.654,0-3-1.346-3-3V8Z" opacity=".15"></path><path d="M27,5H5c-1.657,0-3,1.343-3,3v1c0-1.657,1.343-3,3-3H27c1.657,0,3,1.343,3,3v-1c0-1.657-1.343-3-3-3Z" fill="#fff" opacity=".2"></path></svg>';
+            $enFlag = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 60 30"><clipPath id="a"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="b"><path d="M30 15h30v15zv15H0zH0V0z"/></clipPath><g clip-path="url(#a)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#b)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M0 15h60M30 0v30" stroke="#C8102E" stroke-width="6"/></g></svg>';
         @endphp
-        <a href="/{{ $togglePath }}" class="flex items-center space-x-2 px-2 py-1 rounded hover:bg-gray-100 transition-colors duration-200">
-            {!! $flagSvg !!}
-            <span class="text-sm text-gray-600">{{ $otherLang }}</span>
-        </a>
+        
+        <!-- Language Dropdown -->
+        <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" type="button" class="flex items-center space-x-1 px-2 py-1 rounded hover:bg-gray-100 transition-colors duration-200">
+                <span class="flex items-center">
+                    {!! $isEn ? $enFlag : $idFlag !!}
+                    <span class="ml-1 text-sm text-gray-600">{{ $isEn ? 'EN' : 'ID' }}</span>
+                </span>
+                <svg class="w-4 h-4 text-gray-500" :class="{ 'transform rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            
+            <!-- Dropdown menu -->
+            <div x-show="open" 
+                 @click.away="open = false"
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="transform opacity-0 scale-95"
+                 x-transition:enter-end="transform opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="transform opacity-100 scale-100"
+                 x-transition:leave-end="transform opacity-0 scale-95"
+                 class="absolute right-0 mt-2 w-32 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
+                 style="display: none;">
+                <div class="py-1">
+                    <a href="/{{ $idPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ !$isEn ? 'bg-gray-50' : '' }}">
+                        <span class="flex items-center">
+                            {!! $idFlag !!}
+                            <span class="ml-2">Indonesia</span>
+                        </span>
+                    </a>
+                    <a href="/{{ $enPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ $isEn ? 'bg-gray-50' : '' }}">
+                        <span class="flex items-center">
+                            {!! $enFlag !!}
+                            <span class="ml-2">English</span>
+                        </span>
+                    </a>
+                </div>
+            </div>
+        </div>
         @guest
             <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900 px-4 py-2 rounded-lg transition-colors duration-200">Masuk</a>
             <a href="{{ route('register') }}" class="text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors duration-200">Daftar</a>
