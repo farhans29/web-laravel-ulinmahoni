@@ -35,19 +35,19 @@
             <!-- Property Type Content -->
             <div class="property-tab-contents">
                 <div class="property-tab-content active" data-tab="kos">
-                    @include('components.homepage.property-cards.kos')
+                @include('components.homepage.property-cards.en.kos')
                 </div>
                 <div class="property-tab-content hidden" data-tab="house">
-                    @include('components.homepage.property-cards.house')
+                    @include('components.homepage.property-cards.en.house')
                 </div> 
                 <div class="property-tab-content hidden" data-tab="apartment">  
-                    @include('components.homepage.property-cards.apartment')
+                    @include('components.homepage.property-cards.en.apartment')
                 </div>
                 <div class="property-tab-content hidden" data-tab="villa">
-                    @include('components.homepage.property-cards.villa')
+                    @include('components.homepage.property-cards.en.villa')
                 </div>
                 <div class="property-tab-content hidden" data-tab="hotel">
-                    @include('components.homepage.property-cards.hotel')
+                    @include('components.homepage.property-cards.en.hotel')
                 </div>
                 <!-- Browse All Button -->
                 <div class="text-center py-8">

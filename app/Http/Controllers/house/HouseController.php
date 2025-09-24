@@ -107,6 +107,7 @@ class HouseController extends Controller {
                 'image' => $mainImage,
                 'images' => $propertyImages,
                 'description' => $property->description,
+                'description_en' => $property->description_en,
                 'address' => [
                     'province' => $property->province,
                     'city' => $property->city,
@@ -168,6 +169,7 @@ class HouseController extends Controller {
                 'image' => $mainImage,
                 'images' => $propertyImages,
                 'description' => $property->description,
+                'description_en' => $property->description_en,
                 'address' => [
                     'province' => $property->province,
                     'city' => $property->city,
@@ -229,6 +231,7 @@ class HouseController extends Controller {
                 'image' => $mainImage,
                 'images' => $propertyImages,
                 'description' => $property->description,
+                'description_en' => $property->description_en,
                 'address' => [
                     'province' => $property->province,
                     'city' => $property->city,

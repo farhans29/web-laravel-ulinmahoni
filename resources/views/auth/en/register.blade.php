@@ -72,7 +72,7 @@
                 <div class="flex justify-center mb-4">
                     <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-16 w-auto">
                 </div>
-                <h2 class="text-4xl font-light text-gray-900 mb-2">Buat Akun</h2>
+                <h2 class="text-4xl font-light text-gray-900 mb-2">Create Account</h2>
                 <p class="text-gray-600 text-lg">UlinMahoni</p>
             </div>
 
@@ -85,7 +85,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-user text-gray-400"></i>
                             </div>
-                            <input id="name" name="name" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Nama Lengkap" :value="old('name')" />
+                            <input id="name" name="name" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Full Name" :value="old('name')" />
                         </div>
                     </div>
 
@@ -125,7 +125,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-lock text-gray-400"></i>
                             </div>
-                            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Ketik Ulang Password" />
+                            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Confirm Password" />
                         </div>
                     </div>
                 </div>
@@ -154,7 +154,7 @@
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                             <i class="fas fa-user-plus text-teal-500 group-hover:text-teal-400"></i>
                         </span>
-                        {{ __('Daftar') }}
+                        {{ __('Register') }}
                     </button>
                 </div>
             </form>
@@ -163,9 +163,9 @@
 
             <div class="text-center mt-4">
                 <p class="text-sm text-gray-600">
-                    {{ __('Sudah Punya Akun?') }}
+                    {{ __('Already have an account?') }}
                     <a href="{{ route('login') }}" class="font-medium text-teal-600 hover:text-teal-500">
-                        {{ __('Masuk') }}
+                        {{ __('Login') }}
                     </a>
                 </p>
             </div>

@@ -270,13 +270,13 @@ class HomeController extends Controller {
             }
 
             // Log the final data for debugging
-            Log::info('Property data by type:', [
-                'houses_count' => count($propertyTypes['House']),
-                'kos_count' => count($propertyTypes['Kos']),
-                'apartments_count' => count($propertyTypes['Apartment']),
-                'villas_count' => count($propertyTypes['Villa']),
-                'hotels_count' => count($propertyTypes['Hotel'])
-            ]);
+            // Log::info('Property data by type:', [
+            //     'houses_count' => count($propertyTypes['House']),
+            //     'kos_count' => count($propertyTypes['Kos']),
+            //     'apartments_count' => count($propertyTypes['Apartment']),
+            //     'villas_count' => count($propertyTypes['Villa']),
+            //     'hotels_count' => count($propertyTypes['Hotel'])
+            // ]);
 
             return view("pages.homepage.en.index", [
                 'kos' => $propertyTypes['Kos'],

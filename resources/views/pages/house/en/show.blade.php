@@ -121,9 +121,9 @@
             <!-- Breadcrumb -->
             <nav class="mb-8">
                 <ol class="flex items-center space-x-2 text-gray-500">
-                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">Home</a></li>
+                    <li><a href="{{ route('en.homepage') }}" class="hover:text-gray-700">Home</a></li>
                     <li><span class="mx-2">/</span></li>
-                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">Properties</a></li>
+                    <li><a href="{{ route('en.homepage') }}" class="hover:text-gray-700">Properties</a></li>
                     <li><span class="mx-2">/</span></li>
                     <li class="text-gray-900">{{ $house['name'] }}</li>
                 </ol>
@@ -298,7 +298,7 @@
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">About the Property</h2>
                     <div class="prose max-w-none">
                         <p class="text-gray-600">
-                            {{ $house['description'] }}
+                            {{ $house['description_en'] }}
                         </p>
                     </div>
 
@@ -389,7 +389,7 @@
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             @forelse($house['rooms'] as $room)
-                                <a href="{{ route('rooms.show', $room['slug']) }}" class="group">
+                                <a href="{{ route('en.rooms.show', $room['slug']) }}" class="group">
                                     <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group-hover:ring-2 group-hover:ring-teal-500">
                                     <div class="relative pb-[56.25%] h-48">
                                         <div class="absolute inset-0">

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Ulin Mahoni</title>
+    <title>Login - Ulin Mahoni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     @include('components.homepage.styles')
@@ -35,8 +35,6 @@
             z-index: 2;
         }
         .login-box {
-            position: relative;
-            z-index: 10;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 1rem;
@@ -45,6 +43,8 @@
             max-width: 28rem;
             width: 100%;
             margin: 2rem;
+            position: relative;
+            z-index: 10;
         }
         @media (max-width: 640px) {
             .login-box {
@@ -68,39 +68,26 @@
         </div>
         
         <div class="login-box">
+
             <div class="text-center mb-6">
                 <div class="flex justify-center mb-4">
                     <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-16 w-auto">
                 </div>
-                <h2 class="text-4xl font-light text-gray-900 mb-2">Buat Akun</h2>
+                <h2 class="text-4xl font-light text-gray-900 mb-2">Welcome Back</h2>
                 <p class="text-gray-600 text-lg">UlinMahoni</p>
             </div>
 
-            <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
+            @if (session('status'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">{{ session('status') }}</span>
+                </div>
+            @endif
+
+            <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="rounded-md shadow-sm space-y-4">
                     <div>
-                        <label for="name" class="sr-only">{{ __('Full Name') }}</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-user text-gray-400"></i>
-                            </div>
-                            <input id="name" name="name" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Nama Lengkap" :value="old('name')" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="username" class="sr-only">{{ __('Username') }}</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-at text-gray-400"></i>
-                            </div>
-                            <input id="username" name="username" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Username" :value="old('username')" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="email" class="sr-only">{{ __('Email Address') }}</label>
+                        <label for="email" class="sr-only">{{ __('Your Email') }}</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-envelope text-gray-400"></i>
@@ -108,9 +95,8 @@
                             <input id="email" name="email" type="email" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Email" :value="old('email')" />
                         </div>
                     </div>
-
                     <div>
-                        <label for="password" class="sr-only">{{ __('Password') }}</label>
+                        <label for="password" class="sr-only">{{ __('Your Password') }}</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-lock text-gray-400"></i>
@@ -118,54 +104,54 @@
                             <input id="password" name="password" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Password" />
                         </div>
                     </div>
-
-                    <div>
-                        <label for="password_confirmation" class="sr-only">{{ __('Confirm Password') }}</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-lock text-gray-400"></i>
-                            </div>
-                            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Ketik Ulang Password" />
-                        </div>
-                    </div>
                 </div>
 
-                <!-- <div class="flex items-center">
-                    <input id="newsletter" name="newsletter" type="checkbox" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded">
-                    <label for="newsletter" class="ml-2 block text-sm text-gray-900">
-                        Email me about product news
-                    </label>
-                </div> -->
-
-                @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
-                    <div class="flex items-center">
-                        <input id="terms" name="terms" type="checkbox" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded" required>
-                        <label for="terms" class="ml-2 block text-sm text-gray-900">
-                            {!! __('I agree to the :terms_of_service and :privacy_policy', [
-                                'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="text-teal-600 hover:text-teal-500">'.__('Terms of Service').'</a>',
-                                'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'" class="text-teal-600 hover:text-teal-500">'.__('Privacy Policy').'</a>',
-                            ]) !!}
-                        </label>
-                    </div>
-                @endif
+                <div class="flex items-center justify-between">
+                    @if (Route::has('password.request'))
+                        <div class="text-sm">
+                            <a href="{{ route('password.request') }}" class="font-medium text-teal-600 hover:text-teal-500">
+                                {{ __('Forgot Password?') }}
+                            </a>
+                        </div>
+                    @endif
+                </div>
 
                 <div>
                     <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200">
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
-                            <i class="fas fa-user-plus text-teal-500 group-hover:text-teal-400"></i>
+                            <i class="fas fa-sign-in-alt text-teal-500 group-hover:text-teal-400"></i>
                         </span>
-                        {{ __('Daftar') }}
+                        {{ __('Login') }}
                     </button>
                 </div>
             </form>
+
+            <!-- Divider with "or" text -->
+            <div class="flex items-center my-6">
+                <div class="flex-1 border-t border-gray-200"></div>
+                <span class="px-4 text-sm text-gray-500">or</span>
+                <div class="flex-1 border-t border-gray-200"></div>
+            </div>
+
+            <!-- Google Login Button -->
+            <div class="mt-6 space-y-4">
+                <a href="{{ route('login.google') }}" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200">
+                    <img class="h-5 w-5 mr-2" src="https://www.google.com/favicon.ico" alt="Google">
+                    Sign in with Google
+                </a>
+                <a href="#" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200">
+                    <img class="h-5 w-5 mr-2" src="https://img.icons8.com/?size=100&id=30840&format=png&color=000000" alt="Apple">
+                    Sign in with Apple
+                </a>
+            </div>
 
             <x-jet-validation-errors class="mt-4"/>
 
             <div class="text-center mt-4">
                 <p class="text-sm text-gray-600">
-                    {{ __('Sudah Punya Akun?') }}
-                    <a href="{{ route('login') }}" class="font-medium text-teal-600 hover:text-teal-500">
-                        {{ __('Masuk') }}
+                    {{ __("Don't have an account?") }}
+                    <a href="{{ route('register') }}" class="font-medium text-teal-600 hover:text-teal-500">
+                        {{ __('Sign Up') }}
                     </a>
                 </p>
             </div>

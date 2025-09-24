@@ -3,7 +3,7 @@
         <div class="swiper-wrapper mb-8">
             @forelse($kos as $kosan)
             <div class="swiper-slide">
-                <a href="{{ route('houses.show', ['id' => $kosan['id']]) }}" class="block h-full">
+                <a href="{{ route('en.houses.show', ['id' => $kosan['id']]) }}" class="block h-full">
                     <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
                         <div class="relative">
                             <div class="relative pb-[56.25%] h-48">

@@ -52,8 +52,8 @@
                     <div class="md:w-48 relative">
                         <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <select name="type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                            <option value="">Semua Properti</option>
-                            <option value="kos" {{ request('type') == 'kos' ? 'selected' : '' }}>Kos</option>
+                            <option value="">All Properties</option>
+                            <option value="kos" {{ request('type') == 'kos' ? 'selected' : '' }}>Boarding House</option>
                             <option value="house" {{ request('type') == 'house' ? 'selected' : '' }}>House</option>
                             <option value="apartment" {{ request('type') == 'apartment' ? 'selected' : '' }}>Apartment</option>
                             <option value="villa" {{ request('type') == 'villa' ? 'selected' : '' }}>Villa</option>
@@ -66,7 +66,7 @@
                     <div class="md:w-48 relative">
                         <i class="fas fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <select name="period" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                            <option value="">Semua Periode</option>
+                            <option value="">All Periods</option>
                             <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>Daily</option>
                             <option value="monthly" {{ request('period') == 'monthly' ? 'selected' : '' }}>Monthly</option>
                         </select>
@@ -82,7 +82,7 @@
                                 value="{{ request('check_in') }}"
                                 onfocus="(this.type='date')" 
                                 onblur="if(!this.value) this.type='text'"
-                                placeholder="Tanggal Check In"
+                                placeholder="Check-in Date"
                                 class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                         <div class="w-1/2 relative">
@@ -92,7 +92,7 @@
                                 value="{{ request('check_out') }}"
                                 onfocus="(this.type='date')" 
                                 onblur="if(!this.value) this.type='text'"
-                                placeholder="Tanggal Check Out"
+                                placeholder="Check-out Date"
                                 class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                     </div>
@@ -133,19 +133,17 @@
                                     localStorage.setItem('propertySearch', JSON.stringify(searchState));
                                 });
                             }
-                        });
                     </script>
                     
                     <div class="md:w-48">
                         <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
                             <i class="fas fa-search mr-2"></i>
-                            <span>Cari Hunian</span>
+                            <span>Cari Properti</span>
                         </button>
                     </div>
                 </div>
             </form>
         </div>
-    </section>
     </div>
 
     @include('components.homepage.en.property-types')

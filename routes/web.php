@@ -78,13 +78,24 @@ Route::get('storage/{path}', function ($path) {
         abort(500, 'Error serving file');
     }
 })->where('path', '.*');
-// Route::get('/inventory/getdata', [SearchProductController::class, 'getData'])->name('search-product.getdata');
-// Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
+
+
+// Google OAuth Routes
+Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToGoogle'])->name('login.google');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleGoogleCallback']);
+
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::get('/register', function () {
+    return view('auth.register');
+})->name('register');
 
 // Route::redirect('/', 'login');
 Route::redirect('/','/id/homepage');
 Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
-Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
+
 
 // Information Pages Routes
 Route::prefix('id')->group(function () {
@@ -99,6 +110,12 @@ Route::prefix('id')->group(function () {
 });
 
 Route::prefix('en')->group(function () {
+    Route::get('/login', function () {
+        return view('auth.en.login');
+    })->name('en.login');
+    Route::get('/register', function () {
+        return view('auth.en.register');
+    })->name('en.register');
     Route::view('/rental', 'pages.info.english.rental')->name('en.rental');
     Route::view('/partnership', 'pages.info.english.partnership')->name('en.partnership');
     Route::view('/business', 'pages.info.english.business')->name('en.business');
@@ -108,6 +125,14 @@ Route::prefix('en')->group(function () {
     Route::get('/houses/{id}', [HouseController::class, 'showEn'])->name('en.houses.show');
     Route::get('/rooms/{slug}', [RoomController::class, 'showEn'])->name('en.rooms.show');
 });
+// Route::view('/en/rental', 'pages.info.english.rental')->name('en.rental');
+// Route::view('/en/partnership', 'pages.info.english.partnership')->name('en.partnership');
+// Route::view('/en/business', 'pages.info.english.business')->name('en.business');
+// Route::view('/en/about', 'pages.info.english.about')->name('en.about');
+
+// Route::get('/en/homepage', [HomeController::class, 'indexEn'])->name('en.homepage');
+// Route::get('/en/houses/{id}', [HouseController::class, 'showEn'])->name('en.houses.show');
+// Route::get('/en/rooms/{slug}', [RoomController::class, 'showEn'])->name('en.rooms.show');
 
 // Default routes (redirect to preferred language)
 Route::redirect('/sewa', '/id/sewa');
@@ -361,15 +386,6 @@ Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {
     });
 
 });
-
-// Google OAuth Routes
-Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToGoogle'])->name('login.google');
-Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleGoogleCallback']);
-
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
-
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
+// Route::get('/inventory/getdata', [SearchProductController::class, 'getData'])->name('search-product.getdata');
+// Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
+// Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
