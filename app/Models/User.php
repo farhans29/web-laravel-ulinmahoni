@@ -10,6 +10,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 
+
 class User extends Authenticatable
 {
     use HasApiTokens;
@@ -17,6 +18,24 @@ class User extends Authenticatable
     use HasProfilePhoto;
     use Notifiable;
     use TwoFactorAuthenticatable;
+
+    /**
+     * Get the password for the user.
+     *
+     * @return string
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     */
+    public function getAuthPassword()
+    {
+        // Only allow login if status is 1
+        if ($this->status != 1) {
+            
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Your account is inactive. Please contact support for assistance.',
+            ]);
+        }
+        return $this->password;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -34,7 +53,7 @@ class User extends Authenticatable
         'is_admin',
         'profile_photo_path'
     ];
-    
+
     /**
      * The attributes that should be visible in arrays.
      *
@@ -48,6 +67,7 @@ class User extends Authenticatable
         'username',
         'email',
         'phone_number',
+        'status',
         'profile_photo_path',
         'profile_photo_url'
     ];

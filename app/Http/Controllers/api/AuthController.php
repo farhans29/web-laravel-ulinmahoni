@@ -95,22 +95,22 @@ class AuthController extends Controller
 
         $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone_number';
         
-        $credentials = [
-            $loginField => $request->login,
-            'password' => $request->password
-        ];
+        // First, find the user by email or phone
+        $user = User::where($loginField, $request->login)->first();
 
-        if (Auth::attempt($credentials)) {
-            $user = Auth::user();
-            
-            // Check if user status is active (status = 1)
+        // Check if user exists and is active
+        if ($user) {
             if ($user->status != 1) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Your account is not active. Please contact support.'
+                    'message' => 'Your account is inactive. Please contact support.'
                 ], 403);
             }
-            
+        }
+
+        // Attempt authentication
+        if (Auth::attempt([$loginField => $request->login, 'password' => $request->password])) {
+            $user = Auth::user();
             $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
@@ -134,9 +134,11 @@ class AuthController extends Controller
             ]);
         }
 
+        // If we reach here, credentials are invalid
         return response()->json([
             'status' => 'error',
-            'message' => 'Invalid credentials'
+            'message' => 'Invalid credentials',
+            'error_code' => 'invalid_credentials'
         ], 401);
     }
 
