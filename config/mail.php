@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'smtp'),
+    'default' => 'array', // Using array driver to prevent any actual mail sending
 
     /*
     |--------------------------------------------------------------------------
@@ -49,6 +49,18 @@ return [
                     'verify_peer_name' => false,
                     'allow_self_signed' => true,
                 ],
+            ],
+        ],
+
+        'mailtrap-sdk' => [
+            'transport' => 'mailtrap-sdk',
+            'api_key' => env('MAIL_PASSWORD'),
+            'host' => 'send.api.mailtrap.io',
+            'port' => 587,
+            'encryption' => 'tls',
+            'from' => [
+                'address' => env('MAIL_FROM_ADDRESS', 'noreply@ulinmahoni.com'),
+                'name' => env('MAIL_FROM_NAME', 'Ulinmahoni - Account Registration'),
             ],
         ],
 

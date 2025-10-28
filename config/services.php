@@ -46,4 +46,8 @@ return [
         'key' => env('API_KEY'),
     ],
 
+    'mailtrap' => [
+        'api_key' => env('MAIL_PASSWORD'),
+    ],
+
 ];
