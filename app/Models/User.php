@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,7 +12,7 @@ use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens;
     use HasFactory;
@@ -29,11 +30,18 @@ class User extends Authenticatable
     {
         // Only allow login if status is 1
         if ($this->status != 1) {
-            
             throw \Illuminate\Validation\ValidationException::withMessages([
                 'email' => 'Your account is inactive. Please contact support for assistance.',
             ]);
         }
+        
+        // Check if email is verified
+        if (empty($this->email_verified_at)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'email' => 'Please verify your email address before logging in. Check your email for the verification link.',
+            ]);
+        }
+        
         return $this->password;
     }
 
@@ -104,6 +112,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Send the email verification notification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VerifyEmailNotification);
+    }
 
     // If you still need the full name somewhere in your application, you can keep this method
     // but it won't be included in JSON responses unless explicitly called

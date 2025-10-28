@@ -21,6 +21,7 @@ use App\Http\Controllers\PaymentController;
 
 use App\Http\Controllers\homepage\HomeController;
 use App\Http\Controllers\apart\ApartController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\room\RoomController;
 use App\Http\Controllers\property\PropertyController;
 use App\Http\Controllers\house\HouseController;
@@ -43,6 +44,11 @@ use Illuminate\Support\Facades\Storage;
 |
 */
 
+// Email Verification Confirmation Page
+Route::get('/email/verification-confirmation', function () {
+    return view('auth.verify-email-confirmation');
+})->middleware('auth')->name('verification.confirmation');
+
 // Route::get('/inventory', [SearchProductController::class, 'index'])->name('search-product');
 
 // Route to serve storage files
@@ -54,7 +60,7 @@ Route::get('storage/{path}', function ($path) {
     $filePath = storage_path('app/public/' . ltrim($path, '/'));
     
     // Log the path for debugging (check Laravel logs)
-    \Log::info('Accessing file:', ['path' => $filePath]);
+    // \Log::info('Accessing file:', ['path' => $filePath]);
     
     if (!File::exists($filePath)) {
         \Log::error('File not found:', ['path' => $filePath]);
@@ -88,9 +94,40 @@ Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-Route::get('/register', function () {
-    return view('auth.register');
-})->name('register');
+// Authentication Routes
+Route::middleware(['guest'])->group(function () {
+    Route::get('/register', function () {
+        return view('auth.register');
+    })->name('register');
+    
+    // Email Verification Notice
+    Route::get('/email/verify', function () {
+        return view('auth.verify-email');
+    })->middleware('auth')->name('verification.notice');
+});
+
+// Email Verification Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Http\Request $request, $id, $hash) {
+        // \Log::info('Verification link clicked', [
+        //     'id' => $id,
+        //     'hash' => $hash,
+        //     'url' => $request->fullUrl(),
+        //     'signature_valid' => $request->hasValidSignature(),
+        //     'signature' => $request->query('signature')
+        // ]);
+        
+        // Forward to our custom controller
+        return app(VerifyEmailController::class)($request, $id, $hash);
+    })->middleware(['signed', 'throttle:6,1'])
+      ->name('verification.verify')
+      ->withoutMiddleware(['auth']);
+
+    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'verification-link-sent');
+    })->middleware(['throttle:6,1'])->name('verification.send');
+});
 
 // Route::redirect('/', 'login');
 Route::redirect('/','/id/homepage');
@@ -191,6 +228,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 });
 
+// Authenticated routes that require email verification
 Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/getdata', [DashboardController::class, 'getData'])->name('dashboard.sales');

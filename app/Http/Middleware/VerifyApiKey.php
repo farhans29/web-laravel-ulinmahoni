@@ -23,13 +23,13 @@ class VerifyApiKey
         $expectedApiKey = config('services.api.key');
         
         // Log the request for debugging
-        \Log::info('API Request', [
-            'path' => $request->path(),
-            'full_url' => $request->fullUrl(),
-            'api_key' => $apiKey,
-            'expected_key' => $expectedApiKey,
-            'segments' => $request->segments()
-        ]);
+        // \Log::info('API Request', [
+        //     'path' => $request->path(),
+        //     'full_url' => $request->fullUrl(),
+        //     'api_key' => $apiKey,
+        //     'expected_key' => $expectedApiKey,
+        //     'segments' => $request->segments()
+        // ]);
         
         if (empty($apiKey) || $apiKey !== $expectedApiKey) {
             return response()->json([

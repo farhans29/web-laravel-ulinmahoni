@@ -50,11 +50,15 @@ class AuthController extends Controller
                 'is_admin' => 0
             ]);
 
+            // Send email verification notification
+            $user->sendEmailVerificationNotification();
+
+            // Create token for immediate login if needed
             $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Registration successful',
+                'message' => 'Registration successful. Please check your email to verify your account.',
                 'data' => [
                     'user' => [
                         'id' => $user->id,
@@ -65,8 +69,10 @@ class AuthController extends Controller
                         'status' => $user->status,
                         'is_admin' => $user->is_admin,
                         'profile_photo_url' => $user->profile_photo_url,
+                        'email_verified_at' => $user->email_verified_at,
                     ],
-                    'token' => $token
+                    'token' => $token,
+                    'requires_email_verification' => true
                 ]
             ], 201);
         } catch (\Exception $e) {
@@ -97,6 +103,15 @@ class AuthController extends Controller
         
         // First, find the user by email or phone
         $user = User::where($loginField, $request->login)->first();
+
+        // Check if user exists and email is not verified
+        if ($user && $loginField === 'email' && !$user->hasVerifiedEmail()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Please verify your email address before logging in. Check your email for the verification link.',
+                'requires_email_verification' => true
+            ], 403);
+        }
 
         // Check if user exists and is active
         if ($user) {
