@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use App\Models\Property;
 
 class BookingController extends ApiController
@@ -229,7 +231,7 @@ class BookingController extends ApiController
             $property = $request->property_id ? Property::find($request->property_id) : null;
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'INV-UM-APP-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            $order_id = 'UMA-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
             // Prepare transaction data
             $transactionData = [
@@ -301,12 +303,37 @@ class BookingController extends ApiController
 
             Payment::create($paymentData);
 
+            // Process payment with DOKU
+            // $paymentResponse = $this->processDokuPayment([
+            //     'order_id' => $order_id,
+            //     'transaction_code' => $transaction->transaction_code,
+            //     'amount' => $grandtotalPrice,
+            //     'property_name' => $request->property_name,
+            //     'room_name' => $request->room_name,
+            //     'user_name' => $request->user_name,
+            //     'user_email' => $request->user_email,
+            //     'user_phone' => $request->user_phone_number
+            // ]);
+
+            // if (isset($paymentResponse['error'])) {
+            //     throw new \Exception('Payment processing failed: ' . $paymentResponse['error']);
+            // }
+
+            // // Update transaction with payment URL
+            // $transaction->update([
+            //     'payment_url' => $paymentResponse['payment_url'] ?? null,
+            //     'expired_at' => $paymentResponse['expired_at'] ?? null
+            // ]);
+
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Booking created successfully',
-                'data' => $transaction
+                'data' => array_merge($transaction->toArray(), [
+                    'payment_url' => $paymentResponse['payment_url'] ?? null,
+                    'expired_at' => $paymentResponse['expired_at'] ?? null
+                ])
             ], 201);
 
         } catch (\Exception $e) {
@@ -695,4 +722,87 @@ class BookingController extends ApiController
         }
     }
     
+    /**
+     * Process payment via Doku API
+     *
+     * @param array $data
+     * @return array
+     */
+    private function processDokuPayment($data)
+    {
+        try {
+            $dokuUrl = 'https://api-sandbox.doku.com/checkout/v1/payment';
+            
+            // Prepare request body
+            $requestData = [
+                'order' => [
+                    'amount' => $data['amount'],
+                    'invoice_number' => $data['order_id'],
+                    'currency' => 'IDR',
+                    'session_id' => $data['transaction_code'],
+                    'callback_url' => config('app.url') . '/api/payment/callback',
+                    'line_items' => [
+                        [
+                            'name' => $data['property_name'] . ' - ' . $data['room_name'],
+                            'price' => $data['amount'],
+                            'quantity' => 1
+                        ]
+                    ]
+                ],
+                'payment' => [
+                    'payment_due_date' => 60 // 60 minutes
+                ],
+                'customer' => [
+                    'name' => $data['user_name'],
+                    'email' => $data['user_email'],
+                    'phone' => $data['user_phone'],
+                    'address' => 'Indonesia', // Default address
+                    'country' => 'ID'
+                ]
+            ];
+
+            // Doku API credentials - Replace these with your actual credentials
+            $clientId = 'YOUR_DOKU_CLIENT_ID';
+            $secretKey = 'YOUR_DOKU_SECRET_KEY';
+
+            // Generate timestamp
+            $timestamp = gmdate('Y-m-d\\TH:i:s\\Z');
+            
+            // Generate signature
+            $signature = hash('sha256', $clientId . '|' . $timestamp . '|' . $secretKey);
+
+            // Make API request
+            $response = Http::withHeaders([
+                'Client-Id' => $clientId,
+                'Request-Id' => (string) Str::uuid(),
+                'Request-Timestamp' => $timestamp,
+                'Signature' => $signature,
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json'
+            ])->post($dokuUrl, $requestData);
+
+            $responseData = $response->json();
+
+            if (!$response->successful()) {
+                Log::error('Doku API Error', [
+                    'status' => $response->status(),
+                    'response' => $responseData,
+                    'request' => $requestData
+                ]);
+                return ['error' => $responseData['message'] ?? 'Payment processing failed'];
+            }
+
+            return [
+                'payment_url' => $responseData['response']['payment']['url'] ?? null,
+                'expired_at' => $responseData['response']['payment']['expired_datetime'] ?? null,
+                'response' => $responseData
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Doku Payment Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return ['error' => $e->getMessage()];
+        }
+    }
 }

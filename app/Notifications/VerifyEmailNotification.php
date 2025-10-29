@@ -7,9 +7,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
 
-class VerifyEmailNotification extends VerifyEmail implements ShouldQueue
+class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
 {
     use Queueable;
 
@@ -32,14 +32,20 @@ class VerifyEmailNotification extends VerifyEmail implements ShouldQueue
     }
 
     /**
-     * Send the email verification notification.
+     * Build the mail representation of the notification.
      *
      * @param  mixed  $notifiable
-     * @return void
+     * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)
     {
         $verificationUrl = $this->verificationUrl($notifiable);
+        
+        if (static::$toMailCallback) {
+            return call_user_func(static::$toMailCallback, $notifiable, $verificationUrl);
+        }
+        
+        $message = "Dear Valued Customer,\n\nThank you for registering with Ulinmahoni. To complete your registration and verify your email address, please click on the following link:\n\n{$verificationUrl}\n\nThis link will expire in 24 hours for security purposes.\n\nIf you did not create an account with Ulinmahoni, please disregard this email.\n\nBest regards,\nThe Ulinmahoni Team";
         
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.mailtrap.api_key'),
@@ -54,7 +60,7 @@ class VerifyEmailNotification extends VerifyEmail implements ShouldQueue
                 ['email' => $notifiable->getEmailForVerification()]
             ],
             'subject' => 'Ulinmahoni - Account Registration',
-            'text' => "Please click the following link to verify your email: {$verificationUrl}",
+            'text' => $message,
             'category' => 'Ulinmahoni - Account Registration'
         ]);
 
@@ -64,8 +70,12 @@ class VerifyEmailNotification extends VerifyEmail implements ShouldQueue
                 'email' => $notifiable->getEmailForVerification(),
                 'error' => $response->json()
             ]);
+            throw new \RuntimeException('Failed to send verification email');
         }
         
-        return null; // Return null since we're handling the email send directly
+        // Return a dummy MailMessage to satisfy the interface
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->line('Please verify your email address by clicking the button below.')
+            ->action('Verify Email Address', $verificationUrl);
     }
 }
