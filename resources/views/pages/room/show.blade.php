@@ -712,7 +712,30 @@
                     }
                     
                     if (response.ok && data.redirect_url) {
-                        window.location.href = data.redirect_url;
+                        // Show loading state or message
+                        const loadingMessage = document.createElement('div');
+                        loadingMessage.textContent = 'Preparing your payment...';
+                        loadingMessage.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; padding: 15px 25px; border-radius: 4px; z-index: 1000;';
+                        document.body.appendChild(loadingMessage);
+
+                        // Wait for 1.5 seconds before opening in new tab
+                        setTimeout(() => {
+                            // Open in new tab
+                            const newWindow = window.open('', '_blank');
+                            newWindow.location.href = data.redirect_url;
+                            
+                            // Update loading message
+                            loadingMessage.textContent = 'Payment page opened in a new tab. If not, please check your popup blocker.';
+                            loadingMessage.style.background = '#2196F3';
+                            
+                            // Auto-close message after 5 seconds
+                            setTimeout(() => {
+                                loadingMessage.style.transition = 'opacity 0.5s';
+                                loadingMessage.style.opacity = '0';
+                                setTimeout(() => loadingMessage.remove(), 500);
+                            }, 5000);
+                        }, 1500);
+                        
                         return;
                     }
 

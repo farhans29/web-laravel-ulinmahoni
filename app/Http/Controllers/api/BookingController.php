@@ -725,22 +725,40 @@ class BookingController extends ApiController
     }
     
     /**
-     * Generate Doku API signature
+     * Generate a secure signature for Doku API authentication
+     * 
+     * This method creates an HMAC-SHA256 signature using the provided credentials and request data.
+     * The signature is used to authenticate requests to the Doku payment gateway.
      *
-     * @param string $clientId
-     * @param string $requestId
-     * @param string $timestamp
-     * @param string $requestTarget
-     * @param string $requestBody
-     * @param string $secretKey
-     * @return string
+     * @param string $clientId     The Doku API client ID
+     * @param string $requestId    Unique request identifier (UUID)
+     * @param string $timestamp    Request timestamp in ISO 8601 format
+     * @param string $requestTarget API endpoint path (e.g., '/checkout/v1/payment')
+     * @param string $requestBody  JSON-encoded request payload
+     * @param string $secretKey    Doku API secret key for signature generation
+     * 
+     * @return string HMAC-SHA256 signature prefixed with 'HMACSHA256='
+     * 
+     * @throws \InvalidArgumentException If any required parameter is empty or invalid
      */
-    private function generateDokuSignature($clientId, $requestId, $timestamp, $requestTarget, $requestBody, $secretKey)
-    {
-        // Generate digest
+    private function generateDokuSignature(
+        string $clientId,
+        string $requestId,
+        string $timestamp,
+        string $requestTarget,
+        string $requestBody,
+        string $secretKey
+    ): string {
+        // Input validation
+        if (empty($clientId) || empty($requestId) || empty($timestamp) || 
+            empty($requestTarget) || empty($secretKey)) {
+            throw new \InvalidArgumentException('All parameters are required for signature generation');
+        }
+
+        // Generate digest from request body
         $digest = base64_encode(hash('sha256', $requestBody, true));
         
-        // Prepare signature components
+        // Prepare signature components in exact order required by Doku
         $signatureComponents = "Client-Id:{$clientId}\n" .
                              "Request-Id:{$requestId}\n" .
                              "Request-Timestamp:{$timestamp}\n" .
@@ -754,30 +772,69 @@ class BookingController extends ApiController
     }
 
     /**
-     * Process payment via Doku API
+     * Process payment through Doku payment gateway
+     * 
+     * This method handles the entire payment flow with Doku, including:
+     * - Request preparation
+     * - Signature generation
+     * - API communication
+     * - Response handling
+     * - Error management
      *
-     * @param array $data
-     * @return array
-     * @throws \Exception
+     * @param array $data {
+     *     Required payment data
+     *     
+     *     @type string $order_id          Unique order identifier
+     *     @type string $transaction_code  Internal transaction reference
+     *     @type float  $amount            Payment amount
+     *     @type string $property_name     Name of the property being booked
+     *     @type string $room_name         Name of the room being booked
+     *     @type string $user_name         Full name of the customer
+     *     @type string $user_email        Customer's email address
+     *     @type string $user_phone        Customer's phone number
+     * }
+     * 
+     * @return array{
+     *     payment_url: string|null,
+     *     expired_at: string|null,
+     *     response: array
+     * }
+     * 
+     * @throws \RuntimeException If payment processing fails
+     * @throws \InvalidArgumentException If required parameters are missing
      */
-    private function processDokuPayment($data)
+    private function processDokuPayment(array $data): array
     {
         try {
-            $dokuUrl = 'https://api-sandbox.doku.com/checkout/v1/payment';
+            // Input validation
+            $requiredFields = ['order_id', 'transaction_code', 'amount', 'user_email', 'user_phone'];
+            foreach ($requiredFields as $field) {
+                if (empty($data[$field])) {
+                    throw new \InvalidArgumentException("Missing required field: {$field}");
+                }
+            }
+
+            // Get API configuration
+            $dokuUrl = config('services.doku.api_url', 'https://api-sandbox.doku.com/checkout/v1/payment');
+            $clientId = config('services.doku.client_id');
+            $secretKey = config('services.doku.secret_key');
             
-            // Prepare request body
+            if (empty($clientId) || empty($secretKey)) {
+                throw new \RuntimeException('Payment gateway configuration is incomplete');
+            }
+
+            // Prepare request data with type safety
             $requestData = [
                 'order' => [
-                    'amount' => $data['amount'],
-                    'invoice_number' => $data['order_id'],
+                    'amount' => (float) $data['amount'],
+                    'invoice_number' => (string) $data['order_id'],
                     'currency' => 'IDR',
-                    'session_id' => $data['transaction_code'],
-                    // 'callback_url' => config('app.url') . '/api/payment/callback',
-                    'callback_url' => "https://doku.com/",
+                    'session_id' => (string) $data['transaction_code'],
+                    'callback_url' => config('app.url') . '/api/payment/callback',
                     'line_items' => [
                         [
-                            'name' => $data['property_name'] . ' - ' . $data['room_name'],
-                            'price' => $data['amount'],
+                            'name' => sprintf('%s - %s', $data['property_name'] ?? 'Property', $data['room_name'] ?? 'Room'),
+                            'price' => (float) $data['amount'],
                             'quantity' => 1
                         ]
                     ]
@@ -786,25 +843,25 @@ class BookingController extends ApiController
                     'payment_due_date' => 60 // 60 minutes
                 ],
                 'customer' => [
-                    'name' => $data['user_name'],
+                    'name' => $data['user_name'] ?? 'Customer',
                     'email' => $data['user_email'],
                     'phone' => $data['user_phone'],
-                    'address' => 'Indonesia', // Default address
+                    'address' => $data['user_address'] ?? 'Indonesia',
                     'country' => 'ID'
                 ]
             ];
 
-            // Doku API credentials - Replace these with your actual credentials
-            $clientId = config(('services.doku.client_id'));
-            $secretKey = config(('services.doku.secret_key'));
-
-            // Generate request values
+            // Generate request metadata
             $requestId = (string) Str::uuid();
             $timestamp = gmdate('Y-m-d\TH:i:s\Z');
             $requestTarget = '/checkout/v1/payment';
             $requestBody = json_encode($requestData);
+            
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new \RuntimeException('Failed to encode request data: ' . json_last_error_msg());
+            }
 
-            // Generate signature
+            // Generate and validate signature
             $signature = $this->generateDokuSignature(
                 $clientId,
                 $requestId,
@@ -814,49 +871,33 @@ class BookingController extends ApiController
                 $secretKey
             );
 
-            // Make API request
-            $response = Http::withHeaders([
-                'Client-Id' => $clientId,
-                'Request-Id' => $requestId,
-                'Request-Timestamp' => $timestamp,
-                'Signature' => $signature,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ])->post($dokuUrl, $requestData);
+            // Execute API request with timeout and retry
+            $response = Http::timeout(30)
+                ->retry(3, 100)
+                ->withHeaders([
+                    'Client-Id' => $clientId,
+                    'Request-Id' => $requestId,
+                    'Request-Timestamp' => $timestamp,
+                    'Signature' => $signature,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ])
+                ->post($dokuUrl, $requestData);
 
-            $responseData = $response->json();
+            $responseData = $response->json() ?? [];
 
+            // Handle API errors
             if (!$response->successful()) {
                 $errorDetails = [
-                    'http_status' => $response->status(),
+                    'status' => $response->status(),
                     'error' => $responseData['error'] ?? null,
-                    'error_code' => $responseData['error_code'] ?? null,
-                    'message' => $responseData['message'] ?? 'No error message provided',
-                    'validation_messages' => $responseData['validation_messages'] ?? null,
-                    'request_headers' => [
-                        'Client-Id' => $clientId,
-                        'Request-Id' => $requestId,
-                        'Request-Timestamp' => $timestamp,
-                        // 'Signature' => '*****' . substr($signature, -6) // Show only last 6 chars for security
-                    ],
-                    'request_body' => $requestData
+                    'code' => $responseData['error_code'] ?? null,
+                    'message' => $responseData['message'] ?? 'Unknown error',
+                    'request_id' => $requestId
                 ];
-
-                Log::error('Doku API Error', $errorDetails);
                 
-                // Construct detailed error message
-                $errorMessage = 'Payment processing failed. ';
-                if (isset($responseData['error']['message'])) {
-                    $errorMessage .= $responseData['error']['message'] . ' ';
-                }
-                if (isset($responseData['error']['code'])) {
-                    $errorMessage .= "(Code: {$responseData['error']['code']}) ";
-                }
-                if (isset($responseData['validation_messages'])) {
-                    $errorMessage .= 'Validation: ' . json_encode($responseData['validation_messages']);
-                }
-                
-                return ['error' => trim($errorMessage) ?: 'Unknown error occurred while processing payment'];
+                \Log::error('Doku API Request Failed', $errorDetails);
+                throw new \RuntimeException($errorDetails['message'], $errorDetails['code'] ?? 0);
             }
 
             return [
@@ -866,11 +907,17 @@ class BookingController extends ApiController
             ];
 
         } catch (\Exception $e) {
-            Log::error('Doku Payment Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'data' => $data
+            \Log::error('Payment Processing Error', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString()
             ]);
-            return ['error' => $e->getMessage()];
+            
+            throw new \RuntimeException(
+                'Payment processing failed: ' . $e->getMessage(),
+                $e->getCode(),
+                $e
+            );
         }
     }
 }
