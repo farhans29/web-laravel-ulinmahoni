@@ -49,5 +49,9 @@ return [
     'mailtrap' => [
         'api_key' => env('MAIL_PASSWORD'),
     ],
+    'doku' => [
+        'client_id' => env('DOKU_CLIENT_ID'),
+        'secret_key' => env('DOKU_SECRET_KEY'),
+    ],
 
 ];

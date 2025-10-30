@@ -304,26 +304,28 @@ class BookingController extends ApiController
             Payment::create($paymentData);
 
             // Process payment with DOKU
-            // $paymentResponse = $this->processDokuPayment([
-            //     'order_id' => $order_id,
-            //     'transaction_code' => $transaction->transaction_code,
-            //     'amount' => $grandtotalPrice,
-            //     'property_name' => $request->property_name,
-            //     'room_name' => $request->room_name,
-            //     'user_name' => $request->user_name,
-            //     'user_email' => $request->user_email,
-            //     'user_phone' => $request->user_phone_number
-            // ]);
+            $paymentResponse = $this->processDokuPayment([
+                'order_id' => $order_id,
+                'transaction_code' => $transaction->transaction_code,
+                'amount' => $grandtotalPrice,
+                'property_name' => $request->property_name,
+                'room_name' => $request->room_name,
+                'user_name' => $request->user_name,
+                'user_email' => $request->user_email,
+                'user_phone' => $request->user_phone_number
+            ]);
 
-            // if (isset($paymentResponse['error'])) {
-            //     throw new \Exception('Payment processing failed: ' . $paymentResponse['error']);
-            // }
+            if (isset($paymentResponse['error'])) {
+                $errorMessage = 'Doku API Error: ' . json_encode($paymentResponse['error'], JSON_PRETTY_PRINT);
+                \Log::error($errorMessage);
+                throw new \Exception($errorMessage);
+            }
 
-            // // Update transaction with payment URL
-            // $transaction->update([
-            //     'payment_url' => $paymentResponse['payment_url'] ?? null,
-            //     'expired_at' => $paymentResponse['expired_at'] ?? null
-            // ]);
+            // Update transaction with payment URL and expiration
+            $transaction->update([
+                'payment_url' => $paymentResponse['payment_url'] ?? null,
+                'expired_at' => $paymentResponse['expired_at'] ?? null
+            ]);
 
             DB::commit();
 
@@ -723,10 +725,40 @@ class BookingController extends ApiController
     }
     
     /**
+     * Generate Doku API signature
+     *
+     * @param string $clientId
+     * @param string $requestId
+     * @param string $timestamp
+     * @param string $requestTarget
+     * @param string $requestBody
+     * @param string $secretKey
+     * @return string
+     */
+    private function generateDokuSignature($clientId, $requestId, $timestamp, $requestTarget, $requestBody, $secretKey)
+    {
+        // Generate digest
+        $digest = base64_encode(hash('sha256', $requestBody, true));
+        
+        // Prepare signature components
+        $signatureComponents = "Client-Id:{$clientId}\n" .
+                             "Request-Id:{$requestId}\n" .
+                             "Request-Timestamp:{$timestamp}\n" .
+                             "Request-Target:{$requestTarget}\n" .
+                             "Digest:{$digest}";
+        
+        // Generate HMAC-SHA256 signature
+        $signature = base64_encode(hash_hmac('sha256', $signatureComponents, $secretKey, true));
+        
+        return 'HMACSHA256=' . $signature;
+    }
+
+    /**
      * Process payment via Doku API
      *
      * @param array $data
      * @return array
+     * @throws \Exception
      */
     private function processDokuPayment($data)
     {
@@ -740,7 +772,8 @@ class BookingController extends ApiController
                     'invoice_number' => $data['order_id'],
                     'currency' => 'IDR',
                     'session_id' => $data['transaction_code'],
-                    'callback_url' => config('app.url') . '/api/payment/callback',
+                    // 'callback_url' => config('app.url') . '/api/payment/callback',
+                    'callback_url' => "https://doku.com/",
                     'line_items' => [
                         [
                             'name' => $data['property_name'] . ' - ' . $data['room_name'],
@@ -762,19 +795,29 @@ class BookingController extends ApiController
             ];
 
             // Doku API credentials - Replace these with your actual credentials
-            $clientId = 'YOUR_DOKU_CLIENT_ID';
-            $secretKey = 'YOUR_DOKU_SECRET_KEY';
+            $clientId = config(('services.doku.client_id'));
+            $secretKey = config(('services.doku.secret_key'));
 
-            // Generate timestamp
-            $timestamp = gmdate('Y-m-d\\TH:i:s\\Z');
-            
+            // Generate request values
+            $requestId = (string) Str::uuid();
+            $timestamp = gmdate('Y-m-d\TH:i:s\Z');
+            $requestTarget = '/checkout/v1/payment';
+            $requestBody = json_encode($requestData);
+
             // Generate signature
-            $signature = hash('sha256', $clientId . '|' . $timestamp . '|' . $secretKey);
+            $signature = $this->generateDokuSignature(
+                $clientId,
+                $requestId,
+                $timestamp,
+                $requestTarget,
+                $requestBody,
+                $secretKey
+            );
 
             // Make API request
             $response = Http::withHeaders([
                 'Client-Id' => $clientId,
-                'Request-Id' => (string) Str::uuid(),
+                'Request-Id' => $requestId,
                 'Request-Timestamp' => $timestamp,
                 'Signature' => $signature,
                 'Content-Type' => 'application/json',
@@ -784,12 +827,36 @@ class BookingController extends ApiController
             $responseData = $response->json();
 
             if (!$response->successful()) {
-                Log::error('Doku API Error', [
-                    'status' => $response->status(),
-                    'response' => $responseData,
-                    'request' => $requestData
-                ]);
-                return ['error' => $responseData['message'] ?? 'Payment processing failed'];
+                $errorDetails = [
+                    'http_status' => $response->status(),
+                    'error' => $responseData['error'] ?? null,
+                    'error_code' => $responseData['error_code'] ?? null,
+                    'message' => $responseData['message'] ?? 'No error message provided',
+                    'validation_messages' => $responseData['validation_messages'] ?? null,
+                    'request_headers' => [
+                        'Client-Id' => $clientId,
+                        'Request-Id' => $requestId,
+                        'Request-Timestamp' => $timestamp,
+                        // 'Signature' => '*****' . substr($signature, -6) // Show only last 6 chars for security
+                    ],
+                    'request_body' => $requestData
+                ];
+
+                Log::error('Doku API Error', $errorDetails);
+                
+                // Construct detailed error message
+                $errorMessage = 'Payment processing failed. ';
+                if (isset($responseData['error']['message'])) {
+                    $errorMessage .= $responseData['error']['message'] . ' ';
+                }
+                if (isset($responseData['error']['code'])) {
+                    $errorMessage .= "(Code: {$responseData['error']['code']}) ";
+                }
+                if (isset($responseData['validation_messages'])) {
+                    $errorMessage .= 'Validation: ' . json_encode($responseData['validation_messages']);
+                }
+                
+                return ['error' => trim($errorMessage) ?: 'Unknown error occurred while processing payment'];
             }
 
             return [
@@ -800,7 +867,8 @@ class BookingController extends ApiController
 
         } catch (\Exception $e) {
             Log::error('Doku Payment Error: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'data' => $data
             ]);
             return ['error' => $e->getMessage()];
         }
