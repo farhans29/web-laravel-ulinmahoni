@@ -90,6 +90,10 @@ Route::get('storage/{path}', function ($path) {
 Route::get('/auth/google', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToGoogle'])->name('login.google');
 Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleGoogleCallback']);
 
+// Apple OAuth Routes
+Route::get('/auth/apple', [\App\Http\Controllers\Auth\SocialAuthController::class, 'redirectToApple'])->name('login.apple');
+Route::post('/auth/apple/callback', [\App\Http\Controllers\Auth\SocialAuthController::class, 'handleAppleCallback']);
+
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
