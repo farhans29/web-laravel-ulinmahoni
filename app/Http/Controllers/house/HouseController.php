@@ -267,7 +267,7 @@ class HouseController extends Controller {
      */
     protected function getPropertyRooms($propertyId)
     {
-        $rooms = Room::where('property_id', $propertyId)->get();
+        $rooms = Room::where('property_id', $propertyId)->where('status', 1)->get();
             
         return $rooms->map(function($room) {
             // Get all room images using the Room model's accessor

@@ -485,11 +485,13 @@
                                             </ul>
                                         </div>
 
-                                        <div class="flex items-center justify-between mt-4">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $room['status'] === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $room['status'] === 1 ? 'Tersedia' : 'Tidak Tersedia' }}
-                                            </span>
-                                        </div>
+                                        @if($room['status'] === 1)
+                                            <div class="flex items-center justify-between mt-4">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Tersedia
+                                                </span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 </a>
