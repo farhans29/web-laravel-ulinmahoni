@@ -78,14 +78,39 @@
 
             <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
                 @csrf
+                <input type="hidden" id="name" name="name" value="{{ old('name') }}">
                 <div class="rounded-md shadow-sm space-y-4">
-                    <div>
-                        <label for="name" class="sr-only">{{ __('Full Name') }}</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-user text-gray-400"></i>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="first_name" class="sr-only">{{ __('First Name') }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <input 
+                                    id="first_name" 
+                                    name="first_name" 
+                                    type="text" 
+                                    required 
+                                    class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
+                                    placeholder="Nama Depan" 
+                                    value="{{ old('first_name') }}" />
                             </div>
-                            <input id="name" name="name" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Nama Lengkap" :value="old('name')" />
+                        </div>
+                        <div>
+                            <label for="last_name" class="sr-only">{{ __('Last Name') }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <input 
+                                    id="last_name" 
+                                    name="last_name" 
+                                    type="text" 
+                                    class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
+                                    placeholder="Belakang (Opsional)" 
+                                    value="{{ old('last_name') }}" />
+                            </div>
                         </div>
                     </div>
 
@@ -185,6 +210,23 @@
                 // Show play button if autoplay is prevented
                 video.controls = true;
             });
+
+            // Handle form submission
+            const form = document.querySelector('form[action="{{ route('register') }}"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const firstName = document.getElementById('first_name').value.trim();
+                    const lastNameInput = document.getElementById('last_name');
+                    
+                    // If last name is empty, copy first name to last name
+                    if (lastNameInput.value.trim() === '') {
+                        lastNameInput.value = firstName;
+                    }
+                    
+                    // Update the hidden name field with the first name
+                    document.getElementById('name').value = firstName;
+                });
+            }
         });
     </script>
 </body>
