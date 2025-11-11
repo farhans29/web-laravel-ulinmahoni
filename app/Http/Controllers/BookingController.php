@@ -534,12 +534,22 @@ class BookingController extends Controller
 
                 DB::commit();
 
+                // return response()->json([
+                //     'success' => true,
+                //     'message' => 'Booking created successfully',
+                //     'redirect_url' => $paymentResponse['payment_url'] ?? route('payment.show', ['booking' => $transaction->order_id]),
+                //     'payment_data' => $paymentResponse
+                // ]);
                 return response()->json([
                     'success' => true,
                     'message' => 'Booking created successfully',
-                    'redirect_url' => $paymentResponse['payment_url'] ?? route('payment.show', ['booking' => $transaction->order_id]),
+                    'payment_options' => [
+                        'doku' => $paymentResponse['payment_url'] ?? null,
+                        'other' => route('payment.show', ['booking' => $transaction->order_id]),
+                    ],
                     'payment_data' => $paymentResponse
                 ]);
+
 
             } catch (\Exception $e) {
                 DB::rollBack();

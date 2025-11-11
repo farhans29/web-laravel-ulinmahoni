@@ -711,30 +711,84 @@
                         throw new Error('Server returned an invalid response. Please try again.');
                     }
                     
-                    if (response.ok && data.redirect_url) {
-                        // Show loading state or message
-                        const loadingMessage = document.createElement('div');
-                        loadingMessage.textContent = 'Preparing your payment...';
-                        loadingMessage.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; padding: 15px 25px; border-radius: 4px; z-index: 1000;';
-                        document.body.appendChild(loadingMessage);
-
-                        // Wait for 1.5 seconds before opening in new tab
-                        setTimeout(() => {
-                            // Open in new tab
-                            const newWindow = window.open('', '_blank');
-                            newWindow.location.href = data.redirect_url;
-                            
-                            // Update loading message
-                            loadingMessage.textContent = 'Payment page opened in a new tab. If not, please check your popup blocker.';
-                            loadingMessage.style.background = '#2196F3';
-                            
-                            // Auto-close message after 5 seconds
-                            setTimeout(() => {
-                                loadingMessage.style.transition = 'opacity 0.5s';
-                                loadingMessage.style.opacity = '0';
-                                setTimeout(() => loadingMessage.remove(), 500);
-                            }, 5000);
-                        }, 1500);
+                    if (response.ok && data.payment_options) {
+                        // Create modal overlay
+                        const modalOverlay = document.createElement('div');
+                        modalOverlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
+                        
+                        // Create modal content
+                        const modalContent = document.createElement('div');
+                        modalContent.style.cssText = 'background: white; border-radius: 8px; padding: 24px; width: 90%; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
+                        
+                        // Add title
+                        const title = document.createElement('h3');
+                        title.textContent = 'Pilih Metode Pembayaran';
+                        title.style.cssText = 'font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #1a202c;';
+                        modalContent.appendChild(title);
+                        
+                        // Create payment options container
+                        const optionsContainer = document.createElement('div');
+                        optionsContainer.className = 'space-y-3';
+                        
+                        // Add DOKU payment option if available
+                        if (data.payment_options.doku) {
+                            const dokuOption = document.createElement('button');
+                            dokuOption.innerHTML = `
+                                <div class="flex items-center justify-between p-4 border rounded-lg hover:border-teal-500 transition-colors">
+                                    <div class="flex items-center">
+                                        <img src="https://cdn.prod.website-files.com/674ab654de930b2731566389c1/6756a9f7ba44cad5543f87e2_doku-logo-red.svg" alt="DOKU" class="h-6 mr-3">
+                                        <span>Bayar dengan DOKU</span>
+                                    </div>
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Direkomendasikan</span>
+                                </div>
+                            `;
+                            dokuOption.className = 'w-full text-left';
+                            dokuOption.addEventListener('click', () => {
+                                window.location.href = data.payment_options.doku;
+                            });
+                            optionsContainer.appendChild(dokuOption);
+                        }
+                        
+                        // Add other payment option if available
+                        if (data.payment_options.other) {
+                            const otherOption = document.createElement('button');
+                            otherOption.innerHTML = `
+                                <div class="flex items-center p-4 border rounded-lg hover:border-teal-500 transition-colors">
+                                    <div class="flex items-center">
+                                        <svg class="h-6 w-6 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                        </svg>
+                                        <span>Metode Pembayaran Lainnya</span>
+                                    </div>
+                                </div>
+                            `;
+                            otherOption.className = 'w-full text-left';
+                            otherOption.addEventListener('click', () => {
+                                window.location.href = data.payment_options.other;
+                            });
+                            optionsContainer.appendChild(otherOption);
+                        }
+                        
+                        // Close button
+                        const closeButton = document.createElement('button');
+                        closeButton.textContent = 'Batal';
+                        closeButton.className = 'mt-4 w-full py-2 px-4 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500';
+                        closeButton.addEventListener('click', () => {
+                            document.body.removeChild(modalOverlay);
+                        });
+                        
+                        // Assemble modal
+                        modalContent.appendChild(optionsContainer);
+                        modalContent.appendChild(closeButton);
+                        modalOverlay.appendChild(modalContent);
+                        document.body.appendChild(modalOverlay);
+                        
+                        // Close modal when clicking outside
+                        modalOverlay.addEventListener('click', (e) => {
+                            if (e.target === modalOverlay) {
+                                document.body.removeChild(modalOverlay);
+                            }
+                        });
                         
                         return;
                     }
