@@ -431,3 +431,11 @@ Route::middleware(['auth:sanctum', 'verified', 'admin'])->group(function () {
 // Route::get('/inventory/getdata', [SearchProductController::class, 'getData'])->name('search-product.getdata');
 // Route::get('/inventory/getdetail/{code}', [SearchProductController::class, 'getDetail'])->name('search-product.getdetail');
 // Route::get('/coming-soon', [HomeController::class, 'comingSoon'])->name('coming-soon');
+
+// Privacy Policy
+Route::get('/privacy-policy', function () {
+    return view('pages.privacy-policy.privacy-policy');
+})->name('privacy-policy');
+Route::get('/terms-of-services', function () {
+    return view('pages.terms-of-services.terms-of-services');
+})->name('terms-of-services');

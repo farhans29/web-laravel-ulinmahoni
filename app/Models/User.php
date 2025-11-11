@@ -36,11 +36,11 @@ class User extends Authenticatable implements MustVerifyEmail
         }
         
         // Check if email is verified
-        if (empty($this->email_verified_at)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'email' => 'Please verify your email address before logging in. Check your email for the verification link.',
-            ]);
-        }
+        // if (empty($this->email_verified_at)) {
+        //     throw \Illuminate\Validation\ValidationException::withMessages([
+        //         'email' => 'Please verify your email address before logging in. Check your email for the verification link.',
+        //     ]);
+        // }
         
         return $this->password;
     }
