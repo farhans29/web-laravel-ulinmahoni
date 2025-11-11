@@ -59,7 +59,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'status',
         'is_admin',
-        'profile_photo_path'
+        'profile_photo_path',
+        'is_google',
+        'is_apple',
     ];
 
     /**
