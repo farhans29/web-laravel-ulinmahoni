@@ -143,6 +143,8 @@ class AuthController extends Controller
                         'status' => $user->status,
                         'is_admin' => $user->is_admin,
                         'profile_photo_url' => $user->profile_photo_url,
+                        'profile_photo_path' => $user->profile_photo_path,
+                        'email_verified_at' => $user->email_verified_at,
                     ],
                     'token' => $token
                 ]
