@@ -12,33 +12,41 @@
 
         <!-- Swiper container -->
         <div class="swiper promo-swiper">
-            <div class="swiper-wrapper mb-8">
-                @foreach ($promos as $promo)
-                <div class="swiper-slide">
-                    <a href="/promo/{{ $promo['id'] }}" class="block">
-                        <div class="bg-white rounded-lg overflow-hidden shadow-md">
-                            @if($promo['image'])
-                                <img src="data:image/png;base64,{{ $promo['image'] }}" 
-                                         alt="{{ $promo['title'] }}" 
-                                     class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105">
-                            @else
-                                <div class="bg-gray-100 w-full h-48 flex items-center justify-center">
-                                    <i class="fas fa-image text-4xl text-gray-400"></i>
-                                    <span class="ml-2 text-gray-500">No Image</span>
+            @if(count($promos) > 0)
+                <div class="swiper-wrapper mb-8">
+                    @foreach ($promos as $promo)
+                    <div class="swiper-slide">
+                        <a href="/promo/{{ $promo['id'] }}" class="block">
+                            <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                                @if($promo['image'])
+                                    <img src="data:image/png;base64,{{ $promo['image'] }}" 
+                                             alt="{{ $promo['title'] }}" 
+                                         class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105">
+                                @else
+                                    <div class="bg-gray-100 w-full h-48 flex items-center justify-center">
+                                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                                        <span class="ml-2 text-gray-500">No Image</span>
+                                    </div>
+                                @endif
+                                <div class="p-4">
+                                    <div class="flex items-center mb-2">
+                                        <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">{{ $promo['badge'] }}</span>
+                                    </div>
+                                    <h3 class="font-medium text-gray-800 mb-1">{{ $promo['title'] }}</h3>
+                                    <p class="text-gray-600 text-sm">{{ $promo['description'] }}</p>
                                 </div>
-                            @endif
-                            <div class="p-4">
-                                <div class="flex items-center mb-2">
-                                    <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">{{ $promo['badge'] }}</span>
-                                </div>
-                                <h3 class="font-medium text-gray-800 mb-1">{{ $promo['title'] }}</h3>
-                                <p class="text-gray-600 text-sm">{{ $promo['description'] }}</p>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
+                    @endforeach
                 </div>
-                @endforeach
-            </div>
+            @else
+                <div class="text-center py-12">
+                    <i class="fas fa-tag text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-600">Tidak ada promo yang tersedia saat ini</p>
+                    <p class="text-sm text-gray-500 mt-2">Silakan cek kembali nanti untuk penawaran terbaru</p>
+                </div>
+            @endif
 
             <!-- Add Navigation -->
             <div class="swiper-button-next"></div>
