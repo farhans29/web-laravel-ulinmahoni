@@ -25,7 +25,7 @@ class AuthController extends Controller
             'last_name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone_number' => ['required', 'string', 'max:20', 'unique:users'],
+            'phone_number' => ['nullable', 'string', 'max:20', 'unique:users'],
             'password' => ['required', 'string', new Password],
         ]);
 
@@ -44,7 +44,7 @@ class AuthController extends Controller
                 'name' => $request->username,
                 'username' => $request->username,
                 'email' => $request->email,
-                'phone_number' => $request->phone_number,
+                'phone_number' => $request->phone_number ?? null,
                 'password' => Hash::make($request->password),
                 'status' => 1,
                 'is_admin' => 0
