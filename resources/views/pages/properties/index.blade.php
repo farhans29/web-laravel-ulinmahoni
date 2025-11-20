@@ -152,7 +152,7 @@
                 @foreach($properties as $property)
                     @php
                         $route = match($property->tags) {
-                            'House' => route('houses.show', $property->idrec),
+                            'Kos' => route('houses.show', $property->idrec),
                             'Apartment' => route('apartments.show', $property->idrec),
                             'Villa' => route('villas.show', $property->idrec),
                             'Hotel' => route('hotels.show', $property->idrec),
