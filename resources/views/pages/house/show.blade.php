@@ -140,10 +140,15 @@
                 <!-- Main Image with overlay badges -->
                 <div class="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden max-w-xl w-full mx-auto">
                     @if($primaryImage)
-                        <img src="data:image/jpeg;base64,{{ $primaryImage }}"
+                        {{-- <img src="data:image/jpeg;base64,{{ $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
                             @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
+                            onerror="this.onerror=null;
+                            this.src='{{ asset('images/placeholder-property.jpg') }}';"> --}}
+                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
+                            alt="{{ $house['name'] ?? 'Property Image' }}"
+                            class="w-full h-full object-cover"
                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
@@ -172,17 +177,23 @@
                     <div class="flex space-x-2 overflow-x-auto pb-2 mt-3">
                         <!-- Main image as first thumb -->
                         <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-                            <img src="data:image/jpeg;base64,{{ $primaryImage }}"
+                            {{-- <img src="data:image/jpeg;base64,{{ $primaryImage }}"
                                 alt="{{ $house['name'] ?? 'Property Image' }} - Main"
                                 class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
+                                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"> --}}
+                            <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
+                                alt="{{ $house['name'] ?? 'Property Image' }} - Main"
+                                class="w-full h-full object-cover cursor-pointer hover:opacity-80">
                         </div>
                         @foreach($secondaryImages as $index => $image)
                             <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-                                <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
+                                {{-- <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
                                     alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
                                     class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                    @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'">
+                                    @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"> --}}
+                                <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}"
+                                    alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
+                                    class="w-full h-full object-cover cursor-pointer hover:opacity-80">
                             </div>
                         @endforeach
                     </div>

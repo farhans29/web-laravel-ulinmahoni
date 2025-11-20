@@ -88,7 +88,9 @@ class Property extends Model
                     return [
                         'id' => $image->idrec ?? null,
                         'property_id' => $image->property_id ?? $this->idrec,
-                        'image' => $this->getProcessedImage($image->image ?? null),
+                        // 'image' => $this->getProcessedImage($image->image ?? null),
+                        'image' => $image->image ?? null,
+                        'thumbnail' => $image->image ?? 0,
                         'caption' => $image->caption ?? ''
                     ];
                 } catch (\Exception $e) {
