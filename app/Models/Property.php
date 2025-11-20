@@ -22,6 +22,8 @@ class Property extends Model
         'postal_code',
         'address',
         'location',
+        'latitude',
+        'longitude',
         'distance',
         'price',
         'price_original_daily',
@@ -29,6 +31,9 @@ class Property extends Model
         'price_original_monthly',
         'price_discounted_monthly',
         'features',
+        'general',
+        'security',
+        'amenities',
         'attributes',
         'image',
         'status',
@@ -170,4 +175,84 @@ class Property extends Model
             return null;
         }
     }
+
+    public function getGeneralAttribute($value)
+    {
+        // return ($value);
+        return $this->processRoomFacilityAttribute($value);
+    }
+    
+    public function getSecurityAttribute($value)
+    {
+        return $this->processRoomFacilityAttribute($value);
+        
+    }
+    public function getAmenitiesAttribute($value)
+    {
+        return $this->processRoomFacilityAttribute($value);
+    }
+
+    protected function processRoomFacilityAttribute($value)
+    {
+        // return json_decode($value, true) ?? [];
+       try {
+            // Get the facility IDs from the facility column (JSON array)
+            $generalIds = json_decode($value, true) ?? [];
+            // \Log::info('General IDs: ', $generalIds);
+            if (empty($generalIds) || !is_array($generalIds)) {
+                return [];
+            }
+
+            // Convert to integers for safe database query
+            $generalIds = array_map('intval', $generalIds);
+            // return $generalIds;
+            try {
+                $placeholders = implode(',', array_fill(0, count($generalIds), '?'));
+                
+                $records = \DB::select("
+                    SELECT idrec, facility
+                    FROM m_property_facility
+                    WHERE idrec IN ($placeholders)
+                ", $generalIds);
+                
+                $facilities = [];
+                foreach ($records as $record) {
+                    $facilities[] = $record->facility;
+                }
+                
+                // If we found facilities, return them
+                if (!empty($facilities)) {
+                    return $facilities;
+                }
+            } catch (\Exception $e) {
+                // Fallback to predefined mapping if general table doesn't exist
+            $facilityNames = [
+                '1' => '~',
+                '2' => '~',
+                '3' => '~',
+                '4' => '~',
+                '5' => '~',
+                '6' => 'F',
+                '7' => 'G',
+                '8' => 'H',
+                '9' => 'I',
+                '10' => 'J'
+            ];
+            
+            $facilities = [];
+            foreach ($generalIds as $id) {
+                if (isset($facilityNames[(string)$id])) {
+                    $facilities[] = $facilityNames[(string)$id];
+                }
+            }
+            
+            return $facilities;
+            }
+
+        } catch (\Exception $e) {
+            // \Log::error('Error processing general attribute: ' . $e->getMessage() . ' for property_id: ' . $this->idrec);
+            return [];
+        }
+    }
+    
 } 
