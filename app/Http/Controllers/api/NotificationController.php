@@ -237,6 +237,26 @@ class NotificationController extends ApiController
             // Default to a test user or implement your own user lookup logic
             $user = User::first(); // Or use: User::where('customer_id', $customerNo)->first()
 
+            // Check if transaction exists with order_id
+            $billExists = \App\Models\Transaction::where('order_id', $virtualAccountNo)->exists();
+
+            if (!$billExists) {
+                \Log::warning('DOKU Payment Notification: Bill not found', [
+                    'customerNo' => $customerNo,
+                    'virtualAccountNo' => $virtualAccountNo,
+                    'orderId' => $virtualAccountNo,
+                    'trxId' => $trxId
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Bill not found',
+                    'error_code' => '4042512',
+                    'response_code' => '4042512',
+                    'response_message' => 'Bill not found'
+                ], 404);
+            }
+
             if (!$user) {
                 $user = auth()->user() ?? $this->user;
             }
@@ -313,12 +333,12 @@ class NotificationController extends ApiController
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'DOKU Virtual Account payment notification processed successfully. Payment confirmation has been recorded and notification sent to user.',
+                'message' => 'DOKU Virtual Account payment notification processed successfully',
                 'data' => [
                     'notification_data' => $notificationData,
                     'processed_at' => now()->toISOString(),
-                    'response_code' => '200',
-                    'response_message' => 'Success'
+                    'response_code' => '2002500',
+                    'response_message' => 'Successful'
                 ]
             ], 200);
         

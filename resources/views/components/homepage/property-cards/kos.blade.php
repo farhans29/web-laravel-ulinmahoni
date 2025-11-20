@@ -13,9 +13,10 @@
                                     @endphp
                                     
                                     @if($mainImage)
-                                        <img src="data:image/jpeg;base64,{{ $mainImage }}" 
+                                        {{-- <img src="data:image/jpeg;base64,{{ $mainImage }}" 
                                              alt="{{ $kosan['name'] }}" 
-                                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"> --}}
+                                             <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}" class="w-full h-full object-cover" alt="">
                                         
                                         @if(count($kosan['images'] ?? []) > 1)
                                             <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
