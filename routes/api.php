@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\AuthController;
@@ -145,4 +146,13 @@ Route::prefix('profile')->group(function () {
     Route::put('/{id}', [AuthController::class, 'updateProfile']);
     Route::put('/{id}/update-password', [AuthController::class, 'updatePassword']);
     Route::post('/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);
+});
+
+Route::prefix('notifications')->group(function () {
+    Route::get('/', [NotificationController::class, 'getNotifications']);
+    Route::post('/payment', [NotificationController::class, 'paymentNotifications']);
+    Route::post('/mark-as-read', [NotificationController::class, 'markNotificationsAsRead']);
+});
+Route::prefix('doku')->withoutMiddleware(['api.key'])->middleware('App\Http\Middleware\DokuHeaderMiddleware')->group(function () {
+    Route::post('/transfer-va/payment', [NotificationController::class, 'dokuPaymentNotification']);
 });
