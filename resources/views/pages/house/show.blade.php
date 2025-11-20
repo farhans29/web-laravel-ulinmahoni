@@ -218,9 +218,19 @@
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-3">Fasilitas</h3>
                             <div class="flex flex-wrap gap-2">
-                                @foreach($house['features'] as $feature)
+                                @foreach($house['general'] as $generalFeature)
                                     <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
-                                        {{ $feature }}
+                                        {{ $generalFeature }}
+                                    </span>
+                                @endforeach
+                                @foreach($house['security'] as $securityFeature)
+                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
+                                        {{ $securityFeature }}
+                                    </span>
+                                @endforeach
+                                @foreach($house['amenities'] as $amenityFeature)
+                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
+                                        {{ $amenityFeature }}
                                     </span>
                                 @endforeach
                             </div>
@@ -347,18 +357,22 @@
                                     $lng = $defaultLng;
                                     
                                     // Check if location exists and is in correct format
-                                    if (!empty($house['location']) && str_contains($house['location'], ',')) {
-                                        $coordinates = explode(',', $house['location']);
-                                        if (count($coordinates) >= 2) {
-                                            $parsedLat = trim($coordinates[0]);
-                                            $parsedLng = trim($coordinates[1]);
+                                    // if (!empty($house['location']) && str_contains($house['location'], ',')) {
+                                    //     $coordinates = explode(',', $house['location']);
+                                    //     if (count($coordinates) >= 2) {
+                                    //         $parsedLat = trim($coordinates[0]);
+                                    //         $parsedLng = trim($coordinates[1]);
                                             
-                                            // Validate if coordinates are numeric
-                                            if (is_numeric($parsedLat) && is_numeric($parsedLng)) {
-                                                $lat = (float)$parsedLat;
-                                                $lng = (float)$parsedLng;
-                                            }
-                                        }
+                                    //         // Validate if coordinates are numeric
+                                    //         if (is_numeric($parsedLat) && is_numeric($parsedLng)) {
+                                    //             $lat = (float)$parsedLat;
+                                    //             $lng = (float)$parsedLng;
+                                    //         }
+                                    //     }
+                                    // }
+                                    if(!empty($house['latitude']) && !empty($house['longitude'])) {
+                                        $lat = (float)$house['latitude'];
+                                        $lng = (float)$house['longitude'];
                                     }
                                     
                                     // Set bounding box with padding
@@ -384,14 +398,14 @@
                                 </div>
                             </div>
                             <div class="mt-4">
-                                <h4 class="font-semibold text-gray-900">Address</h4>
+                                <h4 class="font-semibold text-gray-900">Alamat</h4>
                                 <p class="text-gray-600 mt-1">{{ $house['location'] }}</p>
                                 <div class="mt-4 flex items-center text-sm text-gray-500">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {{-- <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
-                                    {{ $house['distance'] }}
+                                    {{ $house['distance'] }} --}}
                                 </div>
                             </div>
                         </div>
@@ -516,7 +530,7 @@
                                 </a>
                             @empty
                                 <div class="col-span-full text-center py-8">
-                                    <p class="text-gray-500">No rooms available for this property at the moment.</p>
+                                    <p class="text-gray-500">Belum ada kamar tersedia saat ini.</p>
                                 </div>
                             @endforelse
                         </div>
@@ -539,31 +553,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             const rooms = @json($house['rooms'] ?? []);
             
-            console.log('=== ROOM IMAGES DEBUG ===');
-            console.log('Total Rooms:', rooms.length);
+            // console.log('=== ROOM IMAGES DEBUG ===');
+            // console.log('Total Rooms:', rooms.length);
             
-            rooms.forEach((room, roomIndex) => {
-                const roomImages = room.images || [];
-                console.group(`Room ${roomIndex + 1}: ${room.name || 'Unnamed Room'}`);
-                console.log('Room ID:', room.id || 'N/A');
-                console.log('Total Images:', roomImages.length);
+            // rooms.forEach((room, roomIndex) => {
+            //     const roomImages = room.images || [];
+            //     console.group(`Room ${roomIndex + 1}: ${room.name || 'Unnamed Room'}`);
+            //     console.log('Room ID:', room.id || 'N/A');
+            //     console.log('Total Images:', roomImages.length);
                 
-                if (roomImages.length > 0) {
-                    console.log('Image Details:');
-                    roomImages.forEach((img, imgIndex) => {
-                        console.group(`Image ${imgIndex + 1}`);
-                        console.log('Has Image Data:', !!img.image ? 'Yes' : 'No');
-                        console.log('Caption:', img.caption || 'No caption');
-                        console.log('Image Preview:', img.image ? img.image.substring(0, 30) + '...' : 'No image data');
-                        console.groupEnd();
-                    });
-                } else {
-                    console.log('No images found for this room');
-                }
+            //     if (roomImages.length > 0) {
+            //         console.log('Image Details:');
+            //         roomImages.forEach((img, imgIndex) => {
+            //             console.group(`Image ${imgIndex + 1}`);
+            //             console.log('Has Image Data:', !!img.image ? 'Yes' : 'No');
+            //             console.log('Caption:', img.caption || 'No caption');
+            //             console.log('Image Preview:', img.image ? img.image.substring(0, 30) + '...' : 'No image data');
+            //             console.groupEnd();
+            //         });
+            //     } else {
+            //         console.log('No images found for this room');
+            //     }
                 
-                console.groupEnd();
-            });
-            console.log('=========================');
+            //     console.groupEnd();
+            // });
+            // console.log('=========================');
         });
     </script>
 
