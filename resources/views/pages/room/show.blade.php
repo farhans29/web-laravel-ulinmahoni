@@ -57,10 +57,14 @@
                             <!-- Main Image -->
                             <div class="absolute inset-0">
                                 @if($mainImage)
-                                    <img src="data:image/jpeg;base64,{{ $mainImage }}" 
+                                    {{-- <img src="data:image/jpeg;base64,{{ $mainImage }}" 
                                         alt="{{ $room['name'] }}" 
                                         class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
-                                        @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $mainImage }}'; modalAlt='{{ $room['name'] }}'">
+                                        @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $mainImage }}'; modalAlt='{{ $room['name'] }}'"> --}}
+                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}" 
+                                        alt="{{ $room['name'] }}" 
+                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
+                                        @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}'; modalAlt='{{ $room['name'] }}'">
                                 @else
                                     <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                         <i class="fas fa-image text-4xl text-gray-400"></i>
@@ -89,10 +93,14 @@
                                 <div class="absolute bottom-4 left-4 right-4 flex space-x-2 overflow-x-auto pb-2">
                                     @foreach($roomImages as $index => $image)
                                         <div class="flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 border-white shadow-md">
-                                            <img src="data:image/jpeg;base64,{{ $image['image'] }}" 
+                                            {{-- <img src="data:image/jpeg;base64,{{ $image['image'] }}" 
                                                 alt="{{ $room['name'] }} - Image {{ $index + 1 }}" 
                                                 class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] }}'; modalAlt='{{ $room['name'] }} - Image {{ $index + 1 }}'">
+                                                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] }}'; modalAlt='{{ $room['name'] }} - Image {{ $index + 1 }}'"> --}}
+                                            <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] }}" 
+                                                alt="{{ $room['name'] }} - Image {{ $index + 1 }}" 
+                                                class="w-full h-full object-cover cursor-pointer hover:opacity-80"
+                                                @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $image['image'] }}'; modalAlt='{{ $room['name'] }} - Image {{ $index + 1 }}'">
                                         </div>
                                     @endforeach
                                 </div>
@@ -304,7 +312,7 @@
                                         <span class="text-gray-900" id="durationDisplay">-</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Service Fees: </span>
+                                        <span class="text-gray-600">Tax (20%): </span>
                                         <span class="text-gray-900" id="serviceFeesDisplay">-</span>
                                     </div>
 
@@ -451,7 +459,8 @@
                 }
                 // Get admin fee value from the hidden input or use the default
                 const adminFee = 0;
-                const serviceFees= 2000;
+                // const serviceFees= 20000;
+                const serviceFees = 0.2 * roomTotal;
                 const grandTotal = roomTotal + serviceFees ;
                 document.getElementById('roomTotal').textContent = formatRupiah(roomTotal);
                 document.getElementById('serviceFeesDisplay').textContent = formatRupiah(serviceFees);
@@ -887,6 +896,12 @@
             if (bookingForm) {
                 bookingForm.addEventListener('submit', handleFormSubmit);
             }
+            // Console log for debugging facility data
+            // let roomFacility = <?php echo json_encode($room['facility'] ?? []); ?>;
+            // console.log('Room facility data:', roomFacility);
+            // console.log('Number of facilities:', <?php echo count($room['facility'] ?? []); ?>);
+            // let roomFullData = <?php echo json_encode($room ?? (object)[]); ?>;
+            // console.log('Room full data:', roomFullData);
         });
     </script>
 </body>

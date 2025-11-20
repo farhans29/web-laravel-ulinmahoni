@@ -93,7 +93,8 @@ class Room extends Model
                     return [
                         'id' => $image->idrec ?? null,
                         'room_id' => $image->room_id ?? $this->idrec,
-                        'image' => $this->getProcessedImage($image->image ?? null),
+                        // 'image' => $this->getProcessedImage($image->image ?? null),
+                        'image' => $image->image ?? null,
                         'caption' => $image->caption ?? ''
                     ];
                 } catch (\Exception $e) {
@@ -108,6 +109,69 @@ class Room extends Model
             return [];
         }
     }
+
+    // public function getFacilitiesAttribute($value)
+    // {
+    //     try {
+    //         // Get the facility IDs from the facility column (JSON array)
+    //         $facilityIds = json_decode($value, true) ?? [];
+            
+    //         if (empty($facilityIds) || !is_array($facilityIds)) {
+    //             return [];
+    //         }
+
+    //         // Convert to integers for safe database query
+    //         $facilityIds = array_map('intval', $facilityIds);
+
+    //         // Try to get facility names from a facilities table if it exists
+    //         try {
+    //             $facilityRecords = \DB::select("
+    //                 SELECT idrec, facility_name
+    //                 FROM m_facilities
+    //                 WHERE idrec IN (" . implode(',', array_fill(0, count($facilityIds), '?')) . ")
+    //             ", $facilityIds);
+                
+    //             $facilities = [];
+    //             foreach ($facilityRecords as $record) {
+    //                 $facilities[] = $record->facility_name;
+    //             }
+                
+    //             // If we found facilities, return them
+    //             if (!empty($facilities)) {
+    //                 return $facilities;
+    //             }
+    //         } catch (\Exception $e) {
+    //             // Fallback to predefined mapping if facility table doesn't exist
+    //         }
+            
+    //         // Fallback mapping for common facility IDs
+    //         $facilityNames = [
+    //             '1' => 'AC',
+    //             '2' => 'Wi-Fi',
+    //             '3' => 'Parkir',
+    //             '4' => 'TV',
+    //             '5' => 'Kunci Digital',
+    //             '6' => 'Kolam Renang',
+    //             '7' => 'Gym',
+    //             '8' => 'Dapur',
+    //             '9' => 'Kulkas',
+    //             '10' => 'Mesin Cuci'
+    //         ];
+            
+    //         $facilities = [];
+    //         foreach ($facilityIds as $id) {
+    //             if (isset($facilityNames[(string)$id])) {
+    //                 $facilities[] = $facilityNames[(string)$id];
+    //             }
+    //         }
+            
+    //         return $facilities;
+            
+    //     } catch (\Exception $e) {
+    //         \Log::error('Error processing room facilities: ' . $e->getMessage() . ' for room_id: ' . $this->idrec);
+    //         return [];
+    //     }
+    // }
 
     /**
      * Process the image data to ensure it's properly base64 encoded.
@@ -144,7 +208,68 @@ class Room extends Model
      */
     public function getFacilityAttribute($value)
     {
-        return json_decode($value, true) ?? [];
+        // return json_decode($value, true) ?? [];
+        try {
+            // Get the facility IDs from the facility column (JSON array)
+            $facilityIds = json_decode($value, true) ?? [];
+            // \Log::info('Facility IDs: ', $facilityIds);
+            if (empty($facilityIds) || !is_array($facilityIds)) {
+                return [];
+            }
+
+            // Convert to integers for safe database query
+            $facilityIds = array_map('intval', $facilityIds);
+
+            // Try to get facility names from a facilities table if it exists
+            try {
+                $placeholders = implode(',', array_fill(0, count($facilityIds), '?'));
+                
+                $facilityRecords = \DB::select("
+                    SELECT idrec, facility
+                    FROM m_room_facility
+                    WHERE idrec IN ($placeholders)
+                ", $facilityIds);
+                
+                $facilities = [];
+                foreach ($facilityRecords as $record) {
+                    $facilities[] = $record->facility;
+                }
+                
+                // If we found facilities, return them
+                if (!empty($facilities)) {
+                    return $facilities;
+                }
+            } catch (\Exception $e) {
+                // Fallback to predefined mapping if facility table doesn't exist
+            }
+            
+            // Fallback mapping for common facility IDs
+            $facilityNames = [
+                '1' => '~ AC',
+                '2' => '~ Wi-Fi',
+                '3' => '~ TV Kabel',
+                '4' => '~ Kamar Mandi',
+                '5' => '~ Meja & Kursi',
+                '6' => 'F',
+                '7' => 'G',
+                '8' => 'H',
+                '9' => 'I',
+                '10' => 'J'
+            ];
+            
+            $facilities = [];
+            foreach ($facilityIds as $id) {
+                if (isset($facilityNames[(string)$id])) {
+                    $facilities[] = $facilityNames[(string)$id];
+                }
+            }
+            
+            return $facilities;
+            
+        } catch (\Exception $e) {
+            \Log::error('Error processing room facilities: ' . $e->getMessage() . ' for room_id: ' . $this->idrec);
+            return [];
+        }
     }
 
     /**
