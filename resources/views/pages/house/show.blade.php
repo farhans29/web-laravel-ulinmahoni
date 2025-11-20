@@ -149,6 +149,7 @@
                         <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
                             class="w-full h-full object-cover"
+                            @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
@@ -183,6 +184,7 @@
                                 @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"> --}}
                             <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
                                 alt="{{ $house['name'] ?? 'Property Image' }} - Main"
+                                @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                                 class="w-full h-full object-cover cursor-pointer hover:opacity-80">
                         </div>
                         @foreach($secondaryImages as $index => $image)
@@ -193,6 +195,7 @@
                                     @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"> --}}
                                 <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}"
                                     alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
+                                    @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"
                                     class="w-full h-full object-cover cursor-pointer hover:opacity-80">
                             </div>
                         @endforeach
@@ -420,7 +423,12 @@
                                             @endphp
                                             
                                             @if(!empty($roomMainImage) && is_string($roomMainImage))
-                                                <img src="data:image/jpeg;base64,{{ $roomMainImage }}" 
+                                                {{-- <img src="data:image/jpeg;base64,{{ $roomMainImage }}" 
+                                                    alt="{{ $room['name'] ?? 'Room image' }}" 
+                                                    class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
+                                                    onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }"> --}}
+                                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $roomMainImage }}" 
                                                     alt="{{ $room['name'] ?? 'Room image' }}" 
                                                     class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                                     onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
