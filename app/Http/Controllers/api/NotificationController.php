@@ -313,12 +313,14 @@ class NotificationController extends ApiController
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'DOKU Virtual Account payment notification processed successfully',
+                'message' => 'DOKU Virtual Account payment notification processed successfully. Payment confirmation has been recorded and notification sent to user.',
                 'data' => [
                     'notification_data' => $notificationData,
-                    'processed_at' => now()->toISOString()
+                    'processed_at' => now()->toISOString(),
+                    'response_code' => '200',
+                    'response_message' => 'Success'
                 ]
-            ], 201);
+            ], 200);
         
 
         } catch (\Exception $e) {
