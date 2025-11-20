@@ -217,7 +217,7 @@
                             <button onclick="scrollToRooms()" class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center">
                                 <i class="fas fa-calendar-check mr-2"></i> Pesan Sekarang
                             </button>
-                            <a href="https://wa.me/6289699670912/" target="_blank" class="flex-1 border border-teal-600 text-teal-600 py-3 px-6 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center">
+                            <a href="https://wa.me/6281188099700/" target="_blank" class="flex-1 border border-teal-600 text-teal-600 py-3 px-6 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center">
                                 <i class="fab fa-whatsapp mr-2"></i> Hubungi untuk Info Lebih Lanjut
                             </a>
                         </div>
