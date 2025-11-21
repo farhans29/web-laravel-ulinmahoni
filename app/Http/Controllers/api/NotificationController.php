@@ -351,7 +351,99 @@ class NotificationController extends ApiController
             ], 500);
         }
     }
+    public function dokuQRPaymentNotification(Request $request)
+    {
+        try {
+            // New expected body format
+            // {
+            //   "originalReferenceNo": "INV-20251119112706",
+            //   "originalPartnerReferenceNo": "INV-20251119112706",
+            //   "merchantId": "12345",
+            //   "serviceCode": "12"
+            // }
 
+            // Headers have been validated by DokuHeaderMiddleware
+            // Get headers that were validated by middleware
+            $headers = [
+                'x-timestamp' => $request->header('X-TIMESTAMP'),
+                'x-signature' => $request->header('X-SIGNATURE'),
+                'x-partner-id' => $request->header('X-PARTNER-ID'),
+                'x-external-id' => $request->header('X-EXTERNAL-ID'),
+                'channel-id' => $request->header('CHANNEL-ID'),
+            ];
+
+            // Log DOKU notification for debugging
+            \Log::info('DOKU QR Payment Notification Received', [
+                'headers' => $headers,
+                'body' => $request->all(),
+                'timestamp' => now()->toISOString()
+            ]);
+
+            // Validate new request format
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'originalReferenceNo' => 'required|string|max:255',
+                'originalPartnerReferenceNo' => 'required|string|max:255',
+                'merchantId' => 'required|string|max:255',
+                'serviceCode' => 'required|string|max:10',
+            ]);
+
+            if ($validator->fails()) {
+                \Log::warning('DOKU QR Payment Notification Validation Failed', [
+                    'errors' => $validator->errors()->toArray(),
+                    'body' => $request->all()
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            // Extract data from new format
+            $originalReferenceNo = $request->originalReferenceNo;
+            $originalPartnerReferenceNo = $request->originalPartnerReferenceNo;
+            $merchantId = $request->merchantId;
+            $serviceCode = $request->serviceCode;
+
+            // Log processing details
+            \Log::info('DOKU QR Payment Notification Processed Successfully', [
+                'originalReferenceNo' => $originalReferenceNo,
+                'originalPartnerReferenceNo' => $originalPartnerReferenceNo,
+                'merchantId' => $merchantId,
+                'serviceCode' => $serviceCode,
+                'processed_at' => now()->toISOString()
+            ]);
+
+            // Return the expected response format
+            return response()->json([
+                'responseCode' => '2005100',
+                'responseMessage' => 'Request has been processed successfully',
+                'originalReferenceNo' => $originalReferenceNo,
+                'originalPartnerReferenceNo' => $originalPartnerReferenceNo,
+                'serviceCode' => $serviceCode,
+                'latestTransactionStatus' => '03',
+                'transactionStatusDesc' => 'Pending',
+                'amount' => [
+                    'value' => 1.00,
+                    'currency' => 'IDR'
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU QR Payment Notification Processing Error', [
+                'error' => $e->getMessage(),
+                'body' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error processing DOKU QR payment notification',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * Get virtual account payment message
      *

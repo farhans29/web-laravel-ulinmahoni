@@ -155,4 +155,5 @@ Route::prefix('notifications')->group(function () {
 });
 Route::prefix('doku')->withoutMiddleware(['api.key'])->middleware('App\Http\Middleware\DokuHeaderMiddleware')->group(function () {
     Route::post('/transfer-va/payment', [NotificationController::class, 'dokuPaymentNotification']);
+    Route::post('/qr-mpm/payment', [NotificationController::class, 'dokuQRPaymentNotification']); 
 });
