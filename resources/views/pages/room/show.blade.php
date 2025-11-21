@@ -477,35 +477,35 @@
                     console.log('CSRF Token retrieved:', csrfToken ? 'Present' : 'Missing');
                     
                     const apiUrl = '{{ route("api.booking.check-availability") }}';
-                    console.log('API URL:', apiUrl);
                     
-                    const requestBody = JSON.stringify({
-                        property_id: propertyId,
-                        room_id: roomId,
-                        check_in: checkInDate,
-                        check_out: checkOutDate
-                    });
-                    console.log('Request body:', requestBody);
                     
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: requestBody
-                    });
+                    // const requestBody = JSON.stringify({
+                    //     property_id: propertyId,
+                    //     room_id: roomId,
+                    //     check_in: checkInDate,
+                    //     check_out: checkOutDate
+                    // });
+                    // console.log('Request body:', requestBody);
                     
-                    console.log('Response received:', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        headers: Object.fromEntries(response.headers.entries())
-                    });
+                    // const response = await fetch(apiUrl, {
+                    //     method: 'POST',
+                    //     headers: {
+                    //         'X-CSRF-TOKEN': csrfToken,
+                    //         'Accept': 'application/json',
+                    //         'Content-Type': 'application/json',
+                    //         'X-Requested-With': 'XMLHttpRequest'
+                    //     },
+                    //     body: requestBody
+                    // });
+                    
+                    // console.log('Response received:', {
+                    //     status: response.status,
+                    //     statusText: response.statusText,
+                    //     headers: Object.fromEntries(response.headers.entries())
+                    // });
                     
                     const data = await response.json();
-                    console.log('Response data:', data);
+                    // console.log('Response data:', data);
                     
                     if (!response.ok || data.status === 'error') {
                         const errorMessage = data.message || 'Gagal memeriksa ketersediaan';
@@ -526,20 +526,20 @@
                         const isAvailable = data.data.is_available;
                         const conflictingBookings = data.data.conflicting_bookings || [];
                         
-                        console.log('Availability result:', {
-                            isAvailable: isAvailable,
-                            conflictingBookings: conflictingBookings
-                        });
+                        // console.log('Availability result:', {
+                        //     isAvailable: isAvailable,
+                        //     conflictingBookings: conflictingBookings
+                        // });
                         
                         if (isAvailable) {
-                            console.log('✓ Room is available - updating UI');
+                            console.log('✓ Room is available');
                             showAvailabilityStatus('available', '✓ Kamar tersedia');
                             updateSubmitButton(true);
                         } else {
-                            console.log('✗ Room is unavailable - updating UI');
+                            console.log('✗ Room is unavailable');
                             showAvailabilityStatus('unavailable', '✗ Kamar tidak tersedia untuk tanggal ini');
                             if (conflictingBookings.length > 0) {
-                                console.log('Found conflicting bookings:', conflictingBookings);
+                                // console.log('Found conflicting bookings:', conflictingBookings);
                                 showAvailabilityStatus('unavailable', `✗ Tidak tersedia - ${conflictingBookings.length} pemesanan konflik`);
                             }
                             updateSubmitButton(false, 'Kamar tidak tersedia');
