@@ -238,22 +238,21 @@ class NotificationController extends ApiController
             $user = User::first(); // Or use: User::where('customer_id', $customerNo)->first()
 
             // Check if transaction exists with order_id
-            $billExists = \App\Models\Transaction::where('order_id', $virtualAccountNo)->exists();
+            $billExists = \App\Models\Transaction::where('order_id', $trxId)->exists();
 
             if (!$billExists) {
-                \Log::warning('DOKU Payment Notification: Bill not found', [
-                    'customerNo' => $customerNo,
-                    'virtualAccountNo' => $virtualAccountNo,
-                    'orderId' => $virtualAccountNo,
-                    'trxId' => $trxId
-                ]);
+                // \Log::warning('DOKU Payment Notification: Bill not found', [
+                //     'customerNo' => $customerNo,
+                //     'virtualAccountNo' => $virtualAccountNo,
+                //     'orderId' => $virtualAccountNo,
+                //     'trxId' => $trxId
+                // ]);
 
                 return response()->json([
+                    'responseCode' => '4042512',
+                    'responseMessage' => 'Bill not found',
+                    'message' => "Bill {$trxId} not found",
                     'status' => 'error',
-                    'message' => 'Bill not found',
-                    'error_code' => '4042512',
-                    'response_code' => '4042512',
-                    'response_message' => 'Bill not found'
                 ], 404);
             }
 
@@ -275,7 +274,7 @@ class NotificationController extends ApiController
             }
 
             $notificationData = [
-                'title' => 'DOKU Virtual Account Payment',
+                'title' => 'DOKU Transfer VA Payment',
                 'message' => $this->getVirtualAccountPaymentMessage($paidValue, $currency, $virtualAccountName, $trxId),
                 'type' => 'payment',
                 'category' => 'virtual_account',
@@ -293,9 +292,6 @@ class NotificationController extends ApiController
                     'email' => $email,
                     'phone' => $phone,
                 ],
-                'timestamp' => $headers['x-timestamp'],
-                'external_id' => $headers['x-external-id'],
-                'channel_id' => $headers['channel-id'],
             ];
 
             // Create notification in database
@@ -335,10 +331,10 @@ class NotificationController extends ApiController
                 'status' => 'success',
                 'message' => 'DOKU Virtual Account payment notification processed successfully',
                 'data' => [
+                    'responseCode' => '2002500',
+                    'responseMessage' => 'Successful',
                     'notification_data' => $notificationData,
                     'processed_at' => now()->toISOString(),
-                    'response_code' => '2002500',
-                    'response_message' => 'Successful'
                 ]
             ], 200);
         
