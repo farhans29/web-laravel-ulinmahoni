@@ -430,28 +430,28 @@
             
             // Clear previous timeout to avoid multiple rapid calls
             if (availabilityCheckTimeout) {
-                console.log('Clearing previous timeout');
+                // console.log('Clearing previous timeout');
                 clearTimeout(availabilityCheckTimeout);
             }
             
             // Check availability for both daily and monthly rentals (with dates)
-            console.log('Checking if should proceed with availability check');
+            // console.log('Checking if should proceed with availability check');
             if (rentType === 'monthly') {
                 if (!checkInDate) {
-                    console.log('Skipping - missing check-in date for monthly rental');
+                    // console.log('Skipping - missing check-in date for monthly rental');
                     resetAvailabilityStatus();
                     return;
                 }
-                console.log('Proceeding with monthly rental availability check');
+                // console.log('Proceeding with monthly rental availability check');
             } else if (rentType === 'daily') {
                 if (!checkInDate || !checkOutDate) {
-                    console.log('Skipping - missing dates for daily rental');
+                    // console.log('Skipping - missing dates for daily rental');
                     resetAvailabilityStatus();
                     return;
                 }
-                console.log('Proceeding with daily rental availability check');
+                // console.log('Proceeding with daily rental availability check');
             } else {
-                console.log('Skipping - unknown rent type:', rentType);
+                // console.log('Skipping - unknown rent type:', rentType);
                 resetAvailabilityStatus();
                 return;
             }
@@ -464,39 +464,39 @@
                 updateSubmitButton(false, 'Tanggal tidak valid');
                 return;
             }
-            console.log('Date validation passed');
+            // console.log('Date validation passed');
             
             // Show loading state
-            console.log('Setting loading state');
+            // console.log('Setting loading state');
             showAvailabilityStatus('loading', 'Memeriksa ketersediaan...');
             
             availabilityCheckTimeout = setTimeout(async () => {
-                console.log('Starting async availability check');
+                // console.log('Starting async availability check');
                 try {
                     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    console.log('CSRF Token retrieved:', csrfToken ? 'Present' : 'Missing');
+                    // console.log('CSRF Token retrieved:', csrfToken ? 'Present' : 'Missing');
                     
                     const apiUrl = '{{ route("api.booking.check-availability") }}';
                     
                     
-                    // const requestBody = JSON.stringify({
-                    //     property_id: propertyId,
-                    //     room_id: roomId,
-                    //     check_in: checkInDate,
-                    //     check_out: checkOutDate
-                    // });
+                    const requestBody = JSON.stringify({
+                        property_id: propertyId,
+                        room_id: roomId,
+                        check_in: checkInDate,
+                        check_out: checkOutDate
+                    });
                     // console.log('Request body:', requestBody);
                     
-                    // const response = await fetch(apiUrl, {
-                    //     method: 'POST',
-                    //     headers: {
-                    //         'X-CSRF-TOKEN': csrfToken,
-                    //         'Accept': 'application/json',
-                    //         'Content-Type': 'application/json',
-                    //         'X-Requested-With': 'XMLHttpRequest'
-                    //     },
-                    //     body: requestBody
-                    // });
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: requestBody
+                    });
                     
                     // console.log('Response received:', {
                     //     status: response.status,
