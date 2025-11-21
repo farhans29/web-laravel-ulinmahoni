@@ -16,9 +16,9 @@
     <main>
         <!-- Hero Section -->
         <div class="hero-section-booking h-72 relative">
-            <img src="{{ asset('images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg') }}" 
+            {{-- <img src="{{ asset('images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg') }}" 
                 alt="Payment Hero" 
-                class="w-full h-full object-cover">
+                class="w-full h-full object-cover"> --}}
             <div class="absolute inset-0 gradient-overlay flex items-center justify-center">
                 <h1 class="text-4xl text-white font-medium">Payment Details</h1>
             </div>
@@ -46,71 +46,22 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <!-- Bank Transfer -->
                                         <div class="space-y-3">
-                                            <p class="text-sm font-medium text-gray-700">Pilih Bank Tujuan</p>
-                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                <label class="bank-card relative p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
-                                                    <input type="radio" name="bank_selection" value="bca" class="sr-only peer" data-bank="bca" data-bank-name="BCA" data-bank-logo="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" data-va-number="888811112222">
-                                                    <div class="flex items-center">
-                                                        <div class="bg-white p-2 rounded-lg border mr-3">
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" alt="BCA" class="h-8 w-auto">
-                                                        </div>
-                                                        <div class="flex-1">
-                                                            <div class="font-semibold text-gray-800">BCA Virtual Account</div>
-                                                            <div class="text-xs text-gray-500 mt-0.5">8888 1111 2222</div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- <div class="absolute top-2 right-2 h-5 w-5 rounded-full border-2 border-gray-300 peer-checked:bg-teal-500 peer-checked:border-teal-500 flex items-center justify-center">
-                                                        <svg class="w-3 h-3 text-white hidden peer-checked:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </div> -->
-                                                </label>
+                                            {{-- <p class="text-sm font-medium text-gray-700">Pilih Bank Tujuan</p> --}}
+                                            <div class="grid grid-cols-1 gap-3">
 
-                                                <label class="bank-card relative p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
-                                                    <input type="radio" name="bank_selection" value="mandiri" class="sr-only peer" data-bank="mandiri" data-bank-name="Mandiri" data-bank-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png" data-va-number="888811112222">
-                                                    <div class="flex items-center">
-                                                        <div class="bg-white p-2 rounded-lg border mr-3">
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png" alt="Mandiri" class="h-8 w-auto">
-                                                        </div>
-                                                        <div class="flex-1">
-                                                            <div class="font-semibold text-gray-800">Mandiri Virtual Account</div>
-                                                            <div class="text-xs text-gray-500 mt-0.5">8888 1111 2222</div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- <div class="absolute top-2 right-2 h-5 w-5 rounded-full border-2 border-gray-300 peer-checked:bg-teal-500 peer-checked:border-teal-500 flex items-center justify-center">
-                                                        <svg class="w-3 h-3 text-white hidden peer-checked:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </div> -->
-                                                </label>
-
-                                                <label class="bank-card relative p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
-                                                    <input type="radio" name="bank_selection" value="bni" class="sr-only peer" data-bank="bni" data-bank-name="BNI" data-bank-logo="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" data-va-number="888811112222">
-                                                    <div class="flex items-center">
-                                                        <div class="bg-white p-2 rounded-lg border mr-3">
-                                                            <img src="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" alt="BNI" class="h-8 w-auto">
-                                                        </div>
-                                                        <div class="flex-1">
-                                                            <div class="font-semibold text-gray-800">BNI Virtual Account</div>
-                                                            <div class="text-xs text-gray-500 mt-0.5">8888 1111 2222</div>
-                                                        </div>
-                                                    </div>
-                                                    <!-- <div class="absolute top-2 right-2 h-5 w-5 rounded-full border-2 border-gray-300 peer-checked:bg-teal-500 peer-checked:border-teal-500 flex items-center justify-center">
-                                                        <svg class="w-3 h-3 text-white hidden peer-checked:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </div> -->
-                                                </label>
-
-                                                <label class="bank-card relative p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
+                                                {{-- BRI --}}
+                                                <label class="bank-card relative p-8 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
                                                     <input type="radio" name="bank_selection" value="bri" class="sr-only peer" data-bank="bri" data-bank-name="BRI" data-bank-logo="https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg" data-va-number="888811112222">
-                                                    <div class="flex items-center">
-                                                        <div class="bg-white p-2 rounded-lg border mr-3">
-                                                            <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg" alt="BRI" class="h-8 w-auto">
-                                                        </div>
-                                                        <div class="flex-1">
-                                                            <div class="font-semibold text-gray-800">BRI Virtual Account</div>
-                                                            <div class="text-xs text-gray-500 mt-0.5">8888 1111 2222</div>
+                                                    <div class="flex items-center justify-between">
+                                                        <div class="flex items-center">
+                                                            <div class="bg-white p-4 rounded-lg border mr-6">
+                                                                {{-- <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg" alt="BRI" class="h-12 w-auto"> --}}
+                                                                <img src="https://images.seeklogo.com/logo-png/45/1/bank-bri-logo-png_seeklogo-459990.png?v=638686977590000000" alt="BRI" class="h-12 w-auto">
+                                                            </div>
+                                                            <div class="flex-1">
+                                                                <div class="font-bold text-black text-xl mb-1">PT Kelola Aset Properti</div>
+                                                                <div class="text-lg text-black font-medium">0505-01-001671-56-7</div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <!-- <div class="absolute top-2 right-2 h-5 w-5 rounded-full border-2 border-gray-300 peer-checked:bg-teal-500 peer-checked:border-teal-500 flex items-center justify-center">
@@ -186,7 +137,7 @@
                                 <h4 class="font-medium">Pricing</h4>
                                 <!-- <p class="text-sm text-gray-600">Harga Harian: {{ number_format($booking->daily_price, 0) }}</p> -->
                                 <p class="text-sm text-gray-600">Harga Kamar: {{ number_format($booking->room_price, 0) }}</p>
-                                <p class="text-sm text-gray-600">Biaya Admin: {{ number_format($booking->admin_fees, 0) }}</p>
+                                {{-- <p class="text-sm text-gray-600">Biaya Admin: {{ number_format($booking->admin_fees, 0) }}</p> --}}
                                 <p class="text-sm text-gray-600">Biaya Layanan: {{ number_format($booking->service_fees, 0) }}</p>
                                 <p class="text-sm font-medium text-gray-900 mt-2">Total: {{ number_format($booking->grandtotal_price, 0) }}</p>
                             </div>

@@ -155,7 +155,7 @@
                                         Check In - Out
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Price
+                                        Total Biaya
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Status
@@ -260,7 +260,7 @@
                                                     // Handle status-specific styling and text
                                                     if ($status === 'pending') {
                                                         $badgeBg = 'bg-red-50'; $badgeText = 'text-red-700'; $dot = 'bg-red-400';
-                                                        $transactionText = 'Waiting Payment';
+                                                        $transactionText = 'Menunggu Pembayaran';
                                                         $shouldShowTimer = true;
                                                         
                                                         // Check if expired
@@ -272,16 +272,16 @@
                                                     } 
                                                     elseif ($status === 'waiting') {
                                                         $badgeBg = 'bg-yellow-50'; $badgeText = 'text-yellow-700'; $dot = 'bg-yellow-400';
-                                                        $transactionText = 'Waiting Confirmation';
+                                                        $transactionText = 'Menunggu Konfirmasi';
                                                         $shouldShowTimer = false;
                                                     }
                                                     elseif ($status === 'success' || $status === 'paid') {
                                                         $badgeBg = 'bg-green-50'; $badgeText = 'text-green-700'; $dot = 'bg-green-500';
-                                                        $transactionText = 'Success';
+                                                        $transactionText = 'Berhasil Dibayar';
                                                     } 
                                                     elseif ($status === 'canceled') {
                                                         $badgeBg = 'bg-gray-50'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-500';
-                                                        $transactionText = 'Canceled';
+                                                        $transactionText = 'Dibatalkan';
                                                     } 
                                                     elseif ($status === 'expired') {
                                                         $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-500'; $dot = 'bg-gray-400';
@@ -289,7 +289,7 @@
                                                     } 
                                                     else {
                                                         $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-400';
-                                                        $transactionText = 'Failed';
+                                                        $transactionText = 'Gagal';
                                                     }
                                                     
                                                     // Add countdown timer if needed
@@ -302,7 +302,11 @@
                                                         $transactionText .= ' (' . $remainingTime . ')';
                                                     }
                                                 @endphp
-                                                <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm {{ $badgeBg }} {{ $badgeText }} border border-gray-200">
+                                                <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm {{ $badgeBg }} {{ $badgeText }} border border-gray-200"
+                                                      data-booking-id="{{ $booking->idrec }}"
+                                                      data-expires-at="{{ $shouldShowTimer && $remainingMinutes > 0 ? $expiresAt->toIso8601String() : '' }}"
+                                                      data-initial-text="Menunggu Pembayaran"
+                                                      data-status="{{ $status }}">
                                                     <span class="w-2 h-2 rounded-full {{ $dot }} inline-block"></span>
                                                     <span class="tracking-wide capitalize text-center">{{ $transactionText }}</span>
                                                 </span>
@@ -442,7 +446,7 @@
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check In - Out</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Price</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attachment</th>
                                 </tr>
@@ -635,6 +639,67 @@
                 markBookingAsExpired(bookingId);
             }
         });
+
+        // Simple ticking timer for pending bookings (similar to your example)
+        function updateTimers() {
+            document.querySelectorAll('[data-expires-at]').forEach(element => {
+                const expiresAt = new Date(element.dataset.expiresAt);
+                const now = new Date();
+                const remainingMs = expiresAt.getTime() - now.getTime();
+                
+                if (remainingMs <= 0) {
+                    // Timer has expired
+                    const bookingId = element.dataset.bookingId;
+                    const timerText = element.querySelector('.timer-text');
+                    if (timerText) {
+                        timerText.textContent = element.dataset.initialText + ' (Expired)';
+                    }
+                    
+                    // Update styling to expired state
+                    element.classList.remove('bg-red-50', 'text-red-700');
+                    element.classList.add('bg-gray-100', 'text-gray-500');
+                    const dot = element.querySelector('span:first-child');
+                    if (dot) {
+                        dot.classList.remove('bg-red-400');
+                        dot.classList.add('bg-gray-400');
+                    }
+                    
+                    // Mark as expired in backend if not already done
+                    if (element.dataset.status === 'pending') {
+                        markBookingAsExpired(bookingId);
+                        element.dataset.status = 'expired';
+                    }
+                } else {
+                    // Calculate remaining time with zero padding like your example
+                    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+                    
+                    // Format time with zero padding
+                    const h = ("0" + hours).substr(-2);
+                    const m = ("0" + minutes).substr(-2);
+                    const s = ("0" + seconds).substr(-2);
+                    
+                    let timeString = '';
+                    if (hours > 0) {
+                        timeString = `${h}:${m}:${s}`;
+                    } else if (minutes > 0) {
+                        timeString = `00:${m}:${s}`;
+                    } else {
+                        timeString = `00:00:${s}`;
+                    }
+                    
+                    const timerText = element.querySelector('.timer-text');
+                    if (timerText) {
+                        timerText.textContent = element.dataset.initialText + ' (' + timeString + ')';
+                    }
+                }
+            });
+        }
+
+        // Start the ticking timer (like your example)
+        updateTimers(); // Initial update
+        setInterval(updateTimers, 1000); // Update every second (ticking)
     });
 </script>
 </body>
