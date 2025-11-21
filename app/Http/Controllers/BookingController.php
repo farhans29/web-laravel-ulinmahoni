@@ -20,15 +20,27 @@ use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
+    
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     /**
      * Check room availability
      * 
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function checkAvailability(Request $request)
+    public function checkRoomAvailability( string $roomId, string $checkIn, string $checkOut)
     {
-        $validator = \Validator::make($request->all(), [
+        // Validate the parameters directly since we're not using a Request object
+        $validator = \Validator::make([
+            // 'property_id' => $propertyId,
+            'room_id' => $roomId,
+            'check_in' => $checkIn,
+            'check_out' => $checkOut
+        ], [
             'property_id' => 'required|integer|exists:m_properties,idrec',
             'room_id' => 'required|integer|exists:m_rooms,idrec',
             'check_in' => 'required|date|after_or_equal:today',
@@ -43,19 +55,19 @@ class BookingController extends Controller
             ], 422);
         }
 
-        $propertyId = $request->property_id;
-        $roomId = $request->room_id;
-        $checkIn = Carbon::parse($request->check_in)->startOfDay();
-        $checkOut = Carbon::parse($request->check_out)->endOfDay();
+        // $property_id = $propertyId;
+        $room_id = $roomId;
+        $check_in = Carbon::parse($checkIn)->startOfDay();
+        $check_out = Carbon::parse($checkOut)->endOfDay();
 
         // Check for conflicting bookings using simplified query
         $conflictingBookings = DB::table('t_transactions')
-            ->where('property_id', $propertyId)
-            ->where('room_id', $roomId)
+            // ->where('property_id', $property_id)
+            ->where('room_id', $room_id)
             ->where('status', '1')  // Active/confirmed booking
-            ->whereNotIn('transaction_status', ['cancelled', 'finished'])
-            ->where('check_in', '<', $checkOut)
-            ->where('check_out', '>', $checkIn)
+            ->whereNotIn('transaction_status', ['cancelled', 'finished', 'completed', 'paid'])
+            ->where('check_in', '<', $check_out)
+            ->where('check_out', '>', $check_in)
             ->limit(5)
             ->get();
 
@@ -66,16 +78,12 @@ class BookingController extends Controller
             'data' => [
                 'is_available' => $isAvailable,
                 'conflicting_bookings' => $isAvailable ? [] : $conflictingBookings,
-                'check_in' => $checkIn->format('Y-m-d H:i:s'),
-                'check_out' => $checkOut->format('Y-m-d H:i:s'),
-                'property_id' => $propertyId,
-                'room_id' => $roomId
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                // 'room_id' => $roomId
+                // 'property_id' => $propertyId,
             ]
         ]);
-    }
-    public function __construct()
-    {
-        $this->middleware('auth');
     }
     
     /**
@@ -408,12 +416,12 @@ class BookingController extends Controller
             $price = $room->$priceField;
             
             // Log the price being used
-            \Log::info('Room price selected:', [
-                'room_id' => $room->id,
-                'rent_type' => $request->rent_type,
-                'price_field' => $priceField,
-                'price' => $price
-            ]);
+            // \Log::info('Room price selected:', [
+            //     'room_id' => $room->id,
+            //     'rent_type' => $request->rent_type,
+            //     'price_field' => $priceField,
+            //     'price' => $price
+            // ]);
 
             if (!$price || $price <= 0) {
                 return response()->json([
@@ -423,6 +431,17 @@ class BookingController extends Controller
                         'price' => ["No valid {$request->rent_type} rate found for this room."]
                     ]
                 ], 400);
+            }
+
+            // CHECK BOOKING AVAILABILITY BEFORE PROCEEDING
+            try {
+                $this->checkRoomAvailability( $request->room_id, $request->check_in, $request->check_out);
+            } catch (Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                    'errors' => ['availability' => [$e->getMessage()]]
+                ], 409);
             }
 
             // Calculate dates and prices
@@ -443,7 +462,8 @@ class BookingController extends Controller
 
             // $adminFee = $totalPrice * 0.1; // 10% admin fee
             $adminFee = 0;
-            $serviceFees = 2000;
+            $serviceFees = 30000;
+            $tax = 0;
 
             // Generate order_id in format UMW-yymmddXXXPP
             $propertyInitial = $room->property->initial ?? 'HX';
@@ -472,9 +492,10 @@ class BookingController extends Controller
                 'room_price' => $totalPrice,
                 'admin_fees' => $adminFee,
                 'service_fees' => $serviceFees,
-                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees,
+                'tax' => $tax,
+                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees + $tax,
                 'property_type' => $room->type ?? $request->property_type ?? 'room',
-                'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
+                'transaction_code' => 'TRX-' . strtoupper(Str::random(16)),
                 'transaction_status' => 'pending',
                 'status' => '1',
             ];
@@ -500,7 +521,7 @@ class BookingController extends Controller
                 'room_id' => $room->idrec,
                 'order_id' => $order_id,
                 'user_id' => $user->id,
-                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees,
+                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees + $tax,
                 'payment_status' => 'unpaid',
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
@@ -512,23 +533,23 @@ class BookingController extends Controller
             try {
                 $grandtotalPrice = $totalPrice + $adminFee + $serviceFees;
                 
-                $paymentResponse = $this->processDokuPayment([
-                    'order_id' => $order_id,
-                    'transaction_code' => $transaction->transaction_code,
-                    'amount' => $grandtotalPrice,
-                    'property_name' => $property->name ?? 'Property',
-                    'room_name' => $room->name ?? 'Room',
-                    'user_name' => $user->name ?? 'Customer',
-                    'user_email' => $user->email,
-                    'user_phone' => $user->phone ?? $request->user_phone_number ?? '0000000000',
-                    'user_address' => $user->address ?? 'Indonesia'
-                ]);
+                // $dokuPaymentResponse = $this->processDokuPayment([
+                //     'order_id' => $order_id,
+                //     'transaction_code' => $transaction->transaction_code,
+                //     'amount' => $grandtotalPrice,
+                //     'property_name' => $property->name ?? 'Property',
+                //     'room_name' => $room->name ?? 'Room',
+                //     'user_name' => $user->name ?? 'Customer',
+                //     'user_email' => $user->email,
+                //     'user_phone' => $user->phone ?? $request->user_phone_number ?? '0000000000',
+                //     'user_address' => $user->address ?? 'Indonesia'
+                // ]);
 
                 // Update transaction with payment URL if available
-                if (!empty($paymentResponse['payment_url'])) {
+                if (!empty($dokuPaymentResponse['payment_url'])) {
                     $transaction->update([
-                        'payment_url' => $paymentResponse['payment_url'],
-                        'payment_expired_at' => $paymentResponse['expired_at'] ?? now()->addHours(1)
+                        'payment_url' => $dokuPaymentResponse['payment_url'] ?? null,
+                        'payment_expired_at' => $dokuPaymentResponse['expired_at'] ?? now()->addHours(1)
                     ]);
                 }
 
@@ -544,10 +565,10 @@ class BookingController extends Controller
                     'success' => true,
                     'message' => 'Booking created successfully',
                     'payment_options' => [
-                        'doku' => $paymentResponse['payment_url'] ?? null,
+                        'doku' => $dokuPaymentResponse['payment_url'] ?? null,
                         'other' => route('payment.show', ['booking' => $transaction->order_id]),
                     ],
-                    'payment_data' => $paymentResponse
+                    'payment_data' => $dokuPaymentResponse ?? []
                 ]);
 
 

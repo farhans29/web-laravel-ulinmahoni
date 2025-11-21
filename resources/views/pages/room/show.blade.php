@@ -180,20 +180,28 @@
                                 <h2 class="text-2xl font-bold text-gray-900 mb-2">Pesan Kamar</h2>
                                 <p class="text-gray-500">Isi detail dibawah ini</p>
                             </div>
-                            <span class="px-4 py-2 rounded-full text-sm font-medium
-                                {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $room['status'] == 1 ? 'Tersedia' : 'Tidak Tersedia' }}
-                            </span>
+                            <div class="text-right">
+                                <!-- Room Status -->
+                                <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
+                                    {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $room['status'] == 1 ? 'Tersedia' : 'Tidak Tersedia' }}
+                                </span>
+                                
+                                <!-- Availability Status -->
+                                
+                            </div>
                         </div>
                         
                         <form id="bookingForm" class="space-y-6" method="POST" action="{{ route('bookings.store') }}" novalidate>
                             @csrf
                             <input type="hidden" name="property_name" value="{{ $room['property_name'] ?? ($property['name'] ?? $room['name']) }}">
                             <input type="hidden" name="room_name" value="{{ $room['name'] }}">
-                            <input type="hidden" name="room_id" value="{{ $room['id'] }}">
+                            <input type="hidden" name="room_id" id="roomId" value="{{ $room['id'] }}">
+                            <input type="hidden" name="property_id" id="propertyId" value="{{ $property['id'] ?? $room['property_id'] ?? '' }}">
                             <input type="hidden" name="price_daily" id="priceDaily" value="{{ $room['price_original_daily'] }}">
                             <input type="hidden" name="price_monthly" id="priceMonthly" value="{{ $room['price_original_monthly'] }}">
-                            <!-- <input type="hidden" name="service_fees" id="serviceFees" value="{{ $room['service_fees'] }}"> -->
+                            <input type="hidden" name="service_fees" id="serviceFees" value="{{ $room['service_fees'] }}">
+                            {{-- <input type="hidden" name="tax_fees" id="taxFees" value="{{ $room['tax_fees'] ?? 0 }}"> --}}
                             <!-- Rental Type -->
                             <div class="mb-6">
                                 <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pemesanan</label>
@@ -241,6 +249,18 @@
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                             min="{{ date('Y-m-d', strtotime('+1 day')) }}" data-required="true">
                                         <div id="check_outError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Availability Check -->
+                            <div class="mt-3">
+                                <div id="availabilityStatus" class="text-sm p-3 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                                            <span class="text-gray-600 font-medium">Status Ketersediaan:</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500">Menunggu pemilihan tanggal...</span>
                                     </div>
                                 </div>
                             </div>
@@ -311,15 +331,19 @@
                                         <span class="text-gray-600">Durasi: </span>
                                         <span class="text-gray-900" id="durationDisplay">-</span>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Tax (20%): </span>
-                                        <span class="text-gray-900" id="serviceFeesDisplay">-</span>
-                                    </div>
-
+                                    
                                     <div class="flex justify-between">
                                         <span class="text-gray-600">Total Harga Kamar:</span>
                                         <span class="text-gray-900" id="roomTotal">-</span>
                                     </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Service Fee (PPN included): </span>
+                                        <span class="text-gray-900" id="serviceFeesDisplay">-</span>
+                                    </div>
+                                    {{-- <div class="flex justify-between">
+                                        <span class="text-gray-600">Tax and Fees (20%): </span>
+                                        <span class="text-gray-900" id="taxDisplay">-</span>
+                                    </div> --}}
                                     
                                     {{-- <div class="flex justify-between">
                                         <span class="text-gray-600">Admin Fee:</span>
@@ -339,7 +363,7 @@
                             <!-- Submit Button -->
                             <div>
                                 @guest
-                                    <button type="button" 
+                                    <button type="button" id="guestSubmitButton"
                                         class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium flex items-center justify-center gap-2"
                                         onclick="window.location.href = '/login'">
                                         <i class="fas fa-lock"></i>
@@ -347,11 +371,19 @@
                                     </button>
                                     <p class="text-sm text-gray-500 text-center mt-2">Mohon login atau register untuk membuat pemesanan</p>
                                 @else
-                                    <button type="submit" id="submitButton"
+                                    <button type="button" id="checkAvailabilityButton"
+                                        onclick="checkRoomAvailability()"
                                         class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
                                         {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        {{ $room['status'] == 1 ? 'Pesan Sekarang' : 'Kamar Tidak Tersedia' }}
+                                        {{ $room['status'] == 1 ? 'Cek Ketersediaan Kamar' : 'Kamar Tidak Tersedia' }}
                                     </button>
+                                    <button type="submit" id="submitButton" 
+                                        class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium hidden">
+                                        Pesan Sekarang
+                                    </button>
+                                    <div id="unavailableMessage" class="hidden mt-2 text-sm text-red-600">
+                                        <p><i class="fas fa-exclamation-triangle mr-1"></i>Ruang tidak tersedia untuk tanggal yang dipilih. Silakan pilih tanggal lain.</p>
+                                    </div>
                                 @endguest
                             </div>
                         </form>
@@ -372,22 +404,284 @@
     @include('components.homepage.footer')
 
     <script>
-        // --- Element references ---
+        // --- Global variables ---
         let bookingForm, errorAlert, loadingOverlay, submitButton, monthInput, dateInputs, monthsSelect, rentTypeSelect;
-        let checkInInput, checkOutInput;
+        let checkInInput, checkOutInput, availabilityStatusDiv;
+        let availabilityCheckTimeout;
+
+        // --- Global Room Availability Function ---
+        async function checkRoomAvailability() {
+            console.log('=== CHECK ROOM AVAILABILITY STARTED ===');
+            
+            const propertyId = document.getElementById('propertyId').value;
+            const roomId = document.querySelector('[name="room_id"]').value;
+            const checkInDate = document.getElementById('check_in').value;
+            const checkOutDate = document.getElementById('check_out').value;
+            const rentType = document.getElementById('rent_type').value;
+            
+            console.log('Input values:', {
+                propertyId: propertyId,
+                roomId: roomId,
+                checkInDate: checkInDate,
+                checkOutDate: checkOutDate,
+                rentType: rentType,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Clear previous timeout to avoid multiple rapid calls
+            if (availabilityCheckTimeout) {
+                // console.log('Clearing previous timeout');
+                clearTimeout(availabilityCheckTimeout);
+            }
+            
+            // Check availability for both daily and monthly rentals (with dates)
+            // console.log('Checking if should proceed with availability check');
+            if (rentType === 'monthly') {
+                if (!checkInDate) {
+                    // console.log('Skipping - missing check-in date for monthly rental');
+                    resetAvailabilityStatus();
+                    return;
+                }
+                // console.log('Proceeding with monthly rental availability check');
+            } else if (rentType === 'daily') {
+                if (!checkInDate || !checkOutDate) {
+                    // console.log('Skipping - missing dates for daily rental');
+                    resetAvailabilityStatus();
+                    return;
+                }
+                // console.log('Proceeding with daily rental availability check');
+            } else {
+                // console.log('Skipping - unknown rent type:', rentType);
+                resetAvailabilityStatus();
+                return;
+            }
+            
+            // Prevent checking if check-out is before check-in
+            console.log('Validating date order');
+            if (new Date(checkOutDate) <= new Date(checkInDate)) {
+                console.log('Date validation failed - check-out before or same as check-in');
+                showAvailabilityStatus('error', 'Tanggal check-out harus setelah check-in');
+                updateSubmitButton(false, 'Tanggal tidak valid');
+                return;
+            }
+            // console.log('Date validation passed');
+            
+            // Show loading state
+            // console.log('Setting loading state');
+            showAvailabilityStatus('loading', 'Memeriksa ketersediaan...');
+            
+            availabilityCheckTimeout = setTimeout(async () => {
+                // console.log('Starting async availability check');
+                try {
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    // console.log('CSRF Token retrieved:', csrfToken ? 'Present' : 'Missing');
+                    
+                    const apiUrl = '{{ route("api.booking.check-availability") }}';
+                    
+                    
+                    const requestBody = JSON.stringify({
+                        property_id: propertyId,
+                        room_id: roomId,
+                        check_in: checkInDate,
+                        check_out: checkOutDate
+                    });
+                    // console.log('Request body:', requestBody);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: requestBody
+                    });
+                    
+                    // console.log('Response received:', {
+                    //     status: response.status,
+                    //     statusText: response.statusText,
+                    //     headers: Object.fromEntries(response.headers.entries())
+                    // });
+                    
+                    const data = await response.json();
+                    // console.log('Response data:', data);
+                    
+                    if (!response.ok || data.status === 'error') {
+                        const errorMessage = data.message || 'Gagal memeriksa ketersediaan';
+                        console.log('Error response:', errorMessage);
+                        if (data.errors) {
+                            const errorMessages = Object.values(data.errors).flat();
+                            console.log('Validation errors:', errorMessages);
+                            showAvailabilityStatus('error', errorMessages[0] || errorMessage);
+                        } else {
+                            showAvailabilityStatus('error', errorMessage);
+                        }
+                        updateSubmitButton(false, 'Validasi gagal');
+                        return;
+                    }
+                    
+                    // Handle the availability response
+                    if (data.data && data.data.is_available !== undefined) {
+                        const isAvailable = data.data.is_available;
+                        const conflictingBookings = data.data.conflicting_bookings || [];
+                        
+                        // console.log('Availability result:', {
+                        //     isAvailable: isAvailable,
+                        //     conflictingBookings: conflictingBookings
+                        // });
+                        
+                        if (isAvailable) {
+                            console.log('✓ Room is available');
+                            showAvailabilityStatus('available', '✓ Kamar tersedia');
+                            updateSubmitButton(true);
+                        } else {
+                            console.log('✗ Room is unavailable');
+                            showAvailabilityStatus('unavailable', '✗ Kamar tidak tersedia untuk tanggal ini');
+                            if (conflictingBookings.length > 0) {
+                                // console.log('Found conflicting bookings:', conflictingBookings);
+                                showAvailabilityStatus('unavailable', `✗ Tidak tersedia - ${conflictingBookings.length} pemesanan konflik`);
+                            }
+                            updateSubmitButton(false, 'Kamar tidak tersedia');
+                        }
+                    } else {
+                        console.error('Invalid API response structure:', data);
+                        showAvailabilityStatus('error', 'Respon API tidak valid');
+                        updateSubmitButton(false, 'Kesalahan sistem');
+                    }
+                    
+                } catch (error) {
+                    console.error('Caught error in availability check:', {
+                        message: error.message,
+                        stack: error.stack,
+                        name: error.name
+                    });
+                    showAvailabilityStatus('error', 'Gagal memeriksa ketersediaan kamar');
+                    updateSubmitButton(false, 'Gagal mengecek');
+                }
+            }, 500); // Add small delay to prevent excessive API calls
+            
+            console.log('=== CHECK ROOM AVAILABILITY SCHEDULED ===');
+        }
+
+        // --- Other Global Utility Functions ---
+        function formatRupiah(num) {
+            return `Rp ${num.toLocaleString('id-ID')}`;
+        }
         
+        function showAvailabilityStatus(type, message) {
+            if (!availabilityStatusDiv) return;
+            
+            let className = 'text-sm p-3 rounded-lg border transition-all duration-300 ';
+            let statusIcon = '';
+            let statusMessage = '';
+            
+            switch (type) {
+                case 'loading':
+                    className += 'bg-blue-50 border-blue-200 text-blue-800';
+                    statusIcon = '<i class="fas fa-spinner fa-spin mr-2"></i>';
+                    statusMessage = 'Memeriksa ketersediaan...';
+                    break;
+                case 'available':
+                    className += 'bg-green-50 border-green-200 text-green-800';
+                    statusIcon = '<i class="fas fa-check-circle mr-2 text-green-500"></i>';
+                    statusMessage = 'Tersedia';
+                    break;
+                case 'unavailable':
+                    className += 'bg-red-50 border-red-200 text-red-700';
+                    statusIcon = '<i class="fas fa-times-circle mr-2 text-red-500"></i>';
+                    statusMessage = 'Tidak Tersedia';
+                    break;
+                case 'error':
+                    className += 'bg-yellow-50 border-yellow-200 text-yellow-800';
+                    statusIcon = '<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>';
+                    statusMessage = 'Validasi Gagal';
+                    break;
+                default:
+                    className += 'bg-gray-50 border-gray-200 text-gray-600';
+                    statusIcon = '<i class="fas fa-info-circle mr-2 text-blue-500"></i>';
+                    statusMessage = 'Menunggu pemilihan tanggal...';
+            }
+            
+            // Special handling for conflicting bookings
+            if (type === 'unavailable' && message && message.includes('pemesanan konflik')) {
+                const match = message.match(/(\d+)\s+pemesanan konflik/);
+                if (match) {
+                    const count = match[1];
+                    statusMessage = `Kamar sudah dipesan`;
+                }
+            }
+            
+            availabilityStatusDiv.className = className;
+            availabilityStatusDiv.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        ${statusIcon}
+                        <span class="font-medium">Status Ketersediaan:</span>
+                    </div>
+                    <span>${statusMessage}</span>
+                </div>
+                ${message && type !== 'loading' && type !== 'available' && type !== 'unavailable' ? `
+                    <div class="mt-2 text-xs opacity-80">
+                        <span>${message}</span>
+                    </div>
+                ` : ''}
+            `;
+        }
+        
+        function resetAvailabilityStatus() {
+            if (!availabilityStatusDiv) return;
+            availabilityStatusDiv.className = 'text-sm p-3 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300';
+            availabilityStatusDiv.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        <span class="text-gray-600 font-medium">Status Ketersediaan:</span>
+                    </div>
+                    <span class="text-gray-500 text-xs">Menunggu pemilihan tanggal...</span>
+                </div>
+            `;
+        }
+
+        function updateSubmitButton(isEnabled, customMessage = null) {
+            const checkAvailabilityButton = document.getElementById('checkAvailabilityButton');
+            const submitButton = document.getElementById('submitButton');
+            
+            if (!checkAvailabilityButton || !submitButton) return;
+            
+            if (isEnabled && {{ $room['status'] ?? 0 }} == 1) {
+                // Room is available - show submit button and hide check availability button
+                checkAvailabilityButton.classList.add('hidden');
+                submitButton.classList.remove('hidden');
+                submitButton.disabled = false;
+            } else {
+                // Room is not available - show check availability button and hide submit button
+                checkAvailabilityButton.classList.remove('hidden');
+                submitButton.classList.add('hidden');
+                submitButton.disabled = true;
+                
+                if (customMessage) {
+                    checkAvailabilityButton.textContent = customMessage;
+                } else if ({{ $room['status'] ?? 0 }} == 0) {
+                    checkAvailabilityButton.textContent = 'Kamar Tidak Tersedia';
+                } else {
+                    checkAvailabilityButton.textContent = 'Cek Ketersediaan Kamar';
+                }
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize element references
             bookingForm = document.getElementById('bookingForm');
             errorAlert = document.getElementById('errorAlert');
             loadingOverlay = document.getElementById('loadingOverlay');
-            submitButton = bookingForm?.querySelector('button[type="submit"]');
             checkInInput = document.getElementById('check_in');
             checkOutInput = document.getElementById('check_out');
             monthInput = document.getElementById('monthInput');
             dateInputs = document.getElementById('dateInputs');
             monthsSelect = document.getElementById('months');
             rentTypeSelect = document.querySelector('select[name="rent_type"]');
+            availabilityStatusDiv = document.getElementById('availabilityStatus');
             
             // Remove duplicate element references that were declared later
             const priceDailyInput = document.getElementById('priceDaily');
@@ -405,12 +699,205 @@
             function resetSummary() {
                 document.getElementById('durationDisplay').textContent = '-';
                 document.getElementById('roomTotal').textContent = '-';
-                document.getElementById('adminFee').textContent = '-';
+                // document.getElementById('taxDisplay').textContent = '-';
                 document.getElementById('grandTotal').textContent = '-';
+            }
+
+            // --- Room Availability Check ---
+            // async function checkRoomAvailability() {
+            //     const propertyId = document.getElementById('propertyId').value;
+            //     const roomId = document.getElementById('roomId').value;
+            //     const checkInDate = document.getElementById('check_in').value;
+            //     const checkOutDate = document.getElementById('check_out').value;
+            //     const rentType = document.getElementById('rent_type').value;
+                
+            //     // Clear previous timeout to avoid multiple rapid calls
+            //     if (availabilityCheckTimeout) {
+            //         clearTimeout(availabilityCheckTimeout);
+            //     }
+                
+            //     // Only check availability for daily booking with both dates
+            //     if (rentType !== 'daily' || !checkInDate || !checkOutDate) {
+            //         resetAvailabilityStatus();
+            //         return;
+            //     }
+                
+            //     // Prevent checking if check-out is before check-in
+            //     if (new Date(checkOutDate) <= new Date(checkInDate)) {
+            //         showAvailabilityStatus('error', 'Tanggal check-out harus setelah check-in');
+            //         updateSubmitButton(false, 'Tanggal tidak valid');
+            //         return;
+            //     }
+                
+            //     // Show loading state
+            //     showAvailabilityStatus('loading', 'Memeriksa ketersediaan...');
+                
+            //     availabilityCheckTimeout = setTimeout(async () => {
+            //         try {
+            //             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            //             const response = await fetch(`http://localhost:8000/api/booking/check-availability`, {
+            //                 method: 'POST',
+            //                 headers: {
+            //                     'X-CSRF-TOKEN': csrfToken,
+            //                     'Accept': 'application/json',
+            //                     'Content-Type': 'application/json',
+            //                     'X-Requested-With': 'XMLHttpRequest'
+            //                 },
+            //                 body: JSON.stringify({
+            //                     property_id: propertyId,
+            //                     room_id: roomId,
+            //                     check_in: checkInDate,
+            //                     check_out: checkOutDate
+            //                 })
+            //             });
+                        
+            //             const data = await response.json();
+                        
+            //             if (!response.ok || data.status === 'error') {
+            //                 const errorMessage = data.message || 'Gagal memeriksa ketersediaan';
+            //                 if (data.errors) {
+            //                     const errorMessages = Object.values(data.errors).flat();
+            //                     showAvailabilityStatus('error', errorMessages[0] || errorMessage);
+            //                 } else {
+            //                     showAvailabilityStatus('error', errorMessage);
+            //                 }
+            //                 updateSubmitButton(false, 'Validasi gagal');
+            //                 return;
+            //             }
+                        
+            //             // Handle the availability response
+            //             if (data.data && data.data.is_available !== undefined) {
+            //                 const isAvailable = data.data.is_available;
+            //                 const conflictingBookings = data.data.conflicting_bookings || [];
+                            
+            //                 if (isAvailable) {
+            //                     showAvailabilityStatus('available', '✓ Kamar tersedia');
+            //                     updateSubmitButton(true);
+            //                 } else {
+            //                     showAvailabilityStatus('unavailable', '✗ Kamar tidak tersedia untuk tanggal ini');
+            //                     if (conflictingBookings.length > 0) {
+            //                         showAvailabilityStatus('unavailable', `✗ Tidak tersedia - ${conflictingBookings.length} pemesanan konflik`);
+            //                     }
+            //                     updateSubmitButton(false, 'Kamar tidak tersedia');
+            //                 }
+            //             } else {
+            //                 showAvailabilityStatus('error', 'Respon API tidak valid');
+            //                 updateSubmitButton(false, 'Kesalahan sistem');
+            //             }
+                        
+            //         } catch (error) {
+            //             console.error('Availability check error:', error);
+            //             showAvailabilityStatus('error', 'Gagal memeriksa ketersediaan kamar');
+            //             updateSubmitButton(false, 'Gagal mengecek');
+            //         }
+            //     }, 500); // Add small delay to prevent excessive API calls
+            // }
+
+            function showAvailabilityStatus(type, message) {
+                if (!availabilityStatusDiv) return;
+                
+                let className = 'text-sm p-3 rounded-lg border transition-all duration-300 ';
+                let statusIcon = '';
+                let statusMessage = '';
+                
+                switch (type) {
+                    case 'loading':
+                        className += 'bg-blue-50 border-blue-200 text-blue-800';
+                        statusIcon = '<i class="fas fa-spinner fa-spin mr-2"></i>';
+                        statusMessage = 'Memeriksa ketersediaan...';
+                        break;
+                    case 'available':
+                        className += 'bg-green-50 border-green-200 text-green-800';
+                        statusIcon = '<i class="fas fa-check-circle mr-2 text-green-500"></i>';
+                        statusMessage = 'Tersedia';
+                        break;
+                    case 'unavailable':
+                        className += 'bg-red-50 border-red-200 text-red-700';
+                        statusIcon = '<i class="fas fa-times-circle mr-2 text-red-500"></i>';
+                        statusMessage = 'Tidak Tersedia';
+                        break;
+                    case 'error':
+                        className += 'bg-yellow-50 border-yellow-200 text-yellow-800';
+                        statusIcon = '<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>';
+                        statusMessage = 'Validasi Gagal';
+                        break;
+                    default:
+                        className += 'bg-gray-50 border-gray-200 text-gray-600';
+                        statusIcon = '<i class="fas fa-info-circle mr-2 text-blue-500"></i>';
+                        statusMessage = 'Menunggu pemilihan tanggal...';
+                }
+                
+                // Special handling for conflicting bookings
+                if (type === 'unavailable' && message && message.includes('pemesanan konflik')) {
+                    const match = message.match(/(\d+)\s+pemesanan konflik/);
+                    if (match) {
+                        const count = match[1];
+                        statusMessage = `Konflik ${count} pemesanan`;
+                    }
+                }
+                
+                availabilityStatusDiv.className = className;
+                availabilityStatusDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            ${statusIcon}
+                            <span class="font-medium">Status Ketersediaan:</span>
+                        </div>
+                        <span>${statusMessage}</span>
+                    </div>
+                    ${message && type !== 'loading' && type !== 'available' && type !== 'unavailable' ? `
+                        <div class="mt-2 text-xs opacity-80">
+                            <span>${message}</span>
+                        </div>
+                    ` : ''}
+                `;
+            }
+
+            function resetAvailabilityStatus() {
+                if (!availabilityStatusDiv) return;
+                availabilityStatusDiv.className = 'text-sm p-3 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300';
+                availabilityStatusDiv.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                            <span class="text-gray-600 font-medium">Status Ketersediaan:</span>
+                        </div>
+                        <span class="text-gray-500 text-xs">Menunggu pemilihan tanggal...</span>
+                    </div>
+                `;
+            }
+
+            function updateSubmitButton(isEnabled, customMessage = null) {
+                const checkAvailabilityButton = document.getElementById('checkAvailabilityButton');
+                const submitButton = document.getElementById('submitButton');
+                
+                if (!checkAvailabilityButton || !submitButton) return;
+                
+                if (isEnabled && {{ $room['status'] ?? 0 }} == 1) {
+                    // Room is available - show submit button and hide check availability button
+                    checkAvailabilityButton.classList.add('hidden');
+                    submitButton.classList.remove('hidden');
+                    submitButton.disabled = false;
+                } else {
+                    // Room is not available - show check availability button and hide submit button
+                    checkAvailabilityButton.classList.remove('hidden');
+                    submitButton.classList.add('hidden');
+                    submitButton.disabled = true;
+                    
+                    if (customMessage) {
+                        checkAvailabilityButton.textContent = customMessage;
+                    } else if ({{ $room['status'] ?? 0 }} == 0) {
+                        checkAvailabilityButton.textContent = 'Kamar Tidak Tersedia';
+                    } else {
+                        checkAvailabilityButton.textContent = 'Cek Ketersediaan Kamar';
+                    }
+                }
             }
 
             // --- Price summary logic ---
             function updatePriceSummary() {
+                // Check availability automatically
+                checkRoomAvailability();
                 // Get all required elements
                 const rentTypeSelect = document.getElementById('rent_type');
                 const checkInInput = document.getElementById('check_in');
@@ -459,11 +946,12 @@
                 }
                 // Get admin fee value from the hidden input or use the default
                 const adminFee = 0;
-                // const serviceFees= 20000;
-                const serviceFees = 0.2 * roomTotal;
-                const grandTotal = roomTotal + serviceFees ;
+                const serviceFees= 30000;
+                const taxFees = 0;
+                const grandTotal = roomTotal + serviceFees +adminFee + taxFees;
                 document.getElementById('roomTotal').textContent = formatRupiah(roomTotal);
                 document.getElementById('serviceFeesDisplay').textContent = formatRupiah(serviceFees);
+                // document.getElementById('taxDisplay').textContent = formatRupiah(taxFees);
                 // document.getElementById('adminFee').textContent = formatRupiah(adminFee);
                 document.getElementById('grandTotal').textContent = formatRupiah(grandTotal);
             }
@@ -487,18 +975,20 @@
                     // Show only check-in date for monthly rentals
                     dateInputs.classList.remove('hidden');
                     const checkOutGroup = document.getElementById('checkOutGroup');
-                    if (checkOutGroup) checkOutGroup.classList.add('hidden');
+                    if (checkOutGroup) {
+                        checkOutGroup.classList.add('hidden');
+                        // Set months from saved search or default to 1
+                        if (monthsSelect) {
+                            monthsSelect.value = searchState?.period === 'monthly' && searchState?.months
+                                ? searchState.months
+                                : 1;
+                            document.getElementById('bookingMonths').value = monthsSelect.value;
+                        }
+                    }
                     dailyRateDisplay.classList.add('hidden');
                     monthlyRateDisplay.classList.remove('hidden');
                     rateTypeDisplay.textContent = 'Harga Bulanan';
                     
-                    // Set months from saved search or default to 1
-                    if (monthsSelect) {
-                        monthsSelect.value = searchState?.period === 'monthly' && searchState?.months 
-                            ? searchState.months 
-                            : 1;
-                        document.getElementById('bookingMonths').value = monthsSelect.value;
-                    }
                 } else {
                     monthInput.classList.add('hidden');
                     dateInputs.classList.remove('hidden');
@@ -536,6 +1026,7 @@
                     const checkOutDate = new Date(checkInDate);
                     checkOutDate.setMonth(checkOutDate.getMonth() + months);
                     checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                    
                 } else {
                     // For daily, normal logic
                     const minCheckout = new Date(checkInInput.value);
@@ -543,9 +1034,11 @@
                     checkOutInput.min = minCheckout.toISOString().split('T')[0];
                     if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
                         checkOutInput.value = minCheckout.toISOString().split('T')[0];
+                        
                     }
                 }
                 updatePriceSummary();
+                
             }
             function handleCheckOutChange() {
                 updatePriceSummary();
@@ -597,7 +1090,7 @@
                                 }
                             }
                         }
-                        updatePriceSummary();
+                        checkRoomAvailability();
                     });
                 }
                 
@@ -606,7 +1099,9 @@
                     checkOutInput.min = defaultCheckOutStr;
                     
                     // Handle check-out date changes
-                    checkOutInput.addEventListener('change', updatePriceSummary);
+                    checkOutInput.addEventListener('change', function() {
+                        checkRoomAvailability();
+                    });
                 }
                 
                 // Initialize other form elements
@@ -767,7 +1262,7 @@
                                         <svg class="h-6 w-6 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                         </svg>
-                                        <span>Metode Pembayaran Lainnya</span>
+                                        <span>TRANSFER VA</span>
                                     </div>
                                 </div>
                             `;

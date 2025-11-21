@@ -193,7 +193,7 @@ class BookingController extends ApiController
             $bookingMonths = null;
             $roomPrice = 0;
             $adminFees = 0;
-            $serviceFees = 0;
+            $serviceFees = 30000;
             $grandtotalPrice = 0;
             $checkIn = Carbon::parse($request->check_in);
             $checkOut = Carbon::parse($request->check_out);
@@ -215,7 +215,9 @@ class BookingController extends ApiController
                 $roomPrice = $request->daily_price * $bookingDays;
                 // $adminFees = $roomPrice * 0.10;
                 $adminFees = $request->admin_fees;
-                $grandtotalPrice = $roomPrice + $adminFees ;
+                $serviceFees = $request->service_fees;
+                $tax = $request->tax;
+                $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
             } else {
                 // MONTHLY BOOKING
                 $monthlyPrice = $request->monthly_price;
@@ -224,7 +226,9 @@ class BookingController extends ApiController
                 $roomPrice = $monthlyPrice * $bookingMonths;
                 // $adminFees = $roomPrice * 0.10;
                 $adminFees = $request->admin_fees;
-                $grandtotalPrice = $roomPrice + $adminFees ;
+                $serviceFees = $request->service_fees;
+                $tax = $request->tax;
+                $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
             }
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
@@ -258,11 +262,11 @@ class BookingController extends ApiController
                 'daily_price' => $request->daily_price,
                 'monthly_price' => $request->monthly_price,
                 'admin_fees' => $adminFees,
-                'service_fees' => $serviceFees,
+                'service_fees' => $request->service_fees,
                 'grandtotal_price' => $grandtotalPrice,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type,
-                'transaction_code' => 'TRX-' . Str::random(8),
+                'transaction_code' => 'TRX-' . Str::random(16),
                 'transaction_status' => 'pending',
                 'status' => '1',
                 // DATES
@@ -304,27 +308,27 @@ class BookingController extends ApiController
             Payment::create($paymentData);
 
             // Process payment with DOKU
-            $paymentResponse = $this->processDokuPayment([
-                'order_id' => $order_id,
-                'transaction_code' => $transaction->transaction_code,
-                'amount' => $grandtotalPrice,
-                'property_name' => $request->property_name,
-                'room_name' => $request->room_name,
-                'user_name' => $request->user_name,
-                'user_email' => $request->user_email,
-                'user_phone' => $request->user_phone_number
-            ]);
+            // $dokuPaymentResponse = $this->processDokuPayment([
+            //     'order_id' => $order_id,
+            //     'transaction_code' => $transaction->transaction_code,
+            //     'amount' => $grandtotalPrice,
+            //     'property_name' => $request->property_name,
+            //     'room_name' => $request->room_name,
+            //     'user_name' => $request->user_name,
+            //     'user_email' => $request->user_email,
+            //     'user_phone' => $request->user_phone_number
+            // ]);
 
-            if (isset($paymentResponse['error'])) {
-                $errorMessage = 'Doku API Error: ' . json_encode($paymentResponse['error'], JSON_PRETTY_PRINT);
+            if (isset($dokuPaymentResponse['error'])) {
+                $errorMessage = 'Doku API Error: ' . json_encode($dokuPaymentResponse['error'] ?? [], JSON_PRETTY_PRINT) . ' - ' . json_encode($dokuPaymentResponse['error'] ?? [], JSON_PRETTY_PRINT);
                 \Log::error($errorMessage);
                 throw new \Exception($errorMessage);
             }
 
             // Update transaction with payment URL and expiration
             $transaction->update([
-                'payment_url' => $paymentResponse['payment_url'] ?? null,
-                'expired_at' => $paymentResponse['expired_at'] ?? null
+                'payment_url' => $dokuPaymentResponse['payment_url'] ?? null,
+                'expired_at' => $dokuPaymentResponse['expired_at'] ?? null
             ]);
 
             DB::commit();
@@ -333,8 +337,8 @@ class BookingController extends ApiController
                 'status' => 'success',
                 'message' => 'Booking created successfully',
                 'data' => array_merge($transaction->toArray(), [
-                    'payment_url' => $paymentResponse['payment_url'] ?? null,
-                    'expired_at' => $paymentResponse['expired_at'] ?? null
+                    'payment_url' => $dokuPaymentResponse['payment_url'] ?? null,
+                    'expired_at' => $dokuPaymentResponse['expired_at'] ?? null
                 ])
             ], 201);
 
