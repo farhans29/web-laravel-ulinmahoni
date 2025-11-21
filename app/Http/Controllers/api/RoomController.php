@@ -33,7 +33,7 @@ class RoomController extends ApiController
                 })->map(function ($imageItem) {
                     return [
                         'id' => $imageItem->image_id,
-                        'image_data' => $imageItem->image_data,
+                        'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
                         'caption' => $imageItem->caption,
                     ];
                 })->values();
@@ -88,7 +88,7 @@ class RoomController extends ApiController
                 })->map(function ($imageItem) {
                     return [
                         'id' => $imageItem->image_id,
-                        'image_data' => $imageItem->image_data,
+                        'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
                         'caption' => $imageItem->caption,
                     ];
                 })->values();
@@ -140,7 +140,7 @@ class RoomController extends ApiController
                 })->map(function ($imageItem) {
                     return [
                         'id' => $imageItem->image_id,
-                        'image_data' => $imageItem->image_data,
+                        'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
                         'caption' => $imageItem->caption,
                     ];
                 })->values();
