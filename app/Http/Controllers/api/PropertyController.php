@@ -66,15 +66,12 @@ class PropertyController extends ApiController
             // Group images by property
             $groupedProperties = $properties->groupBy('idrec')->map(function ($propertyGroup) {
                 $property = $propertyGroup->first();
-                $images = $propertyGroup->filter(function ($item) {
-                    return $item->image_id !== null;
-                })->map(function ($imageItem) {
-                    return [
+                $images = $propertyGroup->filter(fn($item) => $item->image_id !== null)
+                    ->map(fn($imageItem) => [
                         'id' => $imageItem->image_id,
-                        'image_data' => $imageItem->image_data,
+                        'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
                         'caption' => $imageItem->caption,
-                    ];
-                })->values();
+                    ])->values();
                 
                 $propertyArray = $property->toArray();
                 $propertyArray['images'] = $images;
@@ -144,15 +141,12 @@ class PropertyController extends ApiController
             // Group images by property
             $groupedProperty = $property->groupBy('idrec')->map(function ($propertyGroup) {
                 $property = $propertyGroup->first();
-                $images = $propertyGroup->filter(function ($item) {
-                    return $item->image_id !== null;
-                })->map(function ($imageItem) {
-                    return [
+                $images = $propertyGroup->filter(fn($item) => $item->image_id !== null)
+                    ->map(fn($imageItem) => [
                         'id' => $imageItem->image_id,
-                        'image_data' => $imageItem->image_data,
+                        'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
                         'caption' => $imageItem->caption,
-                    ];
-                })->values();
+                    ])->values();
                 
                 $propertyArray = $property->toArray();
                 $propertyArray['images'] = $images;
