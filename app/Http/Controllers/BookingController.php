@@ -443,7 +443,8 @@ class BookingController extends Controller
 
             // $adminFee = $totalPrice * 0.1; // 10% admin fee
             $adminFee = 0;
-            $serviceFees = 2000;
+            $serviceFees = 0;
+            $tax = 0;
 
             // Generate order_id in format UMW-yymmddXXXPP
             $propertyInitial = $room->property->initial ?? 'HX';
@@ -472,9 +473,10 @@ class BookingController extends Controller
                 'room_price' => $totalPrice,
                 'admin_fees' => $adminFee,
                 'service_fees' => $serviceFees,
-                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees,
+                'tax' => $tax,
+                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees + $tax,
                 'property_type' => $room->type ?? $request->property_type ?? 'room',
-                'transaction_code' => 'TRX-' . strtoupper(Str::random(8)),
+                'transaction_code' => 'TRX-' . strtoupper(Str::random(16)),
                 'transaction_status' => 'pending',
                 'status' => '1',
             ];

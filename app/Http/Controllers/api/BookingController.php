@@ -215,7 +215,9 @@ class BookingController extends ApiController
                 $roomPrice = $request->daily_price * $bookingDays;
                 // $adminFees = $roomPrice * 0.10;
                 $adminFees = $request->admin_fees;
-                $grandtotalPrice = $roomPrice + $adminFees ;
+                $serviceFees = $request->service_fees;
+                $tax = $request->tax;
+                $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
             } else {
                 // MONTHLY BOOKING
                 $monthlyPrice = $request->monthly_price;
@@ -224,7 +226,9 @@ class BookingController extends ApiController
                 $roomPrice = $monthlyPrice * $bookingMonths;
                 // $adminFees = $roomPrice * 0.10;
                 $adminFees = $request->admin_fees;
-                $grandtotalPrice = $roomPrice + $adminFees ;
+                $serviceFees = $request->service_fees;
+                $tax = $request->tax;
+                $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
             }
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
@@ -262,7 +266,7 @@ class BookingController extends ApiController
                 'grandtotal_price' => $grandtotalPrice,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type,
-                'transaction_code' => 'TRX-' . Str::random(8),
+                'transaction_code' => 'TRX-' . Str::random(16),
                 'transaction_status' => 'pending',
                 'status' => '1',
                 // DATES

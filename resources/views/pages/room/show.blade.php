@@ -193,7 +193,8 @@
                             <input type="hidden" name="room_id" value="{{ $room['id'] }}">
                             <input type="hidden" name="price_daily" id="priceDaily" value="{{ $room['price_original_daily'] }}">
                             <input type="hidden" name="price_monthly" id="priceMonthly" value="{{ $room['price_original_monthly'] }}">
-                            <!-- <input type="hidden" name="service_fees" id="serviceFees" value="{{ $room['service_fees'] }}"> -->
+                            {{-- <!-- <input type="hidden" name="service_fees" id="serviceFees" value="{{ $room['service_fees'] }}"> --> --}}
+                            <input type="hidden" name="tax_fees" id="taxFees" value="{{ $room['tax_fees'] ?? 0 }}">
                             <!-- Rental Type -->
                             <div class="mb-6">
                                 <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pemesanan</label>
@@ -311,14 +312,18 @@
                                         <span class="text-gray-600">Durasi: </span>
                                         <span class="text-gray-900" id="durationDisplay">-</span>
                                     </div>
-                                    <div class="flex justify-between">
-                                        <span class="text-gray-600">Tax (20%): </span>
+                                    {{-- <div class="flex justify-between">
+                                        <span class="text-gray-600">Service Fee (20%): </span>
                                         <span class="text-gray-900" id="serviceFeesDisplay">-</span>
-                                    </div>
-
+                                    </div> --}}
+                                    
                                     <div class="flex justify-between">
                                         <span class="text-gray-600">Total Harga Kamar:</span>
                                         <span class="text-gray-900" id="roomTotal">-</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Tax and Fees (20%): </span>
+                                        <span class="text-gray-900" id="taxDisplay">-</span>
                                     </div>
                                     
                                     {{-- <div class="flex justify-between">
@@ -405,7 +410,9 @@
             function resetSummary() {
                 document.getElementById('durationDisplay').textContent = '-';
                 document.getElementById('roomTotal').textContent = '-';
-                document.getElementById('adminFee').textContent = '-';
+                // document.getElementById('adminFee').textContent = '-';
+                // document.getElementById('serviceFee').textContent = '-';
+                document.getElementById('taxFee').textContent = '-';
                 document.getElementById('grandTotal').textContent = '-';
             }
 
@@ -459,11 +466,12 @@
                 }
                 // Get admin fee value from the hidden input or use the default
                 const adminFee = 0;
-                // const serviceFees= 20000;
-                const serviceFees = 0.2 * roomTotal;
-                const grandTotal = roomTotal + serviceFees ;
+                const serviceFees= 0;
+                const taxFees = 0.2 * roomTotal;
+                const grandTotal = roomTotal + serviceFees +adminFee + taxFees;
                 document.getElementById('roomTotal').textContent = formatRupiah(roomTotal);
-                document.getElementById('serviceFeesDisplay').textContent = formatRupiah(serviceFees);
+                // document.getElementById('serviceFeesDisplay').textContent = formatRupiah(serviceFees);
+                document.getElementById('taxDisplay').textContent = formatRupiah(taxFees);
                 // document.getElementById('adminFee').textContent = formatRupiah(adminFee);
                 document.getElementById('grandTotal').textContent = formatRupiah(grandTotal);
             }
