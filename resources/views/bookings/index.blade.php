@@ -146,6 +146,9 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Details
+                                    </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Order #
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -175,21 +178,54 @@
                                 @forelse ($filteredBookings as $booking)
                                     <tr class="hover:bg-gray-50 transition-colors duration-200">
                                         <td class="px-6 py-4">
+                                            <div class="flex justify-center items-center h-full">
+                                                <button onclick="showBookingDetails(
+                                                    {{ $booking->idrec }},
+                                                    '{{ $booking->order_id }}',
+                                                    '{{ $booking->transaction_type }}',
+                                                    '{{ $booking->user_name }}',
+                                                    '{{ $booking->user_phone_number }}',
+                                                    '{{ $booking->user_email }}',
+                                                    '{{ $booking->property_name }}',
+                                                    '{{ $booking->room_name }}',
+                                                    '{{ $booking->property_type }}',
+                                                    '{{ \Carbon\Carbon::parse($booking->check_in)->format('d M Y') }}',
+                                                    '{{ \Carbon\Carbon::parse($booking->check_out)->format('d M Y') }}',
+                                                    '{{ $booking->formatted_grandtotal_price }}',
+                                                    '{{ $booking->transaction_status }}'
+                                                )"
+                                                        class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-200"
+                                                        title="View Details">
+                                                    <i class="fas fa-info-circle"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
                                             <div class="flex flex-col space-y-1">
                                                 <div class="flex items-center space-x-2">
                                                     <span class="font-semibold text-xs text-gray-500">Order ID:</span>
                                                     <span class="text-xs text-gray-900">{{ $booking->order_id }}</span>
                                                 </div>
-                                                <div class="flex items-center space-x-2">
+                                                {{-- <div class="flex items-center space-x-2">
                                                     <span class="font-semibold text-xs text-gray-500">Transaction Code:</span>
                                                     <span class="text-xs text-teal-600">{{ $booking->transaction_code }}</span>
-                                                </div>
+                                                </div> --}}
                                             </div>
                                             
-                                            <div class="text-xs text-gray-500">
-                                                <span class="font-semibold text-xs text-gray-500">Transaction Type:</span>
-                                                <span class="text-xs text-gray-900">{{ strtoupper($booking->transaction_type) }}</span>
-                                            </div>
+                                           <div class="text-xs text-gray-500">
+                                               <span class="font-semibold text-xs text-gray-500">Transaction:</span>
+                                               <span class="text-xs text-gray-900">{{ strtoupper($booking->transaction_type) }}</span>
+                                               @php
+                                               if ($booking->transaction_type === 'BRI' || $booking->transaction_type === 'bri') {
+                                               @endphp
+                                                   <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                                                       <div class="font-bold text-black text-md mb-1">PT Kelola Aset Properti</div>
+                                                       <div class="text-lg text-black font-bold">0505-01-001671-56-7</div>
+                                                   </div>
+                                               @php
+                                               }
+                                               @endphp
+                                           </div>
                                             <div class="text-xs text-gray-500 mt-4">
                                                 <div class="flex items-center">
                                                     <i class="fas fa-user mr-1"></i>
@@ -224,7 +260,13 @@
                                             </div>
                                             <div class="text-xs text-gray-500 flex items-center">
                                                 <i class="far fa-clock mr-1"></i>
-                                                {{ $booking->booking_days }} days
+                                                @if(!empty($booking->booking_days))
+                                                    {{ $booking->booking_days }} hari
+                                                @elseif(!empty($booking->booking_months))
+                                                    {{ $booking->booking_months }} bulan
+                                                @else
+                                                    -
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
@@ -244,64 +286,49 @@
                                             --}}
                                         </td>
                                         <!-- Transaction StatusS -->
+                                        @php
+                                            $status = strtolower($booking->transaction_status);
+                                            $transactionDate = \Carbon\Carbon::parse($booking->transaction_date);
+                                            $currentTime = now();
+                                            $hoursDiff = $currentTime->diffInHours($transactionDate);
+                                            $expiresAt = $transactionDate->copy()->addHour();
+                                            $remainingMinutes = $currentTime->diffInMinutes($expiresAt, false);
+                                            $shouldShowTimer = false;
+
+                                            // Status mapping
+                                            $statusMap = [
+                                                'pending' => ['bg-red-50', 'text-red-700', 'bg-red-400', 'Menunggu Pembayaran'],
+                                                'waiting' => ['bg-yellow-50', 'text-yellow-700', 'bg-yellow-400', 'Menunggu Konfirmasi'],
+                                                'success' => ['bg-green-50', 'text-green-700', 'bg-green-500', 'Berhasil Dibayar'],
+                                                'paid' => ['bg-green-50', 'text-green-700', 'bg-green-500', 'Berhasil Dibayar'],
+                                                'canceled' => ['bg-gray-50', 'text-gray-700', 'bg-gray-500', 'Dibatalkan'],
+                                                'expired' => ['bg-gray-100', 'text-gray-500', 'bg-gray-400', 'Expired']
+                                            ];
+
+                                            [$badgeBg, $badgeText, $dot, $transactionText] = $statusMap[$status] ?? ['bg-gray-100', 'text-gray-700', 'bg-gray-400', 'Gagal'];
+
+                                            // Handle pending status
+                                            if ($status === 'pending') {
+                                                $shouldShowTimer = true;
+                                                if ($hoursDiff >= 1) {
+                                                    [$badgeBg, $badgeText, $dot, $transactionText] = ['bg-gray-100', 'text-gray-500', 'bg-gray-400', 'Expired'];
+                                                    $status = 'expired';
+                                                    $shouldShowTimer = false;
+                                                }
+                                            }
+
+                                            // Add timer
+                                            if ($shouldShowTimer && $remainingMinutes > 0) {
+                                                $remainingTime = $expiresAt->diffForHumans($currentTime, [
+                                                    'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
+                                                    'parts' => 3,
+                                                    'short' => true
+                                                ]);
+                                                $transactionText .= ' (' . $remainingTime . ')';
+                                            }
+                                        @endphp
                                         <td class="px-6 py-4">
                                             <div class="flex justify-center items-center h-full">
-                                                @php
-                                                    $status = strtolower($booking->transaction_status);
-                                                    $badgeBg = $badgeText = $dot = '';
-                                                    $transactionDate = \Carbon\Carbon::parse($booking->transaction_date);
-                                                    $currentTime = now();
-                                                    $hoursDifference = $currentTime->diffInHours($transactionDate);
-                                                    $shouldShowTimer = false;
-                                                    $expiresAt = $transactionDate->copy()->addHour();
-                                                    $remainingMinutes = $currentTime->diffInMinutes($expiresAt, false);
-                                                    $isExpired = false;
-
-                                                    // Handle status-specific styling and text
-                                                    if ($status === 'pending') {
-                                                        $badgeBg = 'bg-red-50'; $badgeText = 'text-red-700'; $dot = 'bg-red-400';
-                                                        $transactionText = 'Menunggu Pembayaran';
-                                                        $shouldShowTimer = true;
-                                                        
-                                                        // Check if expired
-                                                        if ($hoursDifference >= 1) {
-                                                            $isExpired = true;
-                                                            $status = 'expired';
-                                                            $shouldShowTimer = false;
-                                                        }
-                                                    } 
-                                                    elseif ($status === 'waiting') {
-                                                        $badgeBg = 'bg-yellow-50'; $badgeText = 'text-yellow-700'; $dot = 'bg-yellow-400';
-                                                        $transactionText = 'Menunggu Konfirmasi';
-                                                        $shouldShowTimer = false;
-                                                    }
-                                                    elseif ($status === 'success' || $status === 'paid') {
-                                                        $badgeBg = 'bg-green-50'; $badgeText = 'text-green-700'; $dot = 'bg-green-500';
-                                                        $transactionText = 'Berhasil Dibayar';
-                                                    } 
-                                                    elseif ($status === 'canceled') {
-                                                        $badgeBg = 'bg-gray-50'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-500';
-                                                        $transactionText = 'Dibatalkan';
-                                                    } 
-                                                    elseif ($status === 'expired') {
-                                                        $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-500'; $dot = 'bg-gray-400';
-                                                        $transactionText = 'Expired';
-                                                    } 
-                                                    else {
-                                                        $badgeBg = 'bg-gray-100'; $badgeText = 'text-gray-700'; $dot = 'bg-gray-400';
-                                                        $transactionText = 'Gagal';
-                                                    }
-                                                    
-                                                    // Add countdown timer if needed
-                                                    if ($shouldShowTimer && $remainingMinutes > 0) {
-                                                        $remainingTime = $expiresAt->diffForHumans($currentTime, [
-                                                            'syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE,
-                                                            'parts' => 3,
-                                                            'short' => true
-                                                        ]);
-                                                        $transactionText .= ' (' . $remainingTime . ')';
-                                                    }
-                                                @endphp
                                                 <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm {{ $badgeBg }} {{ $badgeText }} border border-gray-200"
                                                       data-booking-id="{{ $booking->idrec }}"
                                                       data-expires-at="{{ $shouldShowTimer && $remainingMinutes > 0 ? $expiresAt->toIso8601String() : '' }}"
@@ -423,6 +450,7 @@
                                                 </div>
                                             @endif
                                         </td>
+                                        
                                     </tr>
                                 @empty
                                     <tr>
@@ -508,7 +536,13 @@
                                             </div>
                                             <div class="text-xs text-gray-500 flex items-center">
                                                 <i class="far fa-clock mr-1"></i>
-                                                {{ $booking->booking_days }} days
+                                                @if(!empty($booking->booking_days))
+                                                    {{ $booking->booking_days }} hari
+                                                @elseif(!empty($booking->booking_months))
+                                                    {{ $booking->booking_months }} bulan
+                                                @else
+                                                    -
+                                                @endif
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
@@ -574,133 +608,275 @@
 
     @include('components.homepage.footer')
 
+    <!-- Booking Details Modal -->
+    <div id="bookingDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-gray-900">Booking Details</h3>
+                        <button onclick="closeBookingDetails()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="px-6 py-4 overflow-y-auto max-h-[calc(90vh-4rem)]">
+                    <div id="modalContent">
+                        <!-- Details will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    <button onclick="closeBookingDetails()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        @include('components.homepage.scripts')
-        
-        // Initialize any global SweetAlert2 defaults if needed
-        window.Swal = Swal.mixin({
-            customClass: {
-                confirmButton: 'px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500',
-                cancelButton: 'px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ml-3'
-            },
-            buttonsStyling: false
-        });
-
-        // Function to mark a booking as expired via AJAX
-        function markBookingAsExpired(bookingId) {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             
-            fetch(`/bookings/${bookingId}/mark-expired`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
+        document.addEventListener('DOMContentLoaded', function() {
+            @include('components.homepage.scripts')
+            
+            // Initialize any global SweetAlert2 defaults if needed
+            window.Swal = Swal.mixin({
+                customClass: {
+                    confirmButton: 'px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500',
+                    cancelButton: 'px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ml-3'
                 },
-                body: JSON.stringify({ _method: 'POST' })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(err => { throw err; });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'success') {
-                    // Reload the page to reflect the changes
-                    window.location.reload();
-                } else {
+                buttonsStyling: false
+            });
+
+            // Function to mark a booking as expired via AJAX
+            function markBookingAsExpired(bookingId) {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                fetch(`/bookings/${bookingId}/mark-expired`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ _method: 'POST' })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw err; });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Reload the page to reflect the changes
+                        window.location.reload();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.message || 'Failed to update booking status',
+                            confirmButtonText: 'OK'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: data.message || 'Failed to update booking status',
+                        text: error.message || 'An error occurred while updating the booking status',
                         confirmButtonText: 'OK'
                     });
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: error.message || 'An error occurred while updating the booking status',
-                    confirmButtonText: 'OK'
                 });
-            });
-        }
-
-        // Check for expired bookings on page load
-        document.querySelectorAll('.booking-row[data-expired="true"]').forEach(row => {
-            const bookingId = row.dataset.bookingId;
-            if (bookingId) {
-                markBookingAsExpired(bookingId);
             }
-        });
 
-        // Simple ticking timer for pending bookings (similar to your example)
-        function updateTimers() {
-            document.querySelectorAll('[data-expires-at]').forEach(element => {
-                const expiresAt = new Date(element.dataset.expiresAt);
-                const now = new Date();
-                const remainingMs = expiresAt.getTime() - now.getTime();
-                
-                if (remainingMs <= 0) {
-                    // Timer has expired
-                    const bookingId = element.dataset.bookingId;
-                    const timerText = element.querySelector('.timer-text');
-                    if (timerText) {
-                        timerText.textContent = element.dataset.initialText + ' (Expired)';
-                    }
-                    
-                    // Update styling to expired state
-                    element.classList.remove('bg-red-50', 'text-red-700');
-                    element.classList.add('bg-gray-100', 'text-gray-500');
-                    const dot = element.querySelector('span:first-child');
-                    if (dot) {
-                        dot.classList.remove('bg-red-400');
-                        dot.classList.add('bg-gray-400');
-                    }
-                    
-                    // Mark as expired in backend if not already done
-                    if (element.dataset.status === 'pending') {
-                        markBookingAsExpired(bookingId);
-                        element.dataset.status = 'expired';
-                    }
-                } else {
-                    // Calculate remaining time with zero padding like your example
-                    const hours = Math.floor(remainingMs / (1000 * 60 * 60));
-                    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
-                    
-                    // Format time with zero padding
-                    const h = ("0" + hours).substr(-2);
-                    const m = ("0" + minutes).substr(-2);
-                    const s = ("0" + seconds).substr(-2);
-                    
-                    let timeString = '';
-                    if (hours > 0) {
-                        timeString = `${h}:${m}:${s}`;
-                    } else if (minutes > 0) {
-                        timeString = `00:${m}:${s}`;
-                    } else {
-                        timeString = `00:00:${s}`;
-                    }
-                    
-                    const timerText = element.querySelector('.timer-text');
-                    if (timerText) {
-                        timerText.textContent = element.dataset.initialText + ' (' + timeString + ')';
-                    }
+            // Check for expired bookings on page load
+            document.querySelectorAll('.booking-row[data-expired="true"]').forEach(row => {
+                const bookingId = row.dataset.bookingId;
+                if (bookingId) {
+                    markBookingAsExpired(bookingId);
                 }
             });
-        }
 
-        // Start the ticking timer (like your example)
-        updateTimers(); // Initial update
-        setInterval(updateTimers, 1000); // Update every second (ticking)
+            // Simple ticking timer for pending bookings (similar to your example)
+            function updateTimers() {
+                document.querySelectorAll('[data-expires-at]').forEach(element => {
+                    const expiresAt = new Date(element.dataset.expiresAt);
+                    const now = new Date();
+                    const remainingMs = expiresAt.getTime() - now.getTime();
+                    
+                    if (remainingMs <= 0) {
+                        // Timer has expired
+                        const bookingId = element.dataset.bookingId;
+                        const timerText = element.querySelector('.timer-text');
+                        if (timerText) {
+                            timerText.textContent = element.dataset.initialText + ' (Expired)';
+                        }
+                        
+                        // Update styling to expired state
+                        element.classList.remove('bg-red-50', 'text-red-700');
+                        element.classList.add('bg-gray-100', 'text-gray-500');
+                        const dot = element.querySelector('span:first-child');
+                        if (dot) {
+                            dot.classList.remove('bg-red-400');
+                            dot.classList.add('bg-gray-400');
+                        }
+                        
+                        // Mark as expired in backend if not already done
+                        if (element.dataset.status === 'pending') {
+                            markBookingAsExpired(bookingId);
+                            element.dataset.status = 'expired';
+                        }
+                    } else {
+                        // Calculate remaining time with zero padding like your example
+                        const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                        const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+                        
+                        // Format time with zero padding
+                        const h = ("0" + hours).substr(-2);
+                        const m = ("0" + minutes).substr(-2);
+                        const s = ("0" + seconds).substr(-2);
+                        
+                        let timeString = '';
+                        if (hours > 0) {
+                            timeString = `${h}:${m}:${s}`;
+                        } else if (minutes > 0) {
+                            timeString = `00:${m}:${s}`;
+                        } else {
+                            timeString = `00:00:${s}`;
+                        }
+                        
+                        const timerText = element.querySelector('.timer-text');
+                        if (timerText) {
+                            timerText.textContent = element.dataset.initialText + ' (' + timeString + ')';
+                        }
+                    }
+                });
+            }
+
+            // Start the ticking timer (like your example)
+            updateTimers(); // Initial update
+            setInterval(updateTimers, 1000); // Update every second (ticking)
+
+        
     });
-</script>
+    </script>
+
+    <script>
+    // Make functions global by declaring them outside DOMContentLoaded
+    function showBookingDetails(
+        bookingId, orderId, transactionType, userName, userPhone, userEmail,
+        propertyName, roomName, propertyType, checkIn, checkOut,
+        grandtotalPrice, transactionStatus, transactionText
+    ) {
+        const modal = document.getElementById('bookingDetailsModal');
+        const modalContent = document.getElementById('modalContent');
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Get status class function
+        function getStatusClass(status) {
+            const statusClassMap = {
+                'pending': 'bg-red-100 text-red-800',
+                'waiting': 'bg-yellow-100 text-yellow-800',
+                'success': 'bg-green-100 text-green-800',
+                'paid': 'bg-green-100 text-green-800',
+                'canceled': 'bg-gray-100 text-gray-800',
+                'expired': 'bg-gray-200 text-gray-600'
+            };
+            return statusClassMap[status] || 'bg-gray-100 text-gray-800';
+        }
+        
+        // Format and display booking details
+        modalContent.innerHTML = `
+            <div class="space-y-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-2">Booking Information</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="font-medium text-gray-500">Order ID:</p>
+                            <p class="text-gray-900 font-semibold">${orderId}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Transaction Type:</p>
+                            <p class="text-gray-900">${transactionType.toUpperCase()}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">User Name:</p>
+                            <p class="text-gray-900">${userName}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Phone:</p>
+                            <p class="text-gray-900">${userPhone}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Email:</p>
+                            <p class="text-gray-900">${userEmail}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Status:</p>
+                            <p class="text-gray-900 ${getStatusClass(transactionStatus)}">${transactionStatus.toUpperCase()}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-2">Property Details</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="font-medium text-gray-500">Property:</p>
+                            <p class="text-gray-900">${propertyName}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Room:</p>
+                            <p class="text-gray-900">${roomName}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Type:</p>
+                            <p class="text-gray-900">${propertyType}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Total Price:</p>
+                            <p class="text-gray-900 font-semibold">${grandtotalPrice}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h4 class="font-semibold text-gray-900 mb-2">Booking Dates</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="font-medium text-gray-500">Check In:</p>
+                            <p class="text-gray-900">${checkIn}</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Check Out:</p>
+                            <p class="text-gray-900">${checkOut}</p>
+                        </div>
+                    </div>
+                    ${transactionType === 'BRI' || transactionType === 'bri' ? `
+                        <div class="mt-3 p-3 bg-blue-100 border border-blue-300 rounded-lg">
+                            <div class="font-bold text-black text-md mb-1">PT Kelola Aset Properti</div>
+                            <div class="text-lg text-black font-bold">0505-01-001671-56-7</div>
+                            <div class="text-xs text-blue-700 mt-1">Transfer to this virtual account</div>
+                        </div>
+                    ` : ''}
+                </div>
+                
+            </div>
+        `;
+    }
+
+    function closeBookingDetails() {
+        const modal = document.getElementById('bookingDetailsModal');
+        modal.classList.add('hidden');
+    }
+    </script>
+
 </body>
 </html>
