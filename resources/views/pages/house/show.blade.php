@@ -462,7 +462,7 @@
                                     </div>
 
                                     <div class="p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['name'] }}</h3>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h3>
                                         <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p>
 
                                         <div class="mb-4">

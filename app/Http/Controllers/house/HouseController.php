@@ -284,6 +284,7 @@ class HouseController extends Controller {
                 'property_id' => $room->property_id,
                 'property_name' => $room->property_name,
                 'slug' => $room->slug,
+                'no' => $room->no,
                 'name' => $room->name,
                 'descriptions' => $room->descriptions,
                 'type' => $room->type,

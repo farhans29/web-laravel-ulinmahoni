@@ -33,6 +33,7 @@
                     <li><span class="mx-2">/</span></li>
                     <li><a href="{{ url()->previous() }}" class="hover:text-gray-700">Property</a></li>
                     <li><span class="mx-2">/</span></li>
+                    
                     <li class="text-gray-900">{{ $room['name'] }}</li>
                 </ol>
             </nav>
@@ -111,7 +112,7 @@
                             <!-- Room Title and Price -->
                             <div class="flex justify-between items-start mb-8">
                                 <div>
-                                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $room['name'] }}</h1>
+                                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h1>
                                     <p class="text-gray-500 uppercase tracking-wide">{{ $room['type'] }}</p>
                                 </div>
                                 <div class="space-y-4 text-right">
