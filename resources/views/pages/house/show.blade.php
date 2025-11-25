@@ -14,6 +14,17 @@
             --transition: all 0.3s ease;
         }
 
+        /* Responsive height for main image container */
+        .mobile-responsive-height {
+            height: 45rem; /* Desktop default */
+        }
+
+        @media (max-width: 768px) {
+            .mobile-responsive-height {
+                height: 20rem !important; /* Mobile height */
+            }
+        }
+
         .gallery-item {
             position: relative;
             overflow: hidden;
@@ -139,7 +150,7 @@
                 </div>
                 
                 <!-- Main Image with overlay badges -->
-                <div class="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden w-full">
+                <div class="relative bg-gray-100 rounded-lg overflow-hidden w-full mobile-responsive-height">
                     @if($primaryImage)
                         {{-- <img src="data:image/jpeg;base64,{{ $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
@@ -149,7 +160,7 @@
                             this.src='{{ asset('images/placeholder-property.jpg') }}';"> --}}
                         <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
-                            class="w-full h-auto max-h-full object-contain object-center"
+                            class="w-full h-full object-fill object-center"
                             @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                     @else
