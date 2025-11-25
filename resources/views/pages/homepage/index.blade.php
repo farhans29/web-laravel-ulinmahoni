@@ -151,8 +151,8 @@
     @include('components.homepage.property-types')
     @include('components.homepage.promos')
     @include('components.homepage.areas')
-    @include('components.homepage.featured')
-    @include('components.homepage.special-offers')
+    {{-- @include('components.homepage.featured') --}}
+    {{-- @include('components.homepage.special-offers') --}}
     {{-- @include('components.homepage.liu-house') --}}
   </main>
 

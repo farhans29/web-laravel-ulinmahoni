@@ -65,8 +65,11 @@
         <nav class="hidden md:flex">
             <ul class="flex space-x-6">
                 <li>
-                    <a href="/sewa" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                    {{-- <a href="/sewa" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
                         Sewa Berjangka
+                    </a> --}}
+                    <a href="/homepage" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                        Home
                     </a>
                 </li>
                 <li>    

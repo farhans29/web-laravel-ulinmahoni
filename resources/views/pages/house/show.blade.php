@@ -31,9 +31,9 @@
         }
 
         .gallery-item img {
-            width: 60%;
+            width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
             margin: 0 auto;
             transition: var(--transition);
@@ -44,11 +44,12 @@
         }
 
         .gallery-item.main-image img {
-            width: 80%;
+            width: 100%;
         }
+        
 
         .gallery-item.side-image {
-            height: 195px;
+            height: 295px;
         }
 
         .gallery-item.side-image img {
@@ -138,7 +139,7 @@
                 </div>
                 
                 <!-- Main Image with overlay badges -->
-                <div class="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden max-w-xl w-full mx-auto">
+                <div class="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden w-full">
                     @if($primaryImage)
                         {{-- <img src="data:image/jpeg;base64,{{ $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
@@ -148,7 +149,7 @@
                             this.src='{{ asset('images/placeholder-property.jpg') }}';"> --}}
                         <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
-                            class="w-full h-full object-cover"
+                            class="w-full h-auto max-h-full object-contain object-center"
                             @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                     @else
@@ -171,36 +172,30 @@
                             {{ ucfirst($house['type']) }}
                         </span>
                     @endif
-                </div>
 
-                <!-- Thumbnails (if multiple images) -->
-                @if(count($secondaryImages) > 0)
-                    <div class="flex space-x-2 overflow-x-auto pb-2 mt-3">
-                        <!-- Main image as first thumb -->
-                        <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-                            {{-- <img src="data:image/jpeg;base64,{{ $primaryImage }}"
-                                alt="{{ $house['name'] ?? 'Property Image' }} - Main"
-                                class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"> --}}
-                            <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
-                                alt="{{ $house['name'] ?? 'Property Image' }} - Main"
-                                @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
-                                class="w-full h-full object-cover cursor-pointer hover:opacity-80">
-                        </div>
-                        @foreach($secondaryImages as $index => $image)
-                            <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-                                {{-- <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
-                                    alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
-                                    class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                    @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"> --}}
-                                <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}"
-                                    alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
-                                    @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"
-                                    class="w-full h-full object-cover cursor-pointer hover:opacity-80">
+                    <!-- Thumbnails (if multiple images) -->
+                    @if(count($secondaryImages) > 0)
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent py-4 px-6">
+                            <div class="flex space-x-3 overflow-x-auto">
+                                <!-- Main image as first thumb -->
+                                <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
+                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
+                                        alt="{{ $house['name'] ?? 'Property Image' }} - Main"
+                                        @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
+                                        class="w-full h-full object-cover cursor-pointer hover:opacity-80">
+                                </div>
+                                @foreach($secondaryImages as $index => $image)
+                                    <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
+                                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}"
+                                            alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
+                                            @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"
+                                            class="w-full h-full object-cover cursor-pointer hover:opacity-80">
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                @endif
+                        </div>
+                    @endif
+                </div>
             </div>
 
             <!-- Property Info Section -->
