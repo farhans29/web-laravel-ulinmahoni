@@ -18,7 +18,7 @@
     <div class="hero-section">
       @if($heroMedia['type'] == 'video')
       <div class="hero-content">
-        <video id="heroVideo" class="hero-media" autoplay loop muted playsinline>
+        <video id="heroVideo" class="hero-media" autoplay loop playsinline>
           <source src="{{ asset($heroMedia['sources']['video']) }}" type="video/mp4">
           Your browser does not support the video tag.  
         </video>
