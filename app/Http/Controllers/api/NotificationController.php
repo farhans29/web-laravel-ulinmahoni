@@ -250,9 +250,9 @@ class NotificationController extends ApiController
 
                 return response()->json([
                     'responseCode' => '4042512',
-                    'responseMessage' => 'Bill not found',
-                    'message' => "Bill {$trxId} not found",
-                    'status' => 'error',
+                    'responseMessage' => "Bill {$trxId} not found",
+                    // 'message' => "Bill {$trxId} not found",
+                    // 'status' => 'error',
                 ], 404);
             }
 
@@ -328,12 +328,16 @@ class NotificationController extends ApiController
             ]);
 
             return response()->json([
-                // 'status' => 'success',
-                // 'message' => 'DOKU Virtual Account payment notification processed successfully',
                 'responseCode' => '2002500',
-                'responseMessage' => 'Successful',
-                'notification_data' => $notificationData,
-                'processed_at' => now()->toISOString(),
+                'responseMessage' => 'Success',
+                'virtualAccountData' => [
+                    'partnerServiceId' => $partnerId,
+                    'customerNo' => $customerNo,
+                    'virtualAccountNo' => $virtualAccountNo,
+                    'virtualAccountName' => $virtualAccountName,
+                    'trxId' => $trxId,
+                    'paymentRequestId' => $paymentRequestId,
+                ]
             ], 200);
         
 
