@@ -18,8 +18,8 @@ class VerifyApiKey
             return $next($request);
         }
 
-        // Get the API key from the URL segment
-        $apiKey = $request->segment(2); // Gets the second segment after /api/
+        // Get the API key from the X-API-KEY header
+        $apiKey = $request->header('X-API-KEY');
         $expectedApiKey = config('services.api.key');
         
         // Log the request for debugging
@@ -28,22 +28,16 @@ class VerifyApiKey
         //     'full_url' => $request->fullUrl(),
         //     'api_key' => $apiKey,
         //     'expected_key' => $expectedApiKey,
-        //     'segments' => $request->segments()
+        //     'headers' => $request->headers->all()
         // ]);
         
         if (empty($apiKey) || $apiKey !== $expectedApiKey) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Invalid or missing API Key in URL',
-                'expected_format' => '/api/your-api-key/your-endpoint',
-                'received_url' => $request->fullUrl()
+                'message' => 'Invalid or missing API KEY',
+                'documentation' => 'Please contact our staff for assistance'
             ], 401);
         }
-        
-        // Remove the API key from the segments to prevent it from being treated as a route parameter
-        $path = $request->path();
-        $path = preg_replace('#^api/[^/]+#', 'api', $path);
-        $request->server->set('REQUEST_URI', '/'.$path);
         
         return $next($request);
     }
