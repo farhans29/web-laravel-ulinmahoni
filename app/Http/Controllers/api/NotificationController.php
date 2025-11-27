@@ -377,11 +377,11 @@ class NotificationController extends ApiController
             ];
 
             // Log DOKU notification for debugging
-            \Log::info('DOKU QR Payment Notification Received', [
-                'headers' => $headers,
-                'body' => $request->all(),
-                'timestamp' => now()->toISOString()
-            ]);
+            // \Log::info('DOKU QR Payment Notification Received', [
+            //     'headers' => $headers,
+            //     'body' => $request->all(),
+            //     'timestamp' => now()->toISOString()
+            // ]);
 
             // Validate new request format
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
@@ -411,13 +411,29 @@ class NotificationController extends ApiController
             $serviceCode = $request->serviceCode;
 
             // Log processing details
-            \Log::info('DOKU QR Payment Notification Processed Successfully', [
-                'originalReferenceNo' => $originalReferenceNo,
-                'originalPartnerReferenceNo' => $originalPartnerReferenceNo,
-                'merchantId' => $merchantId,
-                'serviceCode' => $serviceCode,
-                'processed_at' => now()->toISOString()
-            ]);
+            // \Log::info('DOKU QR Payment Notification Processed Successfully', [
+            //     'originalReferenceNo' => $originalReferenceNo,
+            //     'originalPartnerReferenceNo' => $originalPartnerReferenceNo,
+            //     'merchantId' => $merchantId,
+            //     'serviceCode' => $serviceCode,
+            //     'processed_at' => now()->toISOString()
+            // ]);
+            
+            // if (!$billExists) {
+            //     // \Log::warning('DOKU Payment Notification: Bill not found', [
+            //     //     'customerNo' => $customerNo,
+            //     //     'virtualAccountNo' => $virtualAccountNo,
+            //     //     'orderId' => $virtualAccountNo,
+            //     //     'trxId' => $trxId
+            //     // ]);
+
+            //     return response()->json([
+            //         'responseCode' => '4042512',
+            //         'responseMessage' => "Bill {$trxId} not found",
+            //         // 'message' => "Bill {$trxId} not found",
+            //         // 'status' => 'error',
+            //     ], 404);
+            // }
 
             // Return the expected response format
             return response()->json([
