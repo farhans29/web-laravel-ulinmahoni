@@ -495,6 +495,7 @@
                             'Accept': 'application/json',
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
+                            'x-api-key':env('API_KEY')
                         },
                         body: requestBody
                     });
