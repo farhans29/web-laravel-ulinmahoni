@@ -60,6 +60,69 @@ class Property extends Model
     {
         return $this->hasMany(Room::class, 'property_id', 'idrec');
     }
+    /**
+     * Get minimum price_original_daily from rooms.
+     *
+     * @return float|null
+     */
+    public function getPriceOriginalDailyAttribute()
+    {
+        $prices = $this->rooms()
+            ->whereNotNull('price_original_daily')
+            ->pluck('price_original_daily')
+            ->filter()
+            ->flatten();
+
+        return $prices->isNotEmpty() ? $prices->min() : null;
+    }
+
+    /**
+     * Get minimum price_original_monthly from rooms.
+     *
+     * @return float|null
+     */
+    public function getPriceOriginalMonthlyAttribute()
+    {
+        $prices = $this->rooms()
+            ->whereNotNull('price_original_monthly')
+            ->pluck('price_original_monthly')
+            ->filter()
+            ->flatten();
+
+        return $prices->isNotEmpty() ? $prices->min() : null;
+    }
+
+    /**
+     * Get minimum price_discounted_daily from rooms.
+     *
+     * @return float|null
+     */
+    public function getPriceDiscountedDailyAttribute()
+    {
+        $prices = $this->rooms()
+            ->whereNotNull('price_discounted_daily')
+            ->pluck('price_discounted_daily')
+            ->filter()
+            ->flatten();
+
+        return $prices->isNotEmpty() ? $prices->min() : null;
+    }
+
+    /**
+     * Get minimum price_discounted_monthly from rooms.
+     *
+     * @return float|null
+     */
+    public function getPriceDiscountedMonthlyAttribute()
+    {
+        $prices = $this->rooms()
+            ->whereNotNull('price_discounted_monthly')
+            ->pluck('price_discounted_monthly')
+            ->filter()
+            ->flatten();
+
+        return $prices->isNotEmpty() ? $prices->min() : null;
+    }
 
     /**
      * Get all images for each property using raw query.

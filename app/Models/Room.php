@@ -42,6 +42,61 @@ class Room extends Model
         'price' => 'json'
     ];
 
+    /**
+     * Get the price_original_daily attribute.
+     *
+     * @param  string  $value
+     * @return array
+     */
+    public function getPriceOriginalDailyAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Get the price_original_monthly attribute.
+     *
+     * @param  string  $value
+     * @return array
+     */
+    public function getPriceOriginalMonthlyAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Get the price_discounted_daily attribute.
+     *
+     * @param  string  $value
+     * @return array
+     */
+    public function getPriceDiscountedDailyAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Get the price_discounted_monthly attribute.
+     *
+     * @param  string  $value
+     * @return array
+     */
+    public function getPriceDiscountedMonthlyAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
+    /**
+     * Get the admin_fees attribute.
+     *
+     * @param  string  $value
+     * @return array
+     */
+    public function getAdminFeesAttribute($value)
+    {
+        return json_decode($value, true) ?? [];
+    }
+
 
     /**
      * Get the property that owns the room.
