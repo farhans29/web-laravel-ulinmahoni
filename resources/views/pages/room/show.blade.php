@@ -492,10 +492,10 @@
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': csrfToken,
+                            'X-API-KEY': '{{ env('API_KEY') }}',
                             'Accept': 'application/json',
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest'
-                            'x-api-key':env('API_KEY')
                         },
                         body: requestBody
                     });
