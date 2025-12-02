@@ -137,6 +137,7 @@ class HomeController extends Controller {
             'sources' => [
                 'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg',
                 'video' => 'images/assets/My_Movie.mp4'
+                // 'video' => ''
             ]
         ];
 
@@ -225,6 +226,7 @@ class HomeController extends Controller {
             'sources' => [
                 'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg',
                 'video' => 'images/assets/My_Movie.mp4'
+                // 'video' => ''
             ]
         ];
 

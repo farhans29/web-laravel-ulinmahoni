@@ -81,16 +81,78 @@
         </div>
 
         <!-- Verified Status -->
-        <div class="col-span-6 sm:col-span-4">
+        <div class="col-span-6 sm:col-span-4" x-data="{
+            sending: false,
+            message: '',
+            messageType: '',
+            async sendVerification() {
+                this.sending = true;
+                this.message = '';
+                try {
+                    const response = await fetch('/api/v1/auth/resend-verification', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email: '{{ $this->user->email }}'
+                        })
+                    });
+                    const data = await response.json();
+                    if (response.ok) {
+                        this.messageType = 'success';
+                        this.message = data.message || 'Email verifikasi telah dikirim!';
+                    } else {
+                        this.messageType = 'error';
+                        this.message = data.message || 'Gagal mengirim email verifikasi.';
+                    }
+                } catch (error) {
+                    this.messageType = 'error';
+                    this.message = 'Terjadi kesalahan saat mengirim email verifikasi.';
+                } finally {
+                    this.sending = false;
+                }
+            }
+        }">
             <x-jet-label for="email_verified_at" value="{{ __('Status Verifikasi') }}" />
-            <div class="flex items-center">
+            <div class="flex items-center gap-3">
                 @if ($this->user->email_verified_at)
-                    <span class="text-green-600 mr-2">{{ __('Terverifikasi') }}</span>
+                    <span class="text-green-600 font-medium">{{ __('Terverifikasi') }}</span>
                 @else
-                    <span class="text-red-600 mr-2">{{ __('Belum Diverifikasi') }}</span>
+                    <span class="text-red-600 font-medium">{{ __('Belum Diverifikasi') }}</span>
                 @endif
                 <x-jet-checkbox id="email_verified_at" type="checkbox" class="mt-1 block" wire:model="state.email_verified_at" :disabled="true" {{ $this->user->email_verified_at ? 'checked' : '' }}/>
             </div>
+
+            @if (!$this->user->email_verified_at)
+                <div class="mt-3">
+                    <button
+                        type="button"
+                        @click="sendVerification()"
+                        :disabled="sending"
+                        class="inline-flex items-center px-4 py-2 bg-teal-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-teal-700 active:bg-teal-800 focus:outline-none focus:border-teal-900 focus:ring focus:ring-teal-200 disabled:opacity-50 transition ease-in-out duration-150">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <span x-show="!sending">{{ __('Kirim Email Verifikasi') }}</span>
+                        <span x-show="sending" style="display: none;">{{ __('Mengirim...') }}</span>
+                    </button>
+
+                    <!-- Success/Error Message -->
+                    <div x-show="message" style="display: none;" class="mt-2">
+                        <p
+                            :class="{
+                                'text-green-600': messageType === 'success',
+                                'text-red-600': messageType === 'error'
+                            }"
+                            class="text-sm font-medium"
+                            x-text="message">
+                        </p>
+                    </div>
+                </div>
+            @endif
+
             <x-jet-input-error for="email_verified_at" class="mt-2" />
         </div>
 

@@ -40,13 +40,20 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
     public function toMail($notifiable)
     {
         $verificationUrl = $this->verificationUrl($notifiable);
-        
+
         if (static::$toMailCallback) {
             return call_user_func(static::$toMailCallback, $notifiable, $verificationUrl);
         }
-        
+
+        // Plain text version (kept for fallback)
         $message = "Dear Valued Customer,\n\nThank you for registering with Ulinmahoni. To complete your registration and verify your email address, please click on the following link:\n\n{$verificationUrl}\n\nThis link will expire in 24 hours for security purposes.\n\nIf you did not create an account with Ulinmahoni, please disregard this email.\n\nBest regards,\nThe Ulinmahoni Team";
-        
+
+        // Render the Blade template to HTML
+        $htmlContent = view('emails.verify-email', [
+            'user' => $notifiable,
+            'verificationUrl' => $verificationUrl
+        ])->render();
+
         $response = Http::withHeaders([
             'Authorization' => 'Bearer ' . config('services.mailtrap.api_key'),
             'Content-Type' => 'application/json',
@@ -60,7 +67,8 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
                 ['email' => $notifiable->getEmailForVerification()]
             ],
             'subject' => 'Ulinmahoni - Account Registration',
-            'text' => $message,
+            'html' => $htmlContent,
+            // 'text' => $message,
             'category' => 'Ulinmahoni - Account Registration'
         ]);
 
@@ -72,7 +80,7 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
             ]);
             throw new \RuntimeException('Failed to send verification email');
         }
-        
+
         // Return a dummy MailMessage to satisfy the interface
         return (new \Illuminate\Notifications\Messages\MailMessage)
             ->line('Please verify your email address by clicking the button below.')

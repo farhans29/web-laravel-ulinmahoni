@@ -312,7 +312,7 @@
                             <li class="policy-content">Jika ada pertanyaan dan/atau masalah, serta terdapat informasi yang ingin diketahui, maka Pengunjung, Pemilik, Pemegang Akun, dan/atau Penyewa dapat menghubungi KAP melalui kontak di bawah ini:
                                 <ul class="list-disc pl-6 mt-2 space-y-1">
                                     <li>Telepon: +62 811-8809-9700</li>
-                                    <li>WhatsApp: <a href="https://wa.me/+6281188099700" class="text-blue-600 hover:underline">+62 811-8809-9700</a> (Ulin Mahoni)</li>
+                                    <li>WhatsApp: <a href="https://wa.me/6281188099700" class="text-blue-600 hover:underline">+62 811-8809-9700</a> (Ulin Mahoni)</li>
                                     <li>Email: ulinmahoni@gmail.com</li>
                                 </ul>
                                 <p class="mt-2">Jika Pengunjung, Pemilik, Pemilik Akun, dan/atau Penyewa menerima informasi dari selain nomor atau email yang tercantum dalam Syarat dan Ketentuan ini yang mengklaim berasal dari KAP, harap berhati-hati dan periksa kembali.</p>
@@ -320,9 +320,9 @@
                         </ol>
                     </div>
 
-                    <div class="pt-6 border-t border-gray-100 mt-8">
+                    {{-- <div class="pt-6 border-t border-gray-100 mt-8">
                         <p class="text-sm text-gray-500">Terakhir diperbarui: {{ date('d F Y') }}</p>
-                    </div>
+                    </div> --}}
                 </div>
             </div>
         </div>
