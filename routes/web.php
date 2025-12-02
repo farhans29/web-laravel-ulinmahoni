@@ -134,7 +134,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Route::redirect('/', 'login');
-Route::redirect('/','/id/homepage');
+Route::redirect('/','/homepage');
 Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
 
 
@@ -214,8 +214,13 @@ Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
 Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show');
 
 // Bookings Routes
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+// View bookings - only requires authentication (no email verification needed)
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+});
+
+// Create bookings and other actions - requires email verification
+Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::post('/bookings/{id}/upload-attachment', [BookingController::class, 'uploadAttachment'])->name('bookings.upload-attachment');
     // This route generates a signed URL for viewing attachments

@@ -41,12 +41,13 @@ Route::prefix('v1')->group(function () {
         // Route::get('/google', [SocialAuthController::class, 'redirectToGoogle']);
         // Route::post('/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
         // Route::middleware('auth:sanctum')->post('/logout', [SocialAuthController::class, 'logout']);
-        
+
         // Public authentication endpoints
         Route::post('register', [AuthController::class, 'register']);
         Route::post('login', [AuthController::class, 'login']);
         Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('reset-password', [AuthController::class, 'resetPassword']);
+        Route::post('resend-verification', [AuthController::class, 'resendVerification']);
     });
 
     // ROUTES THAT REQUIRE API KEY (MIDDLEWARE)

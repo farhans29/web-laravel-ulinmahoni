@@ -20,7 +20,7 @@
       <div class="hero-content">
         <video id="heroVideo" class="hero-media" autoplay loop muted playsinline>
           <source src="{{ asset($heroMedia['sources']['video']) }}" type="video/mp4">
-          Your browser does not support the video tag.  
+          Your browser does not support the video tag.
         </video>
         <div class="absolute bottom-4 right-4 p-4">
           <button id="playPauseBtn" class="bg-black/50 hover:bg-black/70 text-white p-3 rounded-full">
@@ -133,24 +133,26 @@
                                     localStorage.setItem('propertySearch', JSON.stringify(searchState));
                                 });
                             }
+                        });
                     </script>
                     
                     <div class="md:w-48">
                         <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
                             <i class="fas fa-search mr-2"></i>
-                            <span>Cari Properti</span>
+                            <span>Search Property</span>
                         </button>
                     </div>
                 </div>
             </form>
         </div>
+    </section>
     </div>
 
     @include('components.homepage.en.property-types')
     @include('components.homepage.en.promos')
     @include('components.homepage.en.areas')
-    @include('components.homepage.en.featured')
-    @include('components.homepage.en.special-offers')
+    {{-- @include('components.homepage.en.featured') --}}
+    {{-- @include('components.homepage.en.special-offers') --}}
     {{-- @include('components.homepage.liu-house') --}}
   </main>
 

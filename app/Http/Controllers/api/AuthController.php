@@ -274,11 +274,65 @@ class AuthController extends Controller
 
     
 
+    /**
+     * Resend email verification notification
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resendVerification(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = User::where('email', $request->email)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            // Check if email is already verified
+            if ($user->hasVerifiedEmail()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Email already verified'
+                ], 400);
+            }
+
+            // Send verification email using the custom notification
+            $user->sendEmailVerificationNotification();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Verification email sent successfully. Please check your email.'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to send verification email',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function logout(Request $request)
     {
         try {
             $request->user()->currentAccessToken()->delete();
-            
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Successfully logged out'

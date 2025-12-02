@@ -18,7 +18,7 @@
                 <div class="absolute inset-0 gradient-overlay"></div>
                 <div class="absolute bottom-4 left-4">
                     <button class="bg-transparent border border-white text-white px-4 py-2 rounded hover:bg-white/20 transition flex items-center">
-                        SEWA
+                        RENT
                         <i class="fas fa-arrow-right ml-2"></i>
                     </button>
                 </div>
@@ -31,7 +31,7 @@
                 <div class="absolute inset-0 gradient-overlay"></div>
                 <div class="absolute bottom-4 left-4">
                     <button class="bg-transparent border border-white text-white px-4 py-2 rounded hover:bg-white/20 transition flex items-center">
-                        SEWA
+                        RENT
                         <i class="fas fa-arrow-right ml-2"></i>
                     </button>
                 </div>
@@ -45,7 +45,7 @@
             <div class="absolute inset-0 gradient-overlay"></div>
             <div class="absolute bottom-4 left-4">
                 <button class="bg-transparent border border-white text-white px-4 py-2 rounded hover:bg-white/20 transition flex items-center">
-                    SEWA
+                    RENT
                     <i class="fas fa-arrow-right ml-2"></i>
                 </button>
             </div>

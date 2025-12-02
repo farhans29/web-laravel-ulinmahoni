@@ -20,7 +20,7 @@
       <div class="hero-content">
         <video id="heroVideo" class="hero-media" autoplay loop muted playsinline>
           <source src="{{ asset($heroMedia['sources']['video']) }}" type="video/mp4">
-          Your browser does not support the video tag.  
+          Your browser does not support the video tag.
         </video>
         <div class="absolute bottom-4 right-4 p-4">
           <button id="playPauseBtn" class="bg-black/50 hover:bg-black/70 text-white p-3 rounded-full">
