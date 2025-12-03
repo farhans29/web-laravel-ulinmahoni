@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\Auth\SocialAuthController;
 use App\Http\Controllers\Api\HealthCheckController;
+use App\Http\Controllers\Api\DokuServiceController as DokuController;
+
 use App\Http\Middleware\VerifyApiKey;
 
 /*
@@ -145,10 +147,16 @@ Route::prefix('v1')->group(function () {
 // END OF VerifyApiKey middleware group`
 
 // DOKU API ROUTES ( DO NOT COMMENT THIS PART OF CODE )
-Route::prefix('v1')->withoutMiddleware(['api.key'])->middleware('App\Http\Middleware\DokuHeaderMiddleware')->group(function () {
-    Route::post('/transfer-va/payment', [NotificationController::class, 'dokuPaymentNotification']);
-    Route::post('/qr-mpm/payment', [NotificationController::class, 'dokuQRPaymentNotification']); 
+
+Route::prefix('')
+->middleware('App\Http\Middleware\DokuHeaderMiddleware')
+->group(function () {
+    Route::post('v1/transfer-va/payment', [DokuController::class, 'dokuPaymentNotification']);
+    Route::post('v1/qr-mpm/payment', [DokuController::class, 'dokuQRPaymentNotification']); 
 });    
+Route::prefix('')->middleware('App\Http\Middleware\DokuB2BHeaderMiddleware')->group(function () {
+    Route::post('/authorization/v1/access-token/b2b', [DokuController::class, 'dokuGetTokenB2B']);
+});
 // END OF DOKU API ROUTES
 
 // ===== LEGACY API ROUTES =====
@@ -161,6 +169,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
 Route::post('resend-verification', [AuthController::class, 'resendVerification']);
+
 // AUTH API ROUTES 
 // Route::prefix('auth')->group(function () {
 //     // GOOGLE ( UNUSED, COMMENTED FOR REVIEW )

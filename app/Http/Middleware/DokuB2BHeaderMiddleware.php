@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class DokuHeaderMiddleware
+class DokuB2BHeaderMiddleware
 {
     /**
      * Handle an incoming request and validate DOKU headers.
@@ -20,10 +20,8 @@ class DokuHeaderMiddleware
         $requiredHeaders = [
             'X-TIMESTAMP',
             'X-SIGNATURE', 
-            'X-PARTNER-ID',
-            'X-EXTERNAL-ID',
-            'CHANNEL-ID',
-            'Authorization'
+            'X-CLIENT-KEY',
+            
         ];
 
         $missingHeaders = [];
@@ -44,48 +42,67 @@ class DokuHeaderMiddleware
             ], 422);
         }
 
-        // Log DOKU request for security monitoring
-        \Log::info('DOKU Request Received', [
+        // Log DOKU B2B request for security monitoring
+        \Log::info('DOKU B2B Token Request Received', [
             'headers' => [
                 'x-timestamp' => $request->header('X-TIMESTAMP'),
-                'x-partner-id' => $request->header('X-PARTNER-ID'),
-                'x-external-id' => $request->header('X-EXTERNAL-ID'),
-                'channel-id' => $request->header('CHANNEL-ID'),
+                'x-client-key' => $request->header('X-CLIENT-KEY'),
                 'signature_present' => $request->header('X-SIGNATURE') ? 'yes' : 'no',
-                'authorization_present' => $request->header('Authorization') ? 'yes' : 'no',
             ],
             'method' => $request->getMethod(),
             'url' => $request->getPathInfo(),
             'timestamp' => now()->toISOString()
         ]);
 
-        // Validate Bearer token authorization
-        if (!$this->validateAuthorization($request)) {
-            \Log::warning('DOKU Authorization Validation Failed', [
-                'x-partner-id' => $request->header('X-PARTNER-ID'),
-                'x-external-id' => $request->header('X-EXTERNAL-ID'),
+        // Validate request body
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'grantType' => 'required|string|in:client_credentials',
+        ]);
+
+        if ($validator->fails()) {
+            \Log::warning('DOKU B2B Request Body Validation Failed', [
+                'errors' => $validator->errors()->toArray(),
+                'body' => $request->all()
+            ]);
+
+            return response()->json([
+                'responseCode' => '4000000',
+                'responseMessage' => 'Bad Request. Invalid Field Format grantType'
+            ], 400);
+        }
+
+        // Verify grantType is exactly "client_credentials"
+        if ($request->input('grantType') !== 'client_credentials') {
+            return response()->json([
+                'responseCode' => '4000000',
+                'responseMessage' => 'Bad Request. Invalid Field Format grantType'
+            ], 400);
+        }
+
+        // Verify client credentials
+        $clientKey = $request->header('X-CLIENT-KEY');
+        $configClientId = config('services.doku.client_id');
+
+        if ($clientKey !== $configClientId) {
+            \Log::warning('DOKU B2B Request: Invalid Client Key', [
+                'provided_client_key' => $clientKey,
                 'timestamp' => now()->toISOString()
             ]);
 
             return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized',
-                'responseCode' => '4014701',
-                'responseMessage' => 'Unauthorized. Invalid Token (B2B)'
+                'responseCode' => '4017300',
+                'responseMessage' => 'Unauthorized. Unknown Client Key'
             ], 401);
         }
 
         // Validate DOKU signature
         // if (!$this->validateDokuSignature($request)) {
-        //     \Log::warning('DOKU Signature Validation Failed', [
-        //         'x-partner-id' => $request->header('X-PARTNER-ID'),
-        //         'x-external-id' => $request->header('X-EXTERNAL-ID'),
+        //     \Log::warning('DOKU B2B Signature Validation Failed', [
+        //         'x-client-key' => $clientKey,
         //         'timestamp' => now()->toISOString()
         //     ]);
 
         //     return response()->json([
-        //         'status' => 'error',
-        //         'message' => 'Invalid signature',
         //         'responseCode' => '4017300',
         //         'responseMessage' => 'Unauthorized. Signature Not Match'
         //     ], 401);
@@ -93,16 +110,14 @@ class DokuHeaderMiddleware
 
         // Validate timestamp (prevent replay attacks - max 5 minutes difference)
         if (!$this->validateTimestamp($request->header('X-TIMESTAMP'))) {
-            \Log::warning('DOKU Timestamp Validation Failed', [
+            \Log::warning('DOKU B2B Timestamp Validation Failed', [
                 'x-timestamp' => $request->header('X-TIMESTAMP'),
                 'current_time' => now()->toISOString()
             ]);
 
             return response()->json([
-                'status' => 'error',
-                'message' => 'Invalid timestamp',
-                'responseCode' => '4017301',
-                'responseMessage' => 'Invalid Timestamp'
+                'responseCode' => '4017300',
+                'responseMessage' => 'Unauthorized. Timestamp Not Valid'
             ], 401);
         }
 
