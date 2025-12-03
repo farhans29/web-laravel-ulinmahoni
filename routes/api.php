@@ -147,13 +147,16 @@ Route::prefix('v1')->group(function () {
 // END OF VerifyApiKey middleware group`
 
 // DOKU API ROUTES ( DO NOT COMMENT THIS PART OF CODE )
-
-Route::prefix('')
-->middleware('App\Http\Middleware\DokuHeaderMiddleware')
-->group(function () {
+// DOKU SNAP API
+Route::prefix('')->middleware('App\Http\Middleware\DokuHeaderMiddleware')->group(function () {
     Route::post('v1/transfer-va/payment', [DokuController::class, 'dokuPaymentNotification']);
+});
+
+// DOKU NON SNAP API
+Route::prefix('')->middleware('App\Http\Middleware\DokuNonSnapHeaderMiddleware')->group(function () {
     Route::post('v1/qr-mpm/payment', [DokuController::class, 'dokuQRPaymentNotification']); 
-});    
+});
+// DOKU B2B API
 Route::prefix('')->middleware('App\Http\Middleware\DokuB2BHeaderMiddleware')->group(function () {
     Route::post('/authorization/v1/access-token/b2b', [DokuController::class, 'dokuGetTokenB2B']);
 });
