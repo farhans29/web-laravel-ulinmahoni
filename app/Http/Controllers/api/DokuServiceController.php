@@ -201,16 +201,7 @@ class DokuServiceController extends ApiController
     public function dokuQRPaymentNotification(Request $request)
     {
         try {
-            // New expected body format
-            // {
-            //   "originalReferenceNo": "INV-20251119112706",
-            //   "originalPartnerReferenceNo": "INV-20251119112706",
-            //   "merchantId": "12345",
-            //   "serviceCode": "12"
-            // }
-
             // Headers have been validated by DokuHeaderMiddleware
-            // Get headers that were validated by middleware
             $headers = [
                 'x-timestamp' => $request->header('X-TIMESTAMP'),
                 'x-signature' => $request->header('X-SIGNATURE'),
@@ -219,19 +210,39 @@ class DokuServiceController extends ApiController
                 'channel-id' => $request->header('CHANNEL-ID'),
             ];
 
-            // Log DOKU notification for debugging
-            // \Log::info('DOKU QR Payment Notification Received', [
-            //     'headers' => $headers,
-            //     'body' => $request->all(),
-            //     'timestamp' => now()->toISOString()
-            // ]);
+            // Log DOKU QR notification for debugging
+            \Log::info('DOKU QR Payment Notification Received', [
+                'headers' => $headers,
+                'body' => $request->all(),
+                'timestamp' => now()->toISOString()
+            ]);
 
-            // Validate new request format
+            // Validate QRIS payment notification format
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-                'originalReferenceNo' => 'required|string|max:255',
-                'originalPartnerReferenceNo' => 'required|string|max:255',
-                'merchantId' => 'required|string|max:255',
-                'serviceCode' => 'required|string|max:10',
+                'service' => 'required|array',
+                'service.id' => 'required|string',
+                'service.name' => 'required|string',
+                'acquirer' => 'required|array',
+                'acquirer.id' => 'required|string',
+                'acquirer.name' => 'required|string',
+                'channel' => 'required|array',
+                'channel.id' => 'required|string',
+                'channel.name' => 'required|string',
+                'customer' => 'required|array',
+                'customer.doku_id' => 'required|string',
+                'customer.name' => 'required|string',
+                'customer.email' => 'required|email',
+                'customer.phone' => 'required|string',
+                'order' => 'required|array',
+                'order.invoice_number' => 'required|string',
+                'order.amount' => 'required|numeric',
+                'emoney_payment' => 'required|array',
+                'emoney_payment.account_id' => 'required|string',
+                'emoney_payment.approval_code' => 'required|string',
+                'transaction' => 'required|array',
+                'transaction.status' => 'required|string',
+                'transaction.date' => 'required|date',
+                'additional_info' => 'nullable|array',
             ]);
 
             if ($validator->fails()) {
@@ -241,54 +252,111 @@ class DokuServiceController extends ApiController
                 ]);
 
                 return response()->json([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
+                    'responseCode' => '4000000',
+                    'responseMessage' => 'Bad Request',
                     'errors' => $validator->errors()
-                ], 422);
+                ], 400);
             }
 
-            // Extract data from new format
-            $originalReferenceNo = $request->originalReferenceNo;
-            $originalPartnerReferenceNo = $request->originalPartnerReferenceNo;
-            $merchantId = $request->merchantId;
-            $serviceCode = $request->serviceCode;
+            // Extract payment data from QRIS format
+            $serviceId = $request->input('service.id');
+            $serviceName = $request->input('service.name');
+            $acquirerId = $request->input('acquirer.id');
+            $acquirerName = $request->input('acquirer.name');
+            $channelId = $request->input('channel.id');
+            $channelName = $request->input('channel.name');
+            $customerDokuId = $request->input('customer.doku_id');
+            $customerName = $request->input('customer.name');
+            $customerEmail = $request->input('customer.email');
+            $customerPhone = $request->input('customer.phone');
+            $invoiceNumber = $request->input('order.invoice_number');
+            $amount = $request->input('order.amount');
+            $accountId = $request->input('emoney_payment.account_id');
+            $approvalCode = $request->input('emoney_payment.approval_code');
+            $transactionStatus = $request->input('transaction.status');
+            $transactionDate = $request->input('transaction.date');
+            $additionalInfo = $request->input('additional_info', []);
 
-            // Log processing details
-            // \Log::info('DOKU QR Payment Notification Processed Successfully', [
-            //     'originalReferenceNo' => $originalReferenceNo,
-            //     'originalPartnerReferenceNo' => $originalPartnerReferenceNo,
-            //     'merchantId' => $merchantId,
-            //     'serviceCode' => $serviceCode,
-            //     'processed_at' => now()->toISOString()
-            // ]);
-            
-            // if (!$billExists) {
-            //     // \Log::warning('DOKU Payment Notification: Bill not found', [
-            //     //     'customerNo' => $customerNo,
-            //     //     'virtualAccountNo' => $virtualAccountNo,
-            //     //     'orderId' => $virtualAccountNo,
-            //     //     'trxId' => $trxId
-            //     // ]);
+            // Check if transaction exists with invoice_number as order_id
+            $billExists = \App\Models\Transaction::where('order_id', $invoiceNumber)->exists();
 
-            //     return response()->json([
-            //         'responseCode' => '4042512',
-            //         'responseMessage' => "Bill {$trxId} not found",
-            //         // 'message' => "Bill {$trxId} not found",
-            //         // 'status' => 'error',
-            //     ], 404);
-            // }
+            if (!$billExists) {
+                \Log::warning('DOKU QR Payment Notification: Bill not found', [
+                    'invoice_number' => $invoiceNumber,
+                    'customer_doku_id' => $customerDokuId
+                ]);
 
-            // Return the expected response format
+                return response()->json([
+                    'responseCode' => '4042512',
+                    'responseMessage' => "Bill {$invoiceNumber} not found"
+                ], 404);
+            }
+
+            // Find associated user by email or doku_id
+            $user = User::where('email', $customerEmail)->first();
+
+            if (!$user) {
+                $user = User::first(); // Fallback to first user or implement custom lookup
+            }
+
+            if (!$user) {
+                \Log::error('DOKU QR Payment Notification: User not found', [
+                    'customer_email' => $customerEmail,
+                    'customer_doku_id' => $customerDokuId
+                ]);
+
+                return response()->json([
+                    'responseCode' => '4040000',
+                    'responseMessage' => 'Associated user not found'
+                ], 404);
+            }
+
+            // Create notification data
+            $notificationData = [
+                'title' => 'DOKU QRIS Payment',
+                'message' => $this->getQRPaymentMessage($transactionStatus, $amount, 'IDR', $customerName, $invoiceNumber),
+                'type' => 'payment',
+                'category' => 'qris',
+                'doku_reference' => [
+                    'invoice_number' => $invoiceNumber,
+                    'approval_code' => $approvalCode,
+                    'account_id' => $accountId,
+                    'customer_doku_id' => $customerDokuId,
+                    'service_id' => $serviceId,
+                    'acquirer_id' => $acquirerId,
+                    'channel_id' => $channelId,
+                ],
+                'payment_detail' => [
+                    'amount' => (float) $amount,
+                    'currency' => 'IDR',
+                    'status' => $transactionStatus,
+                    'transaction_date' => $transactionDate,
+                    'email' => $customerEmail,
+                    'phone' => $customerPhone,
+                ],
+                'additional_info' => $additionalInfo,
+            ];
+
+            // Create notification in database
+            $user->notify(new \App\Notifications\PaymentNotification($notificationData));
+
+            // Log successful processing
+            \Log::info('DOKU QRIS Payment Notification Processed Successfully', [
+                'user_id' => $user->id,
+                'invoice_number' => $invoiceNumber,
+                'amount' => $amount,
+                'status' => $transactionStatus,
+                'approval_code' => $approvalCode
+            ]);
+
+            // Return success response
             return response()->json([
                 'responseCode' => '2005100',
-                'responseMessage' => 'Request has been processed successfully',
-                'originalReferenceNo' => $originalReferenceNo,
-                'originalPartnerReferenceNo' => $originalPartnerReferenceNo,
-                'serviceCode' => $serviceCode,
-                'latestTransactionStatus' => '03',
-                'transactionStatusDesc' => 'Pending',
+                'responseMessage' => 'Success',
+                'invoiceNumber' => $invoiceNumber,
+                'transactionStatus' => $transactionStatus,
                 'amount' => [
-                    'value' => 1.00,
+                    'value' => (float) $amount,
                     'currency' => 'IDR'
                 ]
             ], 200);
@@ -301,9 +369,8 @@ class DokuServiceController extends ApiController
             ]);
 
             return response()->json([
-                'status' => 'error',
-                'message' => 'Error processing DOKU QR payment notification',
-                'error' => $e->getMessage()
+                'responseCode' => '5005100',
+                'responseMessage' => 'Internal Server Error'
             ], 500);
         }
     }
@@ -404,8 +471,36 @@ class DokuServiceController extends ApiController
     private function getVirtualAccountPaymentMessage($amount, $currency, $accountName, $trxId)
     {
         $formattedAmount = number_format((float)$amount, 2) . ' ' . strtoupper($currency);
-        
+
         return "Virtual Account payment received for {$formattedAmount} from {$accountName} (Transaction ID: {$trxId}). Payment has been processed successfully.";
+    }
+
+    /**
+     * Get QR payment message based on status
+     *
+     * @param string $status
+     * @param float $amount
+     * @param string $currency
+     * @param string $customerName
+     * @param string $invoiceNumber
+     * @return string
+     */
+    private function getQRPaymentMessage($status, $amount, $currency, $customerName, $invoiceNumber)
+    {
+        $formattedAmount = number_format((float)$amount, 2) . ' ' . strtoupper($currency);
+
+        switch (strtoupper($status)) {
+            case 'SUCCESS':
+                return "QRIS payment of {$formattedAmount} from {$customerName} has been successfully processed (Invoice: {$invoiceNumber}).";
+            case 'PENDING':
+                return "QRIS payment of {$formattedAmount} from {$customerName} is pending confirmation (Invoice: {$invoiceNumber}).";
+            case 'FAILED':
+                return "QRIS payment of {$formattedAmount} from {$customerName} has failed (Invoice: {$invoiceNumber}). Please try again.";
+            case 'CANCELLED':
+                return "QRIS payment of {$formattedAmount} from {$customerName} has been cancelled (Invoice: {$invoiceNumber}).";
+            default:
+                return "QRIS payment status updated for {$formattedAmount} from {$customerName} (Invoice: {$invoiceNumber}).";
+        }
     }
 
     /**
