@@ -351,67 +351,129 @@
                     <!-- Location Map -->
                     <div class="mt-8">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Lokasi</h3>
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-                            <div class="aspect-w-16 aspect-h-9">
-                                @php
-                                    // Default Jakarta coordinates (Monas)
-                                    $defaultLat = -6.1754;
-                                    $defaultLng = 106.8272;
-                                    
-                                    // Initialize variables with default values
-                                    $lat = $defaultLat;
-                                    $lng = $defaultLng;
-                                    
-                                    // Check if location exists and is in correct format
-                                    // if (!empty($house['location']) && str_contains($house['location'], ',')) {
-                                    //     $coordinates = explode(',', $house['location']);
-                                    //     if (count($coordinates) >= 2) {
-                                    //         $parsedLat = trim($coordinates[0]);
-                                    //         $parsedLng = trim($coordinates[1]);
-                                            
-                                    //         // Validate if coordinates are numeric
-                                    //         if (is_numeric($parsedLat) && is_numeric($parsedLng)) {
-                                    //             $lat = (float)$parsedLat;
-                                    //             $lng = (float)$parsedLng;
-                                    //         }
-                                    //     }
-                                    // }
-                                    if(!empty($house['latitude']) && !empty($house['longitude'])) {
-                                        $lat = (float)$house['latitude'];
-                                        $lng = (float)$house['longitude'];
-                                    }
-                                    
-                                    // Set bounding box with padding
-                                    $bboxPadding = 0.01; // Adjust this value to control the zoom level
-                                    $bbox = sprintf(
-                                        '%f,%f,%f,%f',
-                                        $lng - $bboxPadding,
-                                        $lat - $bboxPadding,
-                                        $lng + $bboxPadding,
-                                        $lat + $bboxPadding
-                                    );
-                                @endphp
-                                <iframe 
-                                    class="w-full h-[1400px] rounded-lg border border-gray-200"
-                                    src="https://www.openstreetmap.org/export/embed.html?bbox={{ $bbox }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}">
-                                </iframe>
-                                <div class="mt-2 text-right">
-                                    <small class="text-sm">
-                                        <a href="https://www.openstreetmap.org/?mlat={{ $lat }}&amp;mlon={{ $lng }}#map=18/{{ $lat }}/{{ $lng }}" target="_blank" class="text-teal-600 hover:underline">
-                                            View Larger Map
-                                        </a>
-                                    </small>
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                            <div class="flex flex-col lg:flex-row gap-8">
+                                <!-- Left Column - Map -->
+                                <div class="lg:w-1/2 flex flex-col">
+                                    @php
+                                        // Default Jakarta coordinates (Monas)
+                                        $defaultLat = -6.1754;
+                                        $defaultLng = 106.8272;
+
+                                        // Initialize variables with default values
+                                        $lat = $defaultLat;
+                                        $lng = $defaultLng;
+
+                                        // Check if location exists and is in correct format
+                                        // if (!empty($house['location']) && str_contains($house['location'], ',')) {
+                                        //     $coordinates = explode(',', $house['location']);
+                                        //     if (count($coordinates) >= 2) {
+                                        //         $parsedLat = trim($coordinates[0]);
+                                        //         $parsedLng = trim($coordinates[1]);
+
+                                        //         // Validate if coordinates are numeric
+                                        //         if (is_numeric($parsedLat) && is_numeric($parsedLng)) {
+                                        //             $lat = (float)$parsedLat;
+                                        //             $lng = (float)$parsedLng;
+                                        //         }
+                                        //     }
+                                        // }
+                                        if(!empty($house['latitude']) && !empty($house['longitude'])) {
+                                            $lat = (float)$house['latitude'];
+                                            $lng = (float)$house['longitude'];
+                                        }
+
+                                        // Set bounding box with padding
+                                        $bboxPadding = 0.01; // Adjust this value to control the zoom level
+                                        $bbox = sprintf(
+                                            '%f,%f,%f,%f',
+                                            $lng - $bboxPadding,
+                                            $lat - $bboxPadding,
+                                            $lng + $bboxPadding,
+                                            $lat + $bboxPadding
+                                        );
+                                    @endphp
+                                    <div class="w-full flex-1">
+                                        <iframe
+                                            class="w-full h-full rounded-lg border border-gray-200"
+                                            src="https://www.openstreetmap.org/export/embed.html?bbox={{ $bbox }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}">
+                                        </iframe>
+                                    </div>
+                                    <div class="mt-2 text-right">
+                                        <small class="text-sm">
+                                            <a href="https://www.openstreetmap.org/?mlat={{ $lat }}&amp;mlon={{ $lng }}#map=18/{{ $lat }}/{{ $lng }}" target="_blank" class="text-teal-600 hover:underline">
+                                                View Larger Map
+                                            </a>
+                                        </small>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="mt-4">
-                                <h4 class="font-semibold text-gray-900">Alamat</h4>
-                                <p class="text-gray-600 mt-1">{{ $house['location'] }}</p>
-                                <div class="mt-4 flex items-center text-sm text-gray-500">
-                                    {{-- <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    {{ $house['distance'] }} --}}
+
+                                <!-- Right Column - Address Details -->
+                                <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
+                                    <h4 class="text-xl font-semibold text-gray-900 mb-4">Alamat</h4>
+
+                                    @if(!empty($house['address']))
+                                        <div class="space-y-4">
+                                            @if(!empty($house['address']['full_address']))
+                                                <div class="pb-3 border-b border-gray-100">
+                                                    <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Alamat Lengkap</h5>
+                                                    <p class="text-base text-gray-900 leading-relaxed">{{ $house['address']['full_address'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            <div class="grid grid-cols-2 gap-4">
+                                                @if(!empty($house['address']['village']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kelurahan</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['village'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['subdistrict']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kecamatan</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['subdistrict'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['city']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kota/Kabupaten</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['city'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['province']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Provinsi</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['province'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['postal_code']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kode Pos</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['postal_code'] }}</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <p class="text-gray-600 mb-6">{{ $house['location'] }}</p>
+                                    @endif
+
+                                    @if(!empty($house['distance']))
+                                        <div class="mt-4 pt-4 border-t border-gray-200">
+                                            <h5 class="text-sm font-semibold text-gray-700 mb-2">Jarak</h5>
+                                            <p class="text-gray-600 flex items-center">
+                                                <svg class="w-4 h-4 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                                {{ $house['distance'] }}
+                                            </p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>

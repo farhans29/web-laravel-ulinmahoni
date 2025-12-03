@@ -241,9 +241,16 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 Route::get('/privacy-policy', function () {
     return view('pages.privacy-policy.privacy-policy');
 })->name('privacy-policy');
+
+// TERMS OF SERVICES
 Route::get('/terms-of-services', function () {
     return view('pages.terms-of-services.terms-of-services');
 })->name('terms-of-services');
+
+// RENTAL AGREEMENT
+Route::get('/rental-agreement', function () {
+    return view('pages.rental-agreement.rental-agreement');
+})->name('rental-agreement');
 
 // OLD ROUTES
 // Authenticated routes that require email verification

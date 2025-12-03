@@ -127,10 +127,15 @@
 
                             <div>
                                 <h4 class="font-medium">Jangka Waktu</h4>
-                                <p class="text-sm text-gray-600">Check-in: {{ $booking->check_in->format('d M Y') }}</p>
-                                <p class="text-sm text-gray-600">Check-out: {{ $booking->check_out->format('d M Y') }}</p>
-                                <p class="text-sm text-gray-600">Durasi: {{ $booking->booking_months }} bulan</p>
-                                <p class="text-sm text-gray-600">Durasi: {{ $booking->booking_days }} hari</p>
+                                <p class="text-sm text-gray-600">Check-in: {{ $booking->check_in->format('d F Y') }}</p>
+                                <p class="text-sm text-gray-600">Check-out: {{ $booking->check_out->format('d F Y') }}</p>
+
+                                @if($booking->booking_months > 0)
+                                    <p class="text-sm text-gray-600">Durasi: {{ $booking->booking_months }} bulan</p>
+                                @elseif($booking->booking_days > 0)
+                                    <p class="text-sm text-gray-600">Durasi: {{ $booking->booking_days }} hari</p>
+                                @endif
+
                             </div>
 
                             <div class="pt-4 border-t">
