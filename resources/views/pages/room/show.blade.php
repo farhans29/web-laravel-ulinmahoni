@@ -338,7 +338,7 @@
                                         <span class="text-gray-900" id="roomTotal">-</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Service Fee (PPN included): </span>
+                                        <span class="text-gray-600">Biaya Layanan: </span>
                                         <span class="text-gray-900" id="serviceFeesDisplay">-</span>
                                     </div>
                                     {{-- <div class="flex justify-between">

@@ -31,9 +31,19 @@ Route::get('health-check', [HealthCheckController::class, 'check']);
 // API routes that require a valid API key in the X-API-KEY header
 // Protected routes that require both API key and authentication
 
+
+
 // ===== V1 API ROUTES =====
 // Version 1 API routes (require API key but not necessarily authentication)
+
 Route::prefix('v1')->group(function () {
+    
+    // AUTH ROUTES WITHOUT PREFIX AUTH
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
+    Route::post('resend-verification', [AuthController::class, 'resendVerification']);
     
     // AUTH API ROUTES
     Route::prefix('auth')->group(function () {
@@ -146,7 +156,11 @@ Route::prefix('v1')->withoutMiddleware(['api.key'])->middleware('App\Http\Middle
 // These will be accessible without the v1 prefix
 
 // SOME OF THE CODES BELOWS ARE COMMENTED FOR REVIEW REASONS
-
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
+Route::post('resend-verification', [AuthController::class, 'resendVerification']);
 // AUTH API ROUTES 
 // Route::prefix('auth')->group(function () {
 //     // GOOGLE ( UNUSED, COMMENTED FOR REVIEW )
