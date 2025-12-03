@@ -361,6 +361,26 @@
                             <!-- Error Alert -->
                             <div id="errorAlert" class="hidden bg-red-50 text-red-800 p-4 rounded-lg text-sm mb-6"></div>
 
+                            <!-- Rental Agreement Checkbox -->
+                            @auth
+                                <div id="rentalAgreementSection" class="hidden mb-4">
+                                    <div class="flex items-start">
+                                        <div class="flex items-center h-5">
+                                            <input id="agreementCheckbox" type="checkbox"
+                                                class="w-4 h-4 text-teal-600 bg-gray-100 border-gray-300 rounded focus:ring-teal-500 focus:ring-2">
+                                        </div>
+                                        <div class="ml-3 text-sm">
+                                            <label for="agreementCheckbox" class="text-gray-700">
+                                                Saya setuju dengan <a href="/rental-agreement" target="_blank" class="text-teal-600 hover:text-teal-700 underline">Perjanjian Sewa Menyewa</a>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="agreementError" class="hidden mt-2 text-sm text-red-600">
+                                        <p><i class="fas fa-exclamation-circle mr-1"></i>Anda harus menyetujui Perjanjian Sewa Menyewa untuk melanjutkan.</p>
+                                    </div>
+                                </div>
+                            @endauth
+
                             <!-- Submit Button -->
                             <div>
                                 @guest
@@ -378,7 +398,7 @@
                                         {{ $room['status'] == 0 ? 'disabled' : '' }}>
                                         {{ $room['status'] == 1 ? 'Cek Ketersediaan Kamar' : 'Kamar Tidak Tersedia' }}
                                     </button>
-                                    <button type="submit" id="submitButton" 
+                                    <button type="submit" id="submitButton"
                                         class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium hidden">
                                         Pesan Sekarang
                                     </button>
@@ -648,20 +668,31 @@
         function updateSubmitButton(isEnabled, customMessage = null) {
             const checkAvailabilityButton = document.getElementById('checkAvailabilityButton');
             const submitButton = document.getElementById('submitButton');
-            
+            const rentalAgreementSection = document.getElementById('rentalAgreementSection');
+
             if (!checkAvailabilityButton || !submitButton) return;
-            
+
             if (isEnabled && {{ $room['status'] ?? 0 }} == 1) {
-                // Room is available - show submit button and hide check availability button
+                // Room is available - show submit button, rental agreement checkbox, and hide check availability button
                 checkAvailabilityButton.classList.add('hidden');
                 submitButton.classList.remove('hidden');
                 submitButton.disabled = false;
+
+                // Show rental agreement checkbox
+                if (rentalAgreementSection) {
+                    rentalAgreementSection.classList.remove('hidden');
+                }
             } else {
-                // Room is not available - show check availability button and hide submit button
+                // Room is not available - show check availability button and hide submit button and agreement
                 checkAvailabilityButton.classList.remove('hidden');
                 submitButton.classList.add('hidden');
                 submitButton.disabled = true;
-                
+
+                // Hide rental agreement checkbox
+                if (rentalAgreementSection) {
+                    rentalAgreementSection.classList.add('hidden');
+                }
+
                 if (customMessage) {
                     checkAvailabilityButton.textContent = customMessage;
                 } else if ({{ $room['status'] ?? 0 }} == 0) {
@@ -1129,25 +1160,25 @@
             function validateForm() {
                 let isValid = true;
                 const rentType = document.getElementById('rent_type').value;
-                
+
                 // Reset all error states
                 document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
                 document.querySelectorAll('input, select').forEach(input => {
                     input.classList.remove('border-red-500');
                 });
-                
+
                 // Only validate date fields for daily rental
                 if (rentType === 'daily') {
                     const checkInInput = document.getElementById('check_in');
                     const checkOutInput = document.getElementById('check_out');
-                    
+
                     if (!checkInInput.value) {
                         document.getElementById('check_inError').textContent = 'Check-in date is required';
                         document.getElementById('check_inError').classList.remove('hidden');
                         checkInInput.classList.add('border-red-500');
                         isValid = false;
                     }
-                    
+
                     if (!checkOutInput.value) {
                         document.getElementById('check_outError').textContent = 'Check-out date is required';
                         document.getElementById('check_outError').classList.remove('hidden');
@@ -1160,7 +1191,23 @@
                         isValid = false;
                     }
                 }
-                
+
+                // Validate rental agreement checkbox
+                const agreementCheckbox = document.getElementById('agreementCheckbox');
+                const agreementError = document.getElementById('agreementError');
+                const rentalAgreementSection = document.getElementById('rentalAgreementSection');
+
+                if (rentalAgreementSection && !rentalAgreementSection.classList.contains('hidden')) {
+                    if (agreementCheckbox && !agreementCheckbox.checked) {
+                        if (agreementError) {
+                            agreementError.classList.remove('hidden');
+                        }
+                        isValid = false;
+                    } else if (agreementError) {
+                        agreementError.classList.add('hidden');
+                    }
+                }
+
                 return isValid;
             }
 
