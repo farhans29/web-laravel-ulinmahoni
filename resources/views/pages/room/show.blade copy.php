@@ -8,7 +8,6 @@
     <title>Room Details - {{ $room['name'] }}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
     <!-- Styles -->
     @include('components.property.styles')
     <style>
@@ -207,7 +206,7 @@
                             <!-- Rental Type -->
                             <div class="mb-6">
                                 <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pemesanan</label>
-                                <select id="rent_type" name="rent_type"
+                                <select id="rent_type" name="rent_type" 
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updateRentalType()">
                                     @if($room['periode_daily'] == 1)
@@ -219,70 +218,38 @@
                                 </select>
                             </div>
 
-                            <!-- Daily Booking Component -->
-                            <div id="dailyBookingComponent" class="space-y-4 hidden">
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <div class="flex items-center mb-3">
-                                        <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
-                                        <h3 class="text-sm font-semibold text-gray-800">Pemesanan Harian</h3>
-                                    </div>
+                            <!-- Months Selection (Hidden by default) -->
+                            <div id="monthInput" class="hidden">
+                                <label for="months" class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bulan</label>
+                                <select id="months" name="months" 
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                    onchange="updatePriceSummary()">
+                                    @for ($i = 1; $i <= 12; $i++)
+                                        <option value="{{ $i }}">{{ $i }} {{ $i == 1 ? 'Bulan' : 'Bulan' }}</option>
+                                    @endfor
+                                </select>
+                                <input type="hidden" name="booking_months" id="bookingMonths" value="1">
+                            </div>
 
+                            <!-- Dates (Visible by default) -->
+                            <div id="dateInputs">
+                                <div class="grid grid-cols-2 gap-4">
                                     <!-- Check-in Date -->
-                                    <div class="mb-4">
-                                        <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-sign-in-alt mr-1 text-gray-500"></i>Check In
-                                        </label>
-                                        <input type="text" id="check_in" name="check_in"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            placeholder="Select check-in date" data-required="true" readonly>
+                                    <div>
+                                        <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
+                                        <input type="date" id="check_in" name="check_in" 
+                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                            min="{{ date('Y-m-d') }}" data-required="true">
                                         <div id="check_inError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                                     </div>
 
                                     <!-- Check-out Date -->
-                                    <div>
-                                        <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-sign-out-alt mr-1 text-gray-500"></i>Check Out
-                                        </label>
-                                        <input type="text" id="check_out" name="check_out"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            placeholder="Select check-out date" data-required="true" readonly>
+                                    <div id="checkOutGroup">
+                                        <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
+                                        <input type="date" id="check_out" name="check_out" 
+                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                            min="{{ date('Y-m-d', strtotime('+1 day')) }}" data-required="true">
                                         <div id="check_outError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Monthly Booking Component -->
-                            <div id="monthlyBookingComponent" class="space-y-4 hidden">
-                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                                    <div class="flex items-center mb-3">
-                                        <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>
-                                        <h3 class="text-sm font-semibold text-gray-800">Pemesanan Bulanan</h3>
-                                    </div>
-
-                                    <!-- Check-in Date -->
-                                    <div class="mb-4">
-                                        <label for="check_in_monthly" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-calendar-check mr-1 text-gray-500"></i>Check In
-                                        </label>
-                                        <input type="text" id="check_in_monthly" name="check_in_monthly"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            placeholder="Select check-in date" data-required="true" readonly>
-                                        <div id="check_in_monthlyError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
-                                    </div>
-
-                                    <!-- Months Selection -->
-                                    <div>
-                                        <label for="months" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-hourglass-half mr-1 text-gray-500"></i>Durasi Sewa
-                                        </label>
-                                        <select id="months" name="months"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            onchange="updatePriceSummary()">
-                                            @for ($i = 1; $i <= 12; $i++)
-                                                <option value="{{ $i }}">{{ $i }} Bulan</option>
-                                            @endfor
-                                        </select>
-                                        <input type="hidden" name="booking_months" id="bookingMonths" value="1">
                                     </div>
                                 </div>
                             </div>
@@ -769,7 +736,95 @@
                 document.getElementById('grandTotal').textContent = '-';
             }
 
-            
+            // --- Room Availability Check ---
+            // async function checkRoomAvailability() {
+            //     const propertyId = document.getElementById('propertyId').value;
+            //     const roomId = document.getElementById('roomId').value;
+            //     const checkInDate = document.getElementById('check_in').value;
+            //     const checkOutDate = document.getElementById('check_out').value;
+            //     const rentType = document.getElementById('rent_type').value;
+                
+            //     // Clear previous timeout to avoid multiple rapid calls
+            //     if (availabilityCheckTimeout) {
+            //         clearTimeout(availabilityCheckTimeout);
+            //     }
+                
+            //     // Only check availability for daily booking with both dates
+            //     if (rentType !== 'daily' || !checkInDate || !checkOutDate) {
+            //         resetAvailabilityStatus();
+            //         return;
+            //     }
+                
+            //     // Prevent checking if check-out is before check-in
+            //     if (new Date(checkOutDate) <= new Date(checkInDate)) {
+            //         showAvailabilityStatus('error', 'Tanggal check-out harus setelah check-in');
+            //         updateSubmitButton(false, 'Tanggal tidak valid');
+            //         return;
+            //     }
+                
+            //     // Show loading state
+            //     showAvailabilityStatus('loading', 'Memeriksa ketersediaan...');
+                
+            //     availabilityCheckTimeout = setTimeout(async () => {
+            //         try {
+            //             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            //             const response = await fetch(`http://localhost:8000/api/booking/check-availability`, {
+            //                 method: 'POST',
+            //                 headers: {
+            //                     'X-CSRF-TOKEN': csrfToken,
+            //                     'Accept': 'application/json',
+            //                     'Content-Type': 'application/json',
+            //                     'X-Requested-With': 'XMLHttpRequest'
+            //                 },
+            //                 body: JSON.stringify({
+            //                     property_id: propertyId,
+            //                     room_id: roomId,
+            //                     check_in: checkInDate,
+            //                     check_out: checkOutDate
+            //                 })
+            //             });
+                        
+            //             const data = await response.json();
+                        
+            //             if (!response.ok || data.status === 'error') {
+            //                 const errorMessage = data.message || 'Gagal memeriksa ketersediaan';
+            //                 if (data.errors) {
+            //                     const errorMessages = Object.values(data.errors).flat();
+            //                     showAvailabilityStatus('error', errorMessages[0] || errorMessage);
+            //                 } else {
+            //                     showAvailabilityStatus('error', errorMessage);
+            //                 }
+            //                 updateSubmitButton(false, 'Validasi gagal');
+            //                 return;
+            //             }
+                        
+            //             // Handle the availability response
+            //             if (data.data && data.data.is_available !== undefined) {
+            //                 const isAvailable = data.data.is_available;
+            //                 const conflictingBookings = data.data.conflicting_bookings || [];
+                            
+            //                 if (isAvailable) {
+            //                     showAvailabilityStatus('available', '✓ Kamar tersedia');
+            //                     updateSubmitButton(true);
+            //                 } else {
+            //                     showAvailabilityStatus('unavailable', '✗ Kamar tidak tersedia untuk tanggal ini');
+            //                     if (conflictingBookings.length > 0) {
+            //                         showAvailabilityStatus('unavailable', `✗ Tidak tersedia - ${conflictingBookings.length} pemesanan konflik`);
+            //                     }
+            //                     updateSubmitButton(false, 'Kamar tidak tersedia');
+            //                 }
+            //             } else {
+            //                 showAvailabilityStatus('error', 'Respon API tidak valid');
+            //                 updateSubmitButton(false, 'Kesalahan sistem');
+            //             }
+                        
+            //         } catch (error) {
+            //             console.error('Availability check error:', error);
+            //             showAvailabilityStatus('error', 'Gagal memeriksa ketersediaan kamar');
+            //             updateSubmitButton(false, 'Gagal mengecek');
+            //         }
+            //     }, 500); // Add small delay to prevent excessive API calls
+            // }
 
             function showAvailabilityStatus(type, message) {
                 if (!availabilityStatusDiv) return;
@@ -937,10 +992,9 @@
             // --- Rental type toggle logic ---
             function updateRentalType() {
                 const rentTypeSelect = document.getElementById('rent_type');
-                const dailyBookingComponent = document.getElementById('dailyBookingComponent');
-                const monthlyBookingComponent = document.getElementById('monthlyBookingComponent');
+                const monthInput = document.getElementById('monthInput');
+                const dateInputs = document.getElementById('dateInputs');
                 const checkInInput = document.getElementById('check_in');
-                const checkInMonthlyInput = document.getElementById('check_in_monthly');
                 const checkOutInput = document.getElementById('check_out');
                 const monthsSelect = document.getElementById('months');
                 const dailyRateDisplay = document.getElementById('dailyRateDisplay');
@@ -950,71 +1004,43 @@
                 const searchState = savedSearch ? JSON.parse(savedSearch) : null;
 
                 if (rentTypeSelect.value === 'monthly') {
-                    // Show monthly component, hide daily component
-                    dailyBookingComponent.classList.add('hidden');
-                    monthlyBookingComponent.classList.remove('hidden');
-
-                    // Update rate display
+                    monthInput.classList.remove('hidden');
+                    // Show only check-in date for monthly rentals
+                    dateInputs.classList.remove('hidden');
+                    const checkOutGroup = document.getElementById('checkOutGroup');
+                    if (checkOutGroup) {
+                        checkOutGroup.classList.add('hidden');
+                        // Set months from saved search or default to 1
+                        if (monthsSelect) {
+                            monthsSelect.value = searchState?.period === 'monthly' && searchState?.months
+                                ? searchState.months
+                                : 1;
+                            document.getElementById('bookingMonths').value = monthsSelect.value;
+                        }
+                    }
                     dailyRateDisplay.classList.add('hidden');
                     monthlyRateDisplay.classList.remove('hidden');
                     rateTypeDisplay.textContent = 'Harga Bulanan';
-
-                    // Set months from saved search or default to 1
-                    if (monthsSelect) {
-                        monthsSelect.value = searchState?.period === 'monthly' && searchState?.months
-                            ? searchState.months
-                            : 1;
-                        document.getElementById('bookingMonths').value = monthsSelect.value;
-                    }
-
-                    // Set check-in date for monthly with 14-day minimum
-                    const today = new Date();
-                    const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
-
-                    if (checkInMonthlyInput) {
-                        checkInMonthlyInput.value = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
-                        // Copy value to check_in for form submission
-                        if (checkInInput) checkInInput.value = checkInMonthlyInput.value;
-                        checkInMonthlyInput.addEventListener('change', function() {
-                            if (checkInInput) checkInInput.value = checkInMonthlyInput.value;
-                            updatePriceSummary();
-                        });
-                    }
-
-                    // Calculate check-out date based on months
-                    if (checkInMonthlyInput && checkOutInput) {
-                        const checkInDate = new Date(checkInMonthlyInput.value);
-                        const months = parseInt(monthsSelect.value, 10) || 1;
-                        const checkOutDate = new Date(checkInDate);
-                        checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                        checkOutInput.value = checkOutDate.toISOString().split('T')[0];
-                    }
-
+                    
                 } else {
-                    // Show daily component, hide monthly component
-                    dailyBookingComponent.classList.remove('hidden');
-                    monthlyBookingComponent.classList.add('hidden');
-
-                    // Update rate display
+                    monthInput.classList.add('hidden');
+                    dateInputs.classList.remove('hidden');
                     dailyRateDisplay.classList.remove('hidden');
                     monthlyRateDisplay.classList.add('hidden');
                     rateTypeDisplay.textContent = 'Harga Harian';
-
-                    // Set dates from saved search or use defaults with 14-day minimum
+                    
+                    // Set dates from saved search or use defaults
                     const today = new Date();
-                    const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
-                    const minCheckOutDate = new Date(minCheckInDate);
-                    minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
-
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
                     if (checkInInput) {
-                        checkInInput.value = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
+                        checkInInput.value = searchState?.check_in || today.toISOString().split('T')[0];
                         checkInInput.dispatchEvent(new Event('change'));
                     }
-
+                    
                     if (checkOutInput) {
-                        checkOutInput.value = searchState?.check_out || minCheckOutDate.toISOString().split('T')[0];
+                        checkOutInput.value = searchState?.check_out || tomorrow.toISOString().split('T')[0];
                         checkOutInput.dispatchEvent(new Event('change'));
                     }
                 }
@@ -1025,11 +1051,7 @@
             function handleCheckInChange() {
                 const rentTypeSelect = document.getElementById('rent_type');
                 const monthsSelect = document.getElementById('months');
-                const checkInInput = document.getElementById('check_in');
-                const checkOutInput = document.getElementById('check_out');
-
                 if (!checkInInput.value) return;
-
                 if (rentTypeSelect.value === 'monthly') {
                     // For monthly, update check-out based on months
                     const checkInDate = new Date(checkInInput.value);
@@ -1037,32 +1059,20 @@
                     const checkOutDate = new Date(checkInDate);
                     checkOutDate.setMonth(checkOutDate.getMonth() + months);
                     checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                    
                 } else {
-                    // For daily, apply month boundary and 14-day limit
-                    const checkInDate = new Date(checkInInput.value);
-                    const minCheckout = new Date(checkInDate);
-                    minCheckout.setDate(checkInDate.getDate() + 1);
-
-                    // Calculate max checkout: 14 days OR end of month, whichever is earlier
-                    const maxCheckoutDate = new Date(checkInDate);
-                    maxCheckoutDate.setDate(checkInDate.getDate() + 14);
-
-                    const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
-
-                    const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
-
+                    // For daily, normal logic
+                    const minCheckout = new Date(checkInInput.value);
+                    minCheckout.setDate(minCheckout.getDate() + 1);
                     checkOutInput.min = minCheckout.toISOString().split('T')[0];
-                    checkOutInput.max = actualMaxCheckout.toISOString().split('T')[0];
-
-                    if (!checkOutInput.value ||
-                        new Date(checkOutInput.value) <= new Date(checkInInput.value) ||
-                        new Date(checkOutInput.value) > actualMaxCheckout) {
+                    if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
                         checkOutInput.value = minCheckout.toISOString().split('T')[0];
+                        
                     }
                 }
                 updatePriceSummary();
+                
             }
-
             function handleCheckOutChange() {
                 updatePriceSummary();
             }
@@ -1072,15 +1082,12 @@
                 // Get saved search state
                 const savedSearch = localStorage.getItem('propertySearch');
                 const searchState = savedSearch ? JSON.parse(savedSearch) : null;
-
-                // Get current date for default values with 14 days minimum
+                
+                // Get current date for default values
                 const today = new Date();
-                const minCheckInDate = new Date(today);
-                minCheckInDate.setDate(today.getDate() + 14);
-
-                const defaultCheckIn = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
-                const defaultCheckOut = searchState?.check_out || new Date(minCheckInDate);
-
+                const defaultCheckIn = searchState?.check_in || today.toISOString().split('T')[0];
+                const defaultCheckOut = searchState?.check_out || new Date(today);
+                
                 // Set rent type from saved search if available
                 if (searchState?.period) {
                     const rentTypeSelect = document.getElementById('rent_type');
@@ -1089,44 +1096,29 @@
                         updateRentalType(); // Update UI based on rent type
                     }
                 }
-                defaultCheckOut.setDate(minCheckInDate.getDate() + 1);
+                defaultCheckOut.setDate(today.getDate() + 1);
                 const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
-                const minCheckInStr = minCheckInDate.toISOString().split('T')[0];
-
+                
                 // Set initial values
                 const checkInInput = document.getElementById('check_in');
-                const checkInMonthlyInput = document.getElementById('check_in_monthly');
                 const checkOutInput = document.getElementById('check_out');
                 const rentTypeSelect = document.getElementById('rent_type');
                 const monthsSelect = document.getElementById('months');
-
+                
                 if (checkInInput) {
                     checkInInput.value = defaultCheckIn;
-                    checkInInput.min = minCheckInStr;
-
+                    checkInInput.min = defaultCheckIn;
+                    
                     // Handle check-in date changes
                     checkInInput.addEventListener('change', function() {
                         if (checkInInput.value) {
-                            const checkInDate = new Date(checkInInput.value);
-                            const minCheckout = new Date(checkInDate);
-                            minCheckout.setDate(checkInDate.getDate() + 1);
-
-                            // Calculate max checkout: 14 days OR end of month, whichever is earlier
-                            const maxCheckoutDate = new Date(checkInDate);
-                            maxCheckoutDate.setDate(checkInDate.getDate() + 14);
-
-                            const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
-
-                            const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
-
+                            const minCheckout = new Date(checkInInput.value);
+                            minCheckout.setDate(minCheckout.getDate() + 1);
+                            
                             if (checkOutInput) {
                                 checkOutInput.min = formatDate(minCheckout);
-                                checkOutInput.max = formatDate(actualMaxCheckout);
-
-                                // If current check-out is before new min date or after max date, update it
-                                if (!checkOutInput.value ||
-                                    new Date(checkOutInput.value) <= new Date(checkInInput.value) ||
-                                    new Date(checkOutInput.value) > actualMaxCheckout) {
+                                // If current check-out is before new min date, update it
+                                if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
                                     checkOutInput.value = formatDate(minCheckout);
                                 }
                             }
@@ -1134,64 +1126,24 @@
                         checkRoomAvailability();
                     });
                 }
-
-                // Handle monthly check-in input
-                if (checkInMonthlyInput) {
-                    checkInMonthlyInput.value = defaultCheckIn;
-                    checkInMonthlyInput.min = minCheckInStr;
-
-                    checkInMonthlyInput.addEventListener('change', function() {
-                        // Sync with main check_in input
-                        if (checkInInput) {
-                            checkInInput.value = checkInMonthlyInput.value;
-                        }
-
-                        // Update checkout based on months
-                        if (checkOutInput && monthsSelect) {
-                            const checkInDate = new Date(checkInMonthlyInput.value);
-                            const months = parseInt(monthsSelect.value, 10) || 1;
-                            const checkOutDate = new Date(checkInDate);
-                            checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                            checkOutInput.value = checkOutDate.toISOString().split('T')[0];
-                        }
-
-                        checkRoomAvailability();
-                    });
-                }
-
+                
                 if (checkOutInput) {
                     checkOutInput.value = defaultCheckOutStr;
                     checkOutInput.min = defaultCheckOutStr;
-
+                    
                     // Handle check-out date changes
                     checkOutInput.addEventListener('change', function() {
                         checkRoomAvailability();
                     });
                 }
-
+                
                 // Initialize other form elements
                 if (rentTypeSelect) {
                     rentTypeSelect.addEventListener('change', updateRentalType);
                 }
-
+                
                 if (monthsSelect) {
-                    monthsSelect.addEventListener('change', function() {
-                        // Update checkout date when months change
-                        const rentType = document.getElementById('rent_type').value;
-                        if (rentType === 'monthly') {
-                            const checkInMonthlyInput = document.getElementById('check_in_monthly');
-                            const checkOutInput = document.getElementById('check_out');
-
-                            if (checkInMonthlyInput && checkOutInput && checkInMonthlyInput.value) {
-                                const checkInDate = new Date(checkInMonthlyInput.value);
-                                const months = parseInt(monthsSelect.value, 10) || 1;
-                                const checkOutDate = new Date(checkInDate);
-                                checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                                checkOutInput.value = checkOutDate.toISOString().split('T')[0];
-                            }
-                        }
-                        updatePriceSummary();
-                    });
+                    monthsSelect.addEventListener('change', updatePriceSummary);
                 }
                 
                 // Initialize form state
@@ -1237,29 +1189,6 @@
                         document.getElementById('check_outError').classList.remove('hidden');
                         checkOutInput.classList.add('border-red-500');
                         isValid = false;
-                    }
-
-                    // Validate month boundaries and 14-day maximum
-                    if (checkInInput.value && checkOutInput.value) {
-                        const checkIn = new Date(checkInInput.value);
-                        const checkOut = new Date(checkOutInput.value);
-
-                        // Check if dates are in the same month
-                        if (checkIn.getMonth() !== checkOut.getMonth() || checkIn.getFullYear() !== checkOut.getFullYear()) {
-                            document.getElementById('check_outError').textContent = 'Booking cannot cross month boundaries';
-                            document.getElementById('check_outError').classList.remove('hidden');
-                            checkOutInput.classList.add('border-red-500');
-                            isValid = false;
-                        }
-
-                        // Check if booking period exceeds 14 days
-                        const daysDiff = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-                        if (daysDiff > 14) {
-                            document.getElementById('check_outError').textContent = 'Booking period cannot exceed 14 days';
-                            document.getElementById('check_outError').classList.remove('hidden');
-                            checkOutInput.classList.add('border-red-500');
-                            isValid = false;
-                        }
                     }
                 }
 
@@ -1455,44 +1384,29 @@
                 }
             }
 
-            // Set default dates with 14-day minimum
+            // Set default dates
             const today = new Date();
-            const minCheckInDate = new Date(today);
-            minCheckInDate.setDate(today.getDate() + 14);
-            const minCheckOutDate = new Date(minCheckInDate);
-            minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
-
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
             // Format date as YYYY-MM-DD
             const formatDate = (date) => date.toISOString().split('T')[0];
-
+            
             // Set initial values
             if (checkInInput) {
-                checkInInput.value = formatDate(minCheckInDate);
-                checkInInput.min = formatDate(minCheckInDate);
-
+                checkInInput.value = formatDate(today);
+                checkInInput.min = formatDate(today);
+                
                 // Handle check-in date changes
                 checkInInput.addEventListener('change', function() {
                     if (checkInInput.value) {
-                        const checkInDate = new Date(checkInInput.value);
-                        const minCheckout = new Date(checkInDate);
-                        minCheckout.setDate(checkInDate.getDate() + 1);
-
-                        // Calculate max checkout: 14 days OR end of month, whichever is earlier
-                        const maxCheckoutDate = new Date(checkInDate);
-                        maxCheckoutDate.setDate(checkInDate.getDate() + 14);
-
-                        const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
-
-                        const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
-
+                        const minCheckout = new Date(checkInInput.value);
+                        minCheckout.setDate(minCheckout.getDate() + 1);
+                        
                         if (checkOutInput) {
                             checkOutInput.min = formatDate(minCheckout);
-                            checkOutInput.max = formatDate(actualMaxCheckout);
-
-                            // If current check-out is before new min date or after max date, update it
-                            if (!checkOutInput.value ||
-                                new Date(checkOutInput.value) <= new Date(checkInInput.value) ||
-                                new Date(checkOutInput.value) > actualMaxCheckout) {
+                            // If current check-out is before new min date, update it
+                            if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
                                 checkOutInput.value = formatDate(minCheckout);
                             }
                         }
@@ -1500,10 +1414,10 @@
                     updatePriceSummary();
                 });
             }
-
+            
             if (checkOutInput) {
-                checkOutInput.value = formatDate(minCheckOutDate);
-                checkOutInput.min = formatDate(minCheckOutDate);
+                checkOutInput.value = formatDate(tomorrow);
+                checkOutInput.min = formatDate(tomorrow);
                 
                 // Handle check-out date changes
                 checkOutInput.addEventListener('change', updatePriceSummary);
@@ -1532,125 +1446,6 @@
             // console.log('Number of facilities:', <?php echo count($room['facility'] ?? []); ?>);
             // let roomFullData = <?php echo json_encode($room ?? (object)[]); ?>;
             // console.log('Room full data:', roomFullData);
-        });
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const maxDate = new Date();
-            maxDate.setDate(today.getDate() + 14);
-
-            // Set default dates
-            const minCheckInDate = new Date(today);
-            minCheckInDate.setDate(today.getDate() + 14);
-            const minCheckOutDate = new Date(minCheckInDate);
-            minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
-
-            // Initialize datepicker for daily check-in
-            const checkInElem = document.getElementById('check_in');
-            let checkInPicker = null;
-            if (checkInElem) {
-                checkInPicker = new Datepicker(checkInElem, {
-                    format: 'yyyy-mm-dd',
-                    minDate: today,
-                    maxDate: maxDate,
-                    autohide: true,
-                    todayHighlight: true,
-                    weekStart: 0
-                });
-
-                // Set default date
-                checkInPicker.setDate(minCheckInDate);
-
-                // Update check-out picker when check-in changes
-                checkInElem.addEventListener('changeDate', function(e) {
-                    if (e.detail.date) {
-                        const selectedCheckIn = new Date(e.detail.date);
-                        const minCheckOut = new Date(selectedCheckIn);
-                        minCheckOut.setDate(selectedCheckIn.getDate() + 1);
-
-                        // Calculate max checkout: 14 days from check-in OR end of month
-                        const maxCheckOutDate = new Date(selectedCheckIn);
-                        maxCheckOutDate.setDate(selectedCheckIn.getDate() + 14);
-
-                        const endOfMonth = new Date(selectedCheckIn.getFullYear(), selectedCheckIn.getMonth() + 1, 0);
-                        const actualMaxCheckOut = maxCheckOutDate < endOfMonth ? maxCheckOutDate : endOfMonth;
-
-                        // Update check-out datepicker options
-                        if (checkOutPicker) {
-                            checkOutPicker.setOptions({
-                                minDate: minCheckOut,
-                                maxDate: actualMaxCheckOut
-                            });
-
-                            // Auto-set check-out to min date if current value is invalid
-                            const currentCheckOut = checkOutPicker.getDate();
-                            if (!currentCheckOut || currentCheckOut <= selectedCheckIn || currentCheckOut > actualMaxCheckOut) {
-                                checkOutPicker.setDate(minCheckOut);
-                            }
-                        }
-
-                        // Trigger change event for form validation
-                        checkInElem.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-            }
-
-            // Initialize datepicker for daily check-out
-            const checkOutElem = document.getElementById('check_out');
-            let checkOutPicker = null;
-            if (checkOutElem) {
-                checkOutPicker = new Datepicker(checkOutElem, {
-                    format: 'yyyy-mm-dd',
-                    minDate: minCheckOutDate,
-                    maxDate: maxDate,
-                    autohide: true,
-                    todayHighlight: true,
-                    weekStart: 0
-                });
-
-                // Set default date
-                checkOutPicker.setDate(minCheckOutDate);
-
-                // Trigger change event when date changes
-                checkOutElem.addEventListener('changeDate', function(e) {
-                    if (e.detail.date) {
-                        checkOutElem.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-            }
-
-            // Initialize datepicker for monthly check-in
-            const checkInMonthlyElem = document.getElementById('check_in_monthly');
-            let checkInMonthlyPicker = null;
-            if (checkInMonthlyElem) {
-                checkInMonthlyPicker = new Datepicker(checkInMonthlyElem, {
-                    format: 'yyyy-mm-dd',
-                    minDate: today,
-                    maxDate: maxDate,
-                    autohide: true,
-                    todayHighlight: true,
-                    weekStart: 0
-                });
-
-                // Set default date
-                checkInMonthlyPicker.setDate(minCheckInDate);
-
-                // Trigger change event when date changes
-                checkInMonthlyElem.addEventListener('changeDate', function(e) {
-                    if (e.detail.date) {
-                        // Sync with main check_in input
-                        if (checkInElem && checkInPicker) {
-                            checkInPicker.setDate(e.detail.date);
-                        }
-
-                        // Trigger change event for form validation
-                        checkInMonthlyElem.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-            }
         });
     </script>
 </body>

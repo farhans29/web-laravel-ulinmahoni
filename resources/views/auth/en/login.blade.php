@@ -73,7 +73,7 @@
                 <div class="flex justify-center mb-4">
                     <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-16 w-auto">
                 </div>
-                <h2 class="text-4xl font-light text-gray-900 mb-2">Welcome Back</h2>
+                <h2 class="text-4xl font-light text-gray-900 mb-2">Welcome</h2>
                 <p class="text-gray-600 text-lg">UlinMahoni</p>
             </div>
 
@@ -139,10 +139,10 @@
                     <img class="h-5 w-5 mr-2" src="https://www.google.com/favicon.ico" alt="Google">
                     Sign in with Google
                 </a>
-                <a href="#" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200">
+                {{-- <a href="#" class="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200">
                     <img class="h-5 w-5 mr-2" src="https://img.icons8.com/?size=100&id=30840&format=png&color=000000" alt="Apple">
                     Sign in with Apple
-                </a>
+                </a> --}}
             </div>
 
             <x-jet-validation-errors class="mt-4"/>

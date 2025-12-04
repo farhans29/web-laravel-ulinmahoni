@@ -361,6 +361,7 @@ class RoomController extends Controller {
                 'property_id' => $room->property_id,
                 'property_name' => $room->property_name,
                 'slug' => $room->slug,
+                'no' => $room->no,
                 'name' => $room->name,
                 'descriptions' => $room->descriptions,
                 'type' => $room->type,
@@ -371,7 +372,7 @@ class RoomController extends Controller {
                 'price_discounted_monthly' => $room->price_discounted_monthly,
                 'admin_fees' => $room->admin_fees,
                 'service_fees' => $room->service_fees,
-                'facility' => $room->facilities,
+                'facility' => $room->facility,
                 'attachment' => is_string($room->attachment) ? json_decode(
                     $room->attachment, true
                     ) : (

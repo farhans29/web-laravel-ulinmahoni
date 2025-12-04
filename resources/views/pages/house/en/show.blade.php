@@ -14,6 +14,17 @@
             --transition: all 0.3s ease;
         }
 
+        /* Responsive height for main image container */
+        .mobile-responsive-height {
+            height: 45rem; /* Desktop default */
+        }
+
+        @media (max-width: 768px) {
+            .mobile-responsive-height {
+                height: 20rem !important; /* Mobile height */
+            }
+        }
+
         .gallery-item {
             position: relative;
             overflow: hidden;
@@ -31,9 +42,9 @@
         }
 
         .gallery-item img {
-            width: 60%;
+            width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
             margin: 0 auto;
             transition: var(--transition);
@@ -44,11 +55,12 @@
         }
 
         .gallery-item.main-image img {
-            width: 80%;
+            width: 100%;
         }
+        
 
         .gallery-item.side-image {
-            height: 195px;
+            height: 295px;
         }
 
         .gallery-item.side-image img {
@@ -138,12 +150,18 @@
                 </div>
                 
                 <!-- Main Image with overlay badges -->
-                <div class="relative aspect-[16/9] bg-gray-100 rounded-lg overflow-hidden max-w-xl w-full mx-auto">
+                <div class="relative bg-gray-100 rounded-lg overflow-hidden w-full mobile-responsive-height">
                     @if($primaryImage)
-                        <img src="data:image/jpeg;base64,{{ $primaryImage }}"
+                        {{-- <img src="data:image/jpeg;base64,{{ $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
                             @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
+                            onerror="this.onerror=null;
+                            this.src='{{ asset('images/placeholder-property.jpg') }}';"> --}}
+                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
+                            alt="{{ $house['name'] ?? 'Property Image' }}"
+                            class="w-full h-full object-fill object-center"
+                            @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
@@ -165,28 +183,30 @@
                             {{ ucfirst($house['type']) }}
                         </span>
                     @endif
-                </div>
 
-                <!-- Thumbnails (if multiple images) -->
-                @if(count($secondaryImages) > 0)
-                    <div class="flex space-x-2 overflow-x-auto pb-2 mt-3">
-                        <!-- Main image as first thumb -->
-                        <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-                            <img src="data:image/jpeg;base64,{{ $primaryImage }}"
-                                alt="{{ $house['name'] ?? 'Property Image' }} - Main"
-                                class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'">
-                        </div>
-                        @foreach($secondaryImages as $index => $image)
-                            <div class="flex-shrink-0 w-20 h-12 rounded overflow-hidden border-2 border-white shadow-md">
-                                <img src="data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}"
-                                    alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
-                                    class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                    @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $image['image'] ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'">
+                    <!-- Thumbnails (if multiple images) -->
+                    @if(count($secondaryImages) > 0)
+                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent py-4 px-6">
+                            <div class="flex space-x-3 overflow-x-auto">
+                                <!-- Main image as first thumb -->
+                                <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
+                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
+                                        alt="{{ $house['name'] ?? 'Property Image' }} - Main"
+                                        @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
+                                        class="w-full h-full object-cover cursor-pointer hover:opacity-80">
+                                </div>
+                                @foreach($secondaryImages as $index => $image)
+                                    <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
+                                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}"
+                                            alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
+                                            @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"
+                                            class="w-full h-full object-cover cursor-pointer hover:opacity-80">
+                                    </div>
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                @endif
+                        </div>
+                    @endif
+                </div>
             </div>
 
             <!-- Property Info Section -->
@@ -204,9 +224,19 @@
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-3">Facilities</h3>
                             <div class="flex flex-wrap gap-2">
-                                @foreach($house['features'] as $feature)
+                                @foreach($house['general'] as $generalFeature)
                                     <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
-                                        {{ $feature }}
+                                        {{ $generalFeature }}
+                                    </span>
+                                @endforeach
+                                @foreach($house['security'] as $securityFeature)
+                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
+                                        {{ $securityFeature }}
+                                    </span>
+                                @endforeach
+                                @foreach($house['amenities'] as $amenityFeature)
+                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
+                                        {{ $amenityFeature }}
                                     </span>
                                 @endforeach
                             </div>
@@ -217,7 +247,7 @@
                             <button onclick="scrollToRooms()" class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center">
                                 <i class="fas fa-calendar-check mr-2"></i> Book Now
                             </button>
-                            <a href="https://wa.me/6289699670912/" target="_blank" class="flex-1 border border-teal-600 text-teal-600 py-3 px-6 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center">
+                            <a href="https://wa.me/6281188099700/" target="_blank" class="flex-1 border border-teal-600 text-teal-600 py-3 px-6 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center">
                                 <i class="fab fa-whatsapp mr-2"></i> Contact for More Information
                             </a>
                         </div>
@@ -225,13 +255,13 @@
 
                     <!-- Right Column - Price Section -->
                     <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Rental Price</h3>
-                        
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Rental Price</h3>
+
                         @php
                             $hasDailyPrice = !empty($house['price_original_daily']) && $house['price_original_daily'] > 0;
                             $hasMonthlyPrice = !empty($house['price_original_monthly']) && $house['price_original_monthly'] > 0;
                         @endphp
-                        
+
                         @if(!$hasDailyPrice && !$hasMonthlyPrice)
                             <div class="bg-gray-50 p-6 rounded-lg text-center">
                                 <div class="text-gray-400 mb-2">
@@ -257,7 +287,7 @@
                                 </div>
                             </div>
                             @endif
-                            
+
                             @if($hasMonthlyPrice)
                             <!-- Monthly Price -->
                             <div class="{{ $hasDailyPrice ? 'mt-4' : '' }} bg-teal-50 border border-teal-100 p-4 rounded-lg">
@@ -298,7 +328,7 @@
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">About the Property</h2>
                     <div class="prose max-w-none">
                         <p class="text-gray-600">
-                            {{ $house['description_en'] }}
+                            {{ $house['description'] }}
                         </p>
                     </div>
 
@@ -321,63 +351,129 @@
                     <!-- Location Map -->
                     <div class="mt-8">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Location</h3>
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
-                            <div class="aspect-w-16 aspect-h-9">
-                                @php
-                                    // Default Jakarta coordinates (Monas)
-                                    $defaultLat = -6.1754;
-                                    $defaultLng = 106.8272;
-                                    
-                                    // Initialize variables with default values
-                                    $lat = $defaultLat;
-                                    $lng = $defaultLng;
-                                    
-                                    // Check if location exists and is in correct format
-                                    if (!empty($house['location']) && str_contains($house['location'], ',')) {
-                                        $coordinates = explode(',', $house['location']);
-                                        if (count($coordinates) >= 2) {
-                                            $parsedLat = trim($coordinates[0]);
-                                            $parsedLng = trim($coordinates[1]);
-                                            
-                                            // Validate if coordinates are numeric
-                                            if (is_numeric($parsedLat) && is_numeric($parsedLng)) {
-                                                $lat = (float)$parsedLat;
-                                                $lng = (float)$parsedLng;
-                                            }
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                            <div class="flex flex-col lg:flex-row gap-8">
+                                <!-- Left Column - Map -->
+                                <div class="lg:w-1/2 flex flex-col">
+                                    @php
+                                        // Default Jakarta coordinates (Monas)
+                                        $defaultLat = -6.1754;
+                                        $defaultLng = 106.8272;
+
+                                        // Initialize variables with default values
+                                        $lat = $defaultLat;
+                                        $lng = $defaultLng;
+
+                                        // Check if location exists and is in correct format
+                                        // if (!empty($house['location']) && str_contains($house['location'], ',')) {
+                                        //     $coordinates = explode(',', $house['location']);
+                                        //     if (count($coordinates) >= 2) {
+                                        //         $parsedLat = trim($coordinates[0]);
+                                        //         $parsedLng = trim($coordinates[1]);
+
+                                        //         // Validate if coordinates are numeric
+                                        //         if (is_numeric($parsedLat) && is_numeric($parsedLng)) {
+                                        //             $lat = (float)$parsedLat;
+                                        //             $lng = (float)$parsedLng;
+                                        //         }
+                                        //     }
+                                        // }
+                                        if(!empty($house['latitude']) && !empty($house['longitude'])) {
+                                            $lat = (float)$house['latitude'];
+                                            $lng = (float)$house['longitude'];
                                         }
-                                    }
-                                    
-                                    // Set bounding box with padding
-                                    $bboxPadding = 0.01; // Adjust this value to control the zoom level
-                                    $bbox = sprintf(
-                                        '%f,%f,%f,%f',
-                                        $lng - $bboxPadding,
-                                        $lat - $bboxPadding,
-                                        $lng + $bboxPadding,
-                                        $lat + $bboxPadding
-                                    );
-                                @endphp
-                                <iframe 
-                                    class="w-full h-[1400px] rounded-lg border border-gray-200"
-                                    src="https://www.openstreetmap.org/export/embed.html?bbox={{ $bbox }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}">
-                                </iframe>
-                                <div class="mt-2 text-right">
-                                    <small class="text-sm">
-                                        <a href="https://www.openstreetmap.org/?mlat={{ $lat }}&amp;mlon={{ $lng }}#map=18/{{ $lat }}/{{ $lng }}" target="_blank" class="text-teal-600 hover:underline">
-                                            View Larger Map
-                                        </a>
-                                    </small>
+
+                                        // Set bounding box with padding
+                                        $bboxPadding = 0.01; // Adjust this value to control the zoom level
+                                        $bbox = sprintf(
+                                            '%f,%f,%f,%f',
+                                            $lng - $bboxPadding,
+                                            $lat - $bboxPadding,
+                                            $lng + $bboxPadding,
+                                            $lat + $bboxPadding
+                                        );
+                                    @endphp
+                                    <div class="w-full flex-1">
+                                        <iframe
+                                            class="w-full h-full rounded-lg border border-gray-200"
+                                            src="https://www.openstreetmap.org/export/embed.html?bbox={{ $bbox }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}">
+                                        </iframe>
+                                    </div>
+                                    <div class="mt-2 text-right">
+                                        <small class="text-sm">
+                                            <a href="https://www.openstreetmap.org/?mlat={{ $lat }}&amp;mlon={{ $lng }}#map=18/{{ $lat }}/{{ $lng }}" target="_blank" class="text-teal-600 hover:underline">
+                                                View Larger Map
+                                            </a>
+                                        </small>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="mt-4">
-                                <h4 class="font-semibold text-gray-900">Address</h4>
-                                <p class="text-gray-600 mt-1">{{ $house['location'] }}</p>
-                                <div class="mt-4 flex items-center text-sm text-gray-500">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    {{ $house['distance'] }}
+
+                                <!-- Right Column - Address Details -->
+                                <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
+                                    <h4 class="text-xl font-semibold text-gray-900 mb-4">Address</h4>
+
+                                    @if(!empty($house['address']))
+                                        <div class="space-y-4">
+                                            @if(!empty($house['address']['full_address']))
+                                                <div class="pb-3 border-b border-gray-100">
+                                                    <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Full Address</h5>
+                                                    <p class="text-base text-gray-900 leading-relaxed">{{ $house['address']['full_address'] }}</p>
+                                                </div>
+                                            @endif
+
+                                            <div class="grid grid-cols-2 gap-4">
+                                                @if(!empty($house['address']['village']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Village</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['village'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['subdistrict']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Subdistrict</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['subdistrict'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['city']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">City/Regency</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['city'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['province']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Province</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['province'] }}</p>
+                                                    </div>
+                                                @endif
+
+                                                @if(!empty($house['address']['postal_code']))
+                                                    <div>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Postal Code</h5>
+                                                        <p class="text-sm text-gray-900">{{ $house['address']['postal_code'] }}</p>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @else
+                                        <p class="text-gray-600 mb-6">{{ $house['location'] }}</p>
+                                    @endif
+
+                                    @if(!empty($house['distance']))
+                                        <div class="mt-4 pt-4 border-t border-gray-200">
+                                            <h5 class="text-sm font-semibold text-gray-700 mb-2">Distance</h5>
+                                            <p class="text-gray-600 flex items-center">
+                                                <svg class="w-4 h-4 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                                {{ $house['distance'] }}
+                                            </p>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -409,7 +505,12 @@
                                             @endphp
                                             
                                             @if(!empty($roomMainImage) && is_string($roomMainImage))
-                                                <img src="data:image/jpeg;base64,{{ $roomMainImage }}" 
+                                                {{-- <img src="data:image/jpeg;base64,{{ $roomMainImage }}" 
+                                                    alt="{{ $room['name'] ?? 'Room image' }}" 
+                                                    class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
+                                                    onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }"> --}}
+                                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $roomMainImage }}" 
                                                     alt="{{ $room['name'] ?? 'Room image' }}" 
                                                     class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                                                     onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
@@ -429,7 +530,7 @@
                                     </div>
 
                                     <div class="p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['name'] }}</h3>
+                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h3>
                                         <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p>
 
                                         <div class="mb-4">
@@ -454,7 +555,7 @@
                                                 @php
                                                     $hasValidPeriod = false;
                                                 @endphp
-                                                
+
                                                 @if($room['price_original_daily'] > 0)
                                                     @php $hasValidPeriod = true; @endphp
                                                     <li class="flex items-center">
@@ -473,7 +574,7 @@
                                                         </span>
                                                     </li>
                                                 @endif
-                                                
+
                                                 @if(!$hasValidPeriod)
                                                     <li>
                                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -485,17 +586,19 @@
                                             </ul>
                                         </div>
 
-                                        <div class="flex items-center justify-between mt-4">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $room['status'] === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $room['status'] === 1 ? 'Available' : 'Not Available' }}
-                                            </span>
-                                        </div>
+                                        @if($room['status'] === 1)
+                                            <div class="flex items-center justify-between mt-4">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Available
+                                                </span>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                                 </a>
                             @empty
                                 <div class="col-span-full text-center py-8">
-                                    <p class="text-gray-500">No rooms available for this property at the moment.</p>
+                                    <p class="text-gray-500">No rooms available at this time.</p>
                                 </div>
                             @endforelse
                         </div>
@@ -518,31 +621,31 @@
         document.addEventListener('DOMContentLoaded', function() {
             const rooms = @json($house['rooms'] ?? []);
             
-            console.log('=== ROOM IMAGES DEBUG ===');
-            console.log('Total Rooms:', rooms.length);
+            // console.log('=== ROOM IMAGES DEBUG ===');
+            // console.log('Total Rooms:', rooms.length);
             
-            rooms.forEach((room, roomIndex) => {
-                const roomImages = room.images || [];
-                console.group(`Room ${roomIndex + 1}: ${room.name || 'Unnamed Room'}`);
-                console.log('Room ID:', room.id || 'N/A');
-                console.log('Total Images:', roomImages.length);
+            // rooms.forEach((room, roomIndex) => {
+            //     const roomImages = room.images || [];
+            //     console.group(`Room ${roomIndex + 1}: ${room.name || 'Unnamed Room'}`);
+            //     console.log('Room ID:', room.id || 'N/A');
+            //     console.log('Total Images:', roomImages.length);
                 
-                if (roomImages.length > 0) {
-                    console.log('Image Details:');
-                    roomImages.forEach((img, imgIndex) => {
-                        console.group(`Image ${imgIndex + 1}`);
-                        console.log('Has Image Data:', !!img.image ? 'Yes' : 'No');
-                        console.log('Caption:', img.caption || 'No caption');
-                        console.log('Image Preview:', img.image ? img.image.substring(0, 30) + '...' : 'No image data');
-                        console.groupEnd();
-                    });
-                } else {
-                    console.log('No images found for this room');
-                }
+            //     if (roomImages.length > 0) {
+            //         console.log('Image Details:');
+            //         roomImages.forEach((img, imgIndex) => {
+            //             console.group(`Image ${imgIndex + 1}`);
+            //             console.log('Has Image Data:', !!img.image ? 'Yes' : 'No');
+            //             console.log('Caption:', img.caption || 'No caption');
+            //             console.log('Image Preview:', img.image ? img.image.substring(0, 30) + '...' : 'No image data');
+            //             console.groupEnd();
+            //         });
+            //     } else {
+            //         console.log('No images found for this room');
+            //     }
                 
-                console.groupEnd();
-            });
-            console.log('=========================');
+            //     console.groupEnd();
+            // });
+            // console.log('=========================');
         });
     </script>
 

@@ -129,6 +129,7 @@ class Room extends Model
                     idrec,
                     room_id,
                     image,
+                    thumbnail,
                     caption
                 FROM m_room_images 
                 WHERE room_id = ? 
@@ -138,8 +139,8 @@ class Room extends Model
                 return [];
             }
 
-            // Process each image to ensure proper base64 encoding
-            return array_filter(array_map(function($image) {
+            // Process each image and add thumbnail field
+            $processedImages = array_filter(array_map(function($image) {
                 try {
                     if (!is_object($image) || !isset($image->idrec)) {
                         return null;
@@ -150,7 +151,9 @@ class Room extends Model
                         'room_id' => $image->room_id ?? $this->idrec,
                         // 'image' => $this->getProcessedImage($image->image ?? null),
                         'image' => $image->image ?? null,
-                        'caption' => $image->caption ?? ''
+                        'thumbnail' => $image->thumbnail ?? null,
+                        'caption' => $image->caption ?? '',
+                        '_has_thumbnail' => !empty($image->thumbnail) // Helper for sorting
                     ];
                 } catch (\Exception $e) {
                     // Log error and skip this image
@@ -158,6 +161,17 @@ class Room extends Model
                     return null;
                 }
             }, $images));
+
+            // Sort images - images with thumbnails come first
+            usort($processedImages, function($a, $b) {
+                return ($b['_has_thumbnail'] ?? false) <=> ($a['_has_thumbnail'] ?? false);
+            });
+
+            // Remove the helper field from final result
+            return array_map(function($image) {
+                unset($image['_has_thumbnail']);
+                return $image;
+            }, $processedImages);
 
         } catch (\Exception $e) {
             \Log::error('Error fetching room images: ' . $e->getMessage());
