@@ -78,26 +78,44 @@
 
             <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
                 @csrf
+                <input type="hidden" id="name" name="name" value="{{ old('name') }}">
                 <div class="rounded-md shadow-sm space-y-4">
-                    <div>
-                        <label for="name" class="sr-only">{{ __('Full Name') }}</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-user text-gray-400"></i>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="first_name" class="sr-only">{{ __('First Name') }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <input
+                                    id="first_name"
+                                    name="first_name"
+                                    type="text"
+                                    required
+                                    class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                    placeholder="First Name"
+                                    value="{{ old('first_name') }}" />
                             </div>
-                            <input id="name" name="name" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Full Name" :value="old('name')" />
+                        </div>
+                        <div>
+                            <label for="last_name" class="sr-only">{{ __('Last Name') }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-user text-gray-400"></i>
+                                </div>
+                                <input
+                                    id="last_name"
+                                    name="last_name"
+                                    type="text"
+                                    class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                                    placeholder="Last Name"
+                                    value="{{ old('last_name') }}" />
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label for="username" class="sr-only">{{ __('Username') }}</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-at text-gray-400"></i>
-                            </div>
-                            <input id="username" name="username" type="text" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Username" :value="old('username')" />
-                        </div>
-                    </div>
+                    <!-- Hidden username field - auto-populated from email -->
+                    <input id="username" name="username" type="hidden" value="{{ old('username') }}" />
 
                     <div>
                         <label for="email" class="sr-only">{{ __('Email Address') }}</label>
@@ -105,7 +123,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-envelope text-gray-400"></i>
                             </div>
-                            <input id="email" name="email" type="email" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Email" :value="old('email')" />
+                            <input id="email" name="email" type="email" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Email" value="{{ old('email') }}" />
                         </div>
                     </div>
 
@@ -125,7 +143,7 @@
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-lock text-gray-400"></i>
                             </div>
-                            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Confirm Password" />
+                            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Retype Password" />
                         </div>
                     </div>
                 </div>
@@ -137,17 +155,15 @@
                     </label>
                 </div> -->
 
-                @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
-                    <div class="flex items-center">
-                        <input id="terms" name="terms" type="checkbox" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded" required>
-                        <label for="terms" class="ml-2 block text-sm text-gray-900">
-                            {!! __('I agree to the :terms_of_service and :privacy_policy', [
-                                'terms_of_service' => '<a target="_blank" href="'.route('terms.show').'" class="text-teal-600 hover:text-teal-500">'.__('Terms of Service').'</a>',
-                                'privacy_policy' => '<a target="_blank" href="'.route('policy.show').'" class="text-teal-600 hover:text-teal-500">'.__('Privacy Policy').'</a>',
-                            ]) !!}
-                        </label>
-                    </div>
-                @endif
+                <div class="flex items-center">
+                    <input id="terms" name="terms" type="checkbox" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded" required>
+                    <label for="terms" class="ml-2 block text-sm text-gray-900">
+                        I agree to the
+                        <a href="{{ route('terms-of-services') }}" target="_blank" class="text-teal-600 hover:text-teal-500 underline">Terms and Conditions</a>
+                        and
+                        <a href="{{ route('privacy-policy') }}" target="_blank" class="text-teal-600 hover:text-teal-500 underline">Privacy Policy</a>
+                    </label>
+                </div>
 
                 <div>
                     <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200">
@@ -178,13 +194,69 @@
         // Video play/pause functionality
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.querySelector('.video-background');
-            
+
             // Ensure video plays when page loads
             video.play().catch(error => {
                 console.log('Autoplay prevented:', error);
                 // Show play button if autoplay is prevented
                 video.controls = true;
             });
+
+            // Auto-populate username from email
+            const emailInput = document.getElementById('email');
+            const usernameInput = document.getElementById('username');
+
+            // Function to sanitize username to match Laravel's alpha_dash validation
+            // Only keeps letters, numbers, dashes, and underscores (removes dots, spaces, commas, etc.)
+            function sanitizeUsername(str) {
+                return str.replace(/[^a-zA-Z0-9_-]/g, '');
+            }
+
+            if (emailInput && usernameInput) {
+                emailInput.addEventListener('input', function(e) {
+                    const email = e.target.value;
+                    // Extract username from email (part before @)
+                    const username = email.split('@')[0];
+                    // Sanitize username to remove invalid characters
+                    usernameInput.value = sanitizeUsername(username);
+                });
+
+                // Set initial value if email already has a value (e.g., from old input)
+                if (emailInput.value) {
+                    const username = emailInput.value.split('@')[0];
+                    usernameInput.value = sanitizeUsername(username);
+                }
+            }
+
+            // Handle form submission
+            const form = document.querySelector('form[action="{{ route('register') }}"]');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const firstName = document.getElementById('first_name').value.trim();
+                    const lastNameInput = document.getElementById('last_name');
+
+                    // Check if terms checkbox is checked
+                    const termsCheckbox = document.getElementById('terms');
+                    if (!termsCheckbox.checked) {
+                        e.preventDefault();
+                        alert('Please agree to the Terms and Conditions and Privacy Policy to continue.');
+                        return false;
+                    }
+
+                    // If last name is empty, copy first name to last name
+                    if (lastNameInput.value.trim() === '') {
+                        lastNameInput.value = firstName;
+                    }
+
+                    // Update the hidden name field with the first name
+                    document.getElementById('name').value = firstName;
+
+                    // Ensure username is populated from email with sanitization
+                    const email = document.getElementById('email').value;
+                    const username = email.split('@')[0];
+                    usernameInput.value = sanitizeUsername(username);
+                });
+            }
         });
     </script>
 </body>
