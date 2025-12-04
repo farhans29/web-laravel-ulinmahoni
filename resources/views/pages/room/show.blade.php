@@ -1542,10 +1542,17 @@
             const maxDate = new Date();
             maxDate.setDate(today.getDate() + 14);
 
+            // Set default dates
+            const minCheckInDate = new Date(today);
+            minCheckInDate.setDate(today.getDate() + 14);
+            const minCheckOutDate = new Date(minCheckInDate);
+            minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
+
             // Initialize datepicker for daily check-in
             const checkInElem = document.getElementById('check_in');
+            let checkInPicker = null;
             if (checkInElem) {
-                const checkInPicker = new Datepicker(checkInElem, {
+                checkInPicker = new Datepicker(checkInElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
                     maxDate: maxDate,
@@ -1553,6 +1560,9 @@
                     todayHighlight: true,
                     weekStart: 0
                 });
+
+                // Set default date
+                checkInPicker.setDate(minCheckInDate);
 
                 // Update check-out picker when check-in changes
                 checkInElem.addEventListener('changeDate', function(e) {
@@ -1576,11 +1586,14 @@
                             });
 
                             // Auto-set check-out to min date if current value is invalid
-                            const currentCheckOut = checkOutElem.datepicker.getDate();
+                            const currentCheckOut = checkOutPicker.getDate();
                             if (!currentCheckOut || currentCheckOut <= selectedCheckIn || currentCheckOut > actualMaxCheckOut) {
                                 checkOutPicker.setDate(minCheckOut);
                             }
                         }
+
+                        // Trigger change event for form validation
+                        checkInElem.dispatchEvent(new Event('change', { bubbles: true }));
                     }
                 });
             }
@@ -1589,29 +1602,53 @@
             const checkOutElem = document.getElementById('check_out');
             let checkOutPicker = null;
             if (checkOutElem) {
-                const minCheckOut = new Date(today);
-                minCheckOut.setDate(today.getDate() + 1);
-
                 checkOutPicker = new Datepicker(checkOutElem, {
                     format: 'yyyy-mm-dd',
-                    minDate: minCheckOut,
+                    minDate: minCheckOutDate,
                     maxDate: maxDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
                 });
+
+                // Set default date
+                checkOutPicker.setDate(minCheckOutDate);
+
+                // Trigger change event when date changes
+                checkOutElem.addEventListener('changeDate', function(e) {
+                    if (e.detail.date) {
+                        checkOutElem.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                });
             }
 
             // Initialize datepicker for monthly check-in
             const checkInMonthlyElem = document.getElementById('check_in_monthly');
+            let checkInMonthlyPicker = null;
             if (checkInMonthlyElem) {
-                const checkInMonthlyPicker = new Datepicker(checkInMonthlyElem, {
+                checkInMonthlyPicker = new Datepicker(checkInMonthlyElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
                     maxDate: maxDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
+                });
+
+                // Set default date
+                checkInMonthlyPicker.setDate(minCheckInDate);
+
+                // Trigger change event when date changes
+                checkInMonthlyElem.addEventListener('changeDate', function(e) {
+                    if (e.detail.date) {
+                        // Sync with main check_in input
+                        if (checkInElem && checkInPicker) {
+                            checkInPicker.setDate(e.detail.date);
+                        }
+
+                        // Trigger change event for form validation
+                        checkInMonthlyElem.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
                 });
             }
         });
