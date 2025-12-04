@@ -206,7 +206,7 @@
                             <!-- Rental Type -->
                             <div class="mb-6">
                                 <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pemesanan</label>
-                                <select id="rent_type" name="rent_type"
+                                <select id="rent_type" name="rent_type" 
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updateRentalType()">
                                     @if($room['periode_daily'] == 1)
@@ -218,70 +218,38 @@
                                 </select>
                             </div>
 
-                            <!-- Daily Booking Component -->
-                            <div id="dailyBookingComponent" class="space-y-4 hidden">
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <div class="flex items-center mb-3">
-                                        <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
-                                        <h3 class="text-sm font-semibold text-gray-800">Pemesanan Harian</h3>
-                                    </div>
+                            <!-- Months Selection (Hidden by default) -->
+                            <div id="monthInput" class="hidden">
+                                <label for="months" class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bulan</label>
+                                <select id="months" name="months" 
+                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                    onchange="updatePriceSummary()">
+                                    @for ($i = 1; $i <= 12; $i++)
+                                        <option value="{{ $i }}">{{ $i }} {{ $i == 1 ? 'Bulan' : 'Bulan' }}</option>
+                                    @endfor
+                                </select>
+                                <input type="hidden" name="booking_months" id="bookingMonths" value="1">
+                            </div>
 
+                            <!-- Dates (Visible by default) -->
+                            <div id="dateInputs">
+                                <div class="grid grid-cols-2 gap-4">
                                     <!-- Check-in Date -->
-                                    <div class="mb-4">
-                                        <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-sign-in-alt mr-1 text-gray-500"></i>Check In
-                                        </label>
-                                        <input type="date" id="check_in" name="check_in"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            min="{{ date('Y-m-d', strtotime('+14 days')) }}" data-required="true">
+                                    <div>
+                                        <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">Check-in</label>
+                                        <input type="date" id="check_in" name="check_in" 
+                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                            min="{{ date('Y-m-d') }}" data-required="true">
                                         <div id="check_inError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                                     </div>
 
                                     <!-- Check-out Date -->
-                                    <div>
-                                        <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-sign-out-alt mr-1 text-gray-500"></i>Check Out
-                                        </label>
-                                        <input type="date" id="check_out" name="check_out"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            min="{{ date('Y-m-d', strtotime('+15 days')) }}" data-required="true">
+                                    <div id="checkOutGroup">
+                                        <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">Check-out</label>
+                                        <input type="date" id="check_out" name="check_out" 
+                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                                            min="{{ date('Y-m-d', strtotime('+1 day')) }}" data-required="true">
                                         <div id="check_outError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Monthly Booking Component -->
-                            <div id="monthlyBookingComponent" class="space-y-4 hidden">
-                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                                    <div class="flex items-center mb-3">
-                                        <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>
-                                        <h3 class="text-sm font-semibold text-gray-800">Pemesanan Bulanan</h3>
-                                    </div>
-
-                                    <!-- Check-in Date -->
-                                    <div class="mb-4">
-                                        <label for="check_in_monthly" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-calendar-check mr-1 text-gray-500"></i>Check In
-                                        </label>
-                                        <input type="date" id="check_in_monthly" name="check_in_monthly"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            min="{{ date('Y-m-d', strtotime('+14 days')) }}" data-required="true">
-                                        <div id="check_in_monthlyError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
-                                    </div>
-
-                                    <!-- Months Selection -->
-                                    <div>
-                                        <label for="months" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-hourglass-half mr-1 text-gray-500"></i>Durasi Sewa
-                                        </label>
-                                        <select id="months" name="months"
-                                            class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            onchange="updatePriceSummary()">
-                                            @for ($i = 1; $i <= 12; $i++)
-                                                <option value="{{ $i }}">{{ $i }} Bulan</option>
-                                            @endfor
-                                        </select>
-                                        <input type="hidden" name="booking_months" id="bookingMonths" value="1">
                                     </div>
                                 </div>
                             </div>
@@ -1024,10 +992,9 @@
             // --- Rental type toggle logic ---
             function updateRentalType() {
                 const rentTypeSelect = document.getElementById('rent_type');
-                const dailyBookingComponent = document.getElementById('dailyBookingComponent');
-                const monthlyBookingComponent = document.getElementById('monthlyBookingComponent');
+                const monthInput = document.getElementById('monthInput');
+                const dateInputs = document.getElementById('dateInputs');
                 const checkInInput = document.getElementById('check_in');
-                const checkInMonthlyInput = document.getElementById('check_in_monthly');
                 const checkOutInput = document.getElementById('check_out');
                 const monthsSelect = document.getElementById('months');
                 const dailyRateDisplay = document.getElementById('dailyRateDisplay');
@@ -1037,71 +1004,43 @@
                 const searchState = savedSearch ? JSON.parse(savedSearch) : null;
 
                 if (rentTypeSelect.value === 'monthly') {
-                    // Show monthly component, hide daily component
-                    dailyBookingComponent.classList.add('hidden');
-                    monthlyBookingComponent.classList.remove('hidden');
-
-                    // Update rate display
+                    monthInput.classList.remove('hidden');
+                    // Show only check-in date for monthly rentals
+                    dateInputs.classList.remove('hidden');
+                    const checkOutGroup = document.getElementById('checkOutGroup');
+                    if (checkOutGroup) {
+                        checkOutGroup.classList.add('hidden');
+                        // Set months from saved search or default to 1
+                        if (monthsSelect) {
+                            monthsSelect.value = searchState?.period === 'monthly' && searchState?.months
+                                ? searchState.months
+                                : 1;
+                            document.getElementById('bookingMonths').value = monthsSelect.value;
+                        }
+                    }
                     dailyRateDisplay.classList.add('hidden');
                     monthlyRateDisplay.classList.remove('hidden');
                     rateTypeDisplay.textContent = 'Harga Bulanan';
-
-                    // Set months from saved search or default to 1
-                    if (monthsSelect) {
-                        monthsSelect.value = searchState?.period === 'monthly' && searchState?.months
-                            ? searchState.months
-                            : 1;
-                        document.getElementById('bookingMonths').value = monthsSelect.value;
-                    }
-
-                    // Set check-in date for monthly with 14-day minimum
-                    const today = new Date();
-                    const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
-
-                    if (checkInMonthlyInput) {
-                        checkInMonthlyInput.value = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
-                        // Copy value to check_in for form submission
-                        if (checkInInput) checkInInput.value = checkInMonthlyInput.value;
-                        checkInMonthlyInput.addEventListener('change', function() {
-                            if (checkInInput) checkInInput.value = checkInMonthlyInput.value;
-                            updatePriceSummary();
-                        });
-                    }
-
-                    // Calculate check-out date based on months
-                    if (checkInMonthlyInput && checkOutInput) {
-                        const checkInDate = new Date(checkInMonthlyInput.value);
-                        const months = parseInt(monthsSelect.value, 10) || 1;
-                        const checkOutDate = new Date(checkInDate);
-                        checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                        checkOutInput.value = checkOutDate.toISOString().split('T')[0];
-                    }
-
+                    
                 } else {
-                    // Show daily component, hide monthly component
-                    dailyBookingComponent.classList.remove('hidden');
-                    monthlyBookingComponent.classList.add('hidden');
-
-                    // Update rate display
+                    monthInput.classList.add('hidden');
+                    dateInputs.classList.remove('hidden');
                     dailyRateDisplay.classList.remove('hidden');
                     monthlyRateDisplay.classList.add('hidden');
                     rateTypeDisplay.textContent = 'Harga Harian';
-
-                    // Set dates from saved search or use defaults with 14-day minimum
+                    
+                    // Set dates from saved search or use defaults
                     const today = new Date();
-                    const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
-                    const minCheckOutDate = new Date(minCheckInDate);
-                    minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
-
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
                     if (checkInInput) {
-                        checkInInput.value = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
+                        checkInInput.value = searchState?.check_in || today.toISOString().split('T')[0];
                         checkInInput.dispatchEvent(new Event('change'));
                     }
-
+                    
                     if (checkOutInput) {
-                        checkOutInput.value = searchState?.check_out || minCheckOutDate.toISOString().split('T')[0];
+                        checkOutInput.value = searchState?.check_out || tomorrow.toISOString().split('T')[0];
                         checkOutInput.dispatchEvent(new Event('change'));
                     }
                 }
@@ -1112,11 +1051,7 @@
             function handleCheckInChange() {
                 const rentTypeSelect = document.getElementById('rent_type');
                 const monthsSelect = document.getElementById('months');
-                const checkInInput = document.getElementById('check_in');
-                const checkOutInput = document.getElementById('check_out');
-
                 if (!checkInInput.value) return;
-
                 if (rentTypeSelect.value === 'monthly') {
                     // For monthly, update check-out based on months
                     const checkInDate = new Date(checkInInput.value);
@@ -1124,6 +1059,7 @@
                     const checkOutDate = new Date(checkInDate);
                     checkOutDate.setMonth(checkOutDate.getMonth() + months);
                     checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                    
                 } else {
                     // For daily, normal logic
                     const minCheckout = new Date(checkInInput.value);
@@ -1131,11 +1067,12 @@
                     checkOutInput.min = minCheckout.toISOString().split('T')[0];
                     if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
                         checkOutInput.value = minCheckout.toISOString().split('T')[0];
+                        
                     }
                 }
                 updatePriceSummary();
+                
             }
-
             function handleCheckOutChange() {
                 updatePriceSummary();
             }
@@ -1145,15 +1082,12 @@
                 // Get saved search state
                 const savedSearch = localStorage.getItem('propertySearch');
                 const searchState = savedSearch ? JSON.parse(savedSearch) : null;
-
-                // Get current date for default values with 14 days minimum
+                
+                // Get current date for default values
                 const today = new Date();
-                const minCheckInDate = new Date(today);
-                minCheckInDate.setDate(today.getDate() + 14);
-
-                const defaultCheckIn = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
-                const defaultCheckOut = searchState?.check_out || new Date(minCheckInDate);
-
+                const defaultCheckIn = searchState?.check_in || today.toISOString().split('T')[0];
+                const defaultCheckOut = searchState?.check_out || new Date(today);
+                
                 // Set rent type from saved search if available
                 if (searchState?.period) {
                     const rentTypeSelect = document.getElementById('rent_type');
@@ -1162,27 +1096,25 @@
                         updateRentalType(); // Update UI based on rent type
                     }
                 }
-                defaultCheckOut.setDate(minCheckInDate.getDate() + 1);
+                defaultCheckOut.setDate(today.getDate() + 1);
                 const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
-                const minCheckInStr = minCheckInDate.toISOString().split('T')[0];
-
+                
                 // Set initial values
                 const checkInInput = document.getElementById('check_in');
-                const checkInMonthlyInput = document.getElementById('check_in_monthly');
                 const checkOutInput = document.getElementById('check_out');
                 const rentTypeSelect = document.getElementById('rent_type');
                 const monthsSelect = document.getElementById('months');
-
+                
                 if (checkInInput) {
                     checkInInput.value = defaultCheckIn;
-                    checkInInput.min = minCheckInStr;
-
+                    checkInInput.min = defaultCheckIn;
+                    
                     // Handle check-in date changes
                     checkInInput.addEventListener('change', function() {
                         if (checkInInput.value) {
                             const minCheckout = new Date(checkInInput.value);
                             minCheckout.setDate(minCheckout.getDate() + 1);
-
+                            
                             if (checkOutInput) {
                                 checkOutInput.min = formatDate(minCheckout);
                                 // If current check-out is before new min date, update it
@@ -1194,64 +1126,24 @@
                         checkRoomAvailability();
                     });
                 }
-
-                // Handle monthly check-in input
-                if (checkInMonthlyInput) {
-                    checkInMonthlyInput.value = defaultCheckIn;
-                    checkInMonthlyInput.min = minCheckInStr;
-
-                    checkInMonthlyInput.addEventListener('change', function() {
-                        // Sync with main check_in input
-                        if (checkInInput) {
-                            checkInInput.value = checkInMonthlyInput.value;
-                        }
-
-                        // Update checkout based on months
-                        if (checkOutInput && monthsSelect) {
-                            const checkInDate = new Date(checkInMonthlyInput.value);
-                            const months = parseInt(monthsSelect.value, 10) || 1;
-                            const checkOutDate = new Date(checkInDate);
-                            checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                            checkOutInput.value = checkOutDate.toISOString().split('T')[0];
-                        }
-
-                        checkRoomAvailability();
-                    });
-                }
-
+                
                 if (checkOutInput) {
                     checkOutInput.value = defaultCheckOutStr;
                     checkOutInput.min = defaultCheckOutStr;
-
+                    
                     // Handle check-out date changes
                     checkOutInput.addEventListener('change', function() {
                         checkRoomAvailability();
                     });
                 }
-
+                
                 // Initialize other form elements
                 if (rentTypeSelect) {
                     rentTypeSelect.addEventListener('change', updateRentalType);
                 }
-
+                
                 if (monthsSelect) {
-                    monthsSelect.addEventListener('change', function() {
-                        // Update checkout date when months change
-                        const rentType = document.getElementById('rent_type').value;
-                        if (rentType === 'monthly') {
-                            const checkInMonthlyInput = document.getElementById('check_in_monthly');
-                            const checkOutInput = document.getElementById('check_out');
-
-                            if (checkInMonthlyInput && checkOutInput && checkInMonthlyInput.value) {
-                                const checkInDate = new Date(checkInMonthlyInput.value);
-                                const months = parseInt(monthsSelect.value, 10) || 1;
-                                const checkOutDate = new Date(checkInDate);
-                                checkOutDate.setMonth(checkOutDate.getMonth() + months);
-                                checkOutInput.value = checkOutDate.toISOString().split('T')[0];
-                            }
-                        }
-                        updatePriceSummary();
-                    });
+                    monthsSelect.addEventListener('change', updatePriceSummary);
                 }
                 
                 // Initialize form state
@@ -1492,27 +1384,25 @@
                 }
             }
 
-            // Set default dates with 14-day minimum
+            // Set default dates
             const today = new Date();
-            const minCheckInDate = new Date(today);
-            minCheckInDate.setDate(today.getDate() + 14);
-            const minCheckOutDate = new Date(minCheckInDate);
-            minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
-
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
             // Format date as YYYY-MM-DD
             const formatDate = (date) => date.toISOString().split('T')[0];
-
+            
             // Set initial values
             if (checkInInput) {
-                checkInInput.value = formatDate(minCheckInDate);
-                checkInInput.min = formatDate(minCheckInDate);
-
+                checkInInput.value = formatDate(today);
+                checkInInput.min = formatDate(today);
+                
                 // Handle check-in date changes
                 checkInInput.addEventListener('change', function() {
                     if (checkInInput.value) {
                         const minCheckout = new Date(checkInInput.value);
                         minCheckout.setDate(minCheckout.getDate() + 1);
-
+                        
                         if (checkOutInput) {
                             checkOutInput.min = formatDate(minCheckout);
                             // If current check-out is before new min date, update it
@@ -1524,10 +1414,10 @@
                     updatePriceSummary();
                 });
             }
-
+            
             if (checkOutInput) {
-                checkOutInput.value = formatDate(minCheckOutDate);
-                checkOutInput.min = formatDate(minCheckOutDate);
+                checkOutInput.value = formatDate(tomorrow);
+                checkOutInput.min = formatDate(tomorrow);
                 
                 // Handle check-out date changes
                 checkOutInput.addEventListener('change', updatePriceSummary);

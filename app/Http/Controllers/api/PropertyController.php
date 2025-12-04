@@ -130,34 +130,52 @@ class PropertyController extends ApiController
                     'm_properties.*',
                     'm_property_images.idrec as image_id',
                     'm_property_images.image as image_data',
+                    'm_property_images.thumbnail as thumbnail_data',
                     'm_property_images.caption',
                 ])
                 ->get();
-            
+
             if ($property->isEmpty()) {
                 return $this->respondNotFound('Property not found');
             }
-            
+
             // Group images by property
             $groupedProperty = $property->groupBy('idrec')->map(function ($propertyGroup) {
                 $property = $propertyGroup->first();
+
+                // Map and sort images - images with thumbnails come first
                 $images = $propertyGroup->filter(fn($item) => $item->image_id !== null)
                     ->map(fn($imageItem) => [
                         'id' => $imageItem->image_id,
                         'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
+                        'thumbnail' => $imageItem->thumbnail_data ? env('ADMIN_URL') . '/storage/' . $imageItem->image_data : null,
                         'caption' => $imageItem->caption,
-                    ])->values();
-                
+                        '_has_thumbnail' => !empty($imageItem->thumbnail_data), // Helper for sorting
+                    ])
+                    ->sortByDesc('_has_thumbnail') // Sort by thumbnail presence (true first)
+                    ->map(function($image) {
+                        // Remove the helper field before returning
+                        unset($image['_has_thumbnail']);
+                        return $image;
+                    })
+                    ->values();
+
                 $propertyArray = $property->toArray();
+
+                // Add thumbnail field to main property object (first image with thumbnail, or null)
+                $firstImageWithThumbnail = $images->first(fn($img) => !empty($img['thumbnail']));
+                $propertyArray['thumbnail'] = $firstImageWithThumbnail['thumbnail'] ?? null;
+
                 $propertyArray['images'] = $images;
-                
+
                 // Remove image-related fields from the main property object
                 unset(
                     $propertyArray['image_id'],
                     $propertyArray['image_data'],
+                    $propertyArray['thumbnail_data'],
                     $propertyArray['caption']
                 );
-                
+
                 return $propertyArray;
             })->first();
             

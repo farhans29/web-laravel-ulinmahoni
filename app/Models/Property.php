@@ -137,6 +137,7 @@ class Property extends Model
                     idrec,
                     property_id,
                     image,
+                    thumbnail,
                     caption
                 FROM m_property_images 
                 WHERE property_id = ? 
@@ -158,7 +159,7 @@ class Property extends Model
                         'property_id' => $image->property_id ?? $this->idrec,
                         // 'image' => $this->getProcessedImage($image->image ?? null),
                         'image' => $image->image ?? null,
-                        'thumbnail' => $image->image ?? 0,
+                        'thumbnail' => $image->thumbnail ?? null,
                         'caption' => $image->caption ?? ''
                     ];
                 } catch (\Exception $e) {

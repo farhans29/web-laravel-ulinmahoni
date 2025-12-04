@@ -20,34 +20,52 @@ class RoomController extends ApiController
                     'm_rooms.*',
                     'm_room_images.idrec as image_id',
                     'm_room_images.image as image_data',
+                    'm_room_images.thumbnail as thumbnail_data',
                     'm_room_images.caption',
                 ]);
 
             $rooms = $query->get();
-            
+
             // Group images by room
             $groupedRooms = $rooms->groupBy('idrec')->map(function ($roomGroup) {
                 $room = $roomGroup->first();
+
+                // Map and sort images - images with thumbnails come first
                 $images = $roomGroup->filter(function ($item) {
                     return $item->image_id !== null;
                 })->map(function ($imageItem) {
                     return [
                         'id' => $imageItem->image_id,
                         'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
+                        'thumbnail' => $imageItem->thumbnail_data ? env('ADMIN_URL') . '/storage/' . $imageItem->image_data : null,
                         'caption' => $imageItem->caption,
+                        '_has_thumbnail' => !empty($imageItem->thumbnail_data), // Helper for sorting
                     ];
-                })->values();
-                
+                })
+                ->sortByDesc('_has_thumbnail') // Sort by thumbnail presence (true first)
+                ->map(function($image) {
+                    // Remove the helper field before returning
+                    unset($image['_has_thumbnail']);
+                    return $image;
+                })
+                ->values();
+
                 $roomArray = $room->toArray();
+
+                // Add thumbnail field to main room object (first image with thumbnail, or null)
+                $firstImageWithThumbnail = $images->first(fn($img) => !empty($img['thumbnail']));
+                $roomArray['thumbnail'] = $firstImageWithThumbnail['thumbnail'] ?? null;
+
                 $roomArray['images'] = $images;
-                
+
                 // Remove image-related fields from the main room object
                 unset(
                     $roomArray['image_id'],
                     $roomArray['image_data'],
+                    $roomArray['thumbnail_data'],
                     $roomArray['caption']
                 );
-                
+
                 return $roomArray;
             })->values();
 
@@ -124,37 +142,55 @@ class RoomController extends ApiController
                     'm_rooms.*',
                     'm_room_images.idrec as image_id',
                     'm_room_images.image as image_data',
+                    'm_room_images.thumbnail as thumbnail_data',
                     'm_room_images.caption',
                 ])
                 ->get();
-            
+
             if ($room->isEmpty()) {
                 return $this->respondNotFound('Room not found');
             }
-            
+
             // Group images by room
             $groupedRoom = $room->groupBy('idrec')->map(function ($roomGroup) {
                 $room = $roomGroup->first();
+
+                // Map and sort images - images with thumbnails come first
                 $images = $roomGroup->filter(function ($item) {
                     return $item->image_id !== null;
                 })->map(function ($imageItem) {
                     return [
                         'id' => $imageItem->image_id,
                         'image_data' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
+                        'thumbnail' => $imageItem->thumbnail_data ? env('ADMIN_URL') . '/storage/' . $imageItem->image_data : null,
                         'caption' => $imageItem->caption,
+                        '_has_thumbnail' => !empty($imageItem->thumbnail_data), // Helper for sorting
                     ];
-                })->values();
-                
+                })
+                ->sortByDesc('_has_thumbnail') // Sort by thumbnail presence (true first)
+                ->map(function($image) {
+                    // Remove the helper field before returning
+                    unset($image['_has_thumbnail']);
+                    return $image;
+                })
+                ->values();
+
                 $roomArray = $room->toArray();
+
+                // Add thumbnail field to main room object (first image with thumbnail, or null)
+                $firstImageWithThumbnail = $images->first(fn($img) => !empty($img['thumbnail']));
+                $roomArray['thumbnail'] = $firstImageWithThumbnail['thumbnail'] ?? null;
+
                 $roomArray['images'] = $images;
-                
+
                 // Remove image-related fields from the main room object
                 unset(
                     $roomArray['image_id'],
                     $roomArray['image_data'],
+                    $roomArray['thumbnail_data'],
                     $roomArray['caption']
                 );
-                
+
                 return $roomArray;
             })->first();
             
