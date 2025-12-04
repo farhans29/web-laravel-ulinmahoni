@@ -8,6 +8,7 @@
     <title>Room Details - {{ $room['name'] }}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
     <!-- Styles -->
     @include('components.property.styles')
     <style>
@@ -231,9 +232,9 @@
                                         <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">
                                             <i class="fas fa-sign-in-alt mr-1 text-gray-500"></i>Check In
                                         </label>
-                                        <input type="date" id="check_in" name="check_in"
+                                        <input type="text" id="check_in" name="check_in"
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            min="{{ date('Y-m-d', strtotime('+14 days')) }}" data-required="true">
+                                            placeholder="Select check-in date" data-required="true" readonly>
                                         <div id="check_inError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                                     </div>
 
@@ -242,9 +243,9 @@
                                         <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">
                                             <i class="fas fa-sign-out-alt mr-1 text-gray-500"></i>Check Out
                                         </label>
-                                        <input type="date" id="check_out" name="check_out"
+                                        <input type="text" id="check_out" name="check_out"
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            min="{{ date('Y-m-d', strtotime('+15 days')) }}" data-required="true">
+                                            placeholder="Select check-out date" data-required="true" readonly>
                                         <div id="check_outError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                                     </div>
                                 </div>
@@ -263,9 +264,9 @@
                                         <label for="check_in_monthly" class="block text-sm font-medium text-gray-700 mb-2">
                                             <i class="fas fa-calendar-check mr-1 text-gray-500"></i>Check In
                                         </label>
-                                        <input type="date" id="check_in_monthly" name="check_in_monthly"
+                                        <input type="text" id="check_in_monthly" name="check_in_monthly"
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
-                                            min="{{ date('Y-m-d', strtotime('+14 days')) }}" data-required="true">
+                                            placeholder="Select check-in date" data-required="true" readonly>
                                         <div id="check_in_monthlyError" class="text-red-500 text-xs mt-1 hidden error-message"></div>
                                     </div>
 
@@ -768,95 +769,7 @@
                 document.getElementById('grandTotal').textContent = '-';
             }
 
-            // --- Room Availability Check ---
-            // async function checkRoomAvailability() {
-            //     const propertyId = document.getElementById('propertyId').value;
-            //     const roomId = document.getElementById('roomId').value;
-            //     const checkInDate = document.getElementById('check_in').value;
-            //     const checkOutDate = document.getElementById('check_out').value;
-            //     const rentType = document.getElementById('rent_type').value;
-                
-            //     // Clear previous timeout to avoid multiple rapid calls
-            //     if (availabilityCheckTimeout) {
-            //         clearTimeout(availabilityCheckTimeout);
-            //     }
-                
-            //     // Only check availability for daily booking with both dates
-            //     if (rentType !== 'daily' || !checkInDate || !checkOutDate) {
-            //         resetAvailabilityStatus();
-            //         return;
-            //     }
-                
-            //     // Prevent checking if check-out is before check-in
-            //     if (new Date(checkOutDate) <= new Date(checkInDate)) {
-            //         showAvailabilityStatus('error', 'Tanggal check-out harus setelah check-in');
-            //         updateSubmitButton(false, 'Tanggal tidak valid');
-            //         return;
-            //     }
-                
-            //     // Show loading state
-            //     showAvailabilityStatus('loading', 'Memeriksa ketersediaan...');
-                
-            //     availabilityCheckTimeout = setTimeout(async () => {
-            //         try {
-            //             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            //             const response = await fetch(`http://localhost:8000/api/booking/check-availability`, {
-            //                 method: 'POST',
-            //                 headers: {
-            //                     'X-CSRF-TOKEN': csrfToken,
-            //                     'Accept': 'application/json',
-            //                     'Content-Type': 'application/json',
-            //                     'X-Requested-With': 'XMLHttpRequest'
-            //                 },
-            //                 body: JSON.stringify({
-            //                     property_id: propertyId,
-            //                     room_id: roomId,
-            //                     check_in: checkInDate,
-            //                     check_out: checkOutDate
-            //                 })
-            //             });
-                        
-            //             const data = await response.json();
-                        
-            //             if (!response.ok || data.status === 'error') {
-            //                 const errorMessage = data.message || 'Gagal memeriksa ketersediaan';
-            //                 if (data.errors) {
-            //                     const errorMessages = Object.values(data.errors).flat();
-            //                     showAvailabilityStatus('error', errorMessages[0] || errorMessage);
-            //                 } else {
-            //                     showAvailabilityStatus('error', errorMessage);
-            //                 }
-            //                 updateSubmitButton(false, 'Validasi gagal');
-            //                 return;
-            //             }
-                        
-            //             // Handle the availability response
-            //             if (data.data && data.data.is_available !== undefined) {
-            //                 const isAvailable = data.data.is_available;
-            //                 const conflictingBookings = data.data.conflicting_bookings || [];
-                            
-            //                 if (isAvailable) {
-            //                     showAvailabilityStatus('available', '✓ Kamar tersedia');
-            //                     updateSubmitButton(true);
-            //                 } else {
-            //                     showAvailabilityStatus('unavailable', '✗ Kamar tidak tersedia untuk tanggal ini');
-            //                     if (conflictingBookings.length > 0) {
-            //                         showAvailabilityStatus('unavailable', `✗ Tidak tersedia - ${conflictingBookings.length} pemesanan konflik`);
-            //                     }
-            //                     updateSubmitButton(false, 'Kamar tidak tersedia');
-            //                 }
-            //             } else {
-            //                 showAvailabilityStatus('error', 'Respon API tidak valid');
-            //                 updateSubmitButton(false, 'Kesalahan sistem');
-            //             }
-                        
-            //         } catch (error) {
-            //             console.error('Availability check error:', error);
-            //             showAvailabilityStatus('error', 'Gagal memeriksa ketersediaan kamar');
-            //             updateSubmitButton(false, 'Gagal mengecek');
-            //         }
-            //     }, 500); // Add small delay to prevent excessive API calls
-            // }
+            
 
             function showAvailabilityStatus(type, message) {
                 if (!availabilityStatusDiv) return;
@@ -1125,11 +1038,25 @@
                     checkOutDate.setMonth(checkOutDate.getMonth() + months);
                     checkOutInput.value = checkOutDate.toISOString().split('T')[0];
                 } else {
-                    // For daily, normal logic
-                    const minCheckout = new Date(checkInInput.value);
-                    minCheckout.setDate(minCheckout.getDate() + 1);
+                    // For daily, apply month boundary and 14-day limit
+                    const checkInDate = new Date(checkInInput.value);
+                    const minCheckout = new Date(checkInDate);
+                    minCheckout.setDate(checkInDate.getDate() + 1);
+
+                    // Calculate max checkout: 14 days OR end of month, whichever is earlier
+                    const maxCheckoutDate = new Date(checkInDate);
+                    maxCheckoutDate.setDate(checkInDate.getDate() + 14);
+
+                    const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
+
+                    const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
+
                     checkOutInput.min = minCheckout.toISOString().split('T')[0];
-                    if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                    checkOutInput.max = actualMaxCheckout.toISOString().split('T')[0];
+
+                    if (!checkOutInput.value ||
+                        new Date(checkOutInput.value) <= new Date(checkInInput.value) ||
+                        new Date(checkOutInput.value) > actualMaxCheckout) {
                         checkOutInput.value = minCheckout.toISOString().split('T')[0];
                     }
                 }
@@ -1180,13 +1107,26 @@
                     // Handle check-in date changes
                     checkInInput.addEventListener('change', function() {
                         if (checkInInput.value) {
-                            const minCheckout = new Date(checkInInput.value);
-                            minCheckout.setDate(minCheckout.getDate() + 1);
+                            const checkInDate = new Date(checkInInput.value);
+                            const minCheckout = new Date(checkInDate);
+                            minCheckout.setDate(checkInDate.getDate() + 1);
+
+                            // Calculate max checkout: 14 days OR end of month, whichever is earlier
+                            const maxCheckoutDate = new Date(checkInDate);
+                            maxCheckoutDate.setDate(checkInDate.getDate() + 14);
+
+                            const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
+
+                            const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
 
                             if (checkOutInput) {
                                 checkOutInput.min = formatDate(minCheckout);
-                                // If current check-out is before new min date, update it
-                                if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                                checkOutInput.max = formatDate(actualMaxCheckout);
+
+                                // If current check-out is before new min date or after max date, update it
+                                if (!checkOutInput.value ||
+                                    new Date(checkOutInput.value) <= new Date(checkInInput.value) ||
+                                    new Date(checkOutInput.value) > actualMaxCheckout) {
                                     checkOutInput.value = formatDate(minCheckout);
                                 }
                             }
@@ -1297,6 +1237,29 @@
                         document.getElementById('check_outError').classList.remove('hidden');
                         checkOutInput.classList.add('border-red-500');
                         isValid = false;
+                    }
+
+                    // Validate month boundaries and 14-day maximum
+                    if (checkInInput.value && checkOutInput.value) {
+                        const checkIn = new Date(checkInInput.value);
+                        const checkOut = new Date(checkOutInput.value);
+
+                        // Check if dates are in the same month
+                        if (checkIn.getMonth() !== checkOut.getMonth() || checkIn.getFullYear() !== checkOut.getFullYear()) {
+                            document.getElementById('check_outError').textContent = 'Booking cannot cross month boundaries';
+                            document.getElementById('check_outError').classList.remove('hidden');
+                            checkOutInput.classList.add('border-red-500');
+                            isValid = false;
+                        }
+
+                        // Check if booking period exceeds 14 days
+                        const daysDiff = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                        if (daysDiff > 14) {
+                            document.getElementById('check_outError').textContent = 'Booking period cannot exceed 14 days';
+                            document.getElementById('check_outError').classList.remove('hidden');
+                            checkOutInput.classList.add('border-red-500');
+                            isValid = false;
+                        }
                     }
                 }
 
@@ -1510,13 +1473,26 @@
                 // Handle check-in date changes
                 checkInInput.addEventListener('change', function() {
                     if (checkInInput.value) {
-                        const minCheckout = new Date(checkInInput.value);
-                        minCheckout.setDate(minCheckout.getDate() + 1);
+                        const checkInDate = new Date(checkInInput.value);
+                        const minCheckout = new Date(checkInDate);
+                        minCheckout.setDate(checkInDate.getDate() + 1);
+
+                        // Calculate max checkout: 14 days OR end of month, whichever is earlier
+                        const maxCheckoutDate = new Date(checkInDate);
+                        maxCheckoutDate.setDate(checkInDate.getDate() + 14);
+
+                        const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
+
+                        const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
 
                         if (checkOutInput) {
                             checkOutInput.min = formatDate(minCheckout);
-                            // If current check-out is before new min date, update it
-                            if (!checkOutInput.value || new Date(checkOutInput.value) <= new Date(checkInInput.value)) {
+                            checkOutInput.max = formatDate(actualMaxCheckout);
+
+                            // If current check-out is before new min date or after max date, update it
+                            if (!checkOutInput.value ||
+                                new Date(checkOutInput.value) <= new Date(checkInInput.value) ||
+                                new Date(checkOutInput.value) > actualMaxCheckout) {
                                 checkOutInput.value = formatDate(minCheckout);
                             }
                         }
@@ -1556,6 +1532,88 @@
             // console.log('Number of facilities:', <?php echo count($room['facility'] ?? []); ?>);
             // let roomFullData = <?php echo json_encode($room ?? (object)[]); ?>;
             // console.log('Room full data:', roomFullData);
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const maxDate = new Date();
+            maxDate.setDate(today.getDate() + 14);
+
+            // Initialize datepicker for daily check-in
+            const checkInElem = document.getElementById('check_in');
+            if (checkInElem) {
+                const checkInPicker = new Datepicker(checkInElem, {
+                    format: 'yyyy-mm-dd',
+                    minDate: today,
+                    maxDate: maxDate,
+                    autohide: true,
+                    todayHighlight: true,
+                    weekStart: 0
+                });
+
+                // Update check-out picker when check-in changes
+                checkInElem.addEventListener('changeDate', function(e) {
+                    if (e.detail.date) {
+                        const selectedCheckIn = new Date(e.detail.date);
+                        const minCheckOut = new Date(selectedCheckIn);
+                        minCheckOut.setDate(selectedCheckIn.getDate() + 1);
+
+                        // Calculate max checkout: 14 days from check-in OR end of month
+                        const maxCheckOutDate = new Date(selectedCheckIn);
+                        maxCheckOutDate.setDate(selectedCheckIn.getDate() + 14);
+
+                        const endOfMonth = new Date(selectedCheckIn.getFullYear(), selectedCheckIn.getMonth() + 1, 0);
+                        const actualMaxCheckOut = maxCheckOutDate < endOfMonth ? maxCheckOutDate : endOfMonth;
+
+                        // Update check-out datepicker options
+                        if (checkOutPicker) {
+                            checkOutPicker.setOptions({
+                                minDate: minCheckOut,
+                                maxDate: actualMaxCheckOut
+                            });
+
+                            // Auto-set check-out to min date if current value is invalid
+                            const currentCheckOut = checkOutElem.datepicker.getDate();
+                            if (!currentCheckOut || currentCheckOut <= selectedCheckIn || currentCheckOut > actualMaxCheckOut) {
+                                checkOutPicker.setDate(minCheckOut);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Initialize datepicker for daily check-out
+            const checkOutElem = document.getElementById('check_out');
+            let checkOutPicker = null;
+            if (checkOutElem) {
+                const minCheckOut = new Date(today);
+                minCheckOut.setDate(today.getDate() + 1);
+
+                checkOutPicker = new Datepicker(checkOutElem, {
+                    format: 'yyyy-mm-dd',
+                    minDate: minCheckOut,
+                    maxDate: maxDate,
+                    autohide: true,
+                    todayHighlight: true,
+                    weekStart: 0
+                });
+            }
+
+            // Initialize datepicker for monthly check-in
+            const checkInMonthlyElem = document.getElementById('check_in_monthly');
+            if (checkInMonthlyElem) {
+                const checkInMonthlyPicker = new Datepicker(checkInMonthlyElem, {
+                    format: 'yyyy-mm-dd',
+                    minDate: today,
+                    maxDate: maxDate,
+                    autohide: true,
+                    todayHighlight: true,
+                    weekStart: 0
+                });
+            }
         });
     </script>
 </body>

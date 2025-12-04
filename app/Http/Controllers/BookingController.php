@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Transaction;
 use App\Models\Property;
+use App\Notifications\BookingConfirmationNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,6 +25,41 @@ class BookingController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+    }
+
+    /**
+     * Send booking confirmation email to user
+     *
+     * @param \App\Models\User $user
+     * @param array $bookingData
+     * @param array $transactionData
+     * @param string|null $paymentUrl
+     * @return void
+     */
+    public function sendEmailBooking($user, $bookingData, $transactionData, $paymentUrl = null)
+    {
+        try {
+            $user->notify(new BookingConfirmationNotification(
+                $bookingData,
+                $transactionData,
+                $paymentUrl
+            ));
+
+            Log::info('Booking confirmation email queued', [
+                'order_id' => $transactionData['order_id'] ?? null,
+                'user_id' => $user->id,
+                'user_email' => $user->email
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't fail the booking
+            Log::error('Failed to send booking confirmation email', [
+                'order_id' => $transactionData['order_id'] ?? null,
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
     }
 
     /**
@@ -554,6 +590,10 @@ class BookingController extends Controller
                 }
 
                 DB::commit();
+
+                // Send booking confirmation email
+                $paymentUrl = $dokuPaymentResponse['payment_url'] ?? route('payment.show', ['booking' => $transaction->order_id]);
+                $this->sendEmailBooking($user, $bookingData, $transactionData, $paymentUrl);
 
                 // return response()->json([
                 //     'success' => true,
