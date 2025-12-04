@@ -168,34 +168,35 @@
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>🎉 Booking Confirmed!</h1>
-            <p>Your reservation has been successfully created</p>
+            <h1>🎉 Booking Confirmed! / Pemesanan Dikonfirmasi!</h1>
+            <p>Your reservation has been successfully created / Reservasi Anda telah berhasil dibuat</p>
         </div>
 
         <div class="content">
             <div class="greeting">
-                Dear {{ $user->first_name }} {{ $user->last_name }},
+                Dear / Kepada Yth {{ $user->first_name }} {{ $user->last_name }},
             </div>
 
             <div class="message">
-                Thank you for choosing Ulinmahoni! We're excited to confirm your booking. Below are the details of your reservation.
+                Thank you for choosing Ulinmahoni! We're excited to confirm your booking. Below are the details of your reservation.<br>
+                <em>Terima kasih telah memilih Ulinmahoni! Kami dengan senang hati mengkonfirmasi pemesanan Anda. Berikut adalah detail reservasi Anda.</em>
             </div>
 
             <div class="booking-details">
-                <h2>Booking Details</h2>
+                <h2>Booking Details / Detail Pemesanan</h2>
 
                 <div class="detail-row">
-                    <span class="detail-label">Order ID</span>
+                    <span class="detail-label">Order ID / ID Pesanan</span>
                     <span class="detail-value">{{ $transaction['order_id'] }}</span>
                 </div>
 
                 <div class="detail-row">
-                    <span class="detail-label">Property</span>
+                    <span class="detail-label">Property / Properti</span>
                     <span class="detail-value">{{ $transaction['property_name'] }}</span>
                 </div>
 
                 <div class="detail-row">
-                    <span class="detail-label">Room</span>
+                    <span class="detail-label">Room / Kamar</span>
                     <span class="detail-value">{{ $transaction['room_name'] }}</span>
                 </div>
 
@@ -211,38 +212,38 @@
 
                 @if(isset($transaction['booking_days']) && $transaction['booking_days'])
                 <div class="detail-row">
-                    <span class="detail-label">Duration</span>
-                    <span class="detail-value">{{ $transaction['booking_days'] }} {{ $transaction['booking_days'] > 1 ? 'nights' : 'night' }}</span>
+                    <span class="detail-label">Duration / Durasi</span>
+                    <span class="detail-value">{{ $transaction['booking_days'] }} {{ $transaction['booking_days'] > 1 ? 'nights / malam' : 'night / malam' }}</span>
                 </div>
                 @elseif(isset($transaction['booking_months']) && $transaction['booking_months'])
                 <div class="detail-row">
-                    <span class="detail-label">Duration</span>
-                    <span class="detail-value">{{ $transaction['booking_months'] }} {{ $transaction['booking_months'] > 1 ? 'months' : 'month' }}</span>
+                    <span class="detail-label">Duration / Durasi</span>
+                    <span class="detail-value">{{ $transaction['booking_months'] }} {{ $transaction['booking_months'] > 1 ? 'months / bulan' : 'month / bulan' }}</span>
                 </div>
                 @endif
 
                 <div class="detail-row">
-                    <span class="detail-label">Room Price</span>
+                    <span class="detail-label">Room Price / Harga Kamar</span>
                     <span class="detail-value">Rp {{ number_format($transaction['room_price'], 0, ',', '.') }}</span>
                 </div>
 
                 @if(isset($transaction['service_fees']) && $transaction['service_fees'] > 0)
                 <div class="detail-row">
-                    <span class="detail-label">Service Fee</span>
+                    <span class="detail-label">Service Fee / Biaya Layanan</span>
                     <span class="detail-value">Rp {{ number_format($transaction['service_fees'], 0, ',', '.') }}</span>
                 </div>
                 @endif
 
                 @if(isset($transaction['admin_fees']) && $transaction['admin_fees'] > 0)
                 <div class="detail-row">
-                    <span class="detail-label">Admin Fee</span>
+                    <span class="detail-label">Admin Fee / Biaya Admin</span>
                     <span class="detail-value">Rp {{ number_format($transaction['admin_fees'], 0, ',', '.') }}</span>
                 </div>
                 @endif
 
                 <div class="total-row">
                     <div class="detail-row" style="border: none; padding: 0;">
-                        <span class="detail-label">Total Amount</span>
+                        <span class="detail-label">Grand Total / Total Keseluruhan</span>
                         <span class="detail-value">Rp {{ number_format($transaction['grandtotal_price'], 0, ',', '.') }}</span>
                     </div>
                 </div>
@@ -250,32 +251,34 @@
 
             @if($paymentUrl)
             <div class="info-box">
-                <p><strong>⏰ Payment Required:</strong> Please complete your payment within the specified time to confirm your booking.</p>
+                <p><strong>⏰ Payment Required / Pembayaran Diperlukan:</strong> Please complete your payment within the specified time to confirm your booking. / Harap selesaikan pembayaran Anda dalam waktu yang ditentukan untuk mengkonfirmasi pemesanan Anda.</p>
             </div>
 
             <div class="button-container">
-                <a href="{{ $paymentUrl }}" class="button">Complete Payment Now</a>
+                <a href="{{ $paymentUrl }}" class="button">Complete Payment Now / Bayar Sekarang</a>
             </div>
             @endif
 
             <div class="message" style="margin-top: 30px;">
-                If you have any questions or need assistance, please don't hesitate to contact our support team.
+                If you have any questions or need assistance, please don't hesitate to contact our support team.<br>
+                <em>Jika Anda memiliki pertanyaan atau memerlukan bantuan, jangan ragu untuk menghubungi tim dukungan kami.</em>
             </div>
 
             <div class="message" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                <strong>Important:</strong> Please keep this email for your records. You will need your Order ID for check-in.
+                <strong>Important / Penting:</strong> Please keep this email for your records. You will need your Order ID for check-in. / Harap simpan email ini untuk catatan Anda. Anda akan memerlukan ID Pesanan untuk check-in.
             </div>
         </div>
 
         <div class="footer">
             <p><strong>Ulinmahoni</strong></p>
-            <p>Your trusted accommodation partner</p>
+            <p>Your trusted accommodation partner / Mitra akomodasi terpercaya Anda</p>
             <p style="margin-top: 16px;">
-                <a href="{{ config('app.url') }}">Visit our website</a> |
-                <a href="{{ config('app.url') }}/contact">Contact Support</a>
+                <a href="{{ config('app.url') }}">Visit our website / Kunjungi website kami</a> |
+                <a href="{{ config('app.url') }}/contact">Contact Support / Hubungi Dukungan</a>
             </p>
             <p style="margin-top: 16px; font-size: 12px;">
-                This is an automated email. Please do not reply to this message.
+                This is an automated email. Please do not reply to this message.<br>
+                <em>Ini adalah email otomatis. Harap jangan membalas pesan ini.</em>
             </p>
         </div>
     </div>
