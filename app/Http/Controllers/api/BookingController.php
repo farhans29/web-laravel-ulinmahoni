@@ -72,6 +72,131 @@ class BookingController extends ApiController
         }
     }
 
+    public function checkInByOrderId(Request $request, $order_id)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'doc_type' => 'required|string',
+                'document' => 'required|string', // base64 encoded image
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $orderId = $order_id;
+
+            // Find the booking by order_id
+            $booking = Booking::where('order_id', $orderId)
+                ->where('status', '1')
+                ->first();
+
+            if (!$booking) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking not found or already inactive'
+                ], 404);
+            }
+
+            // Check if already checked in (validate if check_in_at and doc_path are already filled)
+            if (!is_null($booking->check_in_at) && !is_null($booking->doc_path)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Booking has already been checked in. Cannot perform check-in again.',
+                    'data' => [
+                        'order_id' => $orderId,
+                        'check_in_at' => $booking->check_in_at,
+                        'doc_type' => $booking->doc_type,
+                        'doc_path' => $booking->doc_path
+                    ]
+                ], 400);
+            }
+
+            // Process base64 document upload
+            $base64Image = $request->input('document');
+
+            // Remove data URL prefix if present
+            if (strpos($base64Image, ';base64,') !== false) {
+                [$_, $base64Image] = explode(';', $base64Image);
+                [$_, $base64Image] = explode(',', $base64Image);
+            }
+
+            // Validate base64 image
+            $imageData = base64_decode($base64Image, true);
+            if ($imageData === false) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid base64 image'
+                ], 422);
+            }
+
+            // Validate image type
+            $f = finfo_open();
+            $mimeType = finfo_buffer($f, $imageData, FILEINFO_MIME_TYPE);
+            finfo_close($f);
+
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+            if (!in_array($mimeType, $allowedTypes)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid image type. Only JPEG, PNG, and GIF are allowed.'
+                ], 422);
+            }
+
+            // Determine file extension from mime type
+            $extensionMap = [
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/jpg' => 'jpg',
+                'image/gif' => 'gif'
+            ];
+            $extension = $extensionMap[$mimeType] ?? 'jpg';
+
+            // Generate filename and store the image
+            $filename = 'doc_' . $orderId . '_' . time() . '.' . $extension;
+            $path = 'documents/' . $filename;
+
+            // Save file to storage/app/public/documents
+            Storage::disk('public')->put($path, $imageData);
+
+            // Update booking with check-in data
+            $booking->check_in_at = Carbon::now();
+            $booking->doc_type = $request->doc_type;
+            $booking->doc_path = $path;
+            $booking->save();
+
+            // Also update transaction status if needed
+            Transaction::where('order_id', $orderId)
+                ->where('status', '1')
+                ->update([
+                    'transaction_status' => 'checked_in',
+                    'updated_at' => Carbon::now()
+                ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Check-in successful',
+                'data' => [
+                    'order_id' => $orderId,
+                    'check_in_at' => $booking->check_in_at,
+                    'doc_type' => $booking->doc_type,
+                    'doc_path' => $path,
+                    'doc_url' => Storage::disk('public')->url($path)
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error during check-in',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     public function checkAvailability(Request $request)
     {
         $validator = \Validator::make($request->all(), [
