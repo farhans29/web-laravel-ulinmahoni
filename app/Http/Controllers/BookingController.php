@@ -101,7 +101,7 @@ class BookingController extends Controller
             // ->where('property_id', $property_id)
             ->where('room_id', $room_id)
             ->where('status', '1')  // Active/confirmed booking
-            ->whereNotIn('transaction_status', ['cancelled', 'finished', 'completed', 'paid'])
+            ->whereNotIn('transaction_status', ['cancelled',])
             ->where('check_in', '<', $check_out)
             ->where('check_out', '>', $check_in)
             ->limit(5)
@@ -387,8 +387,8 @@ class BookingController extends Controller
         ]);
         
         // Get counts for tabs
-        $completedCount = $bookings->whereIn('transaction_status', ['paid', 'completed'])->count();
-        $activeCount = $bookings->whereNotIn('transaction_status', ['paid', 'completed', 'cancelled'])->count();
+        $completedCount = $bookings->whereIn('transaction_status', values: ['paid', 'completed'])->count();
+        $activeCount = $bookings->whereNotIn('transaction_status', ['pending','paid', 'completed', 'cancelled'])->count();
         $cancelledCount = $bookings->where('transaction_status', 'cancelled')->count();
 
         return view('bookings.index', [
