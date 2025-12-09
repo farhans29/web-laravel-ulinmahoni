@@ -104,9 +104,25 @@ class Transaction extends Model
         return $this->belongsTo(Property::class, 'property_id', 'idrec');
     }
 
+    public function booking()
+    {
+        return $this->hasOne(Booking::class, 'order_id', 'order_id');
+    }
+
     // Use transaction_code as the route key
     public function getRouteKeyName()
     {
         return 'transaction_code';
+    }
+
+    public function getCheckInAt()
+    {
+        $booking = $this->booking;
+
+        if ($booking && $booking->check_in_at !== null) {
+            return $booking->check_in_at;
+        }
+
+        return null;
     }
 }

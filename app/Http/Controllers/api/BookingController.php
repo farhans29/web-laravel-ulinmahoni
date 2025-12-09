@@ -533,7 +533,7 @@ class BookingController extends ApiController
     {
         try {
             $booking = Transaction::where('order_id', $order_id)->first();
-            
+
             if (!$booking) {
                 return response()->json([
                     'status' => 'error',
@@ -541,12 +541,15 @@ class BookingController extends ApiController
                 ], 404);
             }
 
+            $data = $booking->toArray();
+            $data['check_in_at'] = $booking->getCheckInAt();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Booking retrieved successfully',
-                'data' => $booking
+                'data' => $data
             ]);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -554,7 +557,8 @@ class BookingController extends ApiController
                 'error' => $e->getMessage()
             ], 500);
         }
-    }    /**
+    }    
+    /**
          * Display bookings for a specific user
          *
          * @param  int  $user_id
@@ -566,20 +570,26 @@ class BookingController extends ApiController
                 $bookings = Transaction::where('user_id', $user_id)
                     ->orderBy('created_at', 'desc')
                     ->get();
-    
+
                 if ($bookings->isEmpty()) {
                     return response()->json([
                         'status' => 'error',
                         'message' => 'No bookings found for this user'
                     ], 404);
                 }
-    
+
+                $data = $bookings->map(function ($booking) {
+                    $bookingData = $booking->toArray();
+                    $bookingData['check_in_at'] = $booking->getCheckInAt();
+                    return $bookingData;
+                });
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Bookings retrieved successfully',
-                    'data' => $bookings
+                    'data' => $data
                 ]);
-    
+
             } catch (\Exception $e) {
                 return response()->json([
                     'status' => 'error',
