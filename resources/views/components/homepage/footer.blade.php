@@ -37,9 +37,17 @@
         <div>
             <h4 class="text-xl font-semibold mb-5 text-white">Kontak Kami</h4>
             <ul class="space-y-2 text-gray-400 text-sm">
-                <li>Jl. Luxury Boulevard No. 123</li>
-                <li>+62 123 4567 890</li>
-                <li>info@ulinmahoni.com</li>
+                <li class="flex items-start">
+                    <i class="fas fa-map-marker-alt mr-2 mt-1 text-teal-500"></i>
+                    <span>Jl. Ciheuleut Dalam, Tegallega, Bogor, Jawa Barat, 16129</span>
+                </li>
+                <li class="flex items-center">
+                    <i class="fab fa-whatsapp mr-2 text-green-500"></i>
+                    <a href="https://wa.me/6281188099700" target="_blank" class="hover:text-white hover:underline transition-colors">
+                        +62 811-8809-9700
+                    </a>
+                </li>
+                {{-- <li>info@ulinmahoni.com</li> --}}
             </ul>
         </div>
 
@@ -47,23 +55,23 @@
             <h4 class="text-xl font-semibold mb-5 text-white">Ikuti Kami</h4>
             <div class="flex space-x-4">
                 <!-- Facebook -->
-                <a href="#" class="text-gray-400 hover:text-blue-500 transition-colors duration-200" aria-label="Facebook">
+                {{-- <a href="#" class="text-gray-400 hover:text-blue-500 transition-colors duration-200" aria-label="Facebook">
                     <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
                         <i class="fa-brands fa-facebook-f text-lg"></i>
                     </div>
-                </a>
+                </a> --}}
                 <!-- Instagram -->
-                <a href="#" class="text-gray-400 hover:text-pink-600 transition-colors duration-200" aria-label="Instagram">
+                <a href="https://instagram.com/ulinmahoni/" class="text-gray-400 hover:text-pink-600 transition-colors duration-200" aria-label="Instagram">
                     <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
                         <i class="fa-brands fa-instagram text-lg"></i>
                     </div>
                 </a>
                 <!-- Twitter (X) -->
-                <a href="#" class="text-gray-400 hover:text-black transition-colors duration-200" aria-label="Twitter">
+                {{-- <a href="#" class="text-gray-400 hover:text-black transition-colors duration-200" aria-label="Twitter">
                     <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
                         <i class="fa-brands fa-twitter text-lg"></i>
                     </div>
-                </a>
+                </a> --}}
             </div>
         </div>
     </div>

@@ -166,14 +166,20 @@
                         <!-- Image Section -->
                         <a href="{{ $route }}" class="block overflow-hidden">
                             <div class="relative aspect-[4/3] bg-gray-100">
-                                @if($property->image)
+                                @php
+                                    // Use formatted thumbnail if available, fallback to formatted main image, then property image
+                                    $displayImage = $property->formatted_thumbnail ?? $property->formatted_main_image ?? $property->image;
+                                @endphp
+
+                                @if($displayImage)
                                     <div class="w-full h-full">
-                                        <img 
-                                            src="data:image/jpeg;base64,{{ $property->image }}" 
-                                            alt="{{ $property->name }}" 
+                                        <img
+                                            src="{{ env('ADMIN_URL') }}/storage/{{ $displayImage }}"
+                                            alt="{{ $property->name }}"
                                             class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                                             loading="lazy"
-                                            style="aspect-ratio: 4/3;">
+                                            style="aspect-ratio: 4/3;"
+                                            onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';">
                                     </div>
                                 @else
                                     <div class="w-full h-full">
@@ -183,15 +189,23 @@
                                         </div>
                                     </div>
                                 @endif
-                                
+
                                 <!-- Property Type Badge -->
                                 <span class="absolute top-3 left-3 bg-teal-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md">
                                     {{ $property->tags }}
                                 </span>
-                                
+
+                                <!-- Image Count Badge -->
+                                @if(!empty($property->formatted_images) && count($property->formatted_images) > 1)
+                                    <span class="absolute top-3 right-3 bg-black bg-opacity-60 text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-md flex items-center">
+                                        <i class="fas fa-camera mr-1"></i>
+                                        {{ count($property->formatted_images) }}
+                                    </span>
+                                @endif
+
                                 <!-- Gradient Overlay -->
                                 <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                                
+
                             </div>
                         </a>
                         
@@ -218,13 +232,23 @@
                                 <div class="mt-auto pt-3 border-t border-gray-100">
                                     <div class="flex justify-between items-center">
                                         <div>
-                                            <span class="text-lg font-bold text-teal-600">
-                                                Rp {{ number_format($property->price_original_monthly, 0, ',', '.') }}
-                                            </span>
-                                            <span class="text-sm text-gray-500">/month</span>
+                                            @php
+                                                // Use formatted room price if available, otherwise use property price
+                                                $displayPrice = $property->formatted_room_price ?? $property->price_original_monthly;
+                                            @endphp
+                                            @if($displayPrice && $displayPrice > 0)
+                                                <span class="text-lg font-bold text-teal-600">
+                                                    Rp {{ number_format($displayPrice, 0, ',', '.') }}
+                                                </span>
+                                                <span class="text-sm text-gray-500">/bulan</span>
+                                            @else
+                                                <span class="text-sm text-gray-500 italic">
+                                                    Hubungi untuk harga
+                                                </span>
+                                            @endif
                                         </div>
                                         <a href="{{ $route }}" class="text-sm text-teal-600 hover:text-teal-700 font-medium">
-                                            View Details <i class="fas fa-arrow-right ml-1"></i>
+                                            Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
                                         </a>
                                     </div>
                                 </div>
