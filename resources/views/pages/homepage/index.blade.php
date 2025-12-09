@@ -53,11 +53,11 @@
                         <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <select name="type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
                             <option value="">Semua Properti</option>
-                            <option value="kos" {{ request('type') == 'kos' ? 'selected' : '' }}>Kos</option>
-                            <option value="house" {{ request('type') == 'house' ? 'selected' : '' }}>House</option>
-                            <option value="apartment" {{ request('type') == 'apartment' ? 'selected' : '' }}>Apartment</option>
-                            <option value="villa" {{ request('type') == 'villa' ? 'selected' : '' }}>Villa</option>
-                            <option value="hotel" {{ request('type') == 'hotel' ? 'selected' : '' }}>Hotel</option>
+                            <option value="kos" {{ request('type') == 'Kos' ? 'selected' : '' }}>Kos</option>
+                            <option value="house" {{ request('type') == 'House' ? 'selected' : '' }}>House</option>
+                            <option value="apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
+                            <option value="villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
+                            <option value="hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
                         </select>
                         <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                     </div>

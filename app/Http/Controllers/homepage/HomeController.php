@@ -310,7 +310,7 @@ class HomeController extends Controller {
 
     /**
      * Format a property model instance into a standardized array structure.
-     * 
+     *
      * @param Property $property The property model instance to format
      * @return array Formatted property data with the following structure:
      *               - id: int (Property ID)
@@ -321,7 +321,9 @@ class HomeController extends Controller {
      *               - distance: string|null (Distance from landmark)
      *               - price: array (Original and discounted prices)
      *               - features: array (Property features)
-     *               - image: string (Base64 encoded image)
+     *               - image: string (Image path or base64)
+     *               - thumbnail: string (Thumbnail image path)
+     *               - images: array (All property images)
      *               - status: int (Property status)
      */
     private function formatProperty($property)
@@ -331,10 +333,10 @@ class HomeController extends Controller {
             ->whereNotNull('price_original_monthly')
             ->where('price_original_monthly', '>', 0)
             ->min('price_original_monthly');
-        
+
         // Get price data (already cast to array by the model)
         $price = is_array($property->price) ? $property->price : [];
-        
+
         // Get features data (already cast to array by the model)
         $features = is_array($property->features) ? $property->features : [];
 
@@ -343,7 +345,27 @@ class HomeController extends Controller {
 
         // Use the first image from the images array as the main image, fallback to property image
         $mainImage = !empty($images) ? $images[0]['image'] : $property->image;
-        
+
+        // Get thumbnail - prioritize images with thumbnail field
+        $thumbnail = null;
+        if (!empty($images)) {
+            // Find first image with thumbnail
+            foreach ($images as $image) {
+                if (!empty($image['thumbnail'])) {
+                    $thumbnail = $image['thumbnail'];
+                    break;
+                }
+            }
+            // If no thumbnail found, use the first image
+            if (!$thumbnail && !empty($images[0]['image'])) {
+                $thumbnail = $images[0]['image'];
+            }
+        }
+        // Fallback to property image if no thumbnail
+        if (!$thumbnail) {
+            $thumbnail = $property->image;
+        }
+
         return [
             'id' => $property->idrec,
             'name' => $property->name,
@@ -362,6 +384,7 @@ class HomeController extends Controller {
             ],
             'features' => $features,
             'image' => $mainImage,  // Use the first image as main image
+            'thumbnail' => $thumbnail,  // Thumbnail for listing/cards
             'images' => $images,    // Keep all images array for gallery
             'status' => $property->status
         ];
