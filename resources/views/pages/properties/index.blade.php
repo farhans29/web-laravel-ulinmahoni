@@ -78,10 +78,10 @@
                             <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <select name="type" class="w-full pl-10 pr-3 h-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm">
                                 <option value="">Semua Tipe Properti</option>
-                                <option value="house" {{ request('type') == 'house' ? 'selected' : '' }}>House & Room</option>
-                                <option value="apartment" {{ request('type') == 'apartment' ? 'selected' : '' }}>Apartment</option>
-                                <option value="villa" {{ request('type') == 'villa' ? 'selected' : '' }}>Villa</option>
-                                <option value="hotel" {{ request('type') == 'hotel' ? 'selected' : '' }}>Hotel</option>
+                                <option value="house" {{ request('type') == 'Kos' ? 'selected' : '' }}>Kos</option>
+                                <option value="apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
+                                <option value="villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
+                                <option value="hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
                             </select>
                         </div>
                     </div>
