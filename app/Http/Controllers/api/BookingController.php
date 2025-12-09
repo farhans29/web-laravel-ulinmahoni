@@ -656,12 +656,16 @@ class BookingController extends ApiController
 
 
             // Update the booking with the base64 image
+            $updateData = ['attachment' => $base64Image];
+
+            // Only update status to 'waiting' if it's not already 'waiting'
+            if ($booking->transaction_status !== 'waiting') {
+                $updateData['transaction_status'] = 'waiting';
+            }
+
             $updated = DB::table('t_transactions')
                 ->where('idrec', $id)
-                ->update([
-                    'attachment' => $base64Image,
-                    'transaction_status' => 'waiting'
-                ]);
+                ->update($updateData);
 
             if (!$updated) {
                 throw new \Exception('Failed to update booking with attachment');
@@ -747,12 +751,19 @@ class BookingController extends ApiController
             }
 
             // Update the booking with the new base64 image
+            $updateData = [
+                'attachment' => $base64Image,
+                'updated_at' => now()
+            ];
+
+            // Only update status to 'waiting' if it's not already 'waiting'
+            if ($booking->transaction_status !== 'waiting') {
+                $updateData['transaction_status'] = 'waiting';
+            }
+
             $updated = DB::table('t_transactions')
                 ->where('idrec', $id)
-                ->update([
-                    'attachment' => $base64Image,
-                    'updated_at' => now()
-                ]);
+                ->update($updateData);
 
             if (!$updated) {
                 throw new \Exception('Failed to update booking attachment');
