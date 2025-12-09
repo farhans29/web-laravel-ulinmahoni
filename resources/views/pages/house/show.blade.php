@@ -480,7 +480,7 @@
                     </div>
 
                     <!-- Rooms Section -->
-                    <div id="rooms-section" class="mt-12">
+                    <div id="rooms-section" class="mt-12" x-data="{ openCategories: [] }">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">Kamar Tersedia</h2>
 
                         @php
@@ -490,12 +490,39 @@
 
                         @forelse($groupedRooms as $roomName => $rooms)
                             <!-- Room Category Section -->
-                            <div class="mb-10">
-                                <h3 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b-2 border-teal-500">
-                                    {{ $roomName }}
-                                </h3>
+                            <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden" x-data="{ isOpen: true }">
+                                <!-- Accordion Header -->
+                                <button
+                                    @click="isOpen = !isOpen"
+                                    class="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                >
+                                    <h3 class="text-xl font-semibold text-gray-800">
+                                        {{ $roomName }}
+                                        <span class="ml-2 text-sm font-normal text-gray-600">({{ $rooms->count() }} {{ $rooms->count() > 1 ? 'kamar' : 'kamar' }})</span>
+                                    </h3>
+                                    <svg
+                                        class="w-6 h-6 text-gray-600 transition-transform duration-200"
+                                        :class="{ 'rotate-180': isOpen }"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
 
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Accordion Content -->
+                                <div
+                                    x-show="isOpen"
+                                    x-transition:enter="transition ease-out duration-300"
+                                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                                    x-transition:leave="transition ease-in duration-200"
+                                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                                    class="p-6 bg-white"
+                                >
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     @foreach($rooms as $room)
                                         <a href="{{ route('rooms.show', $room['slug']) }}" class="group">
                                             <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group-hover:ring-2 group-hover:ring-teal-500">
@@ -609,6 +636,7 @@
                                         </div>
                                         </a>
                                     @endforeach
+                                    </div>
                                 </div>
                             </div>
                         @empty
