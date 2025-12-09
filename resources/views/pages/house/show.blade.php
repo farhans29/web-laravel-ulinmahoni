@@ -480,128 +480,170 @@
                     </div>
 
                     <!-- Rooms Section -->
-                    <div id="rooms-section" class="mt-12">
+                    <div id="rooms-section" class="mt-12" x-data="{ openCategories: [] }">
                         <h2 class="text-2xl font-bold text-gray-900 mb-6">Kamar Tersedia</h2>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            @forelse($house['rooms'] as $room)
-                                <a href="{{ route('rooms.show', $room['slug']) }}" class="group">
-                                    <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group-hover:ring-2 group-hover:ring-teal-500">
-                                    <div class="relative pb-[56.25%] h-48">
-                                        <div class="absolute inset-0">
-                                            @php
-                                                $roomImages = $room['images'] ?? [];
-                                                $roomMainImage = null;
-                                                
-                                                // Safely get the first image if it exists
-                                                if (!empty($roomImages) && is_array($roomImages) && isset($roomImages[0]['image'])) {
-                                                    $roomMainImage = $roomImages[0]['image'];
-                                                } elseif (isset($room['image'])) {
-                                                    // Fallback to room's main image if available
-                                                    $roomMainImage = $room['image'];
-                                                }
-                                                
-                                                $roomTotalImages = count($roomImages) > 0 ? count($roomImages) : ($roomMainImage ? 1 : 0);
-                                            @endphp
-                                            
-                                            @if(!empty($roomMainImage) && is_string($roomMainImage))
-                                                {{-- <img src="data:image/jpeg;base64,{{ $roomMainImage }}" 
-                                                    alt="{{ $room['name'] ?? 'Room image' }}" 
-                                                    class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
-                                                    onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }"> --}}
-                                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $roomMainImage }}" 
-                                                    alt="{{ $room['name'] ?? 'Room image' }}" 
-                                                    class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
-                                                    onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }">
-                                            @else
-                                                <div class="bg-gray-100 w-full h-full flex items-center justify-center">
-                                                    <i class="fas fa-image text-4xl text-gray-400"></i>
-                                                    <span class="ml-2 text-gray-500">No Image</span>
+
+                        @php
+                            // Group rooms by name
+                            $groupedRooms = collect($house['rooms'])->groupBy('name');
+                        @endphp
+
+                        @forelse($groupedRooms as $roomName => $rooms)
+                            <!-- Room Category Section -->
+                            <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden" x-data="{ isOpen: true }">
+                                <!-- Accordion Header -->
+                                <button
+                                    @click="isOpen = !isOpen"
+                                    class="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                >
+                                    <h3 class="text-xl font-semibold text-gray-800">
+                                        {{ $roomName }}
+                                        <span class="ml-2 text-sm font-normal text-gray-600">({{ $rooms->count() }} {{ $rooms->count() > 1 ? 'kamar' : 'kamar' }})</span>
+                                    </h3>
+                                    <svg
+                                        class="w-6 h-6 text-gray-600 transition-transform duration-200"
+                                        :class="{ 'rotate-180': isOpen }"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+
+                                <!-- Accordion Content -->
+                                <div
+                                    x-show="isOpen"
+                                    x-transition:enter="transition ease-out duration-300"
+                                    x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                    x-transition:enter-end="opacity-100 transform translate-y-0"
+                                    x-transition:leave="transition ease-in duration-200"
+                                    x-transition:leave-start="opacity-100 transform translate-y-0"
+                                    x-transition:leave-end="opacity-0 transform -translate-y-2"
+                                    class="p-6 bg-white"
+                                >
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    @foreach($rooms as $room)
+                                        <a href="{{ route('rooms.show', $room['slug']) }}" class="group">
+                                            <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group-hover:ring-2 group-hover:ring-teal-500">
+                                            <div class="relative pb-[56.25%] h-48">
+                                                <div class="absolute inset-0">
+                                                    @php
+                                                        $roomImages = $room['images'] ?? [];
+                                                        $roomMainImage = null;
+
+                                                        // Safely get the first image if it exists
+                                                        if (!empty($roomImages) && is_array($roomImages) && isset($roomImages[0]['image'])) {
+                                                            $roomMainImage = $roomImages[0]['image'];
+                                                        } elseif (isset($room['image'])) {
+                                                            // Fallback to room's main image if available
+                                                            $roomMainImage = $room['image'];
+                                                        }
+
+                                                        $roomTotalImages = count($roomImages) > 0 ? count($roomImages) : ($roomMainImage ? 1 : 0);
+                                                    @endphp
+
+                                                    @if(!empty($roomMainImage) && is_string($roomMainImage))
+                                                        {{-- <img src="data:image/jpeg;base64,{{ $roomMainImage }}"
+                                                            alt="{{ $room['name'] ?? 'Room image' }}"
+                                                            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                                            onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
+                                                            onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }"> --}}
+                                                            <img src="{{ env('ADMIN_URL') }}/storage/{{ $roomMainImage }}"
+                                                            alt="{{ $room['name'] ?? 'Room image' }}"
+                                                            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                                            onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
+                                                            onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }">
+                                                    @else
+                                                        <div class="bg-gray-100 w-full h-full flex items-center justify-center">
+                                                            <i class="fas fa-image text-4xl text-gray-400"></i>
+                                                            <span class="ml-2 text-gray-500">No Image</span>
+                                                        </div>
+                                                    @endif
+                                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16">
+                                                        <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
+                                                            {{ ucfirst($room['type']) }}
+                                                        </span>
+                                                    </div>
                                                 </div>
-                                            @endif
-                                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16">
-                                                <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
-                                                    {{ ucfirst($room['type']) }}
-                                                </span>
+                                            </div>
+
+                                            <div class="p-6">
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h3>
+                                                <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p>
+
+                                                <div class="mb-4">
+                                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Fasilitas Kamar:</h4>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        @if(!empty($room['facility']))
+                                                            @foreach($room['facility'] as $facility)
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
+                                                                    {{ strtoupper($facility) }}
+                                                                </span>
+                                                            @endforeach
+                                                        @else
+                                                            <span class="text-gray-500 text-sm">Fasilitas Tidak Tersedia</span>
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                                <!-- Rental Periods -->
+                                                <div class="mb-4">
+                                                    <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">Periode Sewa &amp; Harga:</h4>
+                                                    <ul class="space-y-2">
+                                                        @php
+                                                            $hasValidPeriod = false;
+                                                        @endphp
+
+                                                        @if($room['price_original_daily'] > 0)
+                                                            @php $hasValidPeriod = true; @endphp
+                                                            <li class="flex items-center">
+                                                                <span class="w-24 text-sm font-semibold text-gray-800">Daily</span>
+                                                                <span class="font-medium">
+                                                                    Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}
+                                                                </span>
+                                                            </li>
+                                                        @endif
+                                                        @if($room['price_original_monthly'] > 0 )
+                                                            @php $hasValidPeriod = true; @endphp
+                                                            <li class="flex items-center">
+                                                                <span class="w-24 text-sm font-semibold text-gray-800">Monthly</span>
+                                                                <span class="font-medium">
+                                                                    Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}
+                                                                </span>
+                                                            </li>
+                                                        @endif
+
+                                                        @if(!$hasValidPeriod)
+                                                            <li>
+                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                    Periode Belum Tersedia
+                                                                    <i class="fas fa-exclamation-circle ml-1"></i>
+                                                                </span>
+                                                            </li>
+                                                        @endif
+                                                    </ul>
+                                                </div>
+
+                                                @if($room['status'] === 1)
+                                                    <div class="flex items-center justify-between mt-4">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            Tersedia
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             </div>
                                         </div>
-                                    </div>
-
-                                    <div class="p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h3>
-                                        <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p>
-
-                                        <div class="mb-4">
-                                            <h4 class="text-sm font-semibold text-gray-700 mb-2">Fasilitas Kamar:</h4>
-                                            <div class="flex flex-wrap gap-2">
-                                                @if(!empty($room['facility']))
-                                                    @foreach($room['facility'] as $facility)
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
-                                                            {{ strtoupper($facility) }}
-                                                        </span>
-                                                    @endforeach
-                                                @else
-                                                    <span class="text-gray-500 text-sm">Fasilitas Tidak Tersedia</span>
-                                                @endif
-                                            </div>
-                                        </div>
-
-                                        <!-- Rental Periods -->
-                                        <div class="mb-4">
-                                            <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">Periode Sewa &amp; Harga:</h4>
-                                            <ul class="space-y-2">
-                                                @php
-                                                    $hasValidPeriod = false;
-                                                @endphp
-                                                
-                                                @if($room['price_original_daily'] > 0)
-                                                    @php $hasValidPeriod = true; @endphp
-                                                    <li class="flex items-center">
-                                                        <span class="w-24 text-sm font-semibold text-gray-800">Daily</span>
-                                                        <span class="font-medium">
-                                                            Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}
-                                                        </span>
-                                                    </li>
-                                                @endif
-                                                @if($room['price_original_monthly'] > 0 )
-                                                    @php $hasValidPeriod = true; @endphp
-                                                    <li class="flex items-center">
-                                                        <span class="w-24 text-sm font-semibold text-gray-800">Monthly</span>
-                                                        <span class="font-medium">
-                                                            Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}
-                                                        </span>
-                                                    </li>
-                                                @endif
-                                                
-                                                @if(!$hasValidPeriod)
-                                                    <li>
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                            Periode Belum Tersedia
-                                                            <i class="fas fa-exclamation-circle ml-1"></i>
-                                                        </span>
-                                                    </li>
-                                                @endif
-                                            </ul>
-                                        </div>
-
-                                        @if($room['status'] === 1)
-                                            <div class="flex items-center justify-between mt-4">
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Tersedia
-                                                </span>
-                                            </div>
-                                        @endif
+                                        </a>
+                                    @endforeach
                                     </div>
                                 </div>
-                                </a>
-                            @empty
-                                <div class="col-span-full text-center py-8">
-                                    <p class="text-gray-500">Belum ada kamar tersedia saat ini.</p>
-                                </div>
-                            @endforelse
-                        </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-8">
+                                <p class="text-gray-500">Belum ada kamar tersedia saat ini.</p>
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 
