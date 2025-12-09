@@ -167,8 +167,37 @@
                         <a href="{{ $route }}" class="block overflow-hidden">
                             <div class="relative aspect-[4/3] bg-gray-100">
                                 @php
-                                    // Use formatted thumbnail if available, fallback to formatted main image, then property image
-                                    $displayImage = $property->formatted_thumbnail ?? $property->formatted_main_image ?? $property->image;
+                                    // Get images array from the property
+                                    $images = $property->images ?? [];
+
+                                    // Debug: Log to console
+                                    // echo "<script>console.log('Property ID: " . $property->idrec . "');</script>";
+                                    // echo "<script>console.log('Images count: " . count($images) . "');</script>";
+                                    // echo "<script>console.log('Images data: ', " . json_encode($images) . ");</script>";
+                                    // echo "<script>console.log('Property image: " . ($property->image ?? 'null') . "');</script>";
+
+                                    // Find thumbnail - prioritize images with thumbnail field
+                                    $thumbnail = null;
+                                    if (!empty($images)) {
+                                        foreach ($images as $image) {
+                                            if (!empty($image['image'])) {
+                                                $thumbnail = $image['image'];
+                                                break;
+                                            }
+                                        }
+                                        // If no thumbnail found, use the first image
+                                        if (!$thumbnail && !empty($images[0]['image'])) {
+                                            $thumbnail = $images[0]['image'];
+                                        }
+                                    }
+                                    // Fallback to property image if no thumbnail
+                                    if (!$thumbnail) {
+                                        $thumbnail = $property->image;
+                                    }
+
+                                    $displayImage = $thumbnail;
+
+                                    // echo "<script>console.log('Display Image: " . ($displayImage ?? 'null') . "');</script>";
                                 @endphp
 
                                 @if($displayImage)
@@ -196,10 +225,10 @@
                                 </span>
 
                                 <!-- Image Count Badge -->
-                                @if(!empty($property->formatted_images) && count($property->formatted_images) > 1)
+                                @if(!empty($images) && count($images) > 1)
                                     <span class="absolute top-3 right-3 bg-black bg-opacity-60 text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-md flex items-center">
                                         <i class="fas fa-camera mr-1"></i>
-                                        {{ count($property->formatted_images) }}
+                                        {{ count($images) }}
                                     </span>
                                 @endif
 

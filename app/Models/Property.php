@@ -204,40 +204,15 @@ class Property extends Model
 
     /**
      * Get the image attribute.
+     * Returns the raw file path for URL-based image display.
      *
      * @param  string  $value
      * @return string|null
      */
     public function getImageAttribute($value)
     {
-        if (!$value) {
-            return null;
-        }
-
-        try {
-            // If the value is already a valid base64 string, decode it first
-            if (base64_encode(base64_decode($value, true)) === $value) {
-                return $value;
-            }
-
-
-            // If it's a file path, read and encode it
-            if (is_string($value) && file_exists($value)) {
-                $imageData = file_get_contents($value);
-                return base64_encode($imageData);
-            }
-
-            // If it's binary data, encode it
-            if (is_string($value)) {
-                return base64_encode($value);
-            }
-
-            return base64_decode($value);
-            
-        } catch (\Exception $e) {
-            // \Log::error('Error processing image attribute: ' . $e->getMessage());
-            return null;
-        }
+        // Simply return the raw value (file path) without base64 encoding
+        return $value;
     }
 
     public function getGeneralAttribute($value)
