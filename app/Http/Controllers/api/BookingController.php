@@ -257,18 +257,21 @@ class BookingController extends ApiController
     {
         try {
             $transaction = Transaction::find($id);
-            
+
             if (!$transaction) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Booking not found'
                 ], 404);
             }
-            
+
+            $data = $transaction->toArray();
+            $data['check_in_at'] = $transaction->getCheckInAt();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Booking retrieved successfully',
-                'data' => $transaction
+                'data' => $data
             ]);
         } catch (\Exception $e) {
             return response()->json([
