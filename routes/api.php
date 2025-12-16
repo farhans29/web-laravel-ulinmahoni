@@ -157,6 +157,10 @@ Route::prefix('')->middleware('App\Http\Middleware\DokuHeaderMiddleware')->group
 Route::prefix('')->middleware('App\Http\Middleware\DokuNonSnapHeaderMiddleware')->group(function () {
     Route::post('v1/qr-mpm/payment', [DokuController::class, 'dokuQRPaymentNotification']); 
 });
+Route::prefix('')->middleware('App\Http\Middleware\DokuNonSnapHeaderMiddleware')->group(function () {
+    Route::post('v1/credit-card/payment', [DokuController::class, 'dokuCreditCardPaymentNotification']); 
+});
+
 // DOKU B2B API
 Route::prefix('')->middleware('App\Http\Middleware\DokuB2BHeaderMiddleware')->group(function () {
     Route::post('/authorization/v1/access-token/b2b', [DokuController::class, 'dokuGetTokenB2B']);

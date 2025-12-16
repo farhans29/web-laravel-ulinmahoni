@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\ApiController;
+use App\Jobs\LogDokuTransaction;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\DatabaseNotification;
@@ -71,6 +72,28 @@ class DokuServiceController extends ApiController
                 \Log::warning('DOKU Payment Notification Validation Failed', [
                     'errors' => $validator->errors()->toArray(),
                     'body' => $request->all()
+                ]);
+
+                // Log validation failure to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'virtual_account',
+                    'invoice_number' => $request->trxId ?? 'UNKNOWN',
+                    'transaction_id' => $request->trxId ?? null,
+                    'amount' => 0,
+                    'currency' => 'IDR',
+                    'status' => 'VALIDATION_FAILED',
+                    'customer_id' => $request->customerNo ?? null,
+                    'customer_name' => $request->virtualAccountName ?? null,
+                    'customer_email' => $request->virtualAccountEmail ?? null,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => [
+                        'status' => 'error',
+                        'message' => 'Validation failed',
+                        'errors' => $validator->errors()->toArray()
+                    ],
+                    'notes' => 'Validation failed: ' . json_encode($validator->errors()->toArray()),
+                    'transaction_date' => now(),
                 ]);
 
                 return response()->json([
@@ -178,19 +201,41 @@ class DokuServiceController extends ApiController
             $billExists = \App\Models\Transaction::where('order_id', $trxId)->exists();
 
             if (!$billExists) {
-                // \Log::warning('DOKU Payment Notification: Bill not found', [
-                //     'customerNo' => $customerNo,
-                //     'virtualAccountNo' => $virtualAccountNo,
-                //     'orderId' => $virtualAccountNo,
-                //     'trxId' => $trxId
-                // ]);
+                \Log::warning('DOKU Payment Notification: Bill not found', [
+                    'customerNo' => $customerNo,
+                    'virtualAccountNo' => $virtualAccountNo,
+                    'orderId' => $virtualAccountNo,
+                    'trxId' => $trxId
+                ]);
 
-                return response()->json([
+                $responseData = [
                     'responseCode' => '4042512',
                     'responseMessage' => "Bill {$trxId} not found",
-                    // 'message' => "Bill {$trxId} not found",
-                    // 'status' => 'error',
-                ], 404);
+                ];
+
+                // Log bill not found to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'virtual_account',
+                    'invoice_number' => $trxId,
+                    'transaction_id' => $trxId,
+                    'amount' => (float) $paidValue,
+                    'currency' => $currency,
+                    'status' => 'BILL_NOT_FOUND',
+                    'customer_id' => $customerNo,
+                    'customer_name' => $virtualAccountName,
+                    'customer_email' => $email,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'payment_details' => [
+                        'virtual_account_no' => $virtualAccountNo,
+                        'partner_service_id' => $partnerId,
+                    ],
+                    'notes' => "Bill {$trxId} not found in database",
+                    'transaction_date' => now(),
+                ]);
+
+                return response()->json($responseData, 404);
             }
 
             if (!$user) {
@@ -203,11 +248,35 @@ class DokuServiceController extends ApiController
                     'virtualAccountNo' => $virtualAccountNo
                 ]);
 
-                return response()->json([
+                $responseData = [
                     'status' => 'error',
                     'message' => 'Associated user not found',
                     'customer_error' => 'Customer mapping required'
-                ], 404);
+                ];
+
+                // Log user not found to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'virtual_account',
+                    'invoice_number' => $trxId,
+                    'transaction_id' => $trxId,
+                    'amount' => (float) $paidValue,
+                    'currency' => $currency,
+                    'status' => 'USER_NOT_FOUND',
+                    'customer_id' => $customerNo,
+                    'customer_name' => $virtualAccountName,
+                    'customer_email' => $email,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'payment_details' => [
+                        'virtual_account_no' => $virtualAccountNo,
+                        'partner_service_id' => $partnerId,
+                    ],
+                    'notes' => 'Associated user not found',
+                    'transaction_date' => now(),
+                ]);
+
+                return response()->json($responseData, 404);
             }
 
             $notificationData = [
@@ -320,11 +389,39 @@ class DokuServiceController extends ApiController
                 $responseCode = '2002500';
             }
 
-            return response()->json([
+            $responseData = [
                 'responseCode' => $responseCode,
                 'responseMessage' => 'Successful',
                 'virtualAccountData' => $virtualAccountData
-            ], 200);
+            ];
+
+            // Log transaction to database (queued)
+            LogDokuTransaction::dispatch([
+                'payment_method' => 'virtual_account',
+                'invoice_number' => $trxId,
+                'transaction_id' => $trxId,
+                'amount' => (float) $paidValue,
+                'currency' => $currency,
+                'status' => 'SUCCESS',
+                'customer_id' => $customerNo,
+                'customer_name' => $virtualAccountName,
+                'customer_email' => $email,
+                'request_headers' => $headers,
+                'request_body' => $request->all(),
+                'response_data' => $responseData,
+                'payment_details' => [
+                    'virtual_account_no' => $virtualAccountNo,
+                    'partner_service_id' => $partnerId,
+                    'payment_request_id' => $paymentRequestId,
+                    'phone' => $phone,
+                    'bill_details' => $billDetails,
+                    'free_texts' => $freeTexts,
+                    'fee_amount' => $feeAmount,
+                ],
+                'transaction_date' => now(),
+            ]);
+
+            return response()->json($responseData, 200);
         
 
         } catch (\Exception $e) {
@@ -334,11 +431,44 @@ class DokuServiceController extends ApiController
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
+            $responseData = [
                 'status' => 'error',
                 'message' => 'Error processing DOKU Virtual Account payment notification',
                 'error' => $e->getMessage()
-            ], 500);
+            ];
+
+            // Log exception to database (queued)
+            try {
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'virtual_account',
+                    'invoice_number' => $request->input('trxId') ?? 'ERROR',
+                    'transaction_id' => $request->input('trxId') ?? null,
+                    'amount' => (float) ($request->input('paidAmount.value') ?? $request->input('totalAmount.value') ?? 0),
+                    'currency' => $request->input('paidAmount.currency') ?? $request->input('totalAmount.currency') ?? 'IDR',
+                    'status' => 'ERROR',
+                    'customer_id' => $request->input('customerNo') ?? null,
+                    'customer_name' => $request->input('virtualAccountName') ?? null,
+                    'customer_email' => $request->input('virtualAccountEmail') ?? null,
+                    'request_headers' => [
+                        'x-timestamp' => $request->header('X-TIMESTAMP'),
+                        'x-signature' => $request->header('X-SIGNATURE'),
+                        'x-partner-id' => $request->header('X-PARTNER-ID'),
+                        'x-external-id' => $request->header('X-EXTERNAL-ID'),
+                        'channel-id' => $request->header('CHANNEL-ID'),
+                    ],
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'notes' => 'Exception: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ':' . $e->getLine(),
+                    'transaction_date' => now(),
+                ]);
+            } catch (\Exception $logException) {
+                \Log::error('Failed to log transaction error to database', [
+                    'original_error' => $e->getMessage(),
+                    'logging_error' => $logException->getMessage()
+                ]);
+            }
+
+            return response()->json($responseData, 500);
         }
     }
     public function dokuQRPaymentNotification(Request $request)
@@ -394,11 +524,32 @@ class DokuServiceController extends ApiController
                     'body' => $request->all()
                 ]);
 
-                return response()->json([
+                $responseData = [
                     'responseCode' => '4000000',
                     'responseMessage' => 'Bad Request',
                     'errors' => $validator->errors()
-                ], 400);
+                ];
+
+                // Log validation failure to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'qris',
+                    'invoice_number' => $request->input('order.invoice_number') ?? 'UNKNOWN',
+                    'transaction_id' => $request->input('order.invoice_number') ?? null,
+                    'amount' => (float) ($request->input('order.amount') ?? 0),
+                    'currency' => 'IDR',
+                    'status' => 'VALIDATION_FAILED',
+                    'customer_id' => $request->input('customer.doku_id') ?? null,
+                    'customer_name' => $request->input('customer.name') ?? null,
+                    'customer_email' => $request->input('customer.email') ?? null,
+                    'approval_code' => $request->input('emoney_payment.approval_code') ?? null,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'notes' => 'Validation failed: ' . json_encode($validator->errors()->toArray()),
+                    'transaction_date' => now(),
+                ]);
+
+                return response()->json($responseData, 400);
             }
 
             // Extract payment data from QRIS format
@@ -429,10 +580,36 @@ class DokuServiceController extends ApiController
                     'customer_doku_id' => $customerDokuId
                 ]);
 
-                return response()->json([
+                $responseData = [
                     'responseCode' => '4042512',
                     'responseMessage' => "Bill {$invoiceNumber} not found"
-                ], 404);
+                ];
+
+                // Log bill not found to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'qris',
+                    'invoice_number' => $invoiceNumber,
+                    'transaction_id' => $invoiceNumber,
+                    'amount' => (float) $amount,
+                    'currency' => 'IDR',
+                    'status' => 'BILL_NOT_FOUND',
+                    'customer_id' => $customerDokuId,
+                    'customer_name' => $customerName,
+                    'customer_email' => $customerEmail,
+                    'approval_code' => $approvalCode,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'payment_details' => [
+                        'service_id' => $serviceId,
+                        'acquirer_id' => $acquirerId,
+                        'channel_id' => $channelId,
+                    ],
+                    'notes' => "Bill {$invoiceNumber} not found in database",
+                    'transaction_date' => \Carbon\Carbon::parse($transactionDate),
+                ]);
+
+                return response()->json($responseData, 404);
             }
 
             // Find associated user by email or doku_id
@@ -448,10 +625,36 @@ class DokuServiceController extends ApiController
                     'customer_doku_id' => $customerDokuId
                 ]);
 
-                return response()->json([
+                $responseData = [
                     'responseCode' => '4040000',
                     'responseMessage' => 'Associated user not found'
-                ], 404);
+                ];
+
+                // Log user not found to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'qris',
+                    'invoice_number' => $invoiceNumber,
+                    'transaction_id' => $invoiceNumber,
+                    'amount' => (float) $amount,
+                    'currency' => 'IDR',
+                    'status' => 'USER_NOT_FOUND',
+                    'customer_id' => $customerDokuId,
+                    'customer_name' => $customerName,
+                    'customer_email' => $customerEmail,
+                    'approval_code' => $approvalCode,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'payment_details' => [
+                        'service_id' => $serviceId,
+                        'acquirer_id' => $acquirerId,
+                        'channel_id' => $channelId,
+                    ],
+                    'notes' => 'Associated user not found',
+                    'transaction_date' => \Carbon\Carbon::parse($transactionDate),
+                ]);
+
+                return response()->json($responseData, 404);
             }
 
             // Create notification data
@@ -481,7 +684,7 @@ class DokuServiceController extends ApiController
             ];
 
             // Create notification in database
-            $user->notify(new \App\Notifications\PaymentNotification($notificationData));
+            // $user->notify(new \App\Notifications\PaymentNotification($notificationData));
 
             // Log successful processing
             \Log::info('DOKU QRIS Payment Notification Processed Successfully', [
@@ -493,7 +696,7 @@ class DokuServiceController extends ApiController
             ]);
 
             // Return success response
-            return response()->json([
+            $responseData = [
                 'responseCode' => '2005100',
                 'responseMessage' => 'Success',
                 'invoiceNumber' => $invoiceNumber,
@@ -502,7 +705,38 @@ class DokuServiceController extends ApiController
                     'value' => (float) $amount,
                     'currency' => 'IDR'
                 ]
-            ], 200);
+            ];
+
+            // Log transaction to database (queued)
+            LogDokuTransaction::dispatch([
+                'payment_method' => 'qris',
+                'invoice_number' => $invoiceNumber,
+                'transaction_id' => $invoiceNumber,
+                'amount' => (float) $amount,
+                'currency' => 'IDR',
+                'status' => $transactionStatus,
+                'customer_id' => $customerDokuId,
+                'customer_name' => $customerName,
+                'customer_email' => $customerEmail,
+                'approval_code' => $approvalCode,
+                'request_headers' => $headers,
+                'request_body' => $request->all(),
+                'response_data' => $responseData,
+                'payment_details' => [
+                    'service_id' => $serviceId,
+                    'service_name' => $serviceName,
+                    'acquirer_id' => $acquirerId,
+                    'acquirer_name' => $acquirerName,
+                    'channel_id' => $channelId,
+                    'channel_name' => $channelName,
+                    'account_id' => $accountId,
+                    'phone' => $customerPhone,
+                    'additional_info' => $additionalInfo,
+                ],
+                'transaction_date' => \Carbon\Carbon::parse($transactionDate),
+            ]);
+
+            return response()->json($responseData, 200);
 
         } catch (\Exception $e) {
             \Log::error('DOKU QR Payment Notification Processing Error', [
@@ -511,10 +745,348 @@ class DokuServiceController extends ApiController
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return response()->json([
+            $responseData = [
                 'responseCode' => '5005100',
                 'responseMessage' => 'Internal Server Error'
-            ], 500);
+            ];
+
+            // Log exception to database (queued)
+            try {
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'qris',
+                    'invoice_number' => $request->input('order.invoice_number') ?? 'ERROR',
+                    'transaction_id' => $request->input('order.invoice_number') ?? null,
+                    'amount' => (float) ($request->input('order.amount') ?? 0),
+                    'currency' => 'IDR',
+                    'status' => 'ERROR',
+                    'customer_id' => $request->input('customer.doku_id') ?? null,
+                    'customer_name' => $request->input('customer.name') ?? null,
+                    'customer_email' => $request->input('customer.email') ?? null,
+                    'approval_code' => $request->input('emoney_payment.approval_code') ?? null,
+                    'request_headers' => [
+                        'x-timestamp' => $request->header('X-TIMESTAMP'),
+                        'x-signature' => $request->header('X-SIGNATURE'),
+                        'x-partner-id' => $request->header('X-PARTNER-ID'),
+                        'x-external-id' => $request->header('X-EXTERNAL-ID'),
+                        'channel-id' => $request->header('CHANNEL-ID'),
+                    ],
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'notes' => 'Exception: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ':' . $e->getLine(),
+                    'transaction_date' => now(),
+                ]);
+            } catch (\Exception $logException) {
+                \Log::error('Failed to log QRIS transaction error to database', [
+                    'original_error' => $e->getMessage(),
+                    'logging_error' => $logException->getMessage()
+                ]);
+            }
+
+            return response()->json($responseData, 500);
+        }
+    }
+
+    public function dokuCreditCardPaymentNotification(Request $request)
+    {
+        try {
+            // Headers have been validated by DokuHeaderMiddleware
+            $headers = [
+                'x-timestamp' => $request->header('X-TIMESTAMP'),
+                'x-signature' => $request->header('X-SIGNATURE'),
+                'x-partner-id' => $request->header('X-PARTNER-ID'),
+                'x-external-id' => $request->header('X-EXTERNAL-ID'),
+                'channel-id' => $request->header('CHANNEL-ID'),
+            ];
+
+            // Log DOKU Credit Card notification for debugging
+            \Log::info('DOKU Credit Card Payment Notification Received', [
+                'headers' => $headers,
+                'body' => $request->all(),
+                'timestamp' => now()->toISOString()
+            ]);
+
+            // Validate Credit Card payment notification format
+            $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'order' => 'required|array',
+                'order.invoice_number' => 'required|string',
+                'order.amount' => 'required|numeric',
+                'customer' => 'required|array',
+                'customer.id' => 'required|string',
+                'customer.name' => 'required|string',
+                'customer.email' => 'required|email',
+                'transaction' => 'required|array',
+                'transaction.type' => 'required|string',
+                'transaction.status' => 'required|string',
+                'transaction.date' => 'required|date',
+                'transaction.original_request_id' => 'required|string',
+                'service' => 'required|array',
+                'service.id' => 'required|string',
+                'acquirer' => 'required|array',
+                'acquirer.id' => 'required|string',
+                'channel' => 'required|array',
+                'channel.id' => 'required|string',
+                'card_payment' => 'required|array',
+                'card_payment.masked_card_number' => 'required|string',
+                'card_payment.approval_code' => 'required|string',
+                'card_payment.response_code' => 'required|string',
+                'card_payment.response_message' => 'required|string',
+                'card_payment.issuer' => 'required|string',
+                'authorize_id' => 'required|string',
+            ]);
+
+            if ($validator->fails()) {
+                \Log::warning('DOKU Credit Card Payment Notification Validation Failed', [
+                    'errors' => $validator->errors()->toArray(),
+                    'body' => $request->all()
+                ]);
+
+                $responseData = [
+                    'responseCode' => '4000000',
+                    'responseMessage' => 'Bad Request',
+                    'errors' => $validator->errors()
+                ];
+
+                // Log validation failure to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'credit_card',
+                    'invoice_number' => $request->input('order.invoice_number') ?? 'UNKNOWN',
+                    'transaction_id' => $request->input('transaction.original_request_id') ?? null,
+                    'amount' => (float) ($request->input('order.amount') ?? 0),
+                    'currency' => 'IDR',
+                    'status' => 'VALIDATION_FAILED',
+                    'customer_id' => $request->input('customer.id') ?? null,
+                    'customer_name' => $request->input('customer.name') ?? null,
+                    'customer_email' => $request->input('customer.email') ?? null,
+                    'approval_code' => $request->input('card_payment.approval_code') ?? null,
+                    'authorize_id' => $request->input('authorize_id') ?? null,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'notes' => 'Validation failed: ' . json_encode($validator->errors()->toArray()),
+                    'transaction_date' => now(),
+                ]);
+
+                return response()->json($responseData, 400);
+            }
+
+            // Extract payment data from Credit Card format
+            $invoiceNumber = $request->input('order.invoice_number');
+            $amount = $request->input('order.amount');
+            $customerId = $request->input('customer.id');
+            $customerName = $request->input('customer.name');
+            $customerEmail = $request->input('customer.email');
+            $transactionType = $request->input('transaction.type');
+            $transactionStatus = $request->input('transaction.status');
+            $transactionDate = $request->input('transaction.date');
+            $originalRequestId = $request->input('transaction.original_request_id');
+            $serviceId = $request->input('service.id');
+            $acquirerId = $request->input('acquirer.id');
+            $channelId = $request->input('channel.id');
+            $maskedCardNumber = $request->input('card_payment.masked_card_number');
+            $approvalCode = $request->input('card_payment.approval_code');
+            $responseCode = $request->input('card_payment.response_code');
+            $responseMessage = $request->input('card_payment.response_message');
+            $cardIssuer = $request->input('card_payment.issuer');
+            $authorizeId = $request->input('authorize_id');
+
+            // Check if transaction exists with invoice_number as order_id
+            $billExists = \App\Models\Transaction::where('order_id', $invoiceNumber)->exists();
+
+            if (!$billExists) {
+                \Log::warning('DOKU Credit Card Payment Notification: Bill not found', [
+                    'invoice_number' => $invoiceNumber,
+                    'customer_id' => $customerId
+                ]);
+
+                $responseData = [
+                    'responseCode' => '4042512',
+                    'responseMessage' => "Bill {$invoiceNumber} not found"
+                ];
+
+                // Log bill not found to database (queued)
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'credit_card',
+                    'invoice_number' => $invoiceNumber,
+                    'transaction_id' => $originalRequestId,
+                    'amount' => (float) $amount,
+                    'currency' => 'IDR',
+                    'status' => 'BILL_NOT_FOUND',
+                    'customer_id' => $customerId,
+                    'customer_name' => $customerName,
+                    'customer_email' => $customerEmail,
+                    'approval_code' => $approvalCode,
+                    'authorize_id' => $authorizeId,
+                    'request_headers' => $headers,
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'payment_details' => [
+                        'service_id' => $serviceId,
+                        'acquirer_id' => $acquirerId,
+                        'channel_id' => $channelId,
+                        'masked_card_number' => $maskedCardNumber,
+                    ],
+                    'notes' => "Bill {$invoiceNumber} not found in database",
+                    'transaction_date' => \Carbon\Carbon::parse($transactionDate),
+                ]);
+
+                return response()->json($responseData, 404);
+            }
+
+            // Find associated user by email
+            // $user = User::where('email', $customerEmail)->first();
+
+            // if (!$user) {
+            //     $user = User::first(); // Fallback to first user or implement custom lookup
+            // }
+
+            // if (!$user) {
+            //     \Log::error('DOKU Credit Card Payment Notification: User not found', [
+            //         'customer_email' => $customerEmail,
+            //         'customer_id' => $customerId
+            //     ]);
+
+            //     return response()->json([
+            //         'responseCode' => '4040000',
+            //         'responseMessage' => 'Associated user not found'
+            //     ], 404);
+            // }
+
+            // Create notification data
+            $notificationData = [
+                'title' => 'DOKU Credit Card Payment',
+                'message' => $this->getCreditCardPaymentMessage($transactionStatus, $amount, 'IDR', $customerName, $invoiceNumber),
+                'type' => 'payment',
+                'category' => 'credit_card',
+                'doku_reference' => [
+                    'invoice_number' => $invoiceNumber,
+                    'authorize_id' => $authorizeId,
+                    'original_request_id' => $originalRequestId,
+                    'approval_code' => $approvalCode,
+                    'customer_id' => $customerId,
+                    'service_id' => $serviceId,
+                    'acquirer_id' => $acquirerId,
+                    'channel_id' => $channelId,
+                ],
+                'payment_detail' => [
+                    'amount' => (float) $amount,
+                    'currency' => 'IDR',
+                    'status' => $transactionStatus,
+                    'transaction_type' => $transactionType,
+                    'transaction_date' => $transactionDate,
+                    'email' => $customerEmail,
+                    'masked_card_number' => $maskedCardNumber,
+                    'card_issuer' => $cardIssuer,
+                    'response_code' => $responseCode,
+                    'response_message' => $responseMessage,
+                ],
+            ];
+
+            // Create notification in database
+            // $user->notify(new \App\Notifications\PaymentNotification($notificationData));
+
+            // Log successful processing
+            \Log::info('DOKU Credit Card Payment Notification Processed Successfully', [
+                'invoice_number' => $invoiceNumber,
+                'amount' => $amount,
+                'status' => $transactionStatus,
+                'approval_code' => $approvalCode,
+                'authorize_id' => $authorizeId
+            ]);
+
+            // Return success response
+            $responseData = [
+                'responseCode' => '2005100',
+                'responseMessage' => 'Success',
+                'invoiceNumber' => $invoiceNumber,
+                'authorizeId' => $authorizeId,
+                'transactionStatus' => $transactionStatus,
+                'amount' => [
+                    'value' => (float) $amount,
+                    'currency' => 'IDR'
+                ]
+            ];
+
+            // Log transaction to database (queued)
+            LogDokuTransaction::dispatch([
+                'payment_method' => 'credit_card',
+                'invoice_number' => $invoiceNumber,
+                'transaction_id' => $originalRequestId,
+                'amount' => (float) $amount,
+                'currency' => 'IDR',
+                'status' => $transactionStatus,
+                'customer_id' => $customerId,
+                'customer_name' => $customerName,
+                'customer_email' => $customerEmail,
+                'approval_code' => $approvalCode,
+                'authorize_id' => $authorizeId,
+                'request_headers' => $headers,
+                'request_body' => $request->all(),
+                'response_data' => $responseData,
+                'payment_details' => [
+                    'transaction_type' => $transactionType,
+                    'service_id' => $serviceId,
+                    'acquirer_id' => $acquirerId,
+                    'channel_id' => $channelId,
+                    'masked_card_number' => $maskedCardNumber,
+                    'card_issuer' => $cardIssuer,
+                    'response_code' => $responseCode,
+                    'response_message' => $responseMessage,
+                ],
+                'transaction_date' => \Carbon\Carbon::parse($transactionDate),
+            ]);
+
+            return response()->json($responseData, 200);
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU Credit Card Payment Notification Processing Error', [
+                'error' => $e->getMessage(),
+                'body' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $responseData = [
+                'responseCode' => '5005100',
+                'responseMessage' => 'Internal Server Error'
+            ];
+
+            // Log exception to database (queued)
+            try {
+                LogDokuTransaction::dispatch([
+                    'payment_method' => 'credit_card',
+                    'invoice_number' => $request->input('order.invoice_number') ?? 'ERROR',
+                    'transaction_id' => $request->input('transaction.original_request_id') ?? null,
+                    'amount' => (float) ($request->input('order.amount') ?? 0),
+                    'currency' => 'IDR',
+                    'status' => 'ERROR',
+                    'customer_id' => $request->input('customer.id') ?? null,
+                    'customer_name' => $request->input('customer.name') ?? null,
+                    'customer_email' => $request->input('customer.email') ?? null,
+                    'approval_code' => $request->input('card_payment.approval_code') ?? null,
+                    'authorize_id' => $request->input('authorize_id') ?? null,
+                    'request_headers' => [
+                        'x-timestamp' => $request->header('X-TIMESTAMP'),
+                        'x-signature' => $request->header('X-SIGNATURE'),
+                        'x-partner-id' => $request->header('X-PARTNER-ID'),
+                        'x-external-id' => $request->header('X-EXTERNAL-ID'),
+                        'channel-id' => $request->header('CHANNEL-ID'),
+                    ],
+                    'request_body' => $request->all(),
+                    'response_data' => $responseData,
+                    'payment_details' => [
+                        'masked_card_number' => $request->input('card_payment.masked_card_number') ?? null,
+                        'card_issuer' => $request->input('card_payment.issuer') ?? null,
+                    ],
+                    'notes' => 'Exception: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ':' . $e->getLine(),
+                    'transaction_date' => now(),
+                ]);
+            } catch (\Exception $logException) {
+                \Log::error('Failed to log Credit Card transaction error to database', [
+                    'original_error' => $e->getMessage(),
+                    'logging_error' => $logException->getMessage()
+                ]);
+            }
+
+            return response()->json($responseData, 500);
         }
     }
 
@@ -647,6 +1219,34 @@ class DokuServiceController extends ApiController
     }
 
     /**
+     * Get credit card payment message based on status
+     *
+     * @param string $status
+     * @param float $amount
+     * @param string $currency
+     * @param string $customerName
+     * @param string $invoiceNumber
+     * @return string
+     */
+    private function getCreditCardPaymentMessage($status, $amount, $currency, $customerName, $invoiceNumber)
+    {
+        $formattedAmount = number_format((float)$amount, 2) . ' ' . strtoupper($currency);
+
+        switch (strtoupper($status)) {
+            case 'SUCCESS':
+                return "Credit card payment of {$formattedAmount} from {$customerName} has been successfully processed (Invoice: {$invoiceNumber}).";
+            case 'PENDING':
+                return "Credit card payment of {$formattedAmount} from {$customerName} is pending confirmation (Invoice: {$invoiceNumber}).";
+            case 'FAILED':
+                return "Credit card payment of {$formattedAmount} from {$customerName} has failed (Invoice: {$invoiceNumber}). Please try again.";
+            case 'CANCELLED':
+                return "Credit card payment of {$formattedAmount} from {$customerName} has been cancelled (Invoice: {$invoiceNumber}).";
+            default:
+                return "Credit card payment status updated for {$formattedAmount} from {$customerName} (Invoice: {$invoiceNumber}).";
+        }
+    }
+
+    /**
      * Get payment message based on status
      *
      * @param string $status
@@ -657,7 +1257,7 @@ class DokuServiceController extends ApiController
     private function getPaymentMessage($status, $amount, $currency)
     {
         $formattedAmount = number_format($amount, 2) . ' ' . strtoupper($currency);
-        
+
         switch ($status) {
             case 'completed':
                 return "Your payment of {$formattedAmount} has been successfully processed.";
