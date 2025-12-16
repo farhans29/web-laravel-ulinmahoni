@@ -831,7 +831,7 @@ class DokuServiceController extends ApiController
                 'card_payment.response_code' => 'required|string',
                 'card_payment.response_message' => 'required|string',
                 'card_payment.issuer' => 'required|string',
-                'authorize_id' => 'required|string',
+                'authorize_id' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
