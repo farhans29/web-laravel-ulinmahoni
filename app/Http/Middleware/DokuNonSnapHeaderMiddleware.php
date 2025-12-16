@@ -64,20 +64,20 @@ class DokuNonSnapHeaderMiddleware
         // ]);
 
         // Validate Bearer token authorization
-        if (!$this->validateAuthorization($request)) {
-            \Log::warning('DOKU Authorization Validation Failed', [
-                'client-id' => $request->header('Client-Id'),
-                'request-id' => $request->header('Request-Id'),
-                'timestamp' => now()->toISOString()
-            ]);
+        // if (!$this->validateAuthorization($request)) {
+        //     \Log::warning('DOKU Authorization Validation Failed', [
+        //         'client-id' => $request->header('Client-Id'),
+        //         'request-id' => $request->header('Request-Id'),
+        //         'timestamp' => now()->toISOString()
+        //     ]);
 
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Unauthorized',
-                'responseCode' => '4014701',
-                'responseMessage' => 'Unauthorized. Invalid Token (B2B)'
-            ], 401);
-        }
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'Unauthorized',
+        //         'responseCode' => '4014701',
+        //         'responseMessage' => 'Unauthorized. Invalid Token (B2B)'
+        //     ], 401);
+        // }
 
         // Validate DOKU signature
         // if (!$this->validateDokuSignature($request)) {
