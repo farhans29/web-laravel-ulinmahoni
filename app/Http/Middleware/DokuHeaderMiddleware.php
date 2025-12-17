@@ -19,11 +19,11 @@ class DokuHeaderMiddleware
         // Validate required DOKU headers
         $requiredHeaders = [
             'X-TIMESTAMP',
-            'X-SIGNATURE', 
+            'X-SIGNATURE',
             'X-PARTNER-ID',
             'X-EXTERNAL-ID',
-            'CHANNEL-ID',
-            'Authorization'
+            'CHANNEL-ID'
+            // Authorization is optional
         ];
 
         $missingHeaders = [];
@@ -59,8 +59,8 @@ class DokuHeaderMiddleware
             'timestamp' => now()->toISOString()
         ]);
 
-        // Validate Bearer token authorization
-        if (!$this->validateAuthorization($request)) {
+        // Validate Bearer token authorization (only if provided)
+        if ($request->header('Authorization') && !$this->validateAuthorization($request)) {
             \Log::warning('DOKU Authorization Validation Failed', [
                 'x-partner-id' => $request->header('X-PARTNER-ID'),
                 'x-external-id' => $request->header('X-EXTERNAL-ID'),
