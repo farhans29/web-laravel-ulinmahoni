@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\RoomController;
 use App\Http\Controllers\Api\Auth\SocialAuthController;
 use App\Http\Controllers\Api\HealthCheckController;
 use App\Http\Controllers\Api\DokuServiceController as DokuController;
+use App\Http\Controllers\Api\VoucherController;
+use App\Http\Controllers\Api\VoucherAdminController;
 
 use App\Http\Middleware\VerifyApiKey;
 
@@ -128,7 +130,26 @@ Route::prefix('v1')->group(function () {
             Route::post('/{id}/profile-picture', [AuthController::class, 'updateProfilePicture']);
         });
 
-        // COMMENTED FOR REVIEW 
+        // VOUCHER API ROUTES (USER)
+        Route::prefix('voucher')->group(function () {
+            Route::post('/validate', [VoucherController::class, 'validateVoucher']);
+            Route::post('/apply', [VoucherController::class, 'apply']);
+            Route::get('/history/{user_id}', [VoucherController::class, 'getUserHistory']);
+            Route::get('/available', [VoucherController::class, 'availableVouchers']);
+        });
+
+        // VOUCHER API ROUTES (ADMIN)
+        Route::prefix('admin/voucher')->group(function () {
+            Route::get('/', [VoucherAdminController::class, 'index']);
+            Route::get('/{id}', [VoucherAdminController::class, 'show']);
+            Route::post('/', [VoucherAdminController::class, 'store']);
+            Route::put('/{id}', [VoucherAdminController::class, 'update']);
+            Route::delete('/{id}', [VoucherAdminController::class, 'destroy']);
+            Route::get('/{id}/usage-logs', [VoucherAdminController::class, 'usageLogs']);
+            Route::post('/generate-code', [VoucherAdminController::class, 'generateCode']);
+        });
+
+        // COMMENTED FOR REVIEW
         // NOTIFICATIONS API ROUTES
         // Route::prefix('notifications')->group(function () {
         //     Route::get('/', [NotificationController::class, 'getNotifications']);
