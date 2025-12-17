@@ -35,6 +35,10 @@ class Transaction extends Model
         'admin_fees',
         'service_fees',
         'grandtotal_price',
+        'voucher_id',
+        'voucher_code',
+        'discount_amount',
+        'subtotal_before_discount',
         'property_type',
         'transaction_type',
         'transaction_code',
@@ -65,6 +69,8 @@ class Transaction extends Model
         'room_price' => 'decimal:2',
         'admin_fees' => 'decimal:2',
         'service_fees' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'subtotal_before_discount' => 'decimal:2',
         'booking_days' => 'integer'
     ];
 
@@ -109,10 +115,25 @@ class Transaction extends Model
         return $this->hasOne(Booking::class, 'order_id', 'order_id');
     }
 
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class, 'voucher_id', 'idrec');
+    }
+
+    public function voucherUsage()
+    {
+        return $this->hasOne(VoucherUsage::class, 'transaction_id', 'idrec');
+    }
+
     // Use transaction_code as the route key
     public function getRouteKeyName()
     {
         return 'transaction_code';
+    }
+
+    public function getFormattedDiscountAmountAttribute()
+    {
+        return 'Rp ' . number_format($this->discount_amount, 0, ',', '.');
     }
 
     public function getCheckInAt()
