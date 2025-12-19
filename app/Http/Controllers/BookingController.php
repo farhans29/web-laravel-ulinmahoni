@@ -569,17 +569,17 @@ class BookingController extends Controller
             try {
                 $grandtotalPrice = $totalPrice + $adminFee + $serviceFees;
                 
-                // $dokuPaymentResponse = $this->processDokuPayment([
-                //     'order_id' => $order_id,
-                //     'transaction_code' => $transaction->transaction_code,
-                //     'amount' => $grandtotalPrice,
-                //     'property_name' => $property->name ?? 'Property',
-                //     'room_name' => $room->name ?? 'Room',
-                //     'user_name' => $user->name ?? 'Customer',
-                //     'user_email' => $user->email,
-                //     'user_phone' => $user->phone ?? $request->user_phone_number ?? '0000000000',
-                //     'user_address' => $user->address ?? 'Indonesia'
-                // ]);
+                $dokuPaymentResponse = $this->processDokuPayment([
+                    'order_id' => $order_id,
+                    'transaction_code' => $transaction->transaction_code,
+                    'amount' => $grandtotalPrice,
+                    'property_name' => $property->name ?? 'Property',
+                    'room_name' => $room->name ?? 'Room',
+                    'user_name' => $user->name ?? 'Customer',
+                    'user_email' => $user->email,
+                    'user_phone' => $user->phone ?? $request->user_phone_number ?? '0000000000',
+                    'user_address' => $user->address ?? 'Indonesia'
+                ]);
 
                 // Update transaction with payment URL if available
                 if (!empty($dokuPaymentResponse['payment_url'])) {
