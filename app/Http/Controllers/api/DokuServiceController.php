@@ -805,19 +805,19 @@ class DokuServiceController extends ApiController
                 'timestamp' => now()->toISOString()
             ]);
 
-            // Validate Credit Card payment notification format
+            // Validate Credit Card payment notification format (actual DOKU structure)
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
                 'order' => 'required|array',
                 'order.invoice_number' => 'required|string',
                 'order.amount' => 'required|numeric',
                 'customer' => 'required|array',
-                'customer.id' => 'required|string',
-                'customer.name' => 'required|string',
-                'customer.email' => 'required|email',
+                'customer.id' => 'nullable|string',
+                'customer.name' => 'nullable|string',
+                'customer.email' => 'nullable|email',
                 'transaction' => 'required|array',
                 'transaction.type' => 'required|string',
-                'transaction.status' => 'required|string',
-                'transaction.date' => 'required|date',
+                'transaction.status' => 'required|string|in:SUCCESS,FAILED,PENDING',
+                'transaction.date' => 'required|string',
                 'transaction.original_request_id' => 'required|string',
                 'service' => 'required|array',
                 'service.id' => 'required|string',
@@ -825,13 +825,19 @@ class DokuServiceController extends ApiController
                 'acquirer.id' => 'required|string',
                 'channel' => 'required|array',
                 'channel.id' => 'required|string',
+                'channel.name' => 'nullable|string',
                 'card_payment' => 'required|array',
                 'card_payment.masked_card_number' => 'required|string',
-                'card_payment.approval_code' => 'required|string',
                 'card_payment.response_code' => 'required|string',
                 'card_payment.response_message' => 'required|string',
                 'card_payment.issuer' => 'required|string',
-                'authorize_id' => 'nullable|string',
+                'card_payment.identifier' => 'nullable|array',
+                'card_payment.brand' => 'nullable|string',
+                'card_payment.authentication_id' => 'nullable|string',
+                'card_payment.three_d_secure_status' => 'nullable|string',
+                'verification' => 'nullable|array',
+                'verification.status' => 'nullable|string',
+                'verification.reason' => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -857,8 +863,8 @@ class DokuServiceController extends ApiController
                     'customer_id' => $request->input('customer.id') ?? null,
                     'customer_name' => $request->input('customer.name') ?? null,
                     'customer_email' => $request->input('customer.email') ?? null,
-                    'approval_code' => $request->input('card_payment.approval_code') ?? null,
-                    'authorize_id' => $request->input('authorize_id') ?? null,
+                    'approval_code' => null,
+                    'authorize_id' => null,
                     'request_headers' => $headers,
                     'request_body' => $request->all(),
                     'response_data' => $responseData,
@@ -869,25 +875,40 @@ class DokuServiceController extends ApiController
                 return response()->json($responseData, 400);
             }
 
-            // Extract payment data from Credit Card format
+            // Extract payment data from Credit Card format (actual DOKU structure)
             $invoiceNumber = $request->input('order.invoice_number');
             $amount = $request->input('order.amount');
+
+            // Customer details
             $customerId = $request->input('customer.id');
             $customerName = $request->input('customer.name');
             $customerEmail = $request->input('customer.email');
+
+            // Transaction details
             $transactionType = $request->input('transaction.type');
             $transactionStatus = $request->input('transaction.status');
             $transactionDate = $request->input('transaction.date');
             $originalRequestId = $request->input('transaction.original_request_id');
+
+            // Service & Acquirer
             $serviceId = $request->input('service.id');
             $acquirerId = $request->input('acquirer.id');
             $channelId = $request->input('channel.id');
+            $channelName = $request->input('channel.name');
+
+            // Card payment details
             $maskedCardNumber = $request->input('card_payment.masked_card_number');
-            $approvalCode = $request->input('card_payment.approval_code');
             $responseCode = $request->input('card_payment.response_code');
             $responseMessage = $request->input('card_payment.response_message');
             $cardIssuer = $request->input('card_payment.issuer');
-            $authorizeId = $request->input('authorize_id');
+            $cardIdentifier = $request->input('card_payment.identifier'); // Array of identifiers
+            $cardBrand = $request->input('card_payment.brand');
+            $authenticationId = $request->input('card_payment.authentication_id');
+            $threeDSecureStatus = $request->input('card_payment.three_d_secure_status');
+
+            // Verification details
+            $verificationStatus = $request->input('verification.status');
+            $verificationReason = $request->input('verification.reason');
 
             // Check if transaction exists with invoice_number as order_id
             $billExists = \App\Models\Transaction::where('order_id', $invoiceNumber)->exists();
@@ -914,19 +935,28 @@ class DokuServiceController extends ApiController
                     'customer_id' => $customerId,
                     'customer_name' => $customerName,
                     'customer_email' => $customerEmail,
-                    'approval_code' => $approvalCode,
-                    'authorize_id' => $authorizeId,
+                    'approval_code' => null,
+                    'authorize_id' => null,
                     'request_headers' => $headers,
                     'request_body' => $request->all(),
                     'response_data' => $responseData,
                     'payment_details' => [
-                        'service_id' => $serviceId,
-                        'acquirer_id' => $acquirerId,
-                        'channel_id' => $channelId,
-                        'masked_card_number' => $maskedCardNumber,
+                        'transaction_type' => $transactionType,
+                        'transaction_status' => $transactionStatus,
+                        'transaction_date' => $transactionDate,
+                        'card_masked' => $maskedCardNumber,
+                        'card_issuer' => $cardIssuer,
+                        'card_brand' => $cardBrand,
+                        'card_identifier' => $cardIdentifier,
+                        'authentication_id' => $authenticationId,
+                        'three_d_secure_status' => $threeDSecureStatus,
+                        'response_code' => $responseCode,
+                        'response_message' => $responseMessage,
+                        'verification_status' => $verificationStatus,
+                        'verification_reason' => $verificationReason,
                     ],
                     'notes' => "Bill {$invoiceNumber} not found in database",
-                    'transaction_date' => \Carbon\Carbon::parse($transactionDate),
+                    'transaction_date' => now(),
                 ]);
 
                 return response()->json($responseData, 404);
@@ -954,30 +984,30 @@ class DokuServiceController extends ApiController
             // Create notification data
             $notificationData = [
                 'title' => 'DOKU Credit Card Payment',
-                'message' => $this->getCreditCardPaymentMessage($transactionStatus, $amount, 'IDR', $customerName, $invoiceNumber),
+                'message' => $this->getCreditCardPaymentMessage($transactionStatus, $amount, 'IDR', $customerId, $invoiceNumber),
                 'type' => 'payment',
                 'category' => 'credit_card',
                 'doku_reference' => [
                     'invoice_number' => $invoiceNumber,
-                    'authorize_id' => $authorizeId,
                     'original_request_id' => $originalRequestId,
-                    'approval_code' => $approvalCode,
                     'customer_id' => $customerId,
-                    'service_id' => $serviceId,
-                    'acquirer_id' => $acquirerId,
-                    'channel_id' => $channelId,
+                    'transaction_type' => $transactionType,
+                    'transaction_date' => $transactionDate,
+                    'card_identifier' => $cardIdentifier,
                 ],
                 'payment_detail' => [
                     'amount' => (float) $amount,
                     'currency' => 'IDR',
                     'status' => $transactionStatus,
-                    'transaction_type' => $transactionType,
-                    'transaction_date' => $transactionDate,
-                    'email' => $customerEmail,
-                    'masked_card_number' => $maskedCardNumber,
+                    'authentication_id' => $authenticationId,
+                    'three_d_secure_status' => $threeDSecureStatus,
+                    'card_masked' => $maskedCardNumber,
                     'card_issuer' => $cardIssuer,
+                    'card_brand' => $cardBrand,
                     'response_code' => $responseCode,
                     'response_message' => $responseMessage,
+                    'verification_status' => $verificationStatus,
+                    'verification_reason' => $verificationReason,
                 ],
             ];
 
@@ -989,8 +1019,8 @@ class DokuServiceController extends ApiController
                 'invoice_number' => $invoiceNumber,
                 'amount' => $amount,
                 'status' => $transactionStatus,
-                'approval_code' => $approvalCode,
-                'authorize_id' => $authorizeId
+                'original_request_id' => $originalRequestId,
+                'transaction_date' => $transactionDate
             ]);
 
             // Return success response
@@ -998,7 +1028,7 @@ class DokuServiceController extends ApiController
                 'responseCode' => '2005100',
                 'responseMessage' => 'Success',
                 'invoiceNumber' => $invoiceNumber,
-                'authorizeId' => $authorizeId,
+                'originalRequestId' => $originalRequestId,
                 'transactionStatus' => $transactionStatus,
                 'amount' => [
                     'value' => (float) $amount,
@@ -1017,22 +1047,27 @@ class DokuServiceController extends ApiController
                 'customer_id' => $customerId,
                 'customer_name' => $customerName,
                 'customer_email' => $customerEmail,
-                'approval_code' => $approvalCode,
-                'authorize_id' => $authorizeId,
+                'approval_code' => null,
+                'authorize_id' => null,
                 'request_headers' => $headers,
                 'request_body' => $request->all(),
                 'response_data' => $responseData,
                 'payment_details' => [
                     'transaction_type' => $transactionType,
-                    'service_id' => $serviceId,
-                    'acquirer_id' => $acquirerId,
-                    'channel_id' => $channelId,
-                    'masked_card_number' => $maskedCardNumber,
+                    'transaction_status' => $transactionStatus,
+                    'transaction_date' => $transactionDate,
+                    'card_masked' => $maskedCardNumber,
                     'card_issuer' => $cardIssuer,
+                    'card_brand' => $cardBrand,
+                    'card_identifier' => $cardIdentifier,
+                    'authentication_id' => $authenticationId,
+                    'three_d_secure_status' => $threeDSecureStatus,
                     'response_code' => $responseCode,
                     'response_message' => $responseMessage,
+                    'verification_status' => $verificationStatus,
+                    'verification_reason' => $verificationReason,
                 ],
-                'transaction_date' => \Carbon\Carbon::parse($transactionDate),
+                'transaction_date' => now(),
             ]);
 
             return response()->json($responseData, 200);
@@ -1061,8 +1096,8 @@ class DokuServiceController extends ApiController
                     'customer_id' => $request->input('customer.id') ?? null,
                     'customer_name' => $request->input('customer.name') ?? null,
                     'customer_email' => $request->input('customer.email') ?? null,
-                    'approval_code' => $request->input('card_payment.approval_code') ?? null,
-                    'authorize_id' => $request->input('authorize_id') ?? null,
+                    'approval_code' => null,
+                    'authorize_id' => null,
                     'request_headers' => [
                         'x-timestamp' => $request->header('X-TIMESTAMP'),
                         'x-signature' => $request->header('X-SIGNATURE'),
@@ -1073,8 +1108,13 @@ class DokuServiceController extends ApiController
                     'request_body' => $request->all(),
                     'response_data' => $responseData,
                     'payment_details' => [
-                        'masked_card_number' => $request->input('card_payment.masked_card_number') ?? null,
+                        'transaction_type' => $request->input('transaction.type') ?? null,
+                        'transaction_status' => $request->input('transaction.status') ?? null,
+                        'card_masked' => $request->input('card_payment.masked_card_number') ?? null,
                         'card_issuer' => $request->input('card_payment.issuer') ?? null,
+                        'card_brand' => $request->input('card_payment.brand') ?? null,
+                        'response_code' => $request->input('card_payment.response_code') ?? null,
+                        'response_message' => $request->input('card_payment.response_message') ?? null,
                     ],
                     'notes' => 'Exception: ' . $e->getMessage() . ' | File: ' . $e->getFile() . ':' . $e->getLine(),
                     'transaction_date' => now(),

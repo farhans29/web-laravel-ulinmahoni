@@ -925,8 +925,79 @@ class BookingController extends ApiController
     }
 
     /**
-     * Process payment through Doku payment gateway
-     * 
+     * Process payment through Doku payment gateway (API Endpoint)
+     *
+     * This endpoint handles the entire payment flow with Doku, including:
+     * - Request validation
+     * - Request preparation
+     * - Signature generation
+     * - API communication
+     * - Response handling
+     * - Error management
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function processDokuPaymentEndpoint(Request $request)
+    {
+        try {
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'order_id' => 'required|string',
+                'transaction_code' => 'required|string',
+                'amount' => 'required|numeric|min:0',
+                'property_name' => 'nullable|string',
+                'room_name' => 'nullable|string',
+                'user_name' => 'nullable|string',
+                'user_email' => 'required|email',
+                'user_phone' => 'required|string',
+                'user_address' => 'nullable|string',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $result = $this->processDokuPayment($request->all());
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment request processed successfully',
+                'data' => $result
+            ], 200);
+
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid input: ' . $e->getMessage()
+            ], 400);
+
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Payment processing failed: ' . $e->getMessage()
+            ], 500);
+
+        } catch (\Exception $e) {
+            \Log::error('Unexpected error in processDokuPayment endpoint', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An unexpected error occurred'
+            ], 500);
+        }
+    }
+
+    /**
+     * Process payment through Doku payment gateway (Internal)
+     *
      * This method handles the entire payment flow with Doku, including:
      * - Request preparation
      * - Signature generation
@@ -936,7 +1007,7 @@ class BookingController extends ApiController
      *
      * @param array $data {
      *     Required payment data
-     *     
+     *
      *     @type string $order_id          Unique order identifier
      *     @type string $transaction_code  Internal transaction reference
      *     @type float  $amount            Payment amount
@@ -946,13 +1017,13 @@ class BookingController extends ApiController
      *     @type string $user_email        Customer's email address
      *     @type string $user_phone        Customer's phone number
      * }
-     * 
+     *
      * @return array{
      *     payment_url: string|null,
      *     expired_at: string|null,
      *     response: array
      * }
-     * 
+     *
      * @throws \RuntimeException If payment processing fails
      * @throws \InvalidArgumentException If required parameters are missing
      */
@@ -1072,5 +1143,115 @@ class BookingController extends ApiController
                 $e
             );
         }
+    }
+
+    /**
+     * Get DOKU B2B Access Token
+     * Makes a POST request to DOKU sandbox API to obtain B2B access token
+     *
+     * @return array
+     * @throws \Exception
+     */
+    private function dokuGetTokenB2B(): array
+    {
+        try {
+            // Get DOKU configuration
+            $sandboxUrl = config('services.doku.sandbox_url');
+            $clientId = config('services.doku.client_id');
+            $secretKey = config('services.doku.secret_key');
+
+            if (empty($sandboxUrl) || empty($clientId) || empty($secretKey)) {
+                throw new \RuntimeException('DOKU configuration is incomplete');
+            }
+
+            // Prepare request data
+            $requestBody = [
+                'grantType' => 'client_credentials'
+            ];
+
+            // Generate timestamp in ISO 8601 format with timezone
+            $timestamp = now()->timezone('Asia/Jakarta')->toIso8601String();
+
+            // Generate signature for B2B token request
+            // Format: ClientId|Timestamp
+            $stringToSign = $clientId . '|' . $timestamp;
+            $signature = base64_encode(hash_hmac('sha256', $stringToSign, $secretKey, true));
+
+            // API endpoint
+            $endpoint = $sandboxUrl . '/authorization/v1/access-token/b2b';
+
+            \Log::info('DOKU B2B Token Request', [
+                'endpoint' => $endpoint,
+                'client_id' => $clientId,
+                'timestamp' => $timestamp,
+                'string_to_sign' => $stringToSign
+            ]);
+
+            // Make POST request to DOKU
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'X-CLIENT-KEY' => $clientId,
+                    'X-TIMESTAMP' => $timestamp,
+                    'X-SIGNATURE' => $signature,
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ])
+                ->post($endpoint, $requestBody);
+
+            $responseData = $response->json() ?? [];
+
+            // Check if request was successful
+            if (!$response->successful()) {
+                $errorDetails = [
+                    'status' => $response->status(),
+                    'response' => $responseData,
+                    'error_code' => $responseData['responseCode'] ?? null,
+                    'error_message' => $responseData['responseMessage'] ?? 'Unknown error'
+                ];
+
+                \Log::error('DOKU B2B Token Request Failed', $errorDetails);
+
+                throw new \RuntimeException(
+                    $errorDetails['error_message'],
+                    $errorDetails['status']
+                );
+            }
+
+            // \Log::info('DOKU B2B Token Generated Successfully', [
+            //     'response_code' => $responseData['responseCode'] ?? null,
+            //     'has_token' => isset($responseData['accessToken']),
+            //     'expires_in' => $responseData['expiresIn'] ?? null
+            // ]);
+
+            return [
+                'success' => true,
+                'access_token' => $responseData['accessToken'] ?? null,
+                'token_type' => $responseData['tokenType'] ?? 'Bearer',
+                'expires_in' => $responseData['expiresIn'] ?? null,
+                'response_code' => $responseData['responseCode'] ?? null,
+                'response_message' => $responseData['responseMessage'] ?? null,
+                'additional_info' => $responseData['additionalInfo'] ?? null
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU B2B Token Request Exception', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ];
+        }
+    }
+    private function dokuGenerateVA() {
+
+    }
+    
+    private function dokuCheckout() {
+
     }
 }

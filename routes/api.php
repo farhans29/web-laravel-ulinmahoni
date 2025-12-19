@@ -101,6 +101,11 @@ Route::prefix('v1')->group(function () {
             // Removed duplicate check-availability route
         });
 
+        // DOKU PAYMENT API ROUTES
+        Route::prefix('doku')->group(function () {
+            Route::post('/process-payment', [BookingController::class, 'processDokuPaymentEndpoint']);
+        });
+
         // USER API ROUTES
         Route::prefix('users')->group(function () {
             Route::get('/', [UserController::class, 'index']);
@@ -198,6 +203,7 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
 Route::post('resend-verification', [AuthController::class, 'resendVerification']);
+
 
 // AUTH API ROUTES 
 // Route::prefix('auth')->group(function () {
