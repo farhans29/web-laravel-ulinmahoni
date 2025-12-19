@@ -53,6 +53,7 @@ return [
         'client_id' => env('DOKU_CLIENT_ID'),
         'secret_key' => env('DOKU_SECRET_KEY'),
         'sandbox_url' => env('DOKU_SANDBOX_URL', 'https://api-sandbox.doku.com'),
+        'prod_url' => env('DOKU_PROD_URL', 'https://api-sandbox.doku.com'),
     ],
 
 ];

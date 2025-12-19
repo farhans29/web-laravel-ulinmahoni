@@ -822,9 +822,12 @@ class BookingController extends Controller
             }
 
             // Get API configuration
-            $dokuUrl = config('services.doku.api_url', 'https://api-sandbox.doku.com/checkout/v1/payment');
-            $clientId = config('services.doku.client_id');
-            $secretKey = config('services.doku.secret_key');
+            // $dokuUrl = config('services.doku.api_url', 'https://api-sandbox.doku.com/checkout/v1/payment');
+            // $clientId = config('services.doku.client_id');
+            // $secretKey = config('services.doku.secret_key');
+            $dokuUrl = env('DOKU_SANDBOX_URL', 'https://api-sandbox.doku.com/checkout/v1/payment');
+            $clientId = env('DOKU_SANDBOX_CLIENT_ID');
+            $secretKey = env('DOKU_SANDBOX_SECRET_KEY');
             
             if (empty($clientId) || empty($secretKey)) {
                 throw new \RuntimeException('Payment gateway configuration is incomplete');
