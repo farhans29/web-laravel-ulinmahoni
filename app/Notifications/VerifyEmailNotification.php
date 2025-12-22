@@ -58,7 +58,7 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
             'Authorization' => 'Bearer ' . config('services.mailtrap.api_key'),
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-        ])->post('https://send.api.mailtrap.io/api/send', [
+        ])->post(env('MAIL_HOST'), [
             'from' => [
                 'email' => 'noreply@ulinmahoni.com',
                 'name' => 'Ulinmahoni - Account Registration'
@@ -78,7 +78,6 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
                 'email' => $notifiable->getEmailForVerification(),
                 'error' => $response->json()
             ]);
-            throw new \RuntimeException('Failed to send verification email');
         }
 
         // Return a dummy MailMessage to satisfy the interface

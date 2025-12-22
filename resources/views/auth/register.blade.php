@@ -6,6 +6,7 @@
     <title>Register - Ulin Mahoni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     @include('components.homepage.styles')
     <style>
         .login-container {
@@ -155,6 +156,11 @@
                     </label>
                 </div> -->
 
+                <!-- Cloudflare Turnstile -->
+                <div class="flex justify-center">
+                    <div class="cf-turnstile" data-sitekey="{{ env('CLOUDFLARE_TURNSTILE_SITE_KEY') }}" data-callback="onTurnstileSuccess"></div>
+                </div>
+
                 <div class="flex items-center">
                     <input id="terms" name="terms" type="checkbox" class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded" required>
                     <label for="terms" class="ml-2 block text-sm text-gray-900">
@@ -191,6 +197,14 @@
     @include('components.homepage.footer')
     
     <script>
+        // Cloudflare Turnstile validation
+        let turnstileToken = null;
+
+        // Callback when Turnstile is successfully completed
+        function onTurnstileSuccess(token) {
+            turnstileToken = token;
+        }
+
         // Video play/pause functionality
         document.addEventListener('DOMContentLoaded', function() {
             const video = document.querySelector('.video-background');
@@ -234,6 +248,13 @@
                 form.addEventListener('submit', function(e) {
                     const firstName = document.getElementById('first_name').value.trim();
                     const lastNameInput = document.getElementById('last_name');
+
+                    // Check Cloudflare Turnstile validation
+                    if (!turnstileToken) {
+                        e.preventDefault();
+                        alert('Silakan selesaikan verifikasi Cloudflare Turnstile terlebih dahulu.');
+                        return false;
+                    }
 
                     // Check if terms checkbox is checked
                     const termsCheckbox = document.getElementById('terms');
