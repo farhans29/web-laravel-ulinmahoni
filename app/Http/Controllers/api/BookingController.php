@@ -10,6 +10,9 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Transaction;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
+use App\Services\VoucherService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -300,7 +303,8 @@ class BookingController extends ApiController
             'daily_price' => 'nullable|numeric|min:0',
             'monthly_price' => 'nullable|numeric|min:0',
             'booking_days' => 'nullable|integer|required_without:booking_months',
-            'booking_months' => 'nullable|integer|required_without:booking_days'
+            'booking_months' => 'nullable|integer|required_without:booking_days',
+            'voucher_code' => 'nullable|string|min:8|max:20'
         ], [
             'booking_days.required_without' => 'Either booking_days or booking_months is required',
             'booking_months.required_without' => 'Either booking_days or booking_months is required',
@@ -329,7 +333,7 @@ class BookingController extends ApiController
             if ($request->has('booking_days') && $request->booking_days > 0) {
                 // DAILY BOOKING
                 $calculatedDays = $checkOut->diffInDays($checkIn);
-                
+
                 // Verify the calculated days match the provided booking_days
                 if ($calculatedDays != $request->booking_days) {
                     return response()->json([
@@ -338,7 +342,7 @@ class BookingController extends ApiController
                         'calculated_days' => $calculatedDays
                     ], 422);
                 }
-                
+
                 $bookingDays = $calculatedDays;
                 $roomPrice = $request->daily_price * $bookingDays;
                 // $adminFees = $roomPrice * 0.10;
@@ -357,6 +361,44 @@ class BookingController extends ApiController
                 $serviceFees = $request->service_fees;
                 $tax = $request->tax;
                 $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
+            }
+
+            // Voucher processing
+            $voucherId = null;
+            $voucherCode = null;
+            $discountAmount = 0;
+            $subtotalBeforeDiscount = $grandtotalPrice;
+
+            if ($request->filled('voucher_code')) {
+                $voucherService = app(VoucherService::class);
+
+                // Validate and apply voucher
+                $voucherValidation = $voucherService->validateVoucher(
+                    $request->voucher_code,
+                    $request->user_id,
+                    $grandtotalPrice,
+                    $request->property_id,
+                    $request->room_id
+                );
+
+                if (!$voucherValidation['valid']) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Voucher validation failed',
+                        'errors' => $voucherValidation['errors']
+                    ], 422);
+                }
+
+                $voucher = $voucherValidation['voucher'];
+                $calculation = $voucherService->calculateDiscount($voucher, $grandtotalPrice);
+
+                $voucherId = $voucher->idrec;
+                $voucherCode = $voucher->code;
+                $discountAmount = $calculation['discount_amount'];
+                $grandtotalPrice = $calculation['final_amount'];
+
+                // Increment voucher usage count
+                $voucher->increment('current_usage_count');
             }
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
@@ -392,6 +434,11 @@ class BookingController extends ApiController
                 'admin_fees' => $adminFees,
                 'service_fees' => $request->service_fees,
                 'grandtotal_price' => $grandtotalPrice,
+                // VOUCHER DATA
+                'voucher_id' => $voucherId,
+                'voucher_code' => $voucherCode,
+                'discount_amount' => $discountAmount,
+                'subtotal_before_discount' => $subtotalBeforeDiscount,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type,
                 'transaction_code' => 'TRX-' . Str::random(16),
@@ -404,6 +451,23 @@ class BookingController extends ApiController
 
             // Create transaction
             $transaction = Transaction::create($transactionData);
+
+            // Log voucher usage if voucher was applied
+            if ($voucherId && $voucherCode) {
+                $voucherService = app(VoucherService::class);
+                $voucherService->logUsage([
+                    'voucher_id' => $voucherId,
+                    'voucher_code' => $voucherCode,
+                    'user_id' => $request->user_id,
+                    'order_id' => $order_id,
+                    'transaction_id' => $transaction->idrec,
+                    'property_id' => $request->property_id,
+                    'room_id' => $request->room_id,
+                    'original_amount' => $subtotalBeforeDiscount,
+                    'discount_amount' => $discountAmount,
+                    'final_amount' => $grandtotalPrice
+                ]);
+            }
 
             // Create booking if room_id is provided
             if ($request->has('room_id') && $request->room_id) {
