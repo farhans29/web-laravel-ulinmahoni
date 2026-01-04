@@ -1336,24 +1336,34 @@
                     }
                     
                     if (response.ok && data.payment_options) {
+                        // Directly redirect to payment page (modal disabled)
+                        // Prioritize DOKU payment if available, otherwise use other payment option
+                        if (data.payment_options.doku) {
+                            window.location.href = data.payment_options.doku;
+                        } else if (data.payment_options.other) {
+                            window.location.href = data.payment_options.other;
+                        }
+                        return;
+
+                        /* MODAL CODE DISABLED - Keep for future reference
                         // Create modal overlay
                         const modalOverlay = document.createElement('div');
                         modalOverlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;';
-                        
+
                         // Create modal content
                         const modalContent = document.createElement('div');
                         modalContent.style.cssText = 'background: white; border-radius: 8px; padding: 24px; width: 90%; max-width: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);';
-                        
+
                         // Add title
                         const title = document.createElement('h3');
                         title.textContent = 'Pilih Metode Pembayaran';
                         title.style.cssText = 'font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: #1a202c;';
                         modalContent.appendChild(title);
-                        
+
                         // Create payment options container
                         const optionsContainer = document.createElement('div');
                         optionsContainer.className = 'space-y-3';
-                        
+
                         // Add DOKU payment option if available
                         if (data.payment_options.doku) {
                             const dokuOption = document.createElement('button');
@@ -1372,7 +1382,7 @@
                             });
                             optionsContainer.appendChild(dokuOption);
                         }
-                        
+
                         // Add other payment option if available
                         if (data.payment_options.other) {
                             const otherOption = document.createElement('button');
@@ -1392,7 +1402,7 @@
                             });
                             optionsContainer.appendChild(otherOption);
                         }
-                        
+
                         // Close button
                         const closeButton = document.createElement('button');
                         closeButton.textContent = 'Batal';
@@ -1400,21 +1410,22 @@
                         closeButton.addEventListener('click', () => {
                             document.body.removeChild(modalOverlay);
                         });
-                        
+
                         // Assemble modal
                         modalContent.appendChild(optionsContainer);
                         modalContent.appendChild(closeButton);
                         modalOverlay.appendChild(modalContent);
                         document.body.appendChild(modalOverlay);
-                        
+
                         // Close modal when clicking outside
                         modalOverlay.addEventListener('click', (e) => {
                             if (e.target === modalOverlay) {
                                 document.body.removeChild(modalOverlay);
                             }
                         });
-                        
+
                         return;
+                        */
                     }
 
                     if (data.errors) {

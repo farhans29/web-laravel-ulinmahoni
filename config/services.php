@@ -52,8 +52,41 @@ return [
     'doku' => [
         'client_id' => env('DOKU_CLIENT_ID'),
         'secret_key' => env('DOKU_SECRET_KEY'),
+        'private_key' => env('DOKU_PRIVATE_KEY'),
         'sandbox_url' => env('DOKU_SANDBOX_URL', 'https://api-sandbox.doku.com'),
         'prod_url' => env('DOKU_PROD_URL', 'https://api-sandbox.doku.com'),
+        'api_url' => env('DOKU_URL', 'https://api-sandbox.doku.com'),
+        // Bank-specific partner service IDs (DGPC codes)
+        'banks' => [
+            'BTN' => [
+                'dgpc' => env('DOKU_BTN_DGPC', '959626'),
+                'channel' => 'VIRTUAL_ACCOUNT_BTN'
+            ],
+            'CIMB' => [
+                'dgpc' => env('DOKU_CIMB_DGPC', '18990'),
+                'channel' => 'VIRTUAL_ACCOUNT_CIMB'
+            ],
+            'DANAMON' => [
+                'dgpc' => env('DOKU_DANAMON_DGPC', '89226'),
+                'channel' => 'VIRTUAL_ACCOUNT_DANAMON'
+            ],
+            'BNC' => [
+                'dgpc' => env('DOKU_BNC_DGPC', '903415370'),
+                'channel' => 'VIRTUAL_ACCOUNT_BNC'
+            ],
+            'BNI' => [
+                'dgpc' => env('DOKU_BNI_DGPC', '84923'),
+                'channel' => 'VIRTUAL_ACCOUNT_BNI'
+            ],
+            'BRI' => [
+                'dgpc' => env('DOKU_BRI_DGPC', '139256'),
+                'channel' => 'VIRTUAL_ACCOUNT_BRI'
+            ],
+            'MANDIRI' => [
+                'dgpc' => env('DOKU_MANDIRI_DGPC', '861880'),
+                'channel' => 'VIRTUAL_ACCOUNT_MANDIRI'
+            ],
+        ]
     ],
 
 ];

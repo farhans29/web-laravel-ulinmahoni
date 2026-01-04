@@ -104,6 +104,9 @@ Route::prefix('v1')->group(function () {
         // DOKU PAYMENT API ROUTES
         Route::prefix('doku')->group(function () {
             Route::post('/process-payment', [BookingController::class, 'processDokuPaymentEndpoint']);
+            Route::get('/test-token-b2b', [BookingController::class, 'testDokuGetTokenB2B']);
+            Route::get('/available-banks', [BookingController::class, 'getDokuAvailableBanks']);
+            Route::post('/test-generate-va', [BookingController::class, 'testDokuGenerateVA']);
         });
 
         // USER API ROUTES
