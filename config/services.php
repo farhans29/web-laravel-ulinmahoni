@@ -64,11 +64,11 @@ return [
             ],
             'CIMB' => [
                 'dgpc' => env('DOKU_CIMB_DGPC', '18990'),
-                'channel' => 'VIRTUAL_ACCOUNT_CIMB'
+                'channel' => 'VIRTUAL_ACCOUNT_BANK_CIMB'
             ],
             'DANAMON' => [
                 'dgpc' => env('DOKU_DANAMON_DGPC', '89226'),
-                'channel' => 'VIRTUAL_ACCOUNT_DANAMON'
+                'channel' => 'VIRTUAL_ACCOUNT_BANK_DANAMON'
             ],
             'BNC' => [
                 'dgpc' => env('DOKU_BNC_DGPC', '903415370'),
@@ -86,6 +86,18 @@ return [
                 'dgpc' => env('DOKU_MANDIRI_DGPC', '861880'),
                 'channel' => 'VIRTUAL_ACCOUNT_MANDIRI'
             ],
+            'BSI' => [
+                'dgpc' => env('DOKU_BSI_DGPC', '202020'),
+                'channel' => 'VIRTUAL_ACCOUNT_BSI'
+            ],
+            'MAYBANK' => [
+                'dgpc' => env('DOKU_MAYBANK_DGPC', '786765'),
+                'channel' => 'VIRTUAL_ACCOUNT_MAYBANK'
+            ],
+            'PERMATA' => [
+                'dgpc' => env('DOKU_PERMATA_DGPC', '88566'),
+                'channel' => 'VIRTUAL_ACCOUNT_BANK_PERMATA'
+            ],  
         ]
     ],
 
