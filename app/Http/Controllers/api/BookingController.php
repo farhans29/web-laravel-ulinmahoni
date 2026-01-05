@@ -1665,7 +1665,419 @@ class BookingController extends ApiController
         }
     }
 
-    private function dokuCheckout() {
+    /**
+     * Test endpoint for DOKU QRIS Generation
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function testDokuGenerateQris(Request $request)
+    {
+        try {
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'order_id' => 'required|string',
+                'amount' => 'required|numeric|min:0'
+            ]);
 
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $result = $this->dokuGenerateQris($request->all());
+
+            if ($result['success']) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'DOKU QRIS generated successfully',
+                    'data' => $result
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to generate DOKU QRIS',
+                    'error' => $result['error'] ?? 'Unknown error'
+                ], 500);
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU QRIS Test Exception', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Exception occurred while testing DOKU QRIS generation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate QRIS payment using DOKU SNAP API
+     *
+     * @param array $data Contains: order_id, amount
+     * @return array Response with success status and QRIS data
+     */
+    private function dokuGenerateQris(array $data)
+    {
+        try {
+            // Step 1: Get B2B access token
+            $tokenResult = $this->dokuGetTokenB2B();
+
+            if (!$tokenResult['success']) {
+                throw new \RuntimeException('Failed to get B2B token: ' . ($tokenResult['error'] ?? 'Unknown error'));
+            }
+
+            $accessToken = $tokenResult['access_token'];
+
+            // Get DOKU configuration
+            $sandboxUrl = config('services.doku.api_url');
+            $clientId = config('services.doku.client_id');
+            $merchantId = config('services.doku.qris.merchant_id');
+
+            if (empty($sandboxUrl) || empty($clientId) || empty($merchantId)) {
+                throw new \RuntimeException('DOKU QRIS configuration is incomplete');
+            }
+
+            // Generate timestamp in ISO 8601 format with timezone (Asia/Jakarta)
+            $timestamp = Carbon::now('Asia/Jakarta')->format('Y-m-d\TH:i:sP');
+
+            // Generate validity period (1 hour from now)
+            $validityPeriod = Carbon::now('Asia/Jakarta')->addHour()->format('Y-m-d\TH:i:sP');
+
+            // Generate order_id / partner reference number
+            $partnerReferenceNo = $data['order_id'];
+
+            // Prepare request body
+            $requestBody = [
+                'partnerReferenceNo' => $partnerReferenceNo,
+                'amount' => [
+                    'value' => number_format($data['amount'], 2, '.', ''),
+                    'currency' => 'IDR'
+                ],
+                'merchantId' => $merchantId,
+                'terminalId' => 'A01',
+                'validityPeriod' => $validityPeriod,
+                'additionalInfo' => [
+                    'postalCode' => '12220',
+                    'feeType' => '1'
+                ]
+            ];
+
+            // Generate signature for QRIS generation
+            // For B2B2C APIs, signature uses HMAC-SHA512 with secret_key
+            // Format: HTTPMethod:RelativeUrl:AccessToken:RequestBodyHash:Timestamp
+
+            // Minify JSON (remove spaces, no pretty print)
+            $jsonBody = json_encode($requestBody, JSON_UNESCAPED_SLASHES);
+
+            // Calculate SHA256 hash of request body (lowercase hex string, NOT base64)
+            $bodyHashHex = strtolower(hash('sha256', $jsonBody));
+
+            // Build string to sign
+            $httpMethod = 'POST';
+            $relativeUrl = '/snap-adapter/b2b/v1.0/qr/qr-mpm-generate';
+            $stringToSign = "{$httpMethod}:{$relativeUrl}:{$accessToken}:{$bodyHashHex}:{$timestamp}";
+
+            // Debug logging
+            if (config('app.debug')) {
+                \Log::debug('DOKU QRIS Signature Generation', [
+                    'json_body' => $jsonBody,
+                    'body_hash_hex' => $bodyHashHex,
+                    'string_to_sign' => $stringToSign,
+                    'timestamp' => $timestamp
+                ]);
+            }
+
+            // Get secret key from config
+            $secretKey = config('services.doku.secret_key');
+
+            // Generate HMAC signature
+            $signature = base64_encode(hash_hmac('sha512', $stringToSign, $secretKey, true));
+
+            // Prepare headers
+            $headers = [
+                'Content-Type' => 'application/json',
+                'Authorization' => "Bearer {$accessToken}",
+                'X-TIMESTAMP' => $timestamp,
+                'X-SIGNATURE' => $signature,
+                'X-PARTNER-ID' => $clientId,
+                'X-EXTERNAL-ID' => $partnerReferenceNo,
+                'CHANNEL-ID' => '95221'
+            ];
+
+            // Make API request
+            $url = $sandboxUrl . $relativeUrl;
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $jsonBody);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array_map(
+                fn($k, $v) => "{$k}: {$v}",
+                array_keys($headers),
+                $headers
+            ));
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+
+            if ($curlError) {
+                throw new \RuntimeException("CURL Error: {$curlError}");
+            }
+
+            $responseData = json_decode($response, true);
+
+            if ($httpCode !== 200) {
+                throw new \RuntimeException(
+                    "DOKU API Error (HTTP {$httpCode}): " .
+                    ($responseData['responseMessage'] ?? $response)
+                );
+            }
+
+            // Check response code
+            if (!isset($responseData['responseCode']) || $responseData['responseCode'] !== '2004700') {
+                throw new \RuntimeException(
+                    "QRIS Generation Failed: " .
+                    ($responseData['responseMessage'] ?? 'Unknown error')
+                );
+            }
+
+            return [
+                'success' => true,
+                'reference_no' => $responseData['referenceNo'],
+                'partner_reference_no' => $responseData['partnerReferenceNo'],
+                'qr_content' => $responseData['qrContent'],
+                'terminal_id' => $responseData['terminalId'],
+                'validity_period' => $responseData['additionalInfo']['validityPeriod'] ?? $validityPeriod,
+                'response_code' => $responseData['responseCode'],
+                'response_message' => $responseData['responseMessage'],
+                'raw_response' => $responseData
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU QRIS Generation Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function testDokuGenerateCC(Request $request)
+    {
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'order_id' => 'nullable|string|max:255',
+                'amount' => 'nullable|numeric|min:1',
+                'customer_name' => 'nullable|string|max:255',
+                'customer_email' => 'nullable|email|max:255',
+                'customer_phone' => 'nullable|string|max:20'
+            ]);
+
+            // Use provided values or defaults
+            $orderId = $validated['order_id'] ?? 'TEST-' . time();
+            $amount = $validated['amount'] ?? 100000;
+            $customerName = $validated['customer_name'] ?? 'Test Customer';
+            $customerEmail = $validated['customer_email'] ?? 'test@example.com';
+            $customerPhone = $validated['customer_phone'] ?? '081234567890';
+
+            $result = $this->dokuGenerateCC(
+                orderId: $orderId,
+                amount: $amount,
+                customerName: $customerName,
+                customerEmail: $customerEmail,
+                customerPhone: $customerPhone
+            );
+
+            return response()->json($result);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Test failed',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
+    }
+
+    private function dokuGenerateCC(
+        string $orderId,
+        float $amount,
+        string $customerName,
+        string $customerEmail,
+        string $customerPhone
+    ): array {
+        try {
+            // Get B2B access token first
+            $tokenResult = $this->dokuGenerateB2BToken();
+
+            if (!$tokenResult['success']) {
+                throw new \Exception('Failed to get access token: ' . $tokenResult['error']);
+            }
+
+            $accessToken = $tokenResult['access_token'];
+
+            // Generate unique request-id (UUID v4)
+            $requestId = sprintf(
+                '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+                mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+                mt_rand(0, 0xffff),
+                mt_rand(0, 0x0fff) | 0x4000,
+                mt_rand(0, 0x3fff) | 0x8000,
+                mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            );
+
+            // Generate timestamp in ISO 8601 format (UTC)
+            $requestTimestamp = gmdate('Y-m-d\TH:i:s\Z');
+
+            // Build request body
+            $requestBody = [
+                'order' => [
+                    'order_id' => $orderId,
+                    'amount' => $amount
+                ],
+                'customer' => [
+                    'name' => $customerName,
+                    'email' => $customerEmail,
+                    'phone' => $customerPhone
+                ],
+                'override_configuration' => [
+                    'themes' => [
+                        'language' => 'ID',
+                        'background_color' => '#FFFFFF',
+                        'font_color' => '#000000',
+                        'button_background_color' => '#0066CC',
+                        'button_font_color' => '#FFFFFF'
+                    ]
+                ]
+            ];
+
+            // Minify JSON (remove spaces)
+            $jsonBody = json_encode($requestBody, JSON_UNESCAPED_SLASHES);
+
+            // Calculate SHA256 digest of request body (base64 encoded)
+            $digestSHA256 = hash('sha256', $jsonBody, true); // true = raw binary output
+            $digestBase64 = base64_encode($digestSHA256);
+
+            // Build signature components with newline separators
+            $clientId = config('services.doku.client_id');
+            $signatureComponents =
+                "Client-Id:{$clientId}\n" .
+                "Request-Id:{$requestId}\n" .
+                "Request-Timestamp:{$requestTimestamp}\n" .
+                "Request-Target:/credit-card/v1/payment-page\n" .
+                "Digest:{$digestBase64}";
+
+            // Generate HMAC-SHA256 signature
+            $secretKey = config('services.doku.secret_key');
+            $signatureHmac = hash_hmac('sha256', $signatureComponents, $secretKey, true);
+            $signatureBase64 = base64_encode($signatureHmac);
+            $signature = "HMACSHA256={$signatureBase64}";
+
+            // Log signature details for debugging
+            \Log::info('DOKU CC Signature Generation', [
+                'request_id' => $requestId,
+                'timestamp' => $requestTimestamp,
+                'digest' => $digestBase64,
+                'signature_components' => $signatureComponents,
+                'signature' => $signature
+            ]);
+
+            // Make API request
+            $baseUrl = config('services.doku.base_url');
+            $url = $baseUrl . '/credit-card/v1/payment-page';
+
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => $jsonBody,
+                CURLOPT_HTTPHEADER => [
+                    'Client-Id: ' . $clientId,
+                    'Request-Id: ' . $requestId,
+                    'Request-Timestamp: ' . $requestTimestamp,
+                    'Signature: ' . $signature,
+                    'Authorization: Bearer ' . $accessToken,
+                    'Content-Type: application/json',
+                    'Accept: application/json'
+                ],
+                CURLOPT_TIMEOUT => 30,
+                CURLOPT_SSL_VERIFYPEER => true,
+                CURLOPT_VERBOSE => false
+            ]);
+
+            $response = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $curlError = curl_error($ch);
+            curl_close($ch);
+
+            if ($curlError) {
+                throw new \Exception("cURL Error: {$curlError}");
+            }
+
+            $responseData = json_decode($response, true);
+
+            \Log::info('DOKU CC API Response', [
+                'http_code' => $httpCode,
+                'response' => $responseData
+            ]);
+
+            // Check for error response
+            if ($httpCode !== 200 && $httpCode !== 201) {
+                $errorMessage = $responseData['message'] ?? 'Unknown error';
+                $errorDetails = isset($responseData['error']) ? json_encode($responseData['error']) : '';
+
+                throw new \Exception(
+                    "DOKU API Error (HTTP {$httpCode}): {$errorMessage} {$errorDetails}"
+                );
+            }
+
+            // Check response code
+            if (!isset($responseData['response_code']) || $responseData['response_code'] !== '2005500') {
+                throw new \Exception(
+                    "CC Payment Page Generation Failed: " .
+                    ($responseData['response_message'] ?? 'Unknown error')
+                );
+            }
+
+            return [
+                'success' => true,
+                'payment_url' => $responseData['credit_card_payment_page']['url'],
+                'response_code' => $responseData['response_code'],
+                'response_message' => $responseData['response_message'],
+                'raw_response' => $responseData
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU CC Generation Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 }

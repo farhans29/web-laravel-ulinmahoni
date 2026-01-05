@@ -56,6 +56,10 @@ return [
         'sandbox_url' => env('DOKU_SANDBOX_URL', 'https://api-sandbox.doku.com'),
         'prod_url' => env('DOKU_PROD_URL', 'https://api-sandbox.doku.com'),
         'api_url' => env('DOKU_URL', 'https://api-sandbox.doku.com'),
+        // QRIS configuration
+        'qris' => [
+            'merchant_id' => env('DOKU_QRIS_MERCHANT_ID'),
+        ],
         // Bank-specific partner service IDs (DGPC codes)
         'banks' => [
             'BTN' => [
@@ -98,7 +102,11 @@ return [
                 'dgpc' => env('DOKU_PERMATA_DGPC', '88566'),
                 'channel' => 'VIRTUAL_ACCOUNT_BANK_PERMATA'
             ],  
-        ]
+        ],
+        'qris' => [
+            'merchant_id' => env('DOKU_QRIS_MERCHANT_ID', '15551'),
+            'channel' => 'QRIS',
+        ],
     ],
 
 ];
