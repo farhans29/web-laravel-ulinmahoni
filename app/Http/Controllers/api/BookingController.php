@@ -349,7 +349,8 @@ class BookingController extends ApiController
                 $adminFees = $request->admin_fees;
                 $serviceFees = $request->service_fees;
                 $tax = $request->tax;
-                $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
+                // Calculate subtotal before service fees (for voucher calculation)
+                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
             } else {
                 // MONTHLY BOOKING
                 $monthlyPrice = $request->monthly_price;
@@ -360,23 +361,25 @@ class BookingController extends ApiController
                 $adminFees = $request->admin_fees;
                 $serviceFees = $request->service_fees;
                 $tax = $request->tax;
-                $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
+                // Calculate subtotal before service fees (for voucher calculation)
+                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
             }
 
             // Voucher processing
+            // Formula: Grandtotal = Subtotal - Voucher + Service Fee
             $voucherId = null;
             $voucherCode = null;
             $discountAmount = 0;
-            $subtotalBeforeDiscount = $grandtotalPrice;
+            $subtotalBeforeDiscount = $subtotalBeforeServiceFee;
 
             if ($request->filled('voucher_code')) {
                 $voucherService = app(VoucherService::class);
 
-                // Validate and apply voucher
+                // Validate and apply voucher (applied to subtotal before service fee)
                 $voucherValidation = $voucherService->validateVoucher(
                     $request->voucher_code,
                     $request->user_id,
-                    $grandtotalPrice,
+                    $subtotalBeforeServiceFee,
                     $request->property_id,
                     $request->room_id
                 );
@@ -390,16 +393,18 @@ class BookingController extends ApiController
                 }
 
                 $voucher = $voucherValidation['voucher'];
-                $calculation = $voucherService->calculateDiscount($voucher, $grandtotalPrice);
+                $calculation = $voucherService->calculateDiscount($voucher, $subtotalBeforeServiceFee);
 
                 $voucherId = $voucher->idrec;
                 $voucherCode = $voucher->code;
                 $discountAmount = $calculation['discount_amount'];
-                $grandtotalPrice = $calculation['final_amount'];
 
                 // Increment voucher usage count
                 $voucher->increment('current_usage_count');
             }
+
+            // Calculate final grand total: Subtotal - Discount + Service Fee
+            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees;
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
             $property = $request->property_id ? Property::find($request->property_id) : null;
