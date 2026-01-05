@@ -192,7 +192,9 @@
                                                     '{{ \Carbon\Carbon::parse($booking->check_in)->format('d M Y') }}',
                                                     '{{ \Carbon\Carbon::parse($booking->check_out)->format('d M Y') }}',
                                                     '{{ $booking->formatted_grandtotal_price }}',
-                                                    '{{ $booking->transaction_status }}'
+                                                    '{{ $booking->transaction_status }}',
+                                                    '{{ $booking->virtual_account_no ?? '' }}',
+                                                    '{{ $booking->payment_bank ?? '' }}'
                                                 )"
                                                         class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-200"
                                                         title="View Details">
@@ -215,16 +217,16 @@
                                            <div class="text-xs text-gray-500">
                                                <span class="font-semibold text-xs text-gray-500">Transaction:</span>
                                                <span class="text-xs text-gray-900">{{ strtoupper($booking->transaction_type) }}</span>
-                                               @php
-                                               if ($booking->transaction_type === 'BRI' || $booking->transaction_type === 'bri') {
-                                               @endphp
-                                                   <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
-                                                       <div class="font-bold text-black text-md mb-1">PT Kelola Aset Properti</div>
-                                                       <div class="text-lg text-black font-bold">0505-01-001671-56-7</div>
+
+                                               @if($booking->virtual_account_no)
+                                                   <div class="mt-2 p-3 bg-blue-50 border border-blue-300 rounded-lg">
+                                                       <div class="text-xs text-gray-600 mb-1">Virtual Account:</div>
+                                                       <div class="text-base font-bold text-blue-900 tracking-wider">{{ $booking->virtual_account_no }}</div>
+                                                       @if($booking->payment_bank)
+                                                           <div class="text-xs text-blue-700 mt-1">Bank {{ strtoupper($booking->payment_bank) }}</div>
+                                                       @endif
                                                    </div>
-                                               @php
-                                               }
-                                               @endphp
+                                               @endif
                                            </div>
                                             <div class="text-xs text-gray-500 mt-4">
                                                 <div class="flex items-center">
@@ -771,7 +773,7 @@
     function showBookingDetails(
         bookingId, orderId, transactionType, userName, userPhone, userEmail,
         propertyName, roomName, propertyType, checkIn, checkOut,
-        grandtotalPrice, transactionStatus, transactionText
+        grandtotalPrice, transactionStatus, virtualAccountNo, paymentBank
     ) {
         const modal = document.getElementById('bookingDetailsModal');
         const modalContent = document.getElementById('modalContent');
@@ -820,11 +822,19 @@
                         </div>
                         <div>
                             <p class="font-medium text-gray-500">Status:</p>
-                            <p class="text-gray-900 ${getStatusClass(transactionStatus)}">${transactionStatus.toUpperCase()}</p>
+                            <p class="px-3 py-1 rounded-full inline-block ${getStatusClass(transactionStatus)}">${transactionStatus.toUpperCase()}</p>
                         </div>
                     </div>
+                    ${virtualAccountNo ? `
+                        <div class="mt-3 p-3 bg-blue-50 border border-blue-300 rounded-lg">
+                            <p class="text-xs text-gray-600 mb-1">Virtual Account Number:</p>
+                            <p class="text-lg font-bold text-blue-900 tracking-wider">${virtualAccountNo}</p>
+                            ${paymentBank ? `<p class="text-xs text-blue-700 mt-1">Bank ${paymentBank.toUpperCase()}</p>` : ''}
+                            <p class="text-xs text-gray-600 mt-2">Transfer ke nomor VA di atas untuk menyelesaikan pembayaran</p>
+                        </div>
+                    ` : ''}
                 </div>
-                
+
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <h4 class="font-semibold text-gray-900 mb-2">Property Details</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
@@ -859,13 +869,6 @@
                             <p class="text-gray-900">${checkOut}</p>
                         </div>
                     </div>
-                    ${transactionType === 'BRI' || transactionType === 'bri' ? `
-                        <div class="mt-3 p-3 bg-blue-100 border border-blue-300 rounded-lg">
-                            <div class="font-bold text-black text-md mb-1">PT Kelola Aset Properti</div>
-                            <div class="text-lg text-black font-bold">0505-01-001671-56-7</div>
-                            <div class="text-xs text-blue-700 mt-1">Transfer to this virtual account</div>
-                        </div>
-                    ` : ''}
                 </div>
                 
             </div>
