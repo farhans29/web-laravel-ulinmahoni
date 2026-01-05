@@ -107,6 +107,8 @@ Route::prefix('v1')->group(function () {
             Route::get('/test-token-b2b', [BookingController::class, 'testDokuGetTokenB2B']);
             Route::get('/available-banks', [BookingController::class, 'getDokuAvailableBanks']);
             Route::post('/test-generate-va', [BookingController::class, 'testDokuGenerateVA']);
+            Route::post('/test-generate-qris', [BookingController::class, 'testDokuGenerateQris']);
+            Route::post('/test-generate-cc', [BookingController::class, 'testDokuGenerateCC']);
         });
 
         // USER API ROUTES

@@ -56,6 +56,10 @@ return [
         'sandbox_url' => env('DOKU_SANDBOX_URL', 'https://api-sandbox.doku.com'),
         'prod_url' => env('DOKU_PROD_URL', 'https://api-sandbox.doku.com'),
         'api_url' => env('DOKU_URL', 'https://api-sandbox.doku.com'),
+        // QRIS configuration
+        'qris' => [
+            'merchant_id' => env('DOKU_QRIS_MERCHANT_ID'),
+        ],
         // Bank-specific partner service IDs (DGPC codes)
         'banks' => [
             'BTN' => [
@@ -84,7 +88,7 @@ return [
             ],
             'MANDIRI' => [
                 'dgpc' => env('DOKU_MANDIRI_DGPC', '861880'),
-                'channel' => 'VIRTUAL_ACCOUNT_MANDIRI'
+                'channel' => 'VIRTUAL_ACCOUNT_BANK_MANDIRI'
             ],
             'BSI' => [
                 'dgpc' => env('DOKU_BSI_DGPC', '202020'),
@@ -98,7 +102,11 @@ return [
                 'dgpc' => env('DOKU_PERMATA_DGPC', '88566'),
                 'channel' => 'VIRTUAL_ACCOUNT_BANK_PERMATA'
             ],  
-        ]
+        ],
+        'qris' => [
+            'merchant_id' => env('DOKU_QRIS_MERCHANT_ID', '15551'),
+            'channel' => 'QRIS',
+        ],
     ],
 
 ];

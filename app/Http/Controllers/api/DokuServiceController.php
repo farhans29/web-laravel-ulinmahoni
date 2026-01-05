@@ -198,9 +198,9 @@ class DokuServiceController extends ApiController
             $user = User::first(); // Or use: User::where('customer_id', $customerNo)->first()
 
             // Check if transaction exists with order_id
-            $billExists = \App\Models\Transaction::where('order_id', $trxId)->exists();
+            $transaction = \App\Models\Transaction::where('order_id', $trxId)->first();
 
-            if (!$billExists) {
+            if (!$transaction) {
                 \Log::warning('DOKU Payment Notification: Bill not found', [
                     'customerNo' => $customerNo,
                     'virtualAccountNo' => $virtualAccountNo,
@@ -237,6 +237,63 @@ class DokuServiceController extends ApiController
 
                 return response()->json($responseData, 404);
             }
+
+            // Check if there's already a successful transaction log for this invoice
+            $existingLog = \App\Models\TransactionLogging::where('invoice_number', $trxId)
+                ->where('status', 'SUCCESS')
+                ->first();
+
+            if ($existingLog) {
+                \Log::info('DOKU Payment Notification: Payment already processed', [
+                    'trxId' => $trxId,
+                    'existing_log_id' => $existingLog->id,
+                    'transaction_status' => $transaction->transaction_status
+                ]);
+
+                // Return success response even if already processed (idempotent)
+                $virtualAccountData = [
+                    'partnerServiceId' => $partnerId,
+                    'customerNo' => $customerNo,
+                    'virtualAccountNo' => $virtualAccountNo,
+                    'virtualAccountName' => $virtualAccountName,
+                    'trxId' => $trxId,
+                ];
+
+                if ($request->has('totalAmount')) {
+                    $virtualAccountData['virtualAccountEmail'] = $email;
+                    $virtualAccountData['virtualAccountPhone'] = $phone;
+                    $virtualAccountData['totalAmount'] = $totalAmount;
+                    if (!empty($billDetails)) $virtualAccountData['billDetails'] = $billDetails;
+                    if (!empty($freeTexts)) $virtualAccountData['freeTexts'] = $freeTexts;
+                    if ($virtualAccountTrxType) $virtualAccountData['virtualAccountTrxType'] = $virtualAccountTrxType;
+                    if ($feeAmount) $virtualAccountData['feeAmount'] = $feeAmount;
+                    if ($expiredDate) $virtualAccountData['expiredDate'] = $expiredDate;
+                    if (!empty($additionalInfo)) $virtualAccountData['additionalInfo'] = $additionalInfo;
+                    $responseCode = '2002700';
+                } else {
+                    $virtualAccountData['paymentRequestId'] = $paymentRequestId;
+                    $responseCode = '2002500';
+                }
+
+                return response()->json([
+                    'responseCode' => $responseCode,
+                    'responseMessage' => 'Successful',
+                    'virtualAccountData' => $virtualAccountData
+                ], 200);
+            }
+
+            // Update transaction status to success
+            $transaction->update([
+                'transaction_status' => 'success',
+                'paid_at' => now(),
+            ]);
+
+            \Log::info('DOKU Payment Notification: Transaction status updated to success', [
+                'order_id' => $trxId,
+                'transaction_id' => $transaction->idrec,
+                'amount' => $paidValue,
+                'paid_at' => now()
+            ]);
 
             if (!$user) {
                 $user = auth()->user() ?? $this->user;

@@ -39,12 +39,51 @@
                         <form id="paymentForm" action="{{ route('bookings.update-payment', $booking->idrec) }}" method="POST" class="space-y-6">
                             @csrf
                             <input type="hidden" name="payment_method" id="payment_method">
+                            <input type="hidden" name="voucher_id" id="voucher_id">
+                            <input type="hidden" name="voucher_code" id="voucher_code_hidden">
+                            <input type="hidden" name="discount_amount" id="discount_amount" value="0">
+
+                            <!-- Voucher Section -->
+                            <div class="mb-6">
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Kode Voucher (Opsional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="voucherCodeInput"
+                                        class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                        placeholder="Masukkan kode voucher">
+                                    <button type="button" id="applyVoucherBtn"
+                                        class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                                        disabled>
+                                        <span id="voucherBtnText">Terapkan</span>
+                                        <span id="voucherBtnLoading" class="hidden">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div id="voucherMessage" class="mt-2 text-sm hidden"></div>
+                                <div id="voucherDetails" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg hidden">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-medium text-green-800" id="voucherName"></p>
+                                            <p class="text-sm text-green-600" id="voucherDescription"></p>
+                                            <p class="text-sm font-bold text-green-700 mt-1">Diskon: <span id="voucherDiscount"></span></p>
+                                        </div>
+                                        <button type="button" id="removeVoucherBtn" class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Payment Method -->
                             <div class="space-y-6">
                                 <div>
                                     <label class="block text-lg font-medium text-gray-700 mb-4">Metode Pembayaran</label>
-                                    <p class="text-sm text-gray-600 mb-4">Pilih bank untuk generate Virtual Account</p>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                                    <!-- Virtual Account Payment -->
+                                    <div class="mb-6">
+                                        <h3 class="text-md font-medium text-gray-700 mb-3">Transfer Bank (Virtual Account)</h3>
+                                        <p class="text-sm text-gray-600 mb-3">Pilih bank untuk generate Virtual Account</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         @php
                                             $banks = config('services.doku.banks');
                                             $bankLogos = [
@@ -63,30 +102,71 @@
                                         @endphp
 
                                         @foreach($banks as $bankCode => $bankConfig)
-                                        <label class="bank-card relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
-                                            <input type="radio" name="bank_selection" value="{{ strtolower($bankCode) }}" class="sr-only peer"
+                                        <label class="bank-card relative p-6 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md bg-white">
+                                            <input type="radio" name="payment_selection" value="{{ strtolower($bankCode) }}" class="sr-only"
+                                                data-payment-type="bank_transfer"
                                                 data-bank="{{ strtolower($bankCode) }}"
                                                 data-bank-name="{{ $bankCode }}"
                                                 data-bank-logo="{{ $bankLogos[$bankCode] ?? '' }}"
                                                 data-dgpc="{{ $bankConfig['dgpc'] }}"
                                                 data-channel="{{ $bankConfig['channel'] }}">
                                             <div class="flex items-center">
-                                                <div class="bg-white p-3 rounded-lg border mr-4">
+                                                <div class="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200 mr-4 flex-shrink-0">
                                                     @if(isset($bankLogos[$bankCode]))
-                                                        <img src="{{ $bankLogos[$bankCode] }}" alt="{{ $bankCode }}" class="h-10 w-auto">
+                                                        <img src="{{ $bankLogos[$bankCode] }}" alt="{{ $bankCode }}" class="w-12 h-12 object-contain">
                                                     @else
-                                                        <div class="h-10 w-20 flex items-center justify-center bg-gray-100 rounded">
+                                                        <div class="flex items-center justify-center">
                                                             <span class="text-xs font-bold text-gray-600">{{ $bankCode }}</span>
                                                         </div>
                                                     @endif
                                                 </div>
                                                 <div class="flex-1">
-                                                    <div class="font-bold text-black text-lg mb-1">{{ $bankCode }}</div>
+                                                    <div class="font-bold text-gray-900 text-lg mb-1">{{ $bankCode }}</div>
                                                     <div class="text-sm text-gray-600">Virtual Account</div>
                                                 </div>
                                             </div>
                                         </label>
                                         @endforeach
+                                        </div>
+                                    </div>
+
+                                    <!-- QRIS Payment -->
+                                    <div class="mb-6">
+                                        <h3 class="text-md font-medium text-gray-700 mb-3">E-Wallet / QRIS</h3>
+                                        <div>
+                                            <label class="payment-card relative p-6 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md bg-white block">
+                                                <input type="radio" name="payment_selection" value="qris" class="sr-only" data-payment-type="qris">
+                                                <div class="flex items-center">
+                                                    <div class="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200 mr-4 flex-shrink-0">
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/QRIS_logo.svg/1200px-QRIS_logo.svg.png" alt="QRIS" class="w-12 h-12 object-contain">
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <div class="font-bold text-gray-900 text-lg mb-1">QRIS</div>
+                                                        <div class="text-sm text-gray-600">Scan QR Code</div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Credit Card Payment -->
+                                    <div class="mb-6">
+                                        <h3 class="text-md font-medium text-gray-700 mb-3">Kartu Kredit / Debit</h3>
+                                        <div>
+                                            <label class="payment-card relative p-6 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md bg-white block">
+                                                <input type="radio" name="payment_selection" value="credit_card" class="sr-only" data-payment-type="credit_card">
+                                                <div class="flex items-center">
+                                                    <div class="w-20 h-16 flex items-center justify-center gap-1 bg-gray-50 rounded-lg border border-gray-200 mr-4 flex-shrink-0 px-2">
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/1200px-Visa_Inc._logo.svg.png" alt="Visa" class="h-8 w-auto object-contain">
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1200px-Mastercard-logo.svg.png" alt="Mastercard" class="h-8 w-auto object-contain">
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <div class="font-bold text-gray-900 text-lg mb-1">Kartu Kredit/Debit</div>
+                                                        <div class="text-sm text-gray-600">Visa, Mastercard, JCB, dan kartu lainnya</div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -150,12 +230,13 @@
                             </div>
 
                             <div class="pt-4 border-t">
-                                <h4 class="font-medium">Pricing</h4>
+                                <h4 class="font-medium mb-2">Pricing</h4>
                                 <!-- <p class="text-sm text-gray-600">Harga Harian: {{ number_format($booking->daily_price, 0) }}</p> -->
-                                <p class="text-sm text-gray-600">Harga Kamar: {{ number_format($booking->room_price, 0) }}</p>
+                                <p class="text-sm text-gray-600">Harga Kamar: Rp <span id="summaryRoomPrice">{{ number_format($booking->room_price, 0) }}</span></p>
                                 {{-- <p class="text-sm text-gray-600">Biaya Admin: {{ number_format($booking->admin_fees, 0) }}</p> --}}
-                                <p class="text-sm text-gray-600">Biaya Layanan: {{ number_format($booking->service_fees, 0) }}</p>
-                                <p class="text-sm font-medium text-gray-900 mt-2">Total: {{ number_format($booking->grandtotal_price, 0) }}</p>
+                                <p class="text-sm text-gray-600">Biaya Layanan: Rp <span id="summaryServiceFee">{{ number_format($booking->service_fees, 0) }}</span></p>
+                                <p id="summaryDiscountRow" class="text-sm text-green-600 hidden">Diskon Voucher: -Rp <span id="summaryDiscountAmount">0</span></p>
+                                <p class="text-sm font-medium text-gray-900 mt-2 pt-2 border-t">Total: Rp <span id="summaryTotal">{{ number_format($booking->grandtotal_price, 0) }}</span></p>
                             </div>
                         </div>
                     </div>
@@ -222,6 +303,78 @@
                 </div>
             </div>
         </div>
+
+        <!-- QRIS Modal -->
+        <div id="qrisModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                        <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">QRIS Berhasil Dibuat!</h3>
+                    <div class="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-600 mb-3">Scan QR Code</p>
+                            <div id="qrisCodeContainer" class="flex justify-center mb-3">
+                                <img id="qrisCodeImage" src="" alt="QRIS Code" class="w-64 h-64 border-2 border-gray-300 rounded">
+                            </div>
+                            <div class="text-left space-y-2">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Jumlah:</span>
+                                    <span class="text-sm font-medium" id="modalQrisAmount"></span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Berlaku hingga:</span>
+                                    <span class="text-sm font-medium" id="modalQrisExpiry"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button id="closeQrisModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Credit Card Modal -->
+        <div id="ccModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                        <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Halaman Pembayaran Siap!</h3>
+                    <div class="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
+                        <div class="text-left space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Invoice:</span>
+                                <span class="text-sm font-medium" id="modalCCInvoice"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Jumlah:</span>
+                                <span class="text-sm font-medium" id="modalCCAmount"></span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-3">Klik tombol di bawah untuk melanjutkan ke halaman pembayaran kartu kredit/debit</p>
+                    </div>
+                    <div class="mt-4 space-y-2">
+                        <a id="ccPaymentLink" href="#" target="_blank" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                            Lanjut ke Pembayaran
+                        </a>
+                        <button id="closeCCModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     @include('components.homepage.footer')
@@ -235,40 +388,171 @@
         const submitText = document.getElementById('submitText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         let selectedPaymentMethod = '';
-        
-        // Handle bank card selection
-        document.querySelectorAll('.bank-card').forEach(card => {
-            const radio = card.querySelector('input[type="radio"]');
-            const bankName = radio.dataset.bankName;
-            const bankLogo = radio.dataset.bankLogo;
-            
-            card.addEventListener('click', () => {
-                // Update the hidden payment method input
-                selectedPaymentMethod = 'bank_transfer';
-                document.getElementById('payment_method').value = radio.value;
-                
-                // Update form data
-                let bankInput = paymentForm.querySelector('input[name="bank"]');
-                if (!bankInput) {
-                    bankInput = document.createElement('input');
-                    bankInput.type = 'hidden';
-                    bankInput.name = 'bank';
-                    paymentForm.appendChild(bankInput);
+
+        // Voucher state
+        let appliedVoucher = null;
+        const originalTotal = {{ $booking->grandtotal_price }};
+        const roomPrice = {{ $booking->room_price }};
+        const serviceFee = {{ $booking->service_fees }};
+
+        // Voucher UI elements
+        const voucherCodeInput = document.getElementById('voucherCodeInput');
+        const applyVoucherBtn = document.getElementById('applyVoucherBtn');
+        const voucherMessage = document.getElementById('voucherMessage');
+        const voucherDetails = document.getElementById('voucherDetails');
+        const removeVoucherBtn = document.getElementById('removeVoucherBtn');
+
+        // Enable voucher button when input has value
+        voucherCodeInput.addEventListener('input', function() {
+            applyVoucherBtn.disabled = this.value.trim().length === 0;
+        });
+
+        // Apply voucher
+        applyVoucherBtn.addEventListener('click', async function() {
+            const voucherCode = voucherCodeInput.value.trim();
+            if (!voucherCode) return;
+
+            // Show loading
+            document.getElementById('voucherBtnText').classList.add('hidden');
+            document.getElementById('voucherBtnLoading').classList.remove('hidden');
+            applyVoucherBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/voucher/validate', {
+                    method: 'POST',
+                    headers: {
+                        'X-API-KEY': '{{ env("API_KEY") }}',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        voucher_code: voucherCode,
+                        user_id: {{ auth()->id() }},
+                        transaction_amount: originalTotal,
+                        property_id: {{ $booking->property_id }},
+                        room_id: {{ $booking->room_id }}
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Voucher tidak valid');
                 }
-                bankInput.value = radio.value;
-                
-                // Update submit button
+
+                // Apply voucher
+                appliedVoucher = {
+                    code: voucherCode,
+                    ...data.data.voucher,
+                    calculation: data.data.calculation
+                };
+
+                // Update UI
+                document.getElementById('voucherName').textContent = appliedVoucher.name;
+                document.getElementById('voucherDescription').textContent = appliedVoucher.description || '';
+                document.getElementById('voucherDiscount').textContent = `Rp ${appliedVoucher.calculation.discount_amount.toLocaleString('id-ID')}`;
+
+                voucherDetails.classList.remove('hidden');
+                voucherCodeInput.disabled = true;
+                applyVoucherBtn.classList.add('hidden');
+
+                // Update hidden fields
+                document.getElementById('voucher_code_hidden').value = voucherCode;
+                document.getElementById('discount_amount').value = appliedVoucher.calculation.discount_amount;
+
+                // Update summary
+                updatePriceSummary();
+
+                showVoucherMessage('Voucher berhasil diterapkan!', 'success');
+
+            } catch (error) {
+                showVoucherMessage(error.message, 'error');
+            } finally {
+                document.getElementById('voucherBtnText').classList.remove('hidden');
+                document.getElementById('voucherBtnLoading').classList.add('hidden');
+                applyVoucherBtn.disabled = false;
+            }
+        });
+
+        // Remove voucher
+        removeVoucherBtn.addEventListener('click', function() {
+            appliedVoucher = null;
+            voucherCodeInput.value = '';
+            voucherCodeInput.disabled = false;
+            voucherDetails.classList.add('hidden');
+            applyVoucherBtn.classList.remove('hidden');
+            voucherMessage.classList.add('hidden');
+
+            // Clear hidden fields
+            document.getElementById('voucher_code_hidden').value = '';
+            document.getElementById('discount_amount').value = '0';
+
+            // Reset summary
+            updatePriceSummary();
+        });
+
+        // Update price summary
+        function updatePriceSummary() {
+            const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
+            const finalTotal = appliedVoucher ? appliedVoucher.calculation.final_amount : originalTotal;
+
+            document.getElementById('summaryDiscountAmount').textContent = discountAmount.toLocaleString('id-ID');
+            document.getElementById('summaryTotal').textContent = finalTotal.toLocaleString('id-ID');
+
+            if (discountAmount > 0) {
+                document.getElementById('summaryDiscountRow').classList.remove('hidden');
+            } else {
+                document.getElementById('summaryDiscountRow').classList.add('hidden');
+            }
+        }
+
+        // Show voucher message
+        function showVoucherMessage(message, type) {
+            voucherMessage.textContent = message;
+            voucherMessage.classList.remove('hidden', 'text-red-600', 'text-green-600');
+            voucherMessage.classList.add(type === 'error' ? 'text-red-600' : 'text-green-600');
+        }
+
+        // Handle payment method selection
+        document.querySelectorAll('.payment-card, .bank-card').forEach(card => {
+            const radio = card.querySelector('input[type="radio"]');
+
+            card.addEventListener('click', () => {
+                const paymentType = radio.dataset.paymentType;
+                const bankName = radio.dataset.bankName;
+
+                // Update the hidden payment method input
+                selectedPaymentMethod = paymentType;
+                document.getElementById('payment_method').value = radio.value;
+
+                // Update submit button text
                 submitBtn.disabled = false;
-                submitText.textContent = `Bayar dengan ${bankName}`;
-                
+                if (paymentType === 'qris') {
+                    submitText.textContent = 'Bayar dengan QRIS';
+                } else if (paymentType === 'credit_card') {
+                    submitText.textContent = 'Bayar dengan Kartu Kredit/Debit';
+                } else if (paymentType === 'bank_transfer') {
+                    submitText.textContent = `Bayar dengan ${bankName}`;
+                    // Store bank info for VA generation
+                    let bankInput = paymentForm.querySelector('input[name="bank"]');
+                    if (!bankInput) {
+                        bankInput = document.createElement('input');
+                        bankInput.type = 'hidden';
+                        bankInput.name = 'bank';
+                        paymentForm.appendChild(bankInput);
+                    }
+                    bankInput.value = radio.value;
+                }
+
                 // Update visual selection
-                document.querySelectorAll('.bank-card').forEach(c => {
+                document.querySelectorAll('.payment-card, .bank-card').forEach(c => {
                     c.classList.remove('border-teal-500', 'ring-2', 'ring-teal-200');
                     c.classList.add('border-gray-200');
                 });
                 card.classList.add('border-teal-500', 'ring-2', 'ring-teal-200');
                 card.classList.remove('border-gray-200');
-                
+
                 // Ensure the radio is checked for form submission
                 radio.checked = true;
             });
@@ -289,97 +573,233 @@
             loadingSpinner.classList.remove('hidden');
 
             try {
-                // Get selected bank
-                const selectedBank = document.querySelector('input[name="bank_selection"]:checked');
-                if (!selectedBank) {
-                    throw new Error('Silakan pilih bank');
-                }
+                // Calculate final amount (with voucher discount if applied)
+                const finalAmount = appliedVoucher ? appliedVoucher.calculation.final_amount : originalTotal;
 
-                // Prepare request payload
-                const requestPayload = {
+                // Base request payload
+                const basePayload = {
                     order_id: '{{ $booking->order_id }}',
-                    user_name: `{{ $booking->user_name }}`,
-                    user_email: '{{ $booking->user_email }}',
-                    user_phone: '{{ $booking->user_phone_number }}',
-                    amount: parseFloat({{ $booking->grandtotal_price }}),
-                    bank: selectedBank.dataset.bankName
+                    customer_name: `{{ $booking->user_name }}`,
+                    customer_email: '{{ $booking->user_email }}',
+                    customer_phone: '{{ $booking->user_phone_number }}',
+                    amount: parseFloat(finalAmount)
                 };
 
-                console.log('Sending VA generation request:', requestPayload);
+                let paymentData, endpoint, updateParams;
 
-                // Call DOKU VA generation API
-                const vaResponse = await fetch('/api/v1/doku/test-generate-va', {
-                    method: 'POST',
-                    headers: {
-                        'X-API-KEY': '{{ env("API_KEY") }}',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestPayload)
-                });
+                // Handle different payment types
+                if (selectedPaymentMethod === 'qris') {
+                    // QRIS Payment
+                    console.log('Generating QRIS:', basePayload);
+                    endpoint = '/api/v1/doku/test-generate-qris';
 
-                const vaData = await vaResponse.json();
+                    const qrisResponse = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'X-API-KEY': '{{ env("API_KEY") }}',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(basePayload)
+                    });
 
-                if (!vaResponse.ok) {
-                    // Show detailed validation errors
-                    console.error('VA Generation Error:', vaData);
-                    let errorMsg = vaData.message || 'Gagal membuat Virtual Account';
-                    if (vaData.errors) {
-                        errorMsg += '\n\nDetail:\n';
-                        for (const [field, messages] of Object.entries(vaData.errors)) {
-                            errorMsg += `- ${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}\n`;
-                        }
+                    paymentData = await qrisResponse.json();
+
+                    if (!qrisResponse.ok || !paymentData.data?.success) {
+                        throw new Error(paymentData.error || paymentData.message || 'Gagal membuat QRIS');
                     }
-                    throw new Error(errorMsg);
-                }
 
-                if (!vaData.data || !vaData.data.success) {
-                    throw new Error(vaData.error || vaData.message || 'Gagal membuat Virtual Account');
-                }
+                    updateParams = {
+                        payment_method: 'qris',
+                        qr_content: paymentData.data.qr_content,
+                        qris_data: JSON.stringify(paymentData.data)
+                    };
 
-                // Update payment method in booking
-                const updateResponse = await fetch(paymentForm.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({
+                    // Add voucher data if applied
+                    if (appliedVoucher) {
+                        updateParams.voucher_code = appliedVoucher.code;
+                        updateParams.discount_amount = appliedVoucher.calculation.discount_amount;
+                    }
+
+                    // Update booking
+                    await updateBookingPayment(updateParams);
+
+                    // Show QRIS modal
+                    showQrisModal(paymentData.data);
+
+                } else if (selectedPaymentMethod === 'credit_card') {
+                    // Credit Card Payment
+                    console.log('Generating Credit Card Payment Page:', basePayload);
+                    endpoint = '/api/v1/doku/test-generate-cc';
+
+                    const ccResponse = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'X-API-KEY': '{{ env("API_KEY") }}',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(basePayload)
+                    });
+
+                    paymentData = await ccResponse.json();
+
+                    if (!ccResponse.ok || !paymentData.success) {
+                        throw new Error(paymentData.error || paymentData.message || 'Gagal membuat halaman pembayaran');
+                    }
+
+                    updateParams = {
+                        payment_method: 'credit_card',
+                        payment_url: paymentData.payment_url,
+                        invoice_number: paymentData.invoice_number,
+                        cc_data: JSON.stringify(paymentData)
+                    };
+
+                    // Add voucher data if applied
+                    if (appliedVoucher) {
+                        updateParams.voucher_code = appliedVoucher.code;
+                        updateParams.discount_amount = appliedVoucher.calculation.discount_amount;
+                    }
+
+                    // Update booking
+                    await updateBookingPayment(updateParams);
+
+                    // Show CC modal
+                    showCCModal(paymentData);
+
+                } else if (selectedPaymentMethod === 'bank_transfer') {
+                    // Virtual Account Payment
+                    const selectedBank = document.querySelector('input[name="payment_selection"]:checked');
+                    if (!selectedBank || !selectedBank.dataset.bankName) {
+                        throw new Error('Silakan pilih bank');
+                    }
+
+                    const vaPayload = {
+                        ...basePayload,
+                        user_name: basePayload.customer_name,
+                        user_email: basePayload.customer_email,
+                        user_phone: basePayload.customer_phone,
+                        bank: selectedBank.dataset.bankName
+                    };
+
+                    console.log('Generating VA:', vaPayload);
+                    endpoint = '/api/v1/doku/test-generate-va';
+
+                    const vaResponse = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'X-API-KEY': '{{ env("API_KEY") }}',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(vaPayload)
+                    });
+
+                    paymentData = await vaResponse.json();
+
+                    if (!vaResponse.ok || !paymentData.data?.success) {
+                        throw new Error(paymentData.error || paymentData.message || 'Gagal membuat Virtual Account');
+                    }
+
+                    updateParams = {
                         payment_method: selectedBank.value,
                         bank: selectedBank.dataset.bankName,
-                        virtual_account_no: vaData.data.virtual_account_no,
-                        va_data: JSON.stringify(vaData.data)
-                    })
-                });
+                        virtual_account_no: paymentData.data.virtual_account_no,
+                        va_data: JSON.stringify(paymentData.data)
+                    };
 
-                const updateData = await updateResponse.json();
+                    // Add voucher data if applied
+                    if (appliedVoucher) {
+                        updateParams.voucher_code = appliedVoucher.code;
+                        updateParams.discount_amount = appliedVoucher.calculation.discount_amount;
+                    }
 
-                if (!updateResponse.ok) {
-                    throw new Error(updateData.message || 'Gagal memperbarui pembayaran');
+                    // Update booking
+                    await updateBookingPayment(updateParams);
+
+                    // Show VA modal
+                    showSuccessModal(paymentData.data);
                 }
-
-                // Show VA information in modal
-                showSuccessModal(vaData.data);
 
             } catch (error) {
                 console.error('Error:', error);
                 showErrorModal(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
                 submitBtn.disabled = false;
-                const selectedBank = document.querySelector('input[name="bank_selection"]:checked');
-                submitText.textContent = selectedBank ?
-                    `Bayar dengan ${selectedBank.dataset.bankName}` : 'Lanjutkan Pembayaran';
+                submitText.textContent = 'Lanjutkan Pembayaran';
                 loadingSpinner.classList.add('hidden');
             }
         });
+
+        // Helper function to update booking payment
+        async function updateBookingPayment(params) {
+            const updateResponse = await fetch(paymentForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(params)
+            });
+
+            const updateData = await updateResponse.json();
+
+            if (!updateResponse.ok) {
+                throw new Error(updateData.message || 'Gagal memperbarui pembayaran');
+            }
+
+            return updateData;
+        }
+
+        // Modal functions
+        function showQrisModal(qrisData) {
+            // Generate QR code image URL (assuming qr_content is base64 or URL)
+            const qrImage = document.getElementById('qrisCodeImage');
+
+            // If qr_content is a base64 string, use it directly
+            if (qrisData.qr_content && qrisData.qr_content.startsWith('data:image')) {
+                qrImage.src = qrisData.qr_content;
+            } else if (qrisData.qr_content) {
+                // Generate QR code using quickchart.io API (reliable and free alternative)
+                qrImage.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrisData.qr_content)}&size=300`;
+            } else {
+                console.error('No QR content available');
+            }
+
+            document.getElementById('modalQrisAmount').textContent = `Rp ${parseFloat(qrisData.amount || 0).toLocaleString('id-ID')}`;
+
+            // Calculate expiry time
+            const now = new Date();
+            const expiryMinutes = qrisData.validity_period || '60M';
+            const minutes = parseInt(expiryMinutes.replace('M', ''));
+            const expiryTime = new Date(now.getTime() + minutes * 60000);
+            document.getElementById('modalQrisExpiry').textContent = expiryTime.toLocaleString('id-ID');
+
+            // Show modal
+            document.getElementById('qrisModal').classList.remove('hidden');
+        }
+
+        function showCCModal(ccData) {
+            document.getElementById('modalCCInvoice').textContent = ccData.invoice_number || ccData.order_id;
+            document.getElementById('modalCCAmount').textContent = `Rp ${parseFloat(ccData.amount || 0).toLocaleString('id-ID')}`;
+            document.getElementById('ccPaymentLink').href = ccData.payment_url;
+
+            // Show modal
+            document.getElementById('ccModal').classList.remove('hidden');
+        }
 
         // Modal functions
         function showSuccessModal(vaData) {
             // Populate modal with VA data
             document.getElementById('modalBank').textContent = vaData.bank;
             document.getElementById('modalVANumber').textContent = vaData.virtual_account_no;
-            document.getElementById('modalAmount').textContent = `Rp ${vaData.total_amount.toLocaleString('id-ID')}`;
+
+            // Format the amount properly
+            const amount = parseFloat(vaData.total_amount || vaData.amount || 0);
+            document.getElementById('modalAmount').textContent = `Rp ${amount.toLocaleString('id-ID')}`;
 
             // Set how to pay link
             const howToPayLink = document.getElementById('howToPayLink');
@@ -412,6 +832,16 @@
             document.getElementById('errorModal').classList.add('hidden');
         });
 
+        document.getElementById('closeQrisModalBtn').addEventListener('click', function() {
+            document.getElementById('qrisModal').classList.add('hidden');
+            window.location.href = '{{ route("bookings.index") }}';
+        });
+
+        document.getElementById('closeCCModalBtn').addEventListener('click', function() {
+            document.getElementById('ccModal').classList.add('hidden');
+            window.location.href = '{{ route("bookings.index") }}';
+        });
+
         // Close modal when clicking outside
         document.getElementById('successModal').addEventListener('click', function(e) {
             if (e.target === this) {
@@ -423,6 +853,20 @@
         document.getElementById('errorModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 this.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('qrisModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                window.location.href = '{{ route("bookings.index") }}';
+            }
+        });
+
+        document.getElementById('ccModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                window.location.href = '{{ route("bookings.index") }}';
             }
         });
     });
