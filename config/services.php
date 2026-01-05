@@ -88,7 +88,7 @@ return [
             ],
             'MANDIRI' => [
                 'dgpc' => env('DOKU_MANDIRI_DGPC', '861880'),
-                'channel' => 'VIRTUAL_ACCOUNT_MANDIRI'
+                'channel' => 'VIRTUAL_ACCOUNT_BANK_MANDIRI'
             ],
             'BSI' => [
                 'dgpc' => env('DOKU_BSI_DGPC', '202020'),
