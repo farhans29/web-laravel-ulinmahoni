@@ -52,10 +52,13 @@
                                                 'BNI' => 'https://www.pinclipart.com/picdir/big/105-1051729_bank-negara-indonesia-logo-bank-bni-transparan-clipart.png',
                                                 'MANDIRI' => 'https://freepngdesign.com/content/uploads/images/p-2813-2-bank-mandiri-logo-png-transparent-logo-699390155888.png',
                                                 'BCA' => 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg',
-                                                'CIMB' => 'https://commons.wikimedia.org/wiki/Category:CIMB_Niaga#/media/File:CIMB_Niaga_logo.svg',
-                                                'BTN' => 'https://id.wikipedia.org/wiki/Bank_Tabungan_Negara#/media/Berkas:BTN_2024.svg',
+                                                'CIMB' => 'https://www.buysolar.my/images/banklogo/cimb.png',
+                                                'BTN' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/BTN_2024.svg/960px-BTN_2024.svg.png',
                                                 'DANAMON' => 'https://www.clipartmax.com/png/middle/86-863868_danamon-bank-logo-bank-danamon.png',
-                                                'BNC' => 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiKM1U7jUvSqIDsJYruR_kCYRBzyjAojO62aFqFt2fd4n0Eg1z3pwgRD6jgQkBP7lqtNincIx7UCOuNC7fNhBx3iuJKRClkNADRTTHCoIUvZ8ff3k0nhwWBJaz3QhDOYY1VORkGehl_-_Zy0XO2N2IpqloOCXOZnyJk97WpRnRm9U0nFssUtO9mXRec/s400/GKL24_Bank%20Neo%20Commerce%20-%20Koleksilogo.com.jpg'
+                                                'BNC' => 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiKM1U7jUvSqIDsJYruR_kCYRBzyjAojO62aFqFt2fd4n0Eg1z3pwgRD6jgQkBP7lqtNincIx7UCOuNC7fNhBx3iuJKRClkNADRTTHCoIUvZ8ff3k0nhwWBJaz3QhDOYY1VORkGehl_-_Zy0XO2N2IpqloOCXOZnyJk97WpRnRm9U0nFssUtO9mXRec/s400/GKL24_Bank%20Neo%20Commerce%20-%20Koleksilogo.com.jpg',
+                                                'BSI' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/Bank_Syariah_Indonesia.svg/960px-Bank_Syariah_Indonesia.svg.png',
+                                                'MAYBANK' => 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d7/Maybank_logo.svg/960px-Maybank_logo.svg.png',
+                                                'PERMATA' => 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Permata_Bank_%282024%29.svg/960px-Permata_Bank_%282024%29.svg.png',
                                             ];
                                         @endphp
 
