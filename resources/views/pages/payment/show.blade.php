@@ -391,9 +391,14 @@
 
         // Voucher state
         let appliedVoucher = null;
-        const originalTotal = {{ $booking->grandtotal_price }};
         const roomPrice = {{ $booking->room_price }};
         const serviceFee = {{ $booking->service_fees }};
+        const adminFees = {{ $booking->admin_fees ?? 0 }};
+
+        // Calculate subtotal before service fee (for voucher calculation)
+        // Formula: Subtotal = Room Price + Admin Fees (without service fee)
+        const subtotalBeforeServiceFee = roomPrice + adminFees;
+        const originalTotal = {{ $booking->grandtotal_price }};
 
         // Voucher UI elements
         const voucherCodeInput = document.getElementById('voucherCodeInput');
@@ -429,7 +434,7 @@
                     body: JSON.stringify({
                         voucher_code: voucherCode,
                         user_id: {{ auth()->id() }},
-                        transaction_amount: originalTotal,
+                        transaction_amount: subtotalBeforeServiceFee,
                         property_id: {{ $booking->property_id }},
                         room_id: {{ $booking->room_id }}
                     })
@@ -493,9 +498,13 @@
         });
 
         // Update price summary
+        // Formula: Grandtotal = Subtotal - Voucher + Service Fee
         function updatePriceSummary() {
             const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
-            const finalTotal = appliedVoucher ? appliedVoucher.calculation.final_amount : originalTotal;
+
+            // Calculate final total: Subtotal - Discount + Service Fee
+            const subtotalAfterDiscount = subtotalBeforeServiceFee - discountAmount;
+            const finalTotal = subtotalAfterDiscount + serviceFee;
 
             document.getElementById('summaryDiscountAmount').textContent = discountAmount.toLocaleString('id-ID');
             document.getElementById('summaryTotal').textContent = finalTotal.toLocaleString('id-ID');
@@ -573,8 +582,9 @@
             loadingSpinner.classList.remove('hidden');
 
             try {
-                // Calculate final amount (with voucher discount if applied)
-                const finalAmount = appliedVoucher ? appliedVoucher.calculation.final_amount : originalTotal;
+                // Calculate final amount using formula: Subtotal - Voucher + Service Fee
+                const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
+                const finalAmount = subtotalBeforeServiceFee - discountAmount + serviceFee;
 
                 // Base request payload
                 const basePayload = {
