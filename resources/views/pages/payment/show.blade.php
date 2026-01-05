@@ -39,6 +39,41 @@
                         <form id="paymentForm" action="{{ route('bookings.update-payment', $booking->idrec) }}" method="POST" class="space-y-6">
                             @csrf
                             <input type="hidden" name="payment_method" id="payment_method">
+                            <input type="hidden" name="voucher_id" id="voucher_id">
+                            <input type="hidden" name="voucher_code" id="voucher_code_hidden">
+                            <input type="hidden" name="discount_amount" id="discount_amount" value="0">
+
+                            <!-- Voucher Section -->
+                            <div class="mb-6">
+                                <label class="block text-lg font-medium text-gray-700 mb-2">Kode Voucher (Opsional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="voucherCodeInput"
+                                        class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
+                                        placeholder="Masukkan kode voucher">
+                                    <button type="button" id="applyVoucherBtn"
+                                        class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
+                                        disabled>
+                                        <span id="voucherBtnText">Terapkan</span>
+                                        <span id="voucherBtnLoading" class="hidden">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </span>
+                                    </button>
+                                </div>
+                                <div id="voucherMessage" class="mt-2 text-sm hidden"></div>
+                                <div id="voucherDetails" class="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg hidden">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-medium text-green-800" id="voucherName"></p>
+                                            <p class="text-sm text-green-600" id="voucherDescription"></p>
+                                            <p class="text-sm font-bold text-green-700 mt-1">Diskon: <span id="voucherDiscount"></span></p>
+                                        </div>
+                                        <button type="button" id="removeVoucherBtn" class="text-red-600 hover:text-red-800">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Payment Method -->
                             <div class="space-y-6">
                                 <div>
@@ -150,12 +185,13 @@
                             </div>
 
                             <div class="pt-4 border-t">
-                                <h4 class="font-medium">Pricing</h4>
+                                <h4 class="font-medium mb-2">Pricing</h4>
                                 <!-- <p class="text-sm text-gray-600">Harga Harian: {{ number_format($booking->daily_price, 0) }}</p> -->
-                                <p class="text-sm text-gray-600">Harga Kamar: {{ number_format($booking->room_price, 0) }}</p>
+                                <p class="text-sm text-gray-600">Harga Kamar: Rp <span id="summaryRoomPrice">{{ number_format($booking->room_price, 0) }}</span></p>
                                 {{-- <p class="text-sm text-gray-600">Biaya Admin: {{ number_format($booking->admin_fees, 0) }}</p> --}}
-                                <p class="text-sm text-gray-600">Biaya Layanan: {{ number_format($booking->service_fees, 0) }}</p>
-                                <p class="text-sm font-medium text-gray-900 mt-2">Total: {{ number_format($booking->grandtotal_price, 0) }}</p>
+                                <p class="text-sm text-gray-600">Biaya Layanan: Rp <span id="summaryServiceFee">{{ number_format($booking->service_fees, 0) }}</span></p>
+                                <p id="summaryDiscountRow" class="text-sm text-green-600 hidden">Diskon Voucher: -Rp <span id="summaryDiscountAmount">0</span></p>
+                                <p class="text-sm font-medium text-gray-900 mt-2 pt-2 border-t">Total: Rp <span id="summaryTotal">{{ number_format($booking->grandtotal_price, 0) }}</span></p>
                             </div>
                         </div>
                     </div>
@@ -235,7 +271,132 @@
         const submitText = document.getElementById('submitText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         let selectedPaymentMethod = '';
-        
+
+        // Voucher state
+        let appliedVoucher = null;
+        const originalTotal = {{ $booking->grandtotal_price }};
+        const roomPrice = {{ $booking->room_price }};
+        const serviceFee = {{ $booking->service_fees }};
+
+        // Voucher UI elements
+        const voucherCodeInput = document.getElementById('voucherCodeInput');
+        const applyVoucherBtn = document.getElementById('applyVoucherBtn');
+        const voucherMessage = document.getElementById('voucherMessage');
+        const voucherDetails = document.getElementById('voucherDetails');
+        const removeVoucherBtn = document.getElementById('removeVoucherBtn');
+
+        // Enable voucher button when input has value
+        voucherCodeInput.addEventListener('input', function() {
+            applyVoucherBtn.disabled = this.value.trim().length === 0;
+        });
+
+        // Apply voucher
+        applyVoucherBtn.addEventListener('click', async function() {
+            const voucherCode = voucherCodeInput.value.trim();
+            if (!voucherCode) return;
+
+            // Show loading
+            document.getElementById('voucherBtnText').classList.add('hidden');
+            document.getElementById('voucherBtnLoading').classList.remove('hidden');
+            applyVoucherBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/v1/voucher/validate', {
+                    method: 'POST',
+                    headers: {
+                        'X-API-KEY': '{{ env("API_KEY") }}',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        voucher_code: voucherCode,
+                        user_id: {{ auth()->id() }},
+                        transaction_amount: originalTotal,
+                        property_id: {{ $booking->property_id }},
+                        room_id: {{ $booking->room_id }}
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.status !== 'success') {
+                    throw new Error(data.message || 'Voucher tidak valid');
+                }
+
+                // Apply voucher
+                appliedVoucher = {
+                    code: voucherCode,
+                    ...data.data.voucher,
+                    calculation: data.data.calculation
+                };
+
+                // Update UI
+                document.getElementById('voucherName').textContent = appliedVoucher.name;
+                document.getElementById('voucherDescription').textContent = appliedVoucher.description || '';
+                document.getElementById('voucherDiscount').textContent = `Rp ${appliedVoucher.calculation.discount_amount.toLocaleString('id-ID')}`;
+
+                voucherDetails.classList.remove('hidden');
+                voucherCodeInput.disabled = true;
+                applyVoucherBtn.classList.add('hidden');
+
+                // Update hidden fields
+                document.getElementById('voucher_code_hidden').value = voucherCode;
+                document.getElementById('discount_amount').value = appliedVoucher.calculation.discount_amount;
+
+                // Update summary
+                updatePriceSummary();
+
+                showVoucherMessage('Voucher berhasil diterapkan!', 'success');
+
+            } catch (error) {
+                showVoucherMessage(error.message, 'error');
+            } finally {
+                document.getElementById('voucherBtnText').classList.remove('hidden');
+                document.getElementById('voucherBtnLoading').classList.add('hidden');
+                applyVoucherBtn.disabled = false;
+            }
+        });
+
+        // Remove voucher
+        removeVoucherBtn.addEventListener('click', function() {
+            appliedVoucher = null;
+            voucherCodeInput.value = '';
+            voucherCodeInput.disabled = false;
+            voucherDetails.classList.add('hidden');
+            applyVoucherBtn.classList.remove('hidden');
+            voucherMessage.classList.add('hidden');
+
+            // Clear hidden fields
+            document.getElementById('voucher_code_hidden').value = '';
+            document.getElementById('discount_amount').value = '0';
+
+            // Reset summary
+            updatePriceSummary();
+        });
+
+        // Update price summary
+        function updatePriceSummary() {
+            const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
+            const finalTotal = appliedVoucher ? appliedVoucher.calculation.final_amount : originalTotal;
+
+            document.getElementById('summaryDiscountAmount').textContent = discountAmount.toLocaleString('id-ID');
+            document.getElementById('summaryTotal').textContent = finalTotal.toLocaleString('id-ID');
+
+            if (discountAmount > 0) {
+                document.getElementById('summaryDiscountRow').classList.remove('hidden');
+            } else {
+                document.getElementById('summaryDiscountRow').classList.add('hidden');
+            }
+        }
+
+        // Show voucher message
+        function showVoucherMessage(message, type) {
+            voucherMessage.textContent = message;
+            voucherMessage.classList.remove('hidden', 'text-red-600', 'text-green-600');
+            voucherMessage.classList.add(type === 'error' ? 'text-red-600' : 'text-green-600');
+        }
+
         // Handle bank card selection
         document.querySelectorAll('.bank-card').forEach(card => {
             const radio = card.querySelector('input[type="radio"]');
@@ -295,13 +456,16 @@
                     throw new Error('Silakan pilih bank');
                 }
 
+                // Calculate final amount (with voucher discount if applied)
+                const finalAmount = appliedVoucher ? appliedVoucher.calculation.final_amount : originalTotal;
+
                 // Prepare request payload
                 const requestPayload = {
                     order_id: '{{ $booking->order_id }}',
                     user_name: `{{ $booking->user_name }}`,
                     user_email: '{{ $booking->user_email }}',
                     user_phone: '{{ $booking->user_phone_number }}',
-                    amount: parseFloat({{ $booking->grandtotal_price }}),
+                    amount: parseFloat(finalAmount),
                     bank: selectedBank.dataset.bankName
                 };
 
@@ -338,6 +502,20 @@
                     throw new Error(vaData.error || vaData.message || 'Gagal membuat Virtual Account');
                 }
 
+                // Prepare update data with voucher information
+                const updateParams = {
+                    payment_method: selectedBank.value,
+                    bank: selectedBank.dataset.bankName,
+                    virtual_account_no: vaData.data.virtual_account_no,
+                    va_data: JSON.stringify(vaData.data)
+                };
+
+                // Add voucher data if applied
+                if (appliedVoucher) {
+                    updateParams.voucher_code = appliedVoucher.code;
+                    updateParams.discount_amount = appliedVoucher.calculation.discount_amount;
+                }
+
                 // Update payment method in booking
                 const updateResponse = await fetch(paymentForm.action, {
                     method: 'POST',
@@ -346,12 +524,7 @@
                         'Accept': 'application/json',
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: new URLSearchParams({
-                        payment_method: selectedBank.value,
-                        bank: selectedBank.dataset.bankName,
-                        virtual_account_no: vaData.data.virtual_account_no,
-                        va_data: JSON.stringify(vaData.data)
-                    })
+                    body: new URLSearchParams(updateParams)
                 });
 
                 const updateData = await updateResponse.json();

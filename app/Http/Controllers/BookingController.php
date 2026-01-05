@@ -322,7 +322,9 @@ class BookingController extends Controller
                 'payment_method' => 'required',
                 'virtual_account_no' => 'nullable|string',
                 'bank' => 'nullable|string',
-                'va_data' => 'nullable|string'
+                'va_data' => 'nullable|string',
+                'voucher_code' => 'nullable|string',
+                'discount_amount' => 'nullable|numeric|min:0'
             ]);
 
             $booking = DB::table('t_transactions')
@@ -353,6 +355,20 @@ class BookingController extends Controller
             // Add bank if provided
             if ($request->has('bank')) {
                 $updateData['payment_bank'] = $request->bank;
+            }
+
+            // Add voucher information if provided
+            if ($request->has('voucher_code')) {
+                $updateData['voucher_code'] = $request->voucher_code;
+            }
+
+            if ($request->has('discount_amount')) {
+                $updateData['discount_amount'] = $request->discount_amount;
+                // Recalculate subtotal after discount
+                if ($booking->grandtotal_price && $request->discount_amount > 0) {
+                    $updateData['subtotal_before_discount'] = $booking->grandtotal_price;
+                    $updateData['grandtotal_price'] = $booking->grandtotal_price - $request->discount_amount;
+                }
             }
 
             DB::table('t_transactions')
@@ -429,7 +445,8 @@ class BookingController extends Controller
             'room_name' => 'nullable|string',
             'room_id' => 'required|integer|exists:m_rooms,idrec',
             'booking_type' => 'nullable|string|max:100',
-            'months' => 'nullable|integer'
+            'months' => 'nullable|integer',
+            'voucher_code' => 'nullable|string|min:8|max:20'
         ]);
 
         if ($validator->fails()) {
@@ -518,6 +535,56 @@ class BookingController extends Controller
             $serviceFees = 30000;
             $tax = 0;
 
+            $grandtotalPrice = $totalPrice + $adminFee + $serviceFees + $tax;
+
+            // Voucher processing
+            $voucherId = null;
+            $voucherCode = null;
+            $discountAmount = 0;
+            $subtotalBeforeDiscount = $grandtotalPrice;
+
+            if ($request->filled('voucher_code')) {
+                try {
+                    $voucherService = app(\App\Services\VoucherService::class);
+
+                    // Validate voucher
+                    $voucherValidation = $voucherService->validateVoucher(
+                        $request->voucher_code,
+                        $user->id,
+                        $grandtotalPrice,
+                        $room->property_id,
+                        $room->idrec
+                    );
+
+                    if (!$voucherValidation['valid']) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Voucher validation failed',
+                            'errors' => ['voucher' => $voucherValidation['errors']]
+                        ], 422);
+                    }
+
+                    $voucher = $voucherValidation['voucher'];
+                    $calculation = $voucherService->calculateDiscount($voucher, $grandtotalPrice);
+
+                    $voucherId = $voucher->idrec;
+                    $voucherCode = $voucher->voucher;
+                    $discountAmount = $calculation['discount_amount'];
+                    $grandtotalPrice = $calculation['final_amount'];
+
+                    // Increment voucher usage count
+                    $voucher->increment('current_usage_count');
+
+                } catch (\Exception $e) {
+                    \Log::error('Voucher processing failed: ' . $e->getMessage());
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Voucher processing error: ' . $e->getMessage(),
+                        'errors' => ['voucher' => [$e->getMessage()]]
+                    ], 422);
+                }
+            }
+
             // Generate order_id in format UMW-yymmddXXXPP
             $propertyInitial = $room->property->initial ?? 'HX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
@@ -546,7 +613,11 @@ class BookingController extends Controller
                 'admin_fees' => $adminFee,
                 'service_fees' => $serviceFees,
                 'tax' => $tax,
-                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees + $tax,
+                'grandtotal_price' => $grandtotalPrice,
+                'voucher_id' => $voucherId,
+                'voucher_code' => $voucherCode,
+                'discount_amount' => $discountAmount,
+                'subtotal_before_discount' => $subtotalBeforeDiscount,
                 'property_type' => $room->type ?? $request->property_type ?? 'room',
                 'transaction_code' => 'TRX-' . strtoupper(Str::random(16)),
                 'transaction_status' => 'pending',
@@ -555,6 +626,28 @@ class BookingController extends Controller
 
             // Create transaction
             $transaction = Transaction::create($transactionData);
+
+            // Log voucher usage if voucher was applied
+            if ($voucherId && $voucherCode) {
+                try {
+                    $voucherService = app(\App\Services\VoucherService::class);
+                    $voucherService->logUsage([
+                        'voucher_id' => $voucherId,
+                        'voucher_code' => $voucherCode,
+                        'user_id' => $user->id,
+                        'order_id' => $order_id,
+                        'transaction_id' => $transaction->idrec,
+                        'property_id' => $room->property_id,
+                        'room_id' => $room->idrec,
+                        'original_amount' => $subtotalBeforeDiscount,
+                        'discount_amount' => $discountAmount,
+                        'final_amount' => $grandtotalPrice
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Voucher usage logging failed: ' . $e->getMessage());
+                    // Continue even if logging fails
+                }
+            }
 
             // Create booking
             $bookingData = [
@@ -574,7 +667,7 @@ class BookingController extends Controller
                 'room_id' => $room->idrec,
                 'order_id' => $order_id,
                 'user_id' => $user->id,
-                'grandtotal_price' => $totalPrice + $adminFee + $serviceFees + $tax,
+                'grandtotal_price' => $grandtotalPrice,
                 'payment_status' => 'unpaid',
                 'created_by' => $user->id,
                 'updated_by' => $user->id,
@@ -584,7 +677,7 @@ class BookingController extends Controller
 
             // Process payment with DOKU
             try {
-                $grandtotalPrice = $totalPrice + $adminFee + $serviceFees;
+                // Use the already calculated grandtotalPrice (with voucher discount applied if any)
                 
                 // $dokuPaymentResponse = $this->processDokuPayment([
                 //     'order_id' => $order_id,
