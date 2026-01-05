@@ -43,39 +43,47 @@
                             <div class="space-y-6">
                                 <div>
                                     <label class="block text-lg font-medium text-gray-700 mb-4">Metode Pembayaran</label>
+                                    <p class="text-sm text-gray-600 mb-4">Pilih bank untuk generate Virtual Account</p>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <!-- Bank Transfer -->
-                                        <div class="space-y-3">
-                                            {{-- <p class="text-sm font-medium text-gray-700">Pilih Bank Tujuan</p> --}}
-                                            <div class="grid grid-cols-1 gap-3">
+                                        @php
+                                            $banks = config('services.doku.banks');
+                                            $bankLogos = [
+                                                'BRI' => 'https://images.seeklogo.com/logo-png/45/1/bank-bri-logo-png_seeklogo-459990.png',
+                                                'BNI' => 'https://www.pinclipart.com/picdir/big/105-1051729_bank-negara-indonesia-logo-bank-bni-transparan-clipart.png',
+                                                'MANDIRI' => 'https://freepngdesign.com/content/uploads/images/p-2813-2-bank-mandiri-logo-png-transparent-logo-699390155888.png',
+                                                'BCA' => 'https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg',
+                                                'CIMB' => 'https://commons.wikimedia.org/wiki/Category:CIMB_Niaga#/media/File:CIMB_Niaga_logo.svg',
+                                                'BTN' => 'https://id.wikipedia.org/wiki/Bank_Tabungan_Negara#/media/Berkas:BTN_2024.svg',
+                                                'DANAMON' => 'https://www.clipartmax.com/png/middle/86-863868_danamon-bank-logo-bank-danamon.png',
+                                                'BNC' => 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiKM1U7jUvSqIDsJYruR_kCYRBzyjAojO62aFqFt2fd4n0Eg1z3pwgRD6jgQkBP7lqtNincIx7UCOuNC7fNhBx3iuJKRClkNADRTTHCoIUvZ8ff3k0nhwWBJaz3QhDOYY1VORkGehl_-_Zy0XO2N2IpqloOCXOZnyJk97WpRnRm9U0nFssUtO9mXRec/s400/GKL24_Bank%20Neo%20Commerce%20-%20Koleksilogo.com.jpg'
+                                            ];
+                                        @endphp
 
-                                                {{-- BRI --}}
-                                                <label class="bank-card relative p-8 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
-                                                    <input type="radio" name="bank_selection" value="bri" class="sr-only peer" data-bank="bri" data-bank-name="BRI" data-bank-logo="https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg" data-va-number="888811112222">
-                                                    <div class="flex items-center justify-between">
-                                                        <div class="flex items-center">
-                                                            <div class="bg-white p-4 rounded-lg border mr-6">
-                                                                {{-- <img src="https://upload.wikimedia.org/wikipedia/commons/6/68/BANK_BRI_logo.svg" alt="BRI" class="h-12 w-auto"> --}}
-                                                                <img src="https://images.seeklogo.com/logo-png/45/1/bank-bri-logo-png_seeklogo-459990.png?v=638686977590000000" alt="BRI" class="h-12 w-auto">
-                                                            </div>
-                                                            <div class="flex-1">
-                                                                <div class="font-bold text-black text-xl mb-1">PT Kelola Aset Properti</div>
-                                                                <div class="text-lg text-black font-medium">0505-01-001671-56-7</div>
-                                                            </div>
+                                        @foreach($banks as $bankCode => $bankConfig)
+                                        <label class="bank-card relative p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-200">
+                                            <input type="radio" name="bank_selection" value="{{ strtolower($bankCode) }}" class="sr-only peer"
+                                                data-bank="{{ strtolower($bankCode) }}"
+                                                data-bank-name="{{ $bankCode }}"
+                                                data-bank-logo="{{ $bankLogos[$bankCode] ?? '' }}"
+                                                data-dgpc="{{ $bankConfig['dgpc'] }}"
+                                                data-channel="{{ $bankConfig['channel'] }}">
+                                            <div class="flex items-center">
+                                                <div class="bg-white p-3 rounded-lg border mr-4">
+                                                    @if(isset($bankLogos[$bankCode]))
+                                                        <img src="{{ $bankLogos[$bankCode] }}" alt="{{ $bankCode }}" class="h-10 w-auto">
+                                                    @else
+                                                        <div class="h-10 w-20 flex items-center justify-center bg-gray-100 rounded">
+                                                            <span class="text-xs font-bold text-gray-600">{{ $bankCode }}</span>
                                                         </div>
-                                                    </div>
-                                                    <!-- <div class="absolute top-2 right-2 h-5 w-5 rounded-full border-2 border-gray-300 peer-checked:bg-teal-500 peer-checked:border-teal-500 flex items-center justify-center">
-                                                        <svg class="w-3 h-3 text-white hidden peer-checked:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    </div> -->
-                                                </label>
+                                                    @endif
+                                                </div>
+                                                <div class="flex-1">
+                                                    <div class="font-bold text-black text-lg mb-1">{{ $bankCode }}</div>
+                                                    <div class="text-sm text-gray-600">Virtual Account</div>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <!-- <button type="button" class="payment-option relative border rounded-lg p-4 w-full cursor-pointer hover:border-teal-500 transition-colors flex items-center justify-between" data-method="cash">
-                                            <span class="text-lg font-semibold text-gray-800">Bayar di Tempat</span>
-                                        </button> -->
+                                        </label>
+                                        @endforeach
                                     </div>
                                 </div>
                             </div>
@@ -151,6 +159,66 @@
                 </div>
             </div>
         </section>
+
+        <!-- Success Modal -->
+        <div id="successModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                        <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Virtual Account Berhasil Dibuat!</h3>
+                    <div class="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
+                        <div class="text-left space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Bank:</span>
+                                <span class="text-sm font-medium" id="modalBank"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Nomor VA:</span>
+                                <span class="text-sm font-bold" id="modalVANumber"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Jumlah:</span>
+                                <span class="text-sm font-medium" id="modalAmount"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 space-y-2">
+                        <a id="howToPayLink" href="#" target="_blank" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                            Lihat Cara Pembayaran
+                        </a>
+                        <button id="closeModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Modal -->
+        <div id="errorModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-md bg-white">
+                <div class="mt-3 text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                        <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Terjadi Kesalahan</h3>
+                    <div class="mt-2 px-4 py-3">
+                        <p class="text-sm text-gray-600" id="errorMessage"></p>
+                    </div>
+                    <div class="mt-4">
+                        <button id="closeErrorModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     @include('components.homepage.footer')
@@ -204,52 +272,155 @@
         });
         
         // Handle form submission
-        paymentForm.addEventListener('submit', function(e) {
+        paymentForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             if (!selectedPaymentMethod) {
                 alert('Silakan pilih metode pembayaran');
                 return;
             }
-            
+
             // Show loading state
             submitBtn.disabled = true;
-            submitText.textContent = 'Memproses...';
+            submitText.textContent = 'Memproses pembayaran...';
             loadingSpinner.classList.remove('hidden');
-            
-            // Submit form
-            fetch(paymentForm.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(new FormData(paymentForm))
-            })
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.message || 'Terjadi kesalahan saat memproses pembayaran');
+
+            try {
+                // Get selected bank
+                const selectedBank = document.querySelector('input[name="bank_selection"]:checked');
+                if (!selectedBank) {
+                    throw new Error('Silakan pilih bank');
                 }
-                return data;
-            })
-            .then(data => {
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    window.location.href = '{{ route("bookings.index") }}';
+
+                // Prepare request payload
+                const requestPayload = {
+                    order_id: '{{ $booking->order_id }}',
+                    user_name: `{{ $booking->user_name }}`,
+                    user_email: '{{ $booking->user_email }}',
+                    user_phone: '{{ $booking->user_phone_number }}',
+                    amount: parseFloat({{ $booking->grandtotal_price }}),
+                    bank: selectedBank.dataset.bankName
+                };
+
+                console.log('Sending VA generation request:', requestPayload);
+
+                // Call DOKU VA generation API
+                const vaResponse = await fetch('/api/v1/doku/test-generate-va', {
+                    method: 'POST',
+                    headers: {
+                        'X-API-KEY': '{{ env("API_KEY") }}',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestPayload)
+                });
+
+                const vaData = await vaResponse.json();
+
+                if (!vaResponse.ok) {
+                    // Show detailed validation errors
+                    console.error('VA Generation Error:', vaData);
+                    let errorMsg = vaData.message || 'Gagal membuat Virtual Account';
+                    if (vaData.errors) {
+                        errorMsg += '\n\nDetail:\n';
+                        for (const [field, messages] of Object.entries(vaData.errors)) {
+                            errorMsg += `- ${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}\n`;
+                        }
+                    }
+                    throw new Error(errorMsg);
                 }
-            })
-            .catch(error => {
+
+                if (!vaData.data || !vaData.data.success) {
+                    throw new Error(vaData.error || vaData.message || 'Gagal membuat Virtual Account');
+                }
+
+                // Update payment method in booking
+                const updateResponse = await fetch(paymentForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        payment_method: selectedBank.value,
+                        bank: selectedBank.dataset.bankName,
+                        virtual_account_no: vaData.data.virtual_account_no,
+                        va_data: JSON.stringify(vaData.data)
+                    })
+                });
+
+                const updateData = await updateResponse.json();
+
+                if (!updateResponse.ok) {
+                    throw new Error(updateData.message || 'Gagal memperbarui pembayaran');
+                }
+
+                // Show VA information in modal
+                showSuccessModal(vaData.data);
+
+            } catch (error) {
                 console.error('Error:', error);
-                alert(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
+                showErrorModal(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
                 submitBtn.disabled = false;
                 const selectedBank = document.querySelector('input[name="bank_selection"]:checked');
-                submitText.textContent = selectedBank ? 
-                    `Bayar dengan ${selectedBank.dataset.bankName}` : 'Pilih Bank';
+                submitText.textContent = selectedBank ?
+                    `Bayar dengan ${selectedBank.dataset.bankName}` : 'Lanjutkan Pembayaran';
                 loadingSpinner.classList.add('hidden');
-            });
+            }
+        });
+
+        // Modal functions
+        function showSuccessModal(vaData) {
+            // Populate modal with VA data
+            document.getElementById('modalBank').textContent = vaData.bank;
+            document.getElementById('modalVANumber').textContent = vaData.virtual_account_no;
+            document.getElementById('modalAmount').textContent = `Rp ${vaData.total_amount.toLocaleString('id-ID')}`;
+
+            // Set how to pay link
+            const howToPayLink = document.getElementById('howToPayLink');
+            if (vaData.how_to_pay_page) {
+                howToPayLink.href = vaData.how_to_pay_page;
+                howToPayLink.classList.remove('hidden');
+            } else if (vaData.how_to_pay_api) {
+                howToPayLink.href = vaData.how_to_pay_api;
+                howToPayLink.classList.remove('hidden');
+            } else {
+                howToPayLink.classList.add('hidden');
+            }
+
+            // Show modal
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function showErrorModal(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorModal').classList.remove('hidden');
+        }
+
+        // Close modal handlers
+        document.getElementById('closeModalBtn').addEventListener('click', function() {
+            document.getElementById('successModal').classList.add('hidden');
+            window.location.href = '{{ route("bookings.index") }}';
+        });
+
+        document.getElementById('closeErrorModalBtn').addEventListener('click', function() {
+            document.getElementById('errorModal').classList.add('hidden');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('successModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+                window.location.href = '{{ route("bookings.index") }}';
+            }
+        });
+
+        document.getElementById('errorModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.add('hidden');
+            }
         });
     });
 </script>

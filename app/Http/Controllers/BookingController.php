@@ -319,7 +319,10 @@ class BookingController extends Controller
     {
         try {
             $request->validate([
-                'payment_method' => 'required'
+                'payment_method' => 'required',
+                'virtual_account_no' => 'nullable|string',
+                'bank' => 'nullable|string',
+                'va_data' => 'nullable|string'
             ]);
 
             $booking = DB::table('t_transactions')
@@ -334,13 +337,27 @@ class BookingController extends Controller
                 return back()->with('error', 'Booking not found.');
             }
 
+            // Prepare update data
+            $updateData = [
+                'transaction_type' => $request->payment_method,
+                'transaction_status' => 'pending',
+                'paid_at' => null,
+                'updated_at' => now()
+            ];
+
+            // Add virtual account number if provided
+            if ($request->has('virtual_account_no')) {
+                $updateData['virtual_account_no'] = $request->virtual_account_no;
+            }
+
+            // Add bank if provided
+            if ($request->has('bank')) {
+                $updateData['payment_bank'] = $request->bank;
+            }
+
             DB::table('t_transactions')
                 ->where('idrec', $id)
-                ->update([
-                    'transaction_type' => $request->payment_method,
-                    'transaction_status' => 'pending',
-                    'paid_at' => null
-                ]);
+                ->update($updateData);
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -515,7 +532,7 @@ class BookingController extends Controller
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'user_email' => $user->email,
-                'user_phone_number' => $user->phone,
+                'user_phone_number' => $user->phone_number,
                 'property_name' => $room->property->name ?? $request->property_name,
                 'transaction_date' => now(),
                 'check_in' => $checkIn,
@@ -569,17 +586,17 @@ class BookingController extends Controller
             try {
                 $grandtotalPrice = $totalPrice + $adminFee + $serviceFees;
                 
-                $dokuPaymentResponse = $this->processDokuPayment([
-                    'order_id' => $order_id,
-                    'transaction_code' => $transaction->transaction_code,
-                    'amount' => $grandtotalPrice,
-                    'property_name' => $property->name ?? 'Property',
-                    'room_name' => $room->name ?? 'Room',
-                    'user_name' => $user->name ?? 'Customer',
-                    'user_email' => $user->email,
-                    'user_phone' => $user->phone ?? $request->user_phone_number ?? '0000000000',
-                    'user_address' => $user->address ?? 'Indonesia'
-                ]);
+                // $dokuPaymentResponse = $this->processDokuPayment([
+                //     'order_id' => $order_id,
+                //     'transaction_code' => $transaction->transaction_code,
+                //     'amount' => $grandtotalPrice,
+                //     'property_name' => $property->name ?? 'Property',
+                //     'room_name' => $room->name ?? 'Room',
+                //     'user_name' => $user->name ?? 'Customer',
+                //     'user_email' => $user->email,
+                //     'user_phone' => $user->phone ?? $request->user_phone_number ?? '0000000000',
+                //     'user_address' => $user->address ?? 'Indonesia'
+                // ]);
 
                 // Update transaction with payment URL if available
                 if (!empty($dokuPaymentResponse['payment_url'])) {

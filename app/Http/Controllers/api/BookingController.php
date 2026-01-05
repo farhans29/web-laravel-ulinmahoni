@@ -10,6 +10,9 @@ use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Room;
 use App\Models\Transaction;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
+use App\Services\VoucherService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -300,7 +303,8 @@ class BookingController extends ApiController
             'daily_price' => 'nullable|numeric|min:0',
             'monthly_price' => 'nullable|numeric|min:0',
             'booking_days' => 'nullable|integer|required_without:booking_months',
-            'booking_months' => 'nullable|integer|required_without:booking_days'
+            'booking_months' => 'nullable|integer|required_without:booking_days',
+            'voucher_code' => 'nullable|string|min:8|max:20'
         ], [
             'booking_days.required_without' => 'Either booking_days or booking_months is required',
             'booking_months.required_without' => 'Either booking_days or booking_months is required',
@@ -329,7 +333,7 @@ class BookingController extends ApiController
             if ($request->has('booking_days') && $request->booking_days > 0) {
                 // DAILY BOOKING
                 $calculatedDays = $checkOut->diffInDays($checkIn);
-                
+
                 // Verify the calculated days match the provided booking_days
                 if ($calculatedDays != $request->booking_days) {
                     return response()->json([
@@ -338,7 +342,7 @@ class BookingController extends ApiController
                         'calculated_days' => $calculatedDays
                     ], 422);
                 }
-                
+
                 $bookingDays = $calculatedDays;
                 $roomPrice = $request->daily_price * $bookingDays;
                 // $adminFees = $roomPrice * 0.10;
@@ -357,6 +361,44 @@ class BookingController extends ApiController
                 $serviceFees = $request->service_fees;
                 $tax = $request->tax;
                 $grandtotalPrice = $roomPrice + $adminFees + $serviceFees + $tax;
+            }
+
+            // Voucher processing
+            $voucherId = null;
+            $voucherCode = null;
+            $discountAmount = 0;
+            $subtotalBeforeDiscount = $grandtotalPrice;
+
+            if ($request->filled('voucher_code')) {
+                $voucherService = app(VoucherService::class);
+
+                // Validate and apply voucher
+                $voucherValidation = $voucherService->validateVoucher(
+                    $request->voucher_code,
+                    $request->user_id,
+                    $grandtotalPrice,
+                    $request->property_id,
+                    $request->room_id
+                );
+
+                if (!$voucherValidation['valid']) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Voucher validation failed',
+                        'errors' => $voucherValidation['errors']
+                    ], 422);
+                }
+
+                $voucher = $voucherValidation['voucher'];
+                $calculation = $voucherService->calculateDiscount($voucher, $grandtotalPrice);
+
+                $voucherId = $voucher->idrec;
+                $voucherCode = $voucher->code;
+                $discountAmount = $calculation['discount_amount'];
+                $grandtotalPrice = $calculation['final_amount'];
+
+                // Increment voucher usage count
+                $voucher->increment('current_usage_count');
             }
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
@@ -392,6 +434,11 @@ class BookingController extends ApiController
                 'admin_fees' => $adminFees,
                 'service_fees' => $request->service_fees,
                 'grandtotal_price' => $grandtotalPrice,
+                // VOUCHER DATA
+                'voucher_id' => $voucherId,
+                'voucher_code' => $voucherCode,
+                'discount_amount' => $discountAmount,
+                'subtotal_before_discount' => $subtotalBeforeDiscount,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type,
                 'transaction_code' => 'TRX-' . Str::random(16),
@@ -404,6 +451,23 @@ class BookingController extends ApiController
 
             // Create transaction
             $transaction = Transaction::create($transactionData);
+
+            // Log voucher usage if voucher was applied
+            if ($voucherId && $voucherCode) {
+                $voucherService = app(VoucherService::class);
+                $voucherService->logUsage([
+                    'voucher_id' => $voucherId,
+                    'voucher_code' => $voucherCode,
+                    'user_id' => $request->user_id,
+                    'order_id' => $order_id,
+                    'transaction_id' => $transaction->idrec,
+                    'property_id' => $request->property_id,
+                    'room_id' => $request->room_id,
+                    'original_amount' => $subtotalBeforeDiscount,
+                    'discount_amount' => $discountAmount,
+                    'final_amount' => $grandtotalPrice
+                ]);
+            }
 
             // Create booking if room_id is provided
             if ($request->has('room_id') && $request->room_id) {
@@ -1146,21 +1210,33 @@ class BookingController extends ApiController
     }
 
     /**
-     * Get DOKU B2B Access Token
+     * Get DOKU B2B Access Token (with caching)
      * Makes a POST request to DOKU sandbox API to obtain B2B access token
+     * Token is cached for 14 minutes (840 seconds) as it expires in 15 minutes
      *
+     * @param bool $forceRefresh Force refresh token even if cached
      * @return array
      * @throws \Exception
      */
-    private function dokuGetTokenB2B(): array
+    private function dokuGetTokenB2B(bool $forceRefresh = false): array
     {
+        $cacheKey = 'doku_b2b_token';
+
+        // Try to get cached token if not forcing refresh
+        if (!$forceRefresh) {
+            $cachedToken = \Cache::get($cacheKey);
+            if ($cachedToken) {
+                return $cachedToken;
+            }
+        }
+
         try {
             // Get DOKU configuration
-            $sandboxUrl = config('services.doku.sandbox_url');
+            $sandboxUrl = config('services.doku.api_url');
             $clientId = config('services.doku.client_id');
-            $secretKey = config('services.doku.secret_key');
+            $privateKey = config('services.doku.private_key'); // This should contain the RSA private key in PEM format
 
-            if (empty($sandboxUrl) || empty($clientId) || empty($secretKey)) {
+            if (empty($sandboxUrl) || empty($clientId) || empty($privateKey)) {
                 throw new \RuntimeException('DOKU configuration is incomplete');
             }
 
@@ -1169,30 +1245,39 @@ class BookingController extends ApiController
                 'grantType' => 'client_credentials'
             ];
 
-            // Generate timestamp in ISO 8601 format with timezone
-            $timestamp = now()->timezone('Asia/Jakarta')->toIso8601String();
+            // Generate timestamp in ISO 8601 format with timezone (Asia/Jakarta)
+            // Format: 2026-01-05T00:56:05+07:00
+            $timestamp = Carbon::now('Asia/Jakarta')->format('Y-m-d\TH:i:sP');
 
             // Generate signature for B2B token request
             // Format: ClientId|Timestamp
             $stringToSign = $clientId . '|' . $timestamp;
-            $signature = base64_encode(hash_hmac('sha256', $stringToSign, $secretKey, true));
+
+            // Sign using RSA-SHA256 with private key
+            $privateKeyResource = openssl_pkey_get_private($privateKey);
+
+            if ($privateKeyResource === false) {
+                throw new \RuntimeException('Invalid private key format');
+            }
+
+            $binarySignature = '';
+            $signSuccess = openssl_sign($stringToSign, $binarySignature, $privateKeyResource, OPENSSL_ALGO_SHA256);
+
+            if (!$signSuccess) {
+                throw new \RuntimeException('Failed to generate signature');
+            }
+
+            $signature = base64_encode($binarySignature);
 
             // API endpoint
             $endpoint = $sandboxUrl . '/authorization/v1/access-token/b2b';
 
-            \Log::info('DOKU B2B Token Request', [
-                'endpoint' => $endpoint,
-                'client_id' => $clientId,
-                'timestamp' => $timestamp,
-                'string_to_sign' => $stringToSign
-            ]);
-
             // Make POST request to DOKU
             $response = Http::timeout(30)
                 ->withHeaders([
-                    'X-CLIENT-KEY' => $clientId,
-                    'X-TIMESTAMP' => $timestamp,
-                    'X-SIGNATURE' => $signature,
+                    'x-client-key' => $clientId,
+                    'x-timestamp' => $timestamp,
+                    'x-signature' => $signature,
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json'
                 ])
@@ -1217,13 +1302,7 @@ class BookingController extends ApiController
                 );
             }
 
-            // \Log::info('DOKU B2B Token Generated Successfully', [
-            //     'response_code' => $responseData['responseCode'] ?? null,
-            //     'has_token' => isset($responseData['accessToken']),
-            //     'expires_in' => $responseData['expiresIn'] ?? null
-            // ]);
-
-            return [
+            $result = [
                 'success' => true,
                 'access_token' => $responseData['accessToken'] ?? null,
                 'token_type' => $responseData['tokenType'] ?? 'Bearer',
@@ -1232,6 +1311,13 @@ class BookingController extends ApiController
                 'response_message' => $responseData['responseMessage'] ?? null,
                 'additional_info' => $responseData['additionalInfo'] ?? null
             ];
+
+            // Cache the token for 14 minutes (840 seconds) - 1 minute before expiration
+            $expiresIn = $responseData['expiresIn'] ?? 900;
+            $cacheSeconds = max(60, $expiresIn - 60); // Cache for expires_in - 60 seconds, minimum 60 seconds
+            \Cache::put($cacheKey, $result, $cacheSeconds);
+
+            return $result;
 
         } catch (\Exception $e) {
             \Log::error('DOKU B2B Token Request Exception', [
@@ -1247,10 +1333,338 @@ class BookingController extends ApiController
             ];
         }
     }
-    private function dokuGenerateVA() {
+    /**
+     * Test endpoint for DOKU B2B Token Generation
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function testDokuGetTokenB2B()
+    {
+        try {
+            $result = $this->dokuGetTokenB2B();
 
+            if ($result['success']) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'DOKU B2B token generated successfully',
+                    'data' => $result
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to generate DOKU B2B token',
+                    'error' => $result['error'] ?? 'Unknown error',
+                    'code' => $result['code'] ?? 0
+                ], 500);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Exception occurred while testing DOKU B2B token',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-    
+
+    /**
+     * Generate Virtual Account via DOKU
+     *
+     * @param array $data Payment and customer data
+     * @return array
+     * @throws \Exception
+     */
+    private function dokuGenerateVA(array $data): array
+    {
+        try {
+            // Step 1: Get B2B access token
+            $tokenResult = $this->dokuGetTokenB2B();
+
+            if (!$tokenResult['success']) {
+                throw new \RuntimeException('Failed to get B2B token: ' . ($tokenResult['error'] ?? 'Unknown error'));
+            }
+
+            $accessToken = $tokenResult['access_token'];
+
+            // Get DOKU configuration
+            $sandboxUrl = config('services.doku.api_url');
+            $clientId = config('services.doku.client_id');
+            $privateKey = config('services.doku.private_key');
+
+            if (empty($sandboxUrl) || empty($clientId) || empty($privateKey)) {
+                throw new \RuntimeException('DOKU configuration is incomplete');
+            }
+
+            // Determine bank and get corresponding DGPC code
+            $bank = strtoupper($data['bank'] ?? 'BRI'); // Default to BRI if not specified
+            $banks = config('services.doku.banks');
+
+            if (!isset($banks[$bank])) {
+                throw new \InvalidArgumentException("Invalid bank selection: {$bank}. Available banks: " . implode(', ', array_keys($banks)));
+            }
+
+            $bankConfig = $banks[$bank];
+            $dgpcCode = $bankConfig['dgpc'];
+            $channel = $data['channel'] ?? $bankConfig['channel'];
+
+            // Generate timestamp in ISO 8601 format with timezone (Asia/Jakarta)
+            $timestamp = Carbon::now('Asia/Jakarta')->format('Y-m-d\TH:i:sP');
+
+            // Generate external ID (order_id)
+            $externalId = $data['order_id'];
+
+            // Prepare partnerServiceId and customerNo according to DOKU rules
+            // partnerServiceId: The DGPC code padded to 8 characters with leading spaces
+            // For most banks, use the full DGPC code and pad with spaces if needed
+            $partnerServiceId = str_pad($dgpcCode, 8, ' ', STR_PAD_LEFT);
+
+            // Generate customer number (4-5 digits random number)
+            $customerNo = $data['customer_no'] ?? (string)mt_rand(10000, 99999);
+
+            // Virtual Account Number = partnerServiceId (8 chars) + customerNo (5 chars) = 13 chars total
+            // Note: partnerServiceId with spaces will be sent in the request
+            $virtualAccountNo = $partnerServiceId . $customerNo;
+
+            // Temporary debug logging
+            if (config('app.debug')) {
+                \Log::debug('DOKU VA Number Generation', [
+                    'bank' => $bank,
+                    'dgpc_code' => $dgpcCode,
+                    'dgpc_length' => strlen($dgpcCode),
+                    'partner_service_id' => $partnerServiceId,
+                    'partner_service_id_length' => strlen($partnerServiceId),
+                    'customer_no' => $customerNo,
+                    'customer_no_length' => strlen($customerNo),
+                    'virtual_account_no' => $virtualAccountNo,
+                    'virtual_account_no_length' => strlen($virtualAccountNo),
+                    'partner_service_id_hex' => bin2hex($partnerServiceId)
+                ]);
+            }
+
+            // Calculate expiration date (60 minutes from now)
+            $expiredDate = Carbon::now('Asia/Jakarta')->addMinutes(60)->format('Y-m-d\TH:i:sP');
+
+            $requestBody = [
+                'partnerServiceId' => $partnerServiceId,
+                'customerNo' => $customerNo,
+                'virtualAccountNo' => $virtualAccountNo,
+                'virtualAccountName' => $data['user_name'],
+                'virtualAccountEmail' => $data['user_email'],
+                'virtualAccountPhone' => $data['user_phone'],
+                'trxId' => $externalId,
+                'totalAmount' => [
+                    'value' => number_format($data['amount'], 2, '.', ''),
+                    'currency' => 'IDR'
+                ],
+                'additionalInfo' => [
+                    'channel' => $channel,
+                    'virtualAccountConfig' => [
+                        'reusableStatus' => $data['reusable'] ?? true
+                    ]
+                ],
+                'virtualAccountTrxType' => 'C',
+                'expiredDate' => $expiredDate,
+                'freeText' => [
+                    [
+                        'english' => 'PEMBELIAN',
+                        'indonesia' => 'PEMBELIAN'
+                    ]
+                ]
+            ];
+
+            // Generate signature for VA creation
+            // For B2B2C APIs, signature uses HMAC-SHA512 with secret_key
+            // Format: HTTPMethod:RelativeUrl:AccessToken:RequestBodyHash:Timestamp
+
+            // Minify JSON (remove spaces, no pretty print)
+            $requestBodyJson = json_encode($requestBody, JSON_UNESCAPED_SLASHES);
+            $httpMethod = 'POST';
+            $relativeUrl = '/virtual-accounts/bi-snap-va/v1.1/transfer-va/create-va';
+
+            // Create lowercase SHA256 hash of minified request body
+            $requestBodyHash = hash('sha256', $requestBodyJson);
+
+            // String to sign format: HTTPMethod:RelativeUrl:AccessToken:RequestBodyHash:Timestamp
+            $stringToSign = $httpMethod . ':' . $relativeUrl . ':' . $accessToken . ':' . $requestBodyHash . ':' . $timestamp;
+
+            // Get secret key for HMAC signature
+            $secretKey = config('services.doku.secret_key');
+
+            // Generate HMAC-SHA512 signature with secret key
+            $signature = base64_encode(hash_hmac('sha512', $stringToSign, $secretKey, true));
+
+            // API endpoint
+            $endpoint = $sandboxUrl . '/virtual-accounts/bi-snap-va/v1.1/transfer-va/create-va';
+
+            // Make POST request to DOKU
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'X-PARTNER-ID' => $clientId,
+                    'X-EXTERNAL-ID' => $externalId,
+                    'X-TIMESTAMP' => $timestamp,
+                    'X-SIGNATURE' => $signature,
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'CHANNEL-ID' => 'H2H',
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json'
+                ])
+                ->post($endpoint, $requestBody);
+
+            $responseData = $response->json() ?? [];
+
+            // Check if request was successful
+            if (!$response->successful()) {
+                $errorDetails = [
+                    'status' => $response->status(),
+                    'response' => $responseData,
+                    'error_code' => $responseData['responseCode'] ?? null,
+                    'error_message' => $responseData['responseMessage'] ?? 'Unknown error'
+                ];
+
+                \Log::error('DOKU VA Creation Failed', $errorDetails);
+
+                throw new \RuntimeException(
+                    $errorDetails['error_message'],
+                    $errorDetails['status']
+                );
+            }
+
+            // Extract how to pay page
+            $howToPayPage = $responseData['virtualAccountData']['additionalInfo']['howToPayPage'] ?? null;
+            $howToPayApi = $responseData['virtualAccountData']['additionalInfo']['howToPayApi'] ?? null;
+
+            return [
+                'success' => true,
+                'bank' => $bank,
+                'channel' => $channel,
+                'partner_service_id' => $partnerServiceId,
+                'virtual_account_no' => $responseData['virtualAccountData']['virtualAccountNo'] ?? null,
+                'virtual_account_name' => $responseData['virtualAccountData']['virtualAccountName'] ?? null,
+                'total_amount' => $responseData['virtualAccountData']['totalAmount']['value'] ?? null,
+                'expired_date' => $responseData['virtualAccountData']['expiredDate'] ?? null,
+                'how_to_pay_page' => $howToPayPage,
+                'how_to_pay_api' => $howToPayApi,
+                'response_code' => $responseData['responseCode'] ?? null,
+                'response_message' => $responseData['responseMessage'] ?? null,
+                'full_response' => $responseData
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU VA Generation Exception', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ];
+        }
+    }
+
+    /**
+     * Get available banks for VA generation
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDokuAvailableBanks()
+    {
+        try {
+            $banks = config('services.doku.banks');
+            $availableBanks = [];
+
+            foreach ($banks as $code => $config) {
+                $availableBanks[] = [
+                    'code' => $code,
+                    'name' => $code,
+                    'dgpc' => $config['dgpc'],
+                    'channel' => $config['channel']
+                ];
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Available banks retrieved successfully',
+                'data' => $availableBanks
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error retrieving available banks',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Test endpoint for DOKU VA Generation
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function testDokuGenerateVA(Request $request)
+    {
+        try {
+            // Get available banks for validation
+            $banks = config('services.doku.banks');
+            $availableBanks = implode(',', array_keys($banks));
+
+            // Validate request
+            $validator = Validator::make($request->all(), [
+                'order_id' => 'required|string',
+                'user_name' => 'required|string',
+                'user_email' => 'required|email',
+                'user_phone' => 'required|string',
+                'amount' => 'required|numeric|min:0',
+                'bank' => 'nullable|string|in:' . $availableBanks,
+                'customer_no' => 'nullable|string',
+                'channel' => 'nullable|string'
+            ], [
+                'bank.in' => 'Invalid bank selection. Available banks: ' . $availableBanks
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $result = $this->dokuGenerateVA($request->all());
+
+            if ($result['success']) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'DOKU Virtual Account generated successfully',
+                    'data' => $result
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to generate DOKU Virtual Account',
+                    'error' => $result['error'] ?? 'Unknown error',
+                    'code' => $result['code'] ?? 0
+                ], 500);
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('DOKU VA Test Exception', [
+                'error' => $e->getMessage(),
+                'code' => $e->getCode()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Exception occurred while testing DOKU VA generation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     private function dokuCheckout() {
 
     }
