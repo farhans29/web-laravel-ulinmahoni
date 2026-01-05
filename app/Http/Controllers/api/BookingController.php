@@ -1930,7 +1930,7 @@ class BookingController extends ApiController
     ): array {
         try {
             // Get B2B access token first
-            $tokenResult = $this->dokuGenerateB2BToken();
+            $tokenResult = $this->dokuGetTokenB2B();
 
             if (!$tokenResult['success']) {
                 throw new \Exception('Failed to get access token: ' . $tokenResult['error']);
@@ -1954,7 +1954,7 @@ class BookingController extends ApiController
             // Build request body
             $requestBody = [
                 'order' => [
-                    'order_id' => $orderId,
+                    'invoice_number' => $orderId,
                     'amount' => $amount
                 ],
                 'customer' => [
@@ -2005,7 +2005,7 @@ class BookingController extends ApiController
             ]);
 
             // Make API request
-            $baseUrl = config('services.doku.base_url');
+            $baseUrl = config('services.doku.api_url');
             $url = $baseUrl . '/credit-card/v1/payment-page';
 
             $ch = curl_init($url);
@@ -2053,19 +2053,19 @@ class BookingController extends ApiController
                 );
             }
 
-            // Check response code
-            if (!isset($responseData['response_code']) || $responseData['response_code'] !== '2005500') {
+            // Check if payment page URL exists (success indicator for CC API)
+            if (!isset($responseData['credit_card_payment_page']['url'])) {
                 throw new \Exception(
-                    "CC Payment Page Generation Failed: " .
-                    ($responseData['response_message'] ?? 'Unknown error')
+                    "CC Payment Page Generation Failed: Payment URL not found in response"
                 );
             }
 
             return [
                 'success' => true,
+                'invoice_number' => $responseData['order']['invoice_number'] ?? $orderId,
                 'payment_url' => $responseData['credit_card_payment_page']['url'],
-                'response_code' => $responseData['response_code'],
-                'response_message' => $responseData['response_message'],
+                'order_id' => $orderId,
+                'amount' => $amount,
                 'raw_response' => $responseData
             ];
 
