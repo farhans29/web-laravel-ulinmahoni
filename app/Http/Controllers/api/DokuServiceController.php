@@ -284,7 +284,7 @@ class DokuServiceController extends ApiController
 
             // Update transaction status to success
             $transaction->update([
-                'transaction_status' => 'success',
+                'transaction_status' => 'paid',
                 'paid_at' => now(),
             ]);
 
@@ -669,6 +669,59 @@ class DokuServiceController extends ApiController
                 return response()->json($responseData, 404);
             }
 
+            // Check if there's already a successful transaction log for this invoice (idempotency check)
+            $existingLog = \App\Models\TransactionLogging::where('invoice_number', $invoiceNumber)
+                ->where('status', 'SUCCESS')
+                ->first();
+
+            $transaction = \App\Models\Transaction::where('order_id', $invoiceNumber)->first();
+
+            if ($existingLog && $transaction && $transaction->transaction_status === 'paid') {
+                \Log::info('DOKU QR Payment Notification: Payment already processed', [
+                    'invoice_number' => $invoiceNumber,
+                    'existing_log_id' => $existingLog->id,
+                    'transaction_status' => $transaction->transaction_status
+                ]);
+
+                // Return success response even if already processed (idempotent)
+                $responseData = [
+                    'responseCode' => '2005100',
+                    'responseMessage' => 'Success',
+                    'invoiceNumber' => $invoiceNumber,
+                    'transactionStatus' => $transactionStatus,
+                    'amount' => [
+                        'value' => (float) $amount,
+                        'currency' => 'IDR'
+                    ]
+                ];
+
+                return response()->json($responseData, 200);
+            }
+
+            // Update transaction status to paid if payment is successful
+            if ($transactionStatus === 'SUCCESS' && $transaction) {
+                $transaction->update([
+                    'transaction_status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+
+                // Update payment status
+                $payment = \App\Models\Payment::where('order_id', $invoiceNumber)->first();
+                if ($payment) {
+                    $payment->update([
+                        'payment_status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+                }
+
+                \Log::info('DOKU QR Payment Notification: Transaction status updated to paid', [
+                    'order_id' => $invoiceNumber,
+                    'transaction_id' => $transaction->idrec,
+                    'amount' => $amount,
+                    'paid_at' => now()
+                ]);
+            }
+
             // Find associated user by email or doku_id
             $user = User::where('email', $customerEmail)->first();
 
@@ -968,9 +1021,9 @@ class DokuServiceController extends ApiController
             $verificationReason = $request->input('verification.reason');
 
             // Check if transaction exists with invoice_number as order_id
-            $billExists = \App\Models\Transaction::where('order_id', $invoiceNumber)->exists();
+            $transaction = \App\Models\Transaction::where('order_id', $invoiceNumber)->first();
 
-            if (!$billExists) {
+            if (!$transaction) {
                 \Log::warning('DOKU Credit Card Payment Notification: Bill not found', [
                     'invoice_number' => $invoiceNumber,
                     'customer_id' => $customerId
@@ -1017,6 +1070,58 @@ class DokuServiceController extends ApiController
                 ]);
 
                 return response()->json($responseData, 404);
+            }
+
+            // Check if there's already a successful transaction log for this invoice (idempotency check)
+            $existingLog = \App\Models\TransactionLogging::where('invoice_number', $invoiceNumber)
+                ->where('status', 'SUCCESS')
+                ->first();
+
+            if ($existingLog && $transaction->transaction_status === 'paid') {
+                \Log::info('DOKU Credit Card Payment Notification: Payment already processed', [
+                    'invoice_number' => $invoiceNumber,
+                    'existing_log_id' => $existingLog->id,
+                    'transaction_status' => $transaction->transaction_status
+                ]);
+
+                // Return success response even if already processed (idempotent)
+                $responseData = [
+                    'responseCode' => '2005100',
+                    'responseMessage' => 'Success',
+                    'invoiceNumber' => $invoiceNumber,
+                    'originalRequestId' => $originalRequestId,
+                    'transactionStatus' => $transactionStatus,
+                    'amount' => [
+                        'value' => (float) $amount,
+                        'currency' => 'IDR'
+                    ]
+                ];
+
+                return response()->json($responseData, 200);
+            }
+
+            // Update transaction status to paid if payment is successful
+            if ($transactionStatus === 'SUCCESS') {
+                $transaction->update([
+                    'transaction_status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+
+                // Update payment status
+                $payment = \App\Models\Payment::where('order_id', $invoiceNumber)->first();
+                if ($payment) {
+                    $payment->update([
+                        'payment_status' => 'paid',
+                        'paid_at' => now(),
+                    ]);
+                }
+
+                \Log::info('DOKU Credit Card Payment Notification: Transaction status updated to paid', [
+                    'order_id' => $invoiceNumber,
+                    'transaction_id' => $transaction->idrec,
+                    'amount' => $amount,
+                    'paid_at' => now()
+                ]);
             }
 
             // Find associated user by email
