@@ -79,7 +79,7 @@
 
             <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
                 @csrf
-                <input type="hidden" id="name" name="name" value="{{ old('name') }}">
+                <input type="hidden" id="name" name="name" value="">
                 <div class="rounded-md shadow-sm space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
