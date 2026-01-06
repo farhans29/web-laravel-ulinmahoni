@@ -8,6 +8,7 @@ use App\Models\Room;
 use App\Models\Transaction;
 use App\Models\Property;
 use App\Notifications\BookingConfirmationNotification;
+use App\Jobs\ExpireBooking;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -590,6 +591,9 @@ class BookingController extends Controller
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
             $order_id = 'UMW-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
+            // Set expiration time to 1 hour from now
+            $expiredAt = now()->addHour();
+
             // Prepare transaction data
             $transactionData = [
                 'property_id' => $room->property_id,
@@ -622,6 +626,7 @@ class BookingController extends Controller
                 'transaction_code' => 'TRX-' . strtoupper(Str::random(16)),
                 'transaction_status' => 'pending',
                 'status' => '1',
+                'expired_at' => $expiredAt,
             ];
 
             // Create transaction
@@ -674,6 +679,11 @@ class BookingController extends Controller
             ];
 
             Payment::create($paymentData);
+
+            // Dispatch job to expire booking after 1 hour
+            ExpireBooking::dispatch($order_id)->delay($expiredAt);
+
+            Log::info("ExpireBooking job dispatched for order_id: {$order_id}, will expire at: {$expiredAt}");
 
             // Process payment with DOKU
             try {

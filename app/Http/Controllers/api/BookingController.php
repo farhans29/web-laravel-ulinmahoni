@@ -13,6 +13,7 @@ use App\Models\Transaction;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\VoucherService;
+use App\Jobs\ExpireBooking;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -412,6 +413,9 @@ class BookingController extends ApiController
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
             $order_id = 'UMA-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
+            // Set expiration time to 1 hour from now
+            $expiredAt = now()->addHour();
+
             // Prepare transaction data
             $transactionData = [
                 // USER DATAS
@@ -452,6 +456,7 @@ class BookingController extends ApiController
                 // DATES
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
+                'expired_at' => $expiredAt,
             ];
 
             // Create transaction
@@ -504,6 +509,11 @@ class BookingController extends ApiController
 
             Payment::create($paymentData);
 
+            // Dispatch job to expire booking after 1 hour
+            ExpireBooking::dispatch($order_id)->delay($expiredAt);
+
+            Log::info("ExpireBooking job dispatched for order_id: {$order_id}, will expire at: {$expiredAt}");
+
             // Process payment with DOKU
             // $dokuPaymentResponse = $this->processDokuPayment([
             //     'order_id' => $order_id,
@@ -535,7 +545,7 @@ class BookingController extends ApiController
                 'message' => 'Booking created successfully',
                 'data' => array_merge($transaction->toArray(), [
                     'payment_url' => $dokuPaymentResponse['payment_url'] ?? null,
-                    'expired_at' => $dokuPaymentResponse['expired_at'] ?? null
+                    'expired_at' => $expiredAt->toISOString()
                 ])
             ], 201);
 
@@ -1642,6 +1652,28 @@ class BookingController extends ApiController
             $result = $this->dokuGenerateVA($request->all());
 
             if ($result['success']) {
+                // Update transaction with VA details
+                $transaction = Transaction::where('order_id', $request->order_id)->first();
+
+                if ($transaction) {
+                    $transaction->update([
+                        'virtual_account_no' => $result['virtual_account_no'],
+                        'payment_bank' => $result['bank'], // Bank name in uppercase (e.g., MANDIRI, CIMB)
+                        'transaction_type' => strtolower($result['bank']), // Bank name in lowercase (e.g., mandiri, cimb)
+                    ]);
+
+                    Log::info('Transaction updated with VA details', [
+                        'order_id' => $request->order_id,
+                        'virtual_account_no' => $result['virtual_account_no'],
+                        'payment_bank' => $result['bank'],
+                        'transaction_type' => strtolower($result['bank'])
+                    ]);
+                } else {
+                    Log::warning('Transaction not found for VA update', [
+                        'order_id' => $request->order_id
+                    ]);
+                }
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'DOKU Virtual Account generated successfully',

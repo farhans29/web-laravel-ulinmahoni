@@ -234,9 +234,10 @@
                                 <!-- <p class="text-sm text-gray-600">Harga Harian: {{ number_format($booking->daily_price, 0) }}</p> -->
                                 <p class="text-sm text-gray-600">Harga Kamar: Rp <span id="summaryRoomPrice">{{ number_format($booking->room_price, 0) }}</span></p>
                                 {{-- <p class="text-sm text-gray-600">Biaya Admin: {{ number_format($booking->admin_fees, 0) }}</p> --}}
-                                <p class="text-sm text-gray-600">Biaya Layanan: Rp <span id="summaryServiceFee">{{ number_format($booking->service_fees, 0) }}</span></p>
+                                <p class="text-sm text-gray-600 mt-2 pt-2 border-t">Subtotal: Rp <span id="summarySubtotal">{{ number_format($booking->room_price + ($booking->admin_fees ?? 0), 0) }}</span></p>
                                 <p id="summaryDiscountRow" class="text-sm text-green-600 hidden">Diskon Voucher: -Rp <span id="summaryDiscountAmount">0</span></p>
-                                <p class="text-sm font-medium text-gray-900 mt-2 pt-2 border-t">Total: Rp <span id="summaryTotal">{{ number_format($booking->grandtotal_price, 0) }}</span></p>
+                                <p class="text-sm text-gray-600">Biaya Layanan: +Rp <span id="summaryServiceFee">{{ number_format($booking->service_fees, 0) }}</span></p>
+                                <p class="text-sm font-bold text-gray-900 mt-2 pt-2 border-t">Grand Total: Rp <span id="summaryTotal">{{ number_format($booking->grandtotal_price, 0) }}</span></p>
                             </div>
                         </div>
                     </div>
@@ -506,6 +507,8 @@
             const subtotalAfterDiscount = subtotalBeforeServiceFee - discountAmount;
             const finalTotal = subtotalAfterDiscount + serviceFee;
 
+            // Update all price elements
+            document.getElementById('summarySubtotal').textContent = subtotalBeforeServiceFee.toLocaleString('id-ID');
             document.getElementById('summaryDiscountAmount').textContent = discountAmount.toLocaleString('id-ID');
             document.getElementById('summaryTotal').textContent = finalTotal.toLocaleString('id-ID');
 
