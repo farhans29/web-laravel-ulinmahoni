@@ -4,110 +4,148 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Property;
+use App\Models\Room;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class AllPropertiesController extends Controller
 {
     public function index(Request $request)
     {
         try {
-            $query = Property::query()->where('status', 1);
+            // Start with rooms query joined with properties
+            $query = Room::query()
+                ->join('m_properties', 'm_rooms.property_id', '=', 'm_properties.idrec')
+                ->where('m_rooms.status', 1)
+                ->where('m_properties.status', 1)
+                ->select('m_rooms.*');
 
-            // Apply filters if provided
+            // Apply property type filter
             if ($request->has('type') && !empty($request->type)) {
-                $query->where('tags', $request->type);
+                $query->where('m_properties.tags', $request->type);
             }
 
+            // Apply search filter (search in property name, room name, description, address)
             if ($request->has('search') && !empty($request->search)) {
                 $search = $request->search;
                 $query->where(function($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%")
-                      ->orWhere('address', 'like', "%{$search}%");
+                    $q->where('m_properties.name', 'like', "%{$search}%")
+                      ->orWhere('m_rooms.name', 'like', "%{$search}%")
+                      ->orWhere('m_properties.description', 'like', "%{$search}%")
+                      ->orWhere('m_properties.address', 'like', "%{$search}%");
                 });
             }
 
+            // Apply location filters
             if ($request->has('province') && !empty($request->province)) {
-                $query->where('province', $request->province);
+                $query->where('m_properties.province', $request->province);
             }
 
             if ($request->has('city') && !empty($request->city)) {
-                $query->where('city', $request->city);
+                $query->where('m_properties.city', $request->city);
             }
+
+            // Determine the period (daily or monthly)
+            $period = strtolower($request->get('period', 'monthly'));
 
             // Handle period filter (daily or monthly)
-            if ($request->has('period') && !empty($request->period)) {
-                $period = strtolower($request->period);
+            if ($period === 'daily' || $period === '1_day') {
+                // Filter rooms that have daily pricing
+                $query->whereNotNull('m_rooms.price_original_daily')
+                      ->where('m_rooms.price_original_daily', '>', 0);
 
-                if ($period === 'daily' || $period === '1_day') {
-                    // Filter properties that have daily pricing
-                    $query->whereNotNull('price_original_daily')
-                          ->where('price_original_daily', '>', 0);
-                } elseif ($period === 'monthly' || $period === '1_month') {
-                    // Filter properties that have monthly pricing
-                    $query->whereNotNull('price_original_monthly')
-                          ->where('price_original_monthly', '>', 0);
-                }
-            }
-
-            // Handle price filters based on period
-            if ($request->has('period') && !empty($request->period)) {
-                $period = strtolower($request->period);
-
-                if ($period === 'daily' || $period === '1_day') {
-                    if ($request->has('price_min') && !empty($request->price_min)) {
-                        $query->where('price_original_daily', '>=', $request->price_min);
-                    }
-                    if ($request->has('price_max') && !empty($request->price_max)) {
-                        $query->where('price_original_daily', '<=', $request->price_max);
-                    }
-                } elseif ($period === 'monthly' || $period === '1_month') {
-                    if ($request->has('price_min') && !empty($request->price_min)) {
-                        $query->where('price_original_monthly', '>=', $request->price_min);
-                    }
-                    if ($request->has('price_max') && !empty($request->price_max)) {
-                        $query->where('price_original_monthly', '<=', $request->price_max);
-                    }
-                }
-            } else {
-                // Default to monthly if no period specified
+                // Apply price filters for daily
                 if ($request->has('price_min') && !empty($request->price_min)) {
-                    $query->where('price_original_monthly', '>=', $request->price_min);
+                    $query->where('m_rooms.price_original_daily', '>=', $request->price_min);
                 }
                 if ($request->has('price_max') && !empty($request->price_max)) {
-                    $query->where('price_original_monthly', '<=', $request->price_max);
+                    $query->where('m_rooms.price_original_daily', '<=', $request->price_max);
+                }
+            } else {
+                // Filter rooms that have monthly pricing
+                $query->whereNotNull('m_rooms.price_original_monthly')
+                      ->where('m_rooms.price_original_monthly', '>', 0);
+
+                // Apply price filters for monthly
+                if ($request->has('price_min') && !empty($request->price_min)) {
+                    $query->where('m_rooms.price_original_monthly', '>=', $request->price_min);
+                }
+                if ($request->has('price_max') && !empty($request->price_max)) {
+                    $query->where('m_rooms.price_original_monthly', '<=', $request->price_max);
                 }
             }
 
-            // Handle date filters (check_in and check_out)
-            // Note: This is a basic implementation. For real availability checking,
-            // you'd need to check against bookings table
-            if ($request->has('check_in') && !empty($request->check_in)) {
-                // Store check_in date for view
-                $checkIn = $request->check_in;
-            }
+            // Handle availability checking if dates are provided
+            if ($request->has('check_in') && !empty($request->check_in) &&
+                $request->has('check_out') && !empty($request->check_out)) {
 
-            if ($request->has('check_out') && !empty($request->check_out)) {
-                // Store check_out date for view
-                $checkOut = $request->check_out;
+                $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
+                $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+
+                // Exclude rooms that have conflicting bookings
+                $query->whereNotExists(function($subQuery) use ($checkIn, $checkOut) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('t_transactions')
+                        ->whereColumn('t_transactions.room_id', 'm_rooms.idrec')
+                        ->where('t_transactions.status', '1')
+                        ->whereNotIn('t_transactions.transaction_status', ['cancelled', 'expired'])
+                        ->where('t_transactions.check_in', '<', $checkOut)
+                        ->where('t_transactions.check_out', '>', $checkIn);
+                });
             }
 
             // Order by created_at (newest first)
-            $query->orderBy('created_at', 'desc');
+            $query->orderBy('m_rooms.created_at', 'desc');
 
             // Get paginated results
-            $properties = $query->paginate(12)->withQueryString();
+            $rooms = $query->with('property')->paginate(12)->withQueryString();
 
-            // Format each property with thumbnail and room prices
-            $properties->getCollection()->transform(function ($property) {
+            // Group rooms by property for better display
+            $groupedRooms = $rooms->getCollection()->groupBy('property_id');
+
+            // Transform to properties with available rooms
+            $properties = $groupedRooms->map(function($roomsGroup) use ($period) {
+                $property = $roomsGroup->first()->property;
+
+                // Add available rooms to property
+                $property->available_rooms = $roomsGroup->map(function($room) use ($period) {
+                    // Add current price based on period
+                    $room->current_price = $period === 'daily'
+                        ? $room->price_original_daily
+                        : $room->price_original_monthly;
+                    $room->current_period = $period;
+                    return $room;
+                });
+
+                // Add lowest price for display
+                $property->lowest_price = $roomsGroup->min(function($room) use ($period) {
+                    return $period === 'daily'
+                        ? $room->price_original_daily
+                        : $room->price_original_monthly;
+                });
+
                 return $this->formatProperty($property);
-            });
+            })->values();
+
+            // Create a paginator for the grouped results
+            $currentPage = $rooms->currentPage();
+            $perPage = $rooms->perPage();
+            $total = $rooms->total();
+
+            $propertiesPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
+                $properties,
+                $total,
+                $perPage,
+                $currentPage,
+                ['path' => $request->url(), 'query' => $request->query()]
+            );
 
             // Pass filter values to view
             $filters = [
                 'type' => $request->type ?? '',
-                'period' => $request->period ?? '',
+                'period' => $period,
                 'check_in' => $request->check_in ?? '',
                 'check_out' => $request->check_out ?? '',
                 'search' => $request->search ?? '',
@@ -117,8 +155,15 @@ class AllPropertiesController extends Controller
                 'price_max' => $request->price_max ?? '',
             ];
 
-            return view('pages.properties.index', compact('properties', 'filters'));
+            return view('pages.properties.index', [
+                'properties' => $propertiesPaginator,
+                'filters' => $filters
+            ]);
         } catch (Exception $e) {
+            \Log::error('Error in properties search: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'Error loading properties: ' . $e->getMessage());
         }
     }
