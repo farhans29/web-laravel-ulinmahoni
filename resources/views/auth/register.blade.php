@@ -79,7 +79,7 @@
 
             <form class="mt-8 space-y-6" method="POST" action="{{ route('register') }}">
                 @csrf
-                <input type="hidden" id="name" name="name" value="{{ old('name') }}">
+                <input type="hidden" id="name" name="name" value="">
                 <div class="rounded-md shadow-sm space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -269,8 +269,11 @@
                         lastNameInput.value = firstName;
                     }
 
-                    // Update the hidden name field with the first name
-                    document.getElementById('name').value = firstName;
+                    // Update the hidden name field with full name (first_name + last_name)
+                    // This matches the User model's getFullNameAttribute() logic
+                    const lastName = lastNameInput.value.trim();
+                    const fullName = (firstName + ' ' + lastName).trim();
+                    document.getElementById('name').value = fullName;
 
                     // Ensure username is populated from email with sanitization
                     const email = document.getElementById('email').value;
