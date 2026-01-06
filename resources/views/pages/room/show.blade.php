@@ -1119,7 +1119,11 @@
 
             // --- Initialization ---
             function initializeForm() {
-                // Get saved search state
+                // Get saved booking dates from room links
+                const savedBookingDates = localStorage.getItem('roomBookingDates');
+                const bookingDates = savedBookingDates ? JSON.parse(savedBookingDates) : null;
+
+                // Get saved search state (fallback)
                 const savedSearch = localStorage.getItem('propertySearch');
                 const searchState = savedSearch ? JSON.parse(savedSearch) : null;
 
@@ -1128,19 +1132,26 @@
                 const minCheckInDate = new Date(today);
                 minCheckInDate.setDate(today.getDate() + 14);
 
-                const defaultCheckIn = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
-                const defaultCheckOut = searchState?.check_out || new Date(minCheckInDate);
+                // Prioritize bookingDates, then searchState, then defaults
+                const defaultCheckIn = bookingDates?.check_in || searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
+                const defaultCheckOut = bookingDates?.check_out || searchState?.check_out || new Date(minCheckInDate);
 
-                // Set rent type from saved search if available
-                if (searchState?.period) {
+                // Set rent type from saved booking dates or search if available
+                const savedPeriod = bookingDates?.period || searchState?.period;
+                if (savedPeriod) {
                     const rentTypeSelect = document.getElementById('rent_type');
                     if (rentTypeSelect) {
-                        rentTypeSelect.value = searchState.period;
+                        rentTypeSelect.value = savedPeriod;
                         updateRentalType(); // Update UI based on rent type
                     }
                 }
-                defaultCheckOut.setDate(minCheckInDate.getDate() + 1);
-                const defaultCheckOutStr = defaultCheckOut.toISOString().split('T')[0];
+
+                if (typeof defaultCheckOut === 'string') {
+                    // defaultCheckOut is already a string, use it directly
+                } else {
+                    defaultCheckOut.setDate(minCheckInDate.getDate() + 1);
+                }
+                const defaultCheckOutStr = typeof defaultCheckOut === 'string' ? defaultCheckOut : defaultCheckOut.toISOString().split('T')[0];
                 const minCheckInStr = minCheckInDate.toISOString().split('T')[0];
 
                 // Set initial values
