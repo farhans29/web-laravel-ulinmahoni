@@ -507,6 +507,10 @@
             const subtotalAfterDiscount = subtotalBeforeServiceFee - discountAmount;
             const finalTotal = subtotalAfterDiscount + serviceFee;
 
+            // Calculate final total: Subtotal - Discount + Service Fee
+            const subtotalAfterDiscount = subtotalBeforeServiceFee - discountAmount;
+            const finalTotal = subtotalAfterDiscount + serviceFee;
+
             // Update all price elements
             document.getElementById('summarySubtotal').textContent = subtotalBeforeServiceFee.toLocaleString('id-ID');
             document.getElementById('summaryDiscountAmount').textContent = discountAmount.toLocaleString('id-ID');
