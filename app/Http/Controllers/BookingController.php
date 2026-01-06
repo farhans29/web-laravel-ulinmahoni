@@ -459,6 +459,38 @@ class BookingController extends Controller
                 ->where('idrec', $id)
                 ->update($updateData);
 
+            // Log voucher usage if voucher was applied
+            if ($request->has('voucher_code') && $request->discount_amount > 0) {
+                try {
+                    $voucherService = app(\App\Services\VoucherService::class);
+
+                    // Find the voucher by code
+                    $voucher = \App\Models\Voucher::where('code', $request->voucher_code)->first();
+
+                    if ($voucher) {
+                        // Increment usage count
+                        $voucher->increment('current_usage_count');
+
+                        // Log usage
+                        $voucherService->logUsage([
+                            'voucher_id' => $voucher->idrec,
+                            'voucher_code' => $request->voucher_code,
+                            'user_id' => Auth::id(),
+                            'order_id' => $booking->order_id,
+                            'transaction_id' => $booking->idrec,
+                            'property_id' => $booking->property_id,
+                            'room_id' => $booking->room_id,
+                            'original_amount' => $booking->grandtotal_price + $request->discount_amount,
+                            'discount_amount' => $request->discount_amount,
+                            'final_amount' => $booking->grandtotal_price
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Voucher usage logging failed: ' . $e->getMessage());
+                    // Continue even if logging fails
+                }
+            }
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
@@ -602,14 +634,15 @@ class BookingController extends Controller
             }
 
             // Calculate dates and prices
-            $checkIn = Carbon::parse($request->check_in);
-            $checkOut = Carbon::parse($request->check_out);
+            // Set check-in time to 14:00:00 and check-out time to 12:00:00
+            $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
+            $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
             $bookingMonths = 0;
             $bookingDays = 0;
 
             if ($request->rent_type === 'monthly') {
                 $bookingMonths = (int) $request->months;
-                $checkOut = $checkIn->copy()->addMonths($bookingMonths);
+                $checkOut = $checkIn->copy()->addMonths($bookingMonths)->setTime(12, 0, 0);
                 $bookingDays = $checkIn->diffInDays($checkOut);
                 $totalPrice = $price * $bookingMonths;
             } else {
