@@ -8,10 +8,60 @@ use Illuminate\Http\Request;
 
 class UserController extends ApiController
 {
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $users = User::all();
+            $query = User::query();
+
+            // Filter by email
+            if ($request->has('email')) {
+                $query->where('email', $request->email);
+            }
+
+            // Filter by name (partial match)
+            if ($request->has('name')) {
+                $query->where('name', 'like', '%' . $request->name . '%');
+            }
+
+            // Filter by status
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Filter by id
+            if ($request->has('id')) {
+                $query->where('id', $request->id);
+            }
+
+            // Filter by phone_number
+            if ($request->has('phone_number')) {
+                $query->where('phone_number', $request->phone_number);
+            }
+
+            // Order by
+            $orderBy = $request->get('order_by', 'created_at');
+            $orderDirection = $request->get('order_direction', 'desc');
+            $query->orderBy($orderBy, $orderDirection);
+
+            // Pagination support
+            if ($request->has('limit') && $request->has('page')) {
+                $users = $query->paginate($request->limit);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Users retrieved successfully',
+                    'data' => $users->items(),
+                    'meta' => [
+                        'current_page' => $users->currentPage(),
+                        'last_page' => $users->lastPage(),
+                        'per_page' => $users->perPage(),
+                        'total' => $users->total()
+                    ]
+                ]);
+            }
+
+            $users = $query->get();
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Users retrieved successfully',
