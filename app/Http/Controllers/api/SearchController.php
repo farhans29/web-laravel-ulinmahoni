@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\ApiController;
 use App\Models\Property;
 use App\Models\Room;
 use Carbon\Carbon;
@@ -10,9 +10,15 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class AllPropertiesController extends Controller
+class SearchController extends ApiController
 {
-    public function index(Request $request)
+    /**
+     * Search for available rooms with filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function searchRooms(Request $request)
     {
         try {
             // Start with rooms query joined with properties
@@ -100,7 +106,8 @@ class AllPropertiesController extends Controller
             $query->orderBy('m_rooms.created_at', 'desc');
 
             // Get paginated results
-            $rooms = $query->with('property')->paginate(12)->withQueryString();
+            $perPage = $request->get('per_page', 12);
+            $rooms = $query->with('property')->paginate($perPage);
 
             // Group rooms by property for better display
             $groupedRooms = $rooms->getCollection()->groupBy('property_id');
@@ -110,110 +117,87 @@ class AllPropertiesController extends Controller
                 $property = $roomsGroup->first()->property;
 
                 // Add available rooms to property
-                $property->available_rooms = $roomsGroup->map(function($room) use ($period) {
+                $availableRooms = $roomsGroup->map(function($room) use ($period) {
                     // Add current price based on period
-                    $room->current_price = $period === 'daily'
+                    $currentPrice = $period === 'daily'
                         ? $room->price_original_daily
                         : $room->price_original_monthly;
-                    $room->current_period = $period;
-                    return $room;
+
+                    return [
+                        'id' => $room->idrec,
+                        'slug' => $room->slug,
+                        'name' => $room->name,
+                        'image' => $room->image,
+                        'images' => $room->images,
+                        'bed_count' => $room->bed_count,
+                        'room_size' => $room->room_size,
+                        'current_price' => $currentPrice,
+                        'current_period' => $period,
+                        'price_daily' => $room->price_original_daily,
+                        'price_monthly' => $room->price_original_monthly,
+                    ];
                 });
 
-                // Add lowest price for display
-                $property->lowest_price = $roomsGroup->min(function($room) use ($period) {
+                // Calculate lowest price
+                $lowestPrice = $roomsGroup->min(function($room) use ($period) {
                     return $period === 'daily'
                         ? $room->price_original_daily
                         : $room->price_original_monthly;
                 });
 
-                return $this->formatProperty($property);
+                return [
+                    'id' => $property->idrec,
+                    'name' => $property->name,
+                    'slug' => $property->slug,
+                    'tags' => $property->tags,
+                    'address' => $property->address,
+                    'city' => $property->city,
+                    'province' => $property->province,
+                    'image' => $property->image,
+                    'images' => $property->images,
+                    'features' => $property->features,
+                    'available_rooms_count' => $availableRooms->count(),
+                    'available_rooms' => $availableRooms,
+                    'lowest_price' => $lowestPrice,
+                ];
             })->values();
 
-            // Create a paginator for the grouped results
-            $currentPage = $rooms->currentPage();
-            $perPage = $rooms->perPage();
-            $total = $rooms->total();
-
-            $propertiesPaginator = new \Illuminate\Pagination\LengthAwarePaginator(
-                $properties,
-                $total,
-                $perPage,
-                $currentPage,
-                ['path' => $request->url(), 'query' => $request->query()]
-            );
-
-            // Pass filter values to view
-            $filters = [
-                'type' => $request->type ?? '',
-                'period' => $period,
-                'check_in' => $request->check_in ?? '',
-                'check_out' => $request->check_out ?? '',
-                'search' => $request->search ?? '',
-                'province' => $request->province ?? '',
-                'city' => $request->city ?? '',
-                'price_min' => $request->price_min ?? '',
-                'price_max' => $request->price_max ?? '',
-            ];
-
-            return view('pages.properties.index', [
-                'properties' => $propertiesPaginator,
-                'filters' => $filters
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Rooms retrieved successfully',
+                'data' => $properties,
+                'meta' => [
+                    'current_page' => $rooms->currentPage(),
+                    'last_page' => $rooms->lastPage(),
+                    'per_page' => $rooms->perPage(),
+                    'total' => $rooms->total(),
+                    'from' => $rooms->firstItem(),
+                    'to' => $rooms->lastItem(),
+                ],
+                'filters' => [
+                    'type' => $request->type ?? '',
+                    'period' => $period,
+                    'check_in' => $request->check_in ?? '',
+                    'check_out' => $request->check_out ?? '',
+                    'search' => $request->search ?? '',
+                    'province' => $request->province ?? '',
+                    'city' => $request->city ?? '',
+                    'price_min' => $request->price_min ?? '',
+                    'price_max' => $request->price_max ?? '',
+                ]
             ]);
+
         } catch (Exception $e) {
-            \Log::error('Error in properties search: ' . $e->getMessage(), [
+            \Log::error('Error in room search API: ' . $e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->with('error', 'Error loading properties: ' . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error searching rooms',
+                'error' => config('app.debug') ? $e->getMessage() : 'An error occurred'
+            ], 500);
         }
     }
-
-    /**
-     * Format a property model instance with thumbnail and room prices.
-     *
-     * @param Property $property The property model instance to format
-     * @return Property The property with additional formatted data
-     */
-    private function formatProperty($property)
-    {
-        // Get the lowest room price if available
-        $roomPrice = $property->rooms()
-            ->whereNotNull('price_original_monthly')
-            ->where('price_original_monthly', '>', 0)
-            ->min('price_original_monthly');
-
-        // Get all property images using the accessor
-        $images = $property->images;
-
-        // Use the first image from the images array as the main image, fallback to property image
-        $mainImage = !empty($images) ? $images[0]['image'] : $property->image;
-
-        // Get thumbnail - prioritize images with thumbnail field
-        $thumbnail = null;
-        if (!empty($images)) {
-            // Find first image with thumbnail
-            foreach ($images as $image) {
-                if (!empty($image['thumbnail'])) {
-                    $thumbnail = $image['thumbnail'];
-                    break;
-                }
-            }
-            // If no thumbnail found, use the first image
-            if (!$thumbnail && !empty($images[0]['image'])) {
-                $thumbnail = $images[0]['image'];
-            }
-        }
-        // Fallback to property image if no thumbnail
-        if (!$thumbnail) {
-            $thumbnail = $property->image;
-        }
-
-        // Add formatted data to property
-        $property->formatted_main_image = $mainImage;
-        $property->formatted_thumbnail = $thumbnail;
-        $property->formatted_images = $images;
-        $property->formatted_room_price = $roomPrice ?? $property->price_original_monthly;
-
-        return $property;
-    }
-} 
+}

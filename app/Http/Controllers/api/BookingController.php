@@ -414,8 +414,9 @@ class BookingController extends ApiController
             $adminFees = 0;
             $serviceFees = 30000;
             $grandtotalPrice = 0;
-            $checkIn = Carbon::parse($request->check_in);
-            $checkOut = Carbon::parse($request->check_out);
+            // Set check-in time to 14:00:00 and check-out time to 12:00:00
+            $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
+            $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
 
             if ($request->has('booking_days') && $request->booking_days > 0) {
                 // DAILY BOOKING

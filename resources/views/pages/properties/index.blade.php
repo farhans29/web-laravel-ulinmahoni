@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Properties for Rent - Ulin Mahoni</title>
-    <meta name="description" content="Find your perfect rental property. Browse houses, apartments, villas, and hotels for rent.">
-    
+    <title>Available Rooms - Ulin Mahoni</title>
+    <meta name="description" content="Find available rooms for rent. Browse by daily or monthly rates with real-time availability.">
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.ico') }}">
-    
+
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     @include('components.homepage.styles')
-    
+
     @stack('styles')
 </head>
 <body class="bg-gray-50">
@@ -22,15 +22,15 @@
     <main class="container mx-auto px-4 py-8">
         <!-- Page Header -->
         <div class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Properti Tersedia</h1>
-            <p class="text-gray-600">Cari properti yang ideal untuk Anda</p>
-            
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Kamar Tersedia</h1>
+            <p class="text-gray-600">Cari kamar yang ideal untuk Anda</p>
+
             <!-- Active Filters -->
             @if(request()->anyFilled(['type', 'period', 'check_in', 'check_out']))
                 <div class="mt-4 bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
                     <div class="flex flex-wrap items-center gap-2 text-sm">
-                        <span class="font-medium text-gray-700">Filter  :</span>
-                        
+                        <span class="font-medium text-gray-700">Filter Aktif:</span>
+
                         @if(request('type'))
                             <span class="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1.5 rounded-full flex items-center">
                                 {{ ucfirst(request('type')) }}
@@ -39,16 +39,16 @@
                                 </a>
                             </span>
                         @endif
-                        
+
                         @if(request('period'))
                             <span class="bg-green-100 text-green-800 text-xs font-medium px-3 py-1.5 rounded-full flex items-center">
-                                {{ ucfirst(request('period')) }} Rent
+                                {{ ucfirst(request('period')) }}
                                 <a href="{{ request()->fullUrlWithQuery(['period' => null]) }}" class="ml-1.5 text-green-600 hover:text-green-800">
                                     <i class="fas fa-times text-xs"></i>
                                 </a>
                             </span>
                         @endif
-                        
+
                         @if(request('check_in') && request('check_out'))
                             <span class="bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1.5 rounded-full flex items-center">
                                 <i class="far fa-calendar-alt mr-1"></i>
@@ -58,15 +58,15 @@
                                 </a>
                             </span>
                         @endif
-                        
+
                         <a href="{{ route('properties.index') }}" class="ml-auto text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                            <i class="fas fa-times mr-1"></i> Hapus Filter
+                            <i class="fas fa-times mr-1"></i> Hapus Semua Filter
                         </a>
                     </div>
                 </div>
             @endif
         </div>
-        
+
         <!-- Search and Filters -->
         <div class="mb-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <form action="{{ route('properties.index') }}" method="GET" class="p-5">
@@ -77,7 +77,7 @@
                         <div class="relative">
                             <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <select name="type" class="w-full pl-10 pr-3 h-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm">
-                                <option value="">Semua Tipe Properti</option>
+                                <option value="">Semua Tipe</option>
                                 <option value="Kos" {{ request('type') == 'Kos' ? 'selected' : '' }}>Kos</option>
                                 <option value="Apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
                                 <option value="Villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
@@ -85,226 +85,233 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- Rent Period -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Periode Sewa</label>
                         <div class="relative">
                             <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <select name="period" class="w-full pl-10 pr-3 h-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm">
-                                <option value="">Semua Periode</option>
-                                <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>Daily</option>
-                                <option value="monthly" {{ request('period') == 'monthly' ? 'selected' : '' }}>Monthly</option>
+                                <option value="monthly" {{ request('period') == 'monthly' || !request('period') ? 'selected' : '' }}>Bulanan</option>
+                                <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>Harian</option>
                             </select>
                         </div>
                     </div>
-                    
+
                     <!-- Check-in Date -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Check In</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Check In</label>
                         <div class="relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input 
-                                type="date" 
-                                name="check_in" 
+                            <input
+                                type="date"
+                                name="check_in"
                                 value="{{ request('check_in') }}"
                                 min="{{ now()->format('Y-m-d') }}"
                                 class="w-full pl-10 pr-3 h-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm"
                                 onchange="document.querySelector('input[name=check_out]').min = this.value">
                         </div>
                     </div>
-                    
+
                     <!-- Check-out Date -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Tanggal Check Out</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Check Out</label>
                         <div class="relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input 
-                                type="date" 
-                                name="check_out" 
+                            <input
+                                type="date"
+                                name="check_out"
                                 value="{{ request('check_out') }}"
                                 min="{{ request('check_in') ?? now()->format('Y-m-d') }}"
                                 class="w-full pl-10 pr-3 h-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm">
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mt-5 flex justify-between items-center">
-                    <button 
-                        type="button" 
-                        onclick="window.location.href='{{ route('properties.index') }}'" 
+                    <button
+                        type="button"
+                        onclick="window.location.href='{{ route('properties.index') }}'"
                         class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                        Reset All
+                        Reset
                     </button>
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
                         <i class="fas fa-search mr-2"></i>
-                        Cari Properti
+                        Cari Kamar
                     </button>
                 </div>
             </form>
         </div>
-        
-        <!-- Property Listings -->
+
+        <!-- Property and Room Listings -->
         @if($properties->count() > 0)
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div class="space-y-8">
                 @foreach($properties as $property)
                     @php
-                        $route = match($property->tags) {
+                        $propertyRoute = match($property->tags) {
                             'Kos' => route('houses.show', $property->idrec),
                             'Apartment' => route('apartments.show', $property->idrec),
                             'Villa' => route('villas.show', $property->idrec),
                             'Hotel' => route('hotels.show', $property->idrec),
                             default => route('properties.show', $property->idrec)
                         };
-                        
+
                         $features = is_string($property->features) ? json_decode($property->features, true) : ($property->features ?? []);
+                        $availableRooms = $property->available_rooms ?? collect();
+
+                        // Get property thumbnail
+                        $images = $property->images ?? [];
+                        $thumbnail = null;
+                        if (!empty($images)) {
+                            foreach ($images as $image) {
+                                if (!empty($image['image'])) {
+                                    $thumbnail = $image['image'];
+                                    break;
+                                }
+                            }
+                        }
+                        if (!$thumbnail) {
+                            $thumbnail = $property->image;
+                        }
                     @endphp
-                    
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 flex flex-col h-full">
-                        <!-- Image Section -->
-                        <a href="{{ $route }}" class="block overflow-hidden">
-                            <div class="relative aspect-[4/3] bg-gray-100">
-                                @php
-                                    // Get images array from the property
-                                    $images = $property->images ?? [];
 
-                                    // Debug: Log to console
-                                    // echo "<script>console.log('Property ID: " . $property->idrec . "');</script>";
-                                    // echo "<script>console.log('Images count: " . count($images) . "');</script>";
-                                    // echo "<script>console.log('Images data: ', " . json_encode($images) . ");</script>";
-                                    // echo "<script>console.log('Property image: " . ($property->image ?? 'null') . "');</script>";
-
-                                    // Find thumbnail - prioritize images with thumbnail field
-                                    $thumbnail = null;
-                                    if (!empty($images)) {
-                                        foreach ($images as $image) {
-                                            if (!empty($image['image'])) {
-                                                $thumbnail = $image['image'];
-                                                break;
-                                            }
-                                        }
-                                        // If no thumbnail found, use the first image
-                                        if (!$thumbnail && !empty($images[0]['image'])) {
-                                            $thumbnail = $images[0]['image'];
-                                        }
-                                    }
-                                    // Fallback to property image if no thumbnail
-                                    if (!$thumbnail) {
-                                        $thumbnail = $property->image;
-                                    }
-
-                                    $displayImage = $thumbnail;
-
-                                    // echo "<script>console.log('Display Image: " . ($displayImage ?? 'null') . "');</script>";
-                                @endphp
-
-                                @if($displayImage)
-                                    <div class="w-full h-full">
-                                        <img
-                                            src="{{ env('ADMIN_URL') }}/storage/{{ $displayImage }}"
-                                            alt="{{ $property->name }}"
-                                            class="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                            loading="lazy"
-                                            style="aspect-ratio: 4/3;"
-                                            onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';">
-                                    </div>
-                                @else
-                                    <div class="w-full h-full">
-                                        <div class="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-100" style="aspect-ratio: 4/3;">
-                                            <i class="fas fa-image text-4xl mb-2"></i>
-                                            <span class="text-sm">No Image Available</span>
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <!-- Property Type Badge -->
-                                <span class="absolute top-3 left-3 bg-teal-600 text-white px-3 py-1 rounded-full text-xs font-medium shadow-md">
-                                    {{ $property->tags }}
-                                </span>
-
-                                <!-- Image Count Badge -->
-                                @if(!empty($images) && count($images) > 1)
-                                    <span class="absolute top-3 right-3 bg-black bg-opacity-60 text-white px-2.5 py-1 rounded-full text-xs font-medium shadow-md flex items-center">
-                                        <i class="fas fa-camera mr-1"></i>
-                                        {{ count($images) }}
-                                    </span>
-                                @endif
-
-                                <!-- Gradient Overlay -->
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-
-                            </div>
-                        </a>
-                        
-                        <!-- Content Section -->
-                        <div class="p-4 flex-grow flex flex-col">
-                            <a href="{{ $route }}" class="block">
-                                <h3 class="text-lg font-semibold text-gray-900 mb-1.5 line-clamp-1 hover:text-teal-600 transition-colors">
-                                    {{ $property->name }}
-                                </h3>
-                                
-                                <div class="flex items-center text-gray-500 text-sm mb-2">
-                                    <i class="fas fa-map-marker-alt mr-1.5"></i>
-                                    <span class="line-clamp-1">{{ $property->address }}</span>
-                                </div>
-                                
-                                @if($property->distance)
-                                    <div class="flex items-center text-gray-500 text-xs mb-3">
-                                        <i class="fas fa-route mr-1.5"></i>
-                                        <span>{{ number_format((float)$property->distance, 1) }} km from {{ $property->location }}</span>
-                                    </div>
-                                @endif
-                                
-                                <!-- Price -->
-                                <div class="mt-auto pt-3 border-t border-gray-100">
-                                    <div class="flex justify-between items-center">
-                                        <div>
-                                            @php
-                                                // Use formatted room price if available, otherwise use property price
-                                                $displayPrice = $property->formatted_room_price ?? $property->price_original_monthly;
-                                            @endphp
-                                            @if($displayPrice && $displayPrice > 0)
-                                                <span class="text-lg font-bold text-teal-600">
-                                                    Rp {{ number_format($displayPrice, 0, ',', '.') }}
-                                                </span>
-                                                <span class="text-sm text-gray-500">/bulan</span>
-                                            @else
-                                                <span class="text-sm text-gray-500 italic">
-                                                    Hubungi untuk harga
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <a href="{{ $route }}" class="text-sm text-teal-600 hover:text-teal-700 font-medium">
-                                            Selengkapnya <i class="fas fa-arrow-right ml-1"></i>
+                    <!-- Property Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <!-- Property Header -->
+                        <div class="p-5 border-b border-gray-100">
+                            <div class="flex items-start justify-between gap-4">
+                                <!-- Property Info -->
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <a href="{{ $propertyRoute }}" class="text-xl font-bold text-gray-800 hover:text-teal-600 transition-colors">
+                                            {{ $property->name }}
                                         </a>
+                                        <span class="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                                            {{ $property->tags }}
+                                        </span>
                                     </div>
-                                </div>
-                            </a>
-                            
-                            <!-- Features -->
-                            @if(!empty($features))
-                                <div class="mt-3 pt-3 border-t border-gray-100">
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach(array_slice($features, 0, 4) as $feature)
-                                            <span class="inline-block bg-gray-50 text-gray-600 text-xs px-2.5 py-1 rounded-full border border-gray-200">
-                                                {{ $feature }}
-                                            </span>
-                                        @endforeach
-                                        @if(count($features) > 4)
-                                            <span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-500 text-xs rounded-full">
-                                                +{{ count($features) - 4 }}
+
+                                    <div class="flex items-center text-gray-600 text-sm mb-2">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                        <span>{{ $property->address }}</span>
+                                    </div>
+
+                                    <div class="flex items-center gap-4 text-sm text-gray-500">
+                                        <span>
+                                            <i class="fas fa-door-open mr-1"></i>
+                                            {{ $availableRooms->count() }} kamar tersedia
+                                        </span>
+                                        @if($property->lowest_price)
+                                            <span>
+                                                <i class="fas fa-tag mr-1"></i>
+                                                Mulai dari <strong class="text-teal-600">Rp {{ number_format($property->lowest_price, 0, ',', '.') }}</strong>/{{ $filters['period'] == 'daily' ? 'hari' : 'bulan' }}
                                             </span>
                                         @endif
                                     </div>
                                 </div>
-                            @endif
+
+                                <!-- Property Image (Small) -->
+                                @if($thumbnail)
+                                    <a href="{{ $propertyRoute }}" class="hidden md:block flex-shrink-0">
+                                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $thumbnail }}"
+                                            alt="{{ $property->name }}"
+                                            class="w-24 h-24 object-cover rounded-lg"
+                                            onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzljYTZhYSI+Properti</dGV4dD48L3N2Zz4=';">
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Available Rooms Grid -->
+                        <div class="p-5 bg-gray-50">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                @foreach($availableRooms as $room)
+                                    @php
+                                        $roomRoute = route('rooms.show', $room->slug ?? $room->idrec);
+                                        $roomImages = $room->images ?? [];
+                                        $roomThumbnail = null;
+
+                                        if (!empty($roomImages)) {
+                                            foreach ($roomImages as $img) {
+                                                if (!empty($img['image'])) {
+                                                    $roomThumbnail = $img['image'];
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (!$roomThumbnail) {
+                                            $roomThumbnail = $room->image ?? $thumbnail;
+                                        }
+                                    @endphp
+
+                                    <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200">
+                                        <!-- Room Image -->
+                                        <a href="{{ $roomRoute }}" class="block overflow-hidden">
+                                            <div class="relative aspect-[4/3] bg-gray-100">
+                                                @if($roomThumbnail)
+                                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $roomThumbnail }}"
+                                                        alt="{{ $room->name }}"
+                                                        class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+S2FtYXI8L3RleHQ+PC9zdmc+';">
+                                                @else
+                                                    <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                                        <i class="fas fa-door-open text-3xl"></i>
+                                                    </div>
+                                                @endif
+
+                                                @if(request('check_in') && request('check_out'))
+                                                    <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-md">
+                                                        <i class="fas fa-check mr-1"></i>Tersedia
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </a>
+
+                                        <!-- Room Info -->
+                                        <div class="p-3">
+                                            <a href="{{ $roomRoute }}">
+                                                <h4 class="font-semibold text-gray-800 mb-1 line-clamp-1 hover:text-teal-600 transition-colors">
+                                                    {{ $room->name }}
+                                                </h4>
+                                            </a>
+
+                                            <!-- Room Specs -->
+                                            @if($room->bed_count || $room->room_size)
+                                                <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                                                    @if($room->bed_count)
+                                                        <span><i class="fas fa-bed mr-1"></i>{{ $room->bed_count }}</span>
+                                                    @endif
+                                                    @if($room->room_size)
+                                                        <span><i class="fas fa-expand-arrows-alt mr-1"></i>{{ $room->room_size }}m²</span>
+                                                    @endif
+                                                </div>
+                                            @endif
+
+                                            <!-- Price -->
+                                            <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                                                <div>
+                                                    <div class="text-lg font-bold text-teal-600">
+                                                        Rp {{ number_format($room->current_price, 0, ',', '.') }}
+                                                    </div>
+                                                    <div class="text-xs text-gray-500">
+                                                        /{{ $room->current_period == 'daily' ? 'hari' : 'bulan' }}
+                                                    </div>
+                                                </div>
+                                                <a href="{{ $roomRoute }}" class="text-teal-600 hover:text-teal-700 text-sm font-medium">
+                                                    Lihat <i class="fas fa-arrow-right text-xs ml-1"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 @endforeach
             </div>
-            
+
             <!-- Pagination -->
             @if($properties->hasPages())
                 <div class="mt-10">
@@ -318,11 +325,17 @@
                     <div class="w-20 h-20 mx-auto mb-4 text-gray-300">
                         <i class="fas fa-search text-5xl"></i>
                     </div>
-                    <h3 class="text-xl font-medium text-gray-700 mb-2">Properti tidak ditemukan</h3>
-                    <p class="text-gray-500 mb-6">Tidak ada properti yang sesuai dengan kriteria pencarian Anda. Coba perbarui filter pencarian Anda.</p>
+                    <h3 class="text-xl font-medium text-gray-700 mb-2">Tidak ada kamar tersedia</h3>
+                    <p class="text-gray-500 mb-6">
+                        @if(request('check_in') && request('check_out'))
+                            Tidak ada kamar tersedia untuk tanggal yang dipilih. Coba ubah tanggal check-in atau check-out.
+                        @else
+                            Tidak ada kamar yang sesuai dengan kriteria pencarian Anda. Coba ubah filter pencarian.
+                        @endif
+                    </p>
                     <a href="{{ route('properties.index') }}" class="inline-flex items-center px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
                         <i class="fas fa-sync-alt mr-2"></i>
-                        Reset Filters
+                        Reset Filter
                     </a>
                 </div>
             </div>
@@ -332,7 +345,7 @@
     @include('components.homepage.footer')
 
     <!-- Back to Top Button -->
-    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300">
+    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 z-50">
         <i class="fas fa-arrow-up"></i>
     </button>
 
@@ -340,7 +353,7 @@
     <script>
         // Back to Top Button
         const backToTopBtn = document.getElementById('backToTop');
-        
+
         window.addEventListener('scroll', () => {
             if (window.pageYOffset > 300) {
                 backToTopBtn.classList.remove('opacity-0', 'invisible');
@@ -350,18 +363,18 @@
                 backToTopBtn.classList.add('opacity-0', 'invisible');
             }
         });
-        
+
         backToTopBtn.addEventListener('click', () => {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         });
-        
+
         // Set minimum checkout date based on check-in date
         const checkInInput = document.querySelector('input[name=check_in]');
         const checkOutInput = document.querySelector('input[name=check_out]');
-        
+
         if (checkInInput && checkOutInput) {
             checkInInput.addEventListener('change', function() {
                 if (this.value) {
@@ -373,7 +386,7 @@
             });
         }
     </script>
-    
+
     @stack('scripts')
 </body>
-</html> 
+</html>

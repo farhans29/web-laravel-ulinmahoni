@@ -59,6 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'phone_number',
         'password',
         'status',
+        'verified_at',
         'is_admin',
         'profile_photo_path',
         'is_google',
@@ -79,6 +80,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'phone_number',
         'status',
+        'verified_at',
         'profile_photo_path',
         'profile_photo_url'
     ];
