@@ -29,6 +29,89 @@ class BookingController extends Controller
     }
 
     /**
+     * Check and expire pending bookings that have passed their expiration time
+     * This runs automatically when users access their bookings
+     *
+     * @return void
+     */
+    private function checkAndExpireBookings()
+    {
+        try {
+            $now = now();
+
+            // Find all pending transactions that are past their expiration time
+            $expiredTransactions = Transaction::where('transaction_status', 'pending')
+                ->where('expired_at', '<=', $now)
+                ->whereNotNull('expired_at')
+                ->get();
+
+            if ($expiredTransactions->isEmpty()) {
+                return;
+            }
+
+            foreach ($expiredTransactions as $transaction) {
+                try {
+                    DB::beginTransaction();
+
+                    // Double check payment status
+                    $payment = Payment::where('order_id', $transaction->order_id)->first();
+                    if ($payment && $payment->payment_status === 'paid') {
+                        Log::info("Skipping expiration - Payment already completed for order_id: {$transaction->order_id}");
+                        DB::rollBack();
+                        continue;
+                    }
+
+                    // Update transaction status to expired
+                    $transaction->update([
+                        'transaction_status' => 'expired',
+                        'status' => '0', // Inactive
+                    ]);
+
+                    // Update payment status if exists
+                    if ($payment) {
+                        $payment->update([
+                            'payment_status' => 'expired'
+                        ]);
+                    }
+
+                    // Update booking status if exists
+                    $booking = Booking::where('order_id', $transaction->order_id)->first();
+                    if ($booking) {
+                        $booking->update([
+                            'status' => '0' // Inactive
+                        ]);
+                    }
+
+                    // Restore voucher usage count if voucher was used
+                    if ($transaction->voucher_id) {
+                        $voucher = \App\Models\Voucher::find($transaction->voucher_id);
+                        if ($voucher && $voucher->current_usage_count > 0) {
+                            $voucher->decrement('current_usage_count');
+                            Log::info("Restored voucher usage count for voucher_id: {$transaction->voucher_id}");
+                        }
+                    }
+
+                    DB::commit();
+                    Log::info("Auto-expired booking on user access for order_id: {$transaction->order_id}");
+
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    Log::error("Failed to auto-expire booking for order_id: {$transaction->order_id}", [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::error("Error in checkAndExpireBookings", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
+
+    /**
      * Send booking confirmation email to user
      *
      * @param \App\Models\User $user
@@ -102,7 +185,7 @@ class BookingController extends Controller
             // ->where('property_id', $property_id)
             ->where('room_id', $room_id)
             ->where('status', '1')  // Active/confirmed booking
-            ->whereNotIn('transaction_status', ['cancelled',])
+            ->whereNotIn('transaction_status', ['cancelled','expired'])
             ->where('check_in', '<', $check_out)
             ->where('check_out', '>', $check_in)
             ->limit(5)
@@ -398,16 +481,19 @@ class BookingController extends Controller
 
     public function index()
     {
+        // Auto-expire pending bookings when user accesses their bookings
+        $this->checkAndExpireBookings();
+
         $tab = request()->get('tab', 'all');
         $userId = Auth::id();
-        
+
         // Debug: Log the tab and user ID
         \Log::info('Bookings index', [
             'tab' => $tab,
             'user_id' => $userId,
             'url' => request()->fullUrl()
         ]);
-        
+
         // Get all bookings for the user with relationships
         $bookings = Transaction::with(['user', 'room', 'property'])
             ->where('user_id', $userId)
@@ -680,10 +766,8 @@ class BookingController extends Controller
 
             Payment::create($paymentData);
 
-            // Dispatch job to expire booking after 1 hour
-            ExpireBooking::dispatch($order_id)->delay($expiredAt);
-
-            Log::info("ExpireBooking job dispatched for order_id: {$order_id}, will expire at: {$expiredAt}");
+            // Booking will be automatically expired by scheduled task if not paid within 1 hour
+            Log::info("Booking created with expiration time: {$expiredAt} for order_id: {$order_id}");
 
             // Process payment with DOKU
             try {

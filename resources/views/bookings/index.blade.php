@@ -312,11 +312,11 @@
                                             // Handle pending status
                                             if ($status === 'pending') {
                                                 $shouldShowTimer = true;
-                                                if ($hoursDiff >= 1) {
-                                                    [$badgeBg, $badgeText, $dot, $transactionText] = ['bg-gray-100', 'text-gray-500', 'bg-gray-400', 'Expired'];
-                                                    $status = 'expired';
-                                                    $shouldShowTimer = false;
-                                                }
+                                                // if ($hoursDiff >= 1) {
+                                                //     [$badgeBg, $badgeText, $dot, $transactionText] = ['bg-gray-100', 'text-gray-500', 'bg-gray-400', 'Expired'];
+                                                //     $status = 'expired';
+                                                //     $shouldShowTimer = false;
+                                                // }
                                             }
 
                                             // Add timer
