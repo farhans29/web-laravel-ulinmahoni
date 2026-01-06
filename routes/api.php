@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\HealthCheckController;
 use App\Http\Controllers\Api\DokuServiceController as DokuController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\VoucherAdminController;
+use App\Http\Controllers\Api\SearchController;
 
 use App\Http\Middleware\VerifyApiKey;
 
@@ -157,6 +158,11 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', [VoucherAdminController::class, 'destroy']);
             Route::get('/{id}/usage-logs', [VoucherAdminController::class, 'usageLogs']);
             Route::post('/generate-code', [VoucherAdminController::class, 'generateCode']);
+        });
+
+        // SEARCH API ROUTES
+        Route::prefix('search')->group(function () {
+            Route::get('/rooms', [SearchController::class, 'searchRooms'])->name('api.search.rooms');
         });
 
         // COMMENTED FOR REVIEW

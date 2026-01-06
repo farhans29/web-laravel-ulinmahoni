@@ -87,14 +87,18 @@ class SearchController extends ApiController
             if ($request->has('check_in') && !empty($request->check_in) &&
                 $request->has('check_out') && !empty($request->check_out)) {
 
-                $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
-                $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+                // Use same time handling as BookingController's checkAvailability
+                // startOfDay() for check-in (00:00:00) and endOfDay() for check-out (23:59:59)
+                $checkIn = Carbon::parse($request->check_in)->startOfDay();
+                $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
                 // Exclude rooms that have conflicting bookings
+                // Match the exact logic from BookingController's checkAvailability function
                 $query->whereNotExists(function($subQuery) use ($checkIn, $checkOut) {
                     $subQuery->select(DB::raw(1))
                         ->from('t_transactions')
-                        ->whereColumn('t_transactions.room_id', 'm_rooms.idrec')
+                        ->whereColumn('t_transactions.property_id', 'm_rooms.property_id')  // Match property_id
+                        ->whereColumn('t_transactions.room_id', 'm_rooms.idrec')           // Match room_id
                         ->where('t_transactions.status', '1')
                         ->whereNotIn('t_transactions.transaction_status', ['cancelled', 'expired'])
                         ->where('t_transactions.check_in', '<', $checkOut)

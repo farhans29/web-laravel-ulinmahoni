@@ -131,6 +131,16 @@
                                         check_out: this.elements.check_out.type === 'date' ? this.elements.check_out.value : ''
                                     };
                                     localStorage.setItem('propertySearch', JSON.stringify(searchState));
+
+                                    // Also save to roomBookingDates for room detail page
+                                    if (searchState.check_in || searchState.check_out) {
+                                        const bookingDates = {
+                                            check_in: searchState.check_in,
+                                            check_out: searchState.check_out,
+                                            period: searchState.period
+                                        };
+                                        localStorage.setItem('roomBookingDates', JSON.stringify(bookingDates));
+                                    }
                                 });
                             }
                         });
