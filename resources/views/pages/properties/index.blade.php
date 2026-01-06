@@ -998,6 +998,45 @@
             if (room.image) return room.image;
             return getPropertyThumbnail(property);
         }
+
+        // Helper functions
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID').format(number);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function getPropertyRoute(property) {
+            const routes = {
+                'Kos': `/houses/${property.id}`,
+                'Apartment': `/apartments/${property.slug || property.id}`,
+                'Villa': `/villas/${property.slug || property.id}`,
+                'Hotel': `/hotels/${property.slug || property.id}`
+            };
+            return routes[property.tags] || `/properties/${property.slug || property.id}`;
+        }
+
+        function getPropertyThumbnail(property) {
+            if (property.images && property.images.length > 0) {
+                for (let image of property.images) {
+                    if (image.image) return image.image;
+                }
+            }
+            return property.image || null;
+        }
+
+        function getRoomThumbnail(room, property) {
+            if (room.images && room.images.length > 0) {
+                for (let image of room.images) {
+                    if (image.image) return image.image;
+                }
+            }
+            if (room.image) return room.image;
+            return getPropertyThumbnail(property);
+        }
     </script>
 
     @stack('scripts')
