@@ -635,8 +635,8 @@
                         <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300">
                             <div class="flex flex-col md:flex-row">
                                 <!-- Room Image -->
-                                <a href="${roomRoute}" class="room-link md:w-72 flex-shrink-0">
-                                    <div class="relative aspect-[4/3] md:aspect-auto md:h-full bg-gray-100">
+                                <a href="${roomRoute}" class="room-link md:w-48 flex-shrink-0">
+                                    <div class="relative aspect-[4/3] md:aspect-square bg-gray-100">
                                         ${roomThumbnail ? `
                                             <img src="${adminUrl}/storage/${roomThumbnail}"
                                                 alt="${room.name}"
