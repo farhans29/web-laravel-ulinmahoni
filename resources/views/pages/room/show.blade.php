@@ -996,8 +996,6 @@
                 const dailyRateDisplay = document.getElementById('dailyRateDisplay');
                 const monthlyRateDisplay = document.getElementById('monthlyRateDisplay');
                 const rateTypeDisplay = document.getElementById('rateTypeDisplay');
-                const savedSearch = localStorage.getItem('propertySearch');
-                const searchState = savedSearch ? JSON.parse(savedSearch) : null;
 
                 if (rentTypeSelect.value === 'monthly') {
                     // Show monthly component, hide daily component
@@ -1009,11 +1007,9 @@
                     monthlyRateDisplay.classList.remove('hidden');
                     rateTypeDisplay.textContent = 'Harga Bulanan';
 
-                    // Set months from saved search or default to 1
+                    // Set months to default to 1
                     if (monthsSelect) {
-                        monthsSelect.value = searchState?.period === 'monthly' && searchState?.months
-                            ? searchState.months
-                            : 1;
+                        monthsSelect.value = 1;
                         document.getElementById('bookingMonths').value = monthsSelect.value;
                     }
 
@@ -1023,7 +1019,7 @@
                     minCheckInDate.setDate(today.getDate() + 14);
 
                     if (checkInMonthlyInput) {
-                        checkInMonthlyInput.value = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
+                        checkInMonthlyInput.value = minCheckInDate.toISOString().split('T')[0];
                         // Copy value to check_in for form submission
                         if (checkInInput) checkInInput.value = checkInMonthlyInput.value;
                         checkInMonthlyInput.addEventListener('change', function() {
@@ -1051,7 +1047,7 @@
                     monthlyRateDisplay.classList.add('hidden');
                     rateTypeDisplay.textContent = 'Harga Harian';
 
-                    // Set dates from saved search or use defaults with 14-day minimum
+                    // Set dates to defaults with 14-day minimum
                     const today = new Date();
                     const minCheckInDate = new Date(today);
                     minCheckInDate.setDate(today.getDate() + 14);
@@ -1059,12 +1055,12 @@
                     minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
 
                     if (checkInInput) {
-                        checkInInput.value = searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
+                        checkInInput.value = minCheckInDate.toISOString().split('T')[0];
                         checkInInput.dispatchEvent(new Event('change'));
                     }
 
                     if (checkOutInput) {
-                        checkOutInput.value = searchState?.check_out || minCheckOutDate.toISOString().split('T')[0];
+                        checkOutInput.value = minCheckOutDate.toISOString().split('T')[0];
                         checkOutInput.dispatchEvent(new Event('change'));
                     }
                 }
@@ -1119,32 +1115,14 @@
 
             // --- Initialization ---
             function initializeForm() {
-                // Get saved booking dates from room links
-                const savedBookingDates = localStorage.getItem('roomBookingDates');
-                const bookingDates = savedBookingDates ? JSON.parse(savedBookingDates) : null;
-
-                // Get saved search state (fallback)
-                const savedSearch = localStorage.getItem('propertySearch');
-                const searchState = savedSearch ? JSON.parse(savedSearch) : null;
-
                 // Get current date for default values with 14 days minimum
                 const today = new Date();
                 const minCheckInDate = new Date(today);
                 minCheckInDate.setDate(today.getDate() + 14);
 
-                // Prioritize bookingDates, then searchState, then defaults
-                const defaultCheckIn = bookingDates?.check_in || searchState?.check_in || minCheckInDate.toISOString().split('T')[0];
-                const defaultCheckOut = bookingDates?.check_out || searchState?.check_out || new Date(minCheckInDate);
-
-                // Set rent type from saved booking dates or search if available
-                const savedPeriod = bookingDates?.period || searchState?.period;
-                if (savedPeriod) {
-                    const rentTypeSelect = document.getElementById('rent_type');
-                    if (rentTypeSelect) {
-                        rentTypeSelect.value = savedPeriod;
-                        updateRentalType(); // Update UI based on rent type
-                    }
-                }
+                // Use default dates
+                const defaultCheckIn = minCheckInDate.toISOString().split('T')[0];
+                const defaultCheckOut = new Date(minCheckInDate);
 
                 if (typeof defaultCheckOut === 'string') {
                     // defaultCheckOut is already a string, use it directly
@@ -1350,10 +1328,7 @@
                 if (!validateForm()) {
                     return;
                 }
-                
-                // Clear the search state from localStorage when booking is submitted
-                localStorage.removeItem('propertySearch');
-                
+
                 errorAlert.classList.add('hidden');
                 errorAlert.textContent = '';
                 loadingOverlay.classList.remove('hidden');

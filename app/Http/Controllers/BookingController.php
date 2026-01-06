@@ -634,21 +634,29 @@ class BookingController extends Controller
             }
 
             // Calculate dates and prices
-            // Set check-in time to 14:00:00 and check-out time to 12:00:00
-            $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
-            $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+            // Parse dates first without time for accurate day calculation
+            $checkInDate = Carbon::parse($request->check_in);
+            $checkOutDate = Carbon::parse($request->check_out);
+
+            // Calculate booking days using date-only comparison
             $bookingMonths = 0;
             $bookingDays = 0;
 
             if ($request->rent_type === 'monthly') {
                 $bookingMonths = (int) $request->months;
-                $checkOut = $checkIn->copy()->addMonths($bookingMonths)->setTime(12, 0, 0);
-                $bookingDays = $checkIn->diffInDays($checkOut);
+                $checkOutDate = $checkInDate->copy()->addMonths($bookingMonths);
+                $bookingDays = $checkInDate->diffInDays($checkOutDate);
                 $totalPrice = $price * $bookingMonths;
             } else {
-                $bookingDays = $checkIn->diffInDays($checkOut);
+                // For daily rentals, calculate the difference in days
+                $bookingDays = $checkInDate->diffInDays($checkOutDate);
                 $totalPrice = $price * $bookingDays;
             }
+
+            // Now set the proper check-in and check-out times for the transaction
+            // Set check-in time to 14:00:00 and check-out time to 12:00:00
+            $checkIn = $checkInDate->copy()->setTime(14, 0, 0);
+            $checkOut = $checkOutDate->copy()->setTime(12, 0, 0);
 
             // $adminFee = $totalPrice * 0.1; // 10% admin fee
             $adminFee = 0;
@@ -728,8 +736,8 @@ class BookingController extends Controller
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'room_name' => $room->name,
-                'booking_days' => $request->rent_type === 'daily' ? $bookingDays : null,
-                'booking_months' => $request->rent_type === 'monthly' ? $bookingMonths : null,
+                'booking_days' => $bookingDays,
+                'booking_months' => $bookingMonths,
                 'daily_price' => $request->rent_type === 'daily' ? $price : null,
                 'monthly_price'=> $request->rent_type === 'monthly' ? $price : null,
                 'room_price' => $totalPrice,
