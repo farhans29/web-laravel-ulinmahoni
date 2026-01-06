@@ -38,8 +38,26 @@
             </div>
         </div>
 
-        <!-- Search and Filters -->
+        <!-- View Toggle and Filters -->
         <div class="mb-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <!-- View Options -->
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700">Tampilan:</span>
+                    <div class="flex bg-gray-100 rounded-lg p-1">
+                        <button type="button" onclick="setView('categorical')" id="viewCategorical" class="px-4 py-1.5 text-sm font-medium rounded transition-colors">
+                            <i class="fas fa-th-large mr-1"></i> Kategori
+                        </button>
+                        <button type="button" onclick="setView('grid')" id="viewGrid" class="px-4 py-1.5 text-sm font-medium rounded transition-colors">
+                            <i class="fas fa-th mr-1"></i> Grid
+                        </button>
+                        <button type="button" onclick="setView('list')" id="viewList" class="px-4 py-1.5 text-sm font-medium rounded transition-colors">
+                            <i class="fas fa-list mr-1"></i> List
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <form id="searchForm" class="p-5">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Property Type -->
@@ -57,8 +75,8 @@
                         </div>
                     </div>
 
-                    <!-- Rent Period -->
-                    <div>
+                    <!-- Rent Period (hidden in categorical view) -->
+                    <div id="periodFilterContainer">
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">Periode Sewa</label>
                         <div class="relative">
                             <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -142,6 +160,8 @@
         // Global variables
         let currentPage = 1;
         let currentFilters = {};
+        let currentView = 'categorical'; // categorical, grid, or list
+        let allRoomsData = {}; // Store data for categorical view
         const apiUrl = '{{ route("api.search.rooms") }}';
         const apiKey = '{{ env("API_KEY") }}';
         const adminUrl = '{{ env("ADMIN_URL") }}';
@@ -167,8 +187,15 @@
             if (currentFilters.check_in) document.getElementById('filterCheckIn').value = currentFilters.check_in;
             if (currentFilters.check_out) document.getElementById('filterCheckOut').value = currentFilters.check_out;
 
+            // Initialize view
+            updateViewButtons();
+
             // Load initial results
-            searchRooms();
+            if (currentView === 'categorical') {
+                searchRoomsCategorical();
+            } else {
+                searchRooms();
+            }
 
             // Back to Top Button
             const backToTopBtn = document.getElementById('backToTop');
@@ -212,9 +239,57 @@
                     check_out: document.getElementById('filterCheckOut').value
                 };
                 updateURL();
-                searchRooms();
+
+                if (currentView === 'categorical') {
+                    searchRoomsCategorical();
+                } else {
+                    searchRooms();
+                }
             });
         });
+
+        // Set view function
+        function setView(view) {
+            currentView = view;
+            updateViewButtons();
+
+            // Show/hide period filter based on view
+            const periodContainer = document.getElementById('periodFilterContainer');
+            if (view === 'categorical') {
+                periodContainer.style.display = 'none';
+                searchRoomsCategorical();
+            } else {
+                periodContainer.style.display = 'block';
+                searchRooms();
+            }
+        }
+
+        // Update view buttons
+        function updateViewButtons() {
+            const buttons = {
+                categorical: document.getElementById('viewCategorical'),
+                grid: document.getElementById('viewGrid'),
+                list: document.getElementById('viewList')
+            };
+
+            Object.keys(buttons).forEach(key => {
+                if (key === currentView) {
+                    buttons[key].classList.add('bg-white', 'text-teal-600', 'shadow-sm');
+                    buttons[key].classList.remove('text-gray-600');
+                } else {
+                    buttons[key].classList.remove('bg-white', 'text-teal-600', 'shadow-sm');
+                    buttons[key].classList.add('text-gray-600');
+                }
+            });
+
+            // Show/hide period filter
+            const periodContainer = document.getElementById('periodFilterContainer');
+            if (currentView === 'categorical') {
+                periodContainer.style.display = 'none';
+            } else {
+                periodContainer.style.display = 'block';
+            }
+        }
 
         // Search rooms via API
         async function searchRooms(page = 1) {
@@ -284,10 +359,192 @@
             }
         }
 
-        // Render results
+        // Search rooms categorical (both daily and monthly)
+        async function searchRoomsCategorical() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const paginationContainer = document.getElementById('paginationContainer');
+
+            loadingIndicator.classList.remove('hidden');
+            resultsContainer.innerHTML = '';
+            paginationContainer.innerHTML = '';
+
+            try {
+                // Fetch both daily and monthly rooms
+                const [dailyData, monthlyData] = await Promise.all([
+                    fetchRoomsByPeriod('daily'),
+                    fetchRoomsByPeriod('monthly')
+                ]);
+
+                loadingIndicator.classList.add('hidden');
+                updateActiveFilters();
+
+                // Render categorical view
+                renderCategoricalView(dailyData, monthlyData);
+
+            } catch (error) {
+                console.error('Error fetching rooms:', error);
+                loadingIndicator.classList.add('hidden');
+                resultsContainer.innerHTML = `
+                    <div class="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="max-w-md mx-auto">
+                            <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+                            <h3 class="text-xl font-medium text-gray-700 mb-2">Terjadi Kesalahan</h3>
+                            <p class="text-gray-500 mb-6">${error.message}</p>
+                            <button onclick="searchRoomsCategorical()" class="inline-flex items-center px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
+                                <i class="fas fa-sync-alt mr-2"></i> Coba Lagi
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Fetch rooms by period
+        async function fetchRoomsByPeriod(period) {
+            const params = new URLSearchParams();
+            if (currentFilters.type) params.append('type', currentFilters.type);
+            params.append('period', period);
+            if (currentFilters.check_in) params.append('check_in', currentFilters.check_in);
+            if (currentFilters.check_out) params.append('check_out', currentFilters.check_out);
+            params.append('per_page', 100); // Get all for categorical view
+
+            const response = await fetch(`${apiUrl}?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'X-API-KEY': apiKey,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (!response.ok || data.status === 'error') {
+                throw new Error(data.message || 'Failed to fetch rooms');
+            }
+
+            return data.data || [];
+        }
+
+        // Render categorical view
+        function renderCategoricalView(dailyProperties, monthlyProperties) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            let html = '<div class="space-y-8">';
+
+            // Daily Section
+            if (dailyProperties && dailyProperties.length > 0) {
+                html += `
+                    <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-day text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">Sewa Harian</h2>
+                                <p class="text-sm text-gray-600">${dailyProperties.length} properti tersedia</p>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            ${dailyProperties.map(property => renderPropertyCard(property, 'daily')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Monthly Section
+            if (monthlyProperties && monthlyProperties.length > 0) {
+                html += `
+                    <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-gray-800">Sewa Bulanan</h2>
+                                <p class="text-sm text-gray-600">${monthlyProperties.length} properti tersedia</p>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            ${monthlyProperties.map(property => renderPropertyCard(property, 'monthly')).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // No results
+            if ((!dailyProperties || dailyProperties.length === 0) && (!monthlyProperties || monthlyProperties.length === 0)) {
+                html += renderNoResults();
+            }
+
+            html += '</div>';
+            resultsContainer.innerHTML = html;
+            addRoomLinkHandlers();
+        }
+
+        // Render property card (for categorical view)
+        function renderPropertyCard(property, period) {
+            const periodLabel = period === 'daily' ? 'hari' : 'bulan';
+            const propertyRoute = getPropertyRoute(property);
+            const thumbnail = getPropertyThumbnail(property);
+
+            return `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-5 border-b border-gray-100">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <a href="${propertyRoute}" class="text-xl font-bold text-gray-800 hover:text-teal-600 transition-colors">
+                                        ${property.name}
+                                    </a>
+                                    <span class="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                                        ${property.tags}
+                                    </span>
+                                </div>
+                                <div class="flex items-center text-gray-600 text-sm mb-2">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <span>${property.address}</span>
+                                </div>
+                                <div class="flex items-center gap-4 text-sm text-gray-500">
+                                    <span>
+                                        <i class="fas fa-door-open mr-1"></i>
+                                        ${property.available_rooms_count} kamar tersedia
+                                    </span>
+                                    ${property.lowest_price ? `
+                                        <span>
+                                            <i class="fas fa-tag mr-1"></i>
+                                            Mulai dari <strong class="text-teal-600">Rp ${formatRupiah(property.lowest_price)}</strong>/${periodLabel}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            ${thumbnail ? `
+                                <a href="${propertyRoute}" class="hidden md:block flex-shrink-0">
+                                    <img src="${adminUrl}/storage/${thumbnail}"
+                                        alt="${property.name}"
+                                        class="w-24 h-24 object-cover rounded-lg"
+                                        onerror="this.onerror=null; this.src=propertyPlaceholder;">
+                                </a>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div class="p-5 bg-gray-50">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            ${property.available_rooms.map(room => renderRoomCard(room, property)).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render results (grid or list view)
         function renderResults(properties) {
             const resultsContainer = document.getElementById('resultsContainer');
             const periodLabel = currentFilters.period === 'daily' ? 'hari' : 'bulan';
+
+            if (currentView === 'list') {
+                renderListView(properties);
+                return;
+            }
 
             let html = '<div class="space-y-8">';
 
@@ -356,6 +613,109 @@
             resultsContainer.innerHTML = html;
 
             // Add click handlers to save dates to localStorage
+            addRoomLinkHandlers();
+        }
+
+        // Render list view
+        function renderListView(properties) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const periodLabel = currentFilters.period === 'daily' ? 'hari' : 'bulan';
+
+            let html = '<div class="space-y-4">';
+
+            properties.forEach(property => {
+                const propertyRoute = getPropertyRoute(property);
+                const thumbnail = getPropertyThumbnail(property);
+
+                property.available_rooms.forEach(room => {
+                    const roomRoute = `/rooms/${room.slug || room.id}`;
+                    const roomThumbnail = getRoomThumbnail(room, property);
+
+                    html += `
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300">
+                            <div class="flex flex-col md:flex-row">
+                                <!-- Room Image -->
+                                <a href="${roomRoute}" class="room-link md:w-72 flex-shrink-0">
+                                    <div class="relative aspect-[4/3] md:aspect-auto md:h-full bg-gray-100">
+                                        ${roomThumbnail ? `
+                                            <img src="${adminUrl}/storage/${roomThumbnail}"
+                                                alt="${room.name}"
+                                                class="w-full h-full object-cover"
+                                                onerror="this.onerror=null; this.src=roomPlaceholder;">
+                                        ` : `
+                                            <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                                <i class="fas fa-door-open text-4xl"></i>
+                                            </div>
+                                        `}
+                                        ${currentFilters.check_in && currentFilters.check_out ? `
+                                            <span class="absolute top-3 right-3 bg-green-500 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-md">
+                                                <i class="fas fa-check mr-1"></i>Tersedia
+                                            </span>
+                                        ` : ''}
+                                    </div>
+                                </a>
+
+                                <!-- Room Info -->
+                                <div class="flex-1 p-5">
+                                    <div class="flex flex-col h-full">
+                                        <!-- Property Badge -->
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <a href="${propertyRoute}" class="text-sm text-teal-600 hover:text-teal-700 font-medium">
+                                                <i class="fas fa-building mr-1"></i>${property.name}
+                                            </a>
+                                            <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">
+                                                ${property.tags}
+                                            </span>
+                                        </div>
+
+                                        <!-- Room Name -->
+                                        <a href="${roomRoute}" class="room-link">
+                                            <h3 class="text-xl font-bold text-gray-800 mb-2 hover:text-teal-600 transition-colors">
+                                                ${room.name}
+                                            </h3>
+                                        </a>
+
+                                        <!-- Location -->
+                                        <div class="flex items-center text-gray-600 text-sm mb-3">
+                                            <i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>
+                                            <span>${property.address}</span>
+                                        </div>
+
+                                        <!-- Room Details -->
+                                        <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                                            ${room.bed_count ? `
+                                                <span><i class="fas fa-bed mr-1"></i>${room.bed_count} kasur</span>
+                                            ` : ''}
+                                            ${room.room_size ? `
+                                                <span><i class="fas fa-expand-arrows-alt mr-1"></i>${room.room_size}m²</span>
+                                            ` : ''}
+                                        </div>
+
+                                        <!-- Price and Action -->
+                                        <div class="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
+                                            <div>
+                                                <div class="text-2xl font-bold text-teal-600">
+                                                    Rp ${formatRupiah(room.current_price)}
+                                                </div>
+                                                <div class="text-sm text-gray-500">
+                                                    per ${periodLabel}
+                                                </div>
+                                            </div>
+                                            <a href="${roomRoute}" class="room-link bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors duration-200 flex items-center">
+                                                Lihat Detail
+                                                <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+
+            html += '</div>';
+            resultsContainer.innerHTML = html;
             addRoomLinkHandlers();
         }
 
