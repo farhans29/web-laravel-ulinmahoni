@@ -13,6 +13,7 @@ use App\Models\Transaction;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\VoucherService;
+use App\Jobs\ExpireBooking;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;

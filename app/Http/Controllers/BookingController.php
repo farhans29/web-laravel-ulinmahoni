@@ -8,6 +8,7 @@ use App\Models\Room;
 use App\Models\Transaction;
 use App\Models\Property;
 use App\Notifications\BookingConfirmationNotification;
+use App\Jobs\ExpireBooking;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
