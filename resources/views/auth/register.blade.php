@@ -269,8 +269,11 @@
                         lastNameInput.value = firstName;
                     }
 
-                    // Update the hidden name field with the first name
-                    document.getElementById('name').value = firstName;
+                    // Update the hidden name field with full name (first_name + last_name)
+                    // This matches the User model's getFullNameAttribute() logic
+                    const lastName = lastNameInput.value.trim();
+                    const fullName = (firstName + ' ' + lastName).trim();
+                    document.getElementById('name').value = fullName;
 
                     // Ensure username is populated from email with sanitization
                     const email = document.getElementById('email').value;
