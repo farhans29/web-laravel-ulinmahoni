@@ -478,7 +478,6 @@
 
             html += '</div>';
             resultsContainer.innerHTML = html;
-            addRoomLinkHandlers();
         }
 
         // Render property card (for categorical view)
@@ -611,9 +610,6 @@
 
             html += '</div>';
             resultsContainer.innerHTML = html;
-
-            // Add click handlers to save dates to localStorage
-            addRoomLinkHandlers();
         }
 
         // Render list view
@@ -716,7 +712,6 @@
 
             html += '</div>';
             resultsContainer.innerHTML = html;
-            addRoomLinkHandlers();
         }
 
         // Render room card
@@ -963,22 +958,6 @@
 
             const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
             window.history.pushState({}, '', newUrl);
-        }
-
-        // Add room link handlers
-        function addRoomLinkHandlers() {
-            document.querySelectorAll('.room-link').forEach(link => {
-                link.addEventListener('click', function() {
-                    if (currentFilters.check_in || currentFilters.check_out) {
-                        const bookingDates = {
-                            check_in: currentFilters.check_in,
-                            check_out: currentFilters.check_out,
-                            period: currentFilters.period
-                        };
-                        localStorage.setItem('roomBookingDates', JSON.stringify(bookingDates));
-                    }
-                });
-            });
         }
 
         // Helper functions
