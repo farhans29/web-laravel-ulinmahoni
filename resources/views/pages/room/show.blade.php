@@ -188,11 +188,61 @@
                                     {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                     {{ $room['status'] == 1 ? 'Tersedia' : 'Tidak Tersedia' }}
                                 </span>
-                                
+
                                 <!-- Availability Status -->
-                                
+
                             </div>
                         </div>
+
+                        <!-- Profile Completion Warning -->
+                        @auth
+                            @php
+                                $user = Auth::user();
+                                $missingFields = [];
+
+                                if (empty($user->first_name)) {
+                                    $missingFields[] = 'Nama Depan';
+                                }
+                                if (empty($user->last_name)) {
+                                    $missingFields[] = 'Nama Belakang';
+                                }
+                                if (empty($user->name)) {
+                                    $missingFields[] = 'Nama Lengkap';
+                                }
+                                if (empty($user->phone_number)) {
+                                    $missingFields[] = 'Nomor Telepon';
+                                }
+                            @endphp
+
+                            @if(count($missingFields) > 0)
+                                <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0">
+                                            <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+                                        </div>
+                                        <div class="ml-3 flex-1">
+                                            <h3 class="text-sm font-medium text-yellow-800">
+                                                Lengkapi Profil Anda
+                                            </h3>
+                                            <div class="mt-2 text-sm text-yellow-700">
+                                                <p class="mb-2">Mohon lengkapi informasi berikut sebelum memesan:</p>
+                                                <ul class="list-disc list-inside space-y-1">
+                                                    @foreach($missingFields as $field)
+                                                        <li>{{ $field }}</li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                            <div class="mt-3">
+                                                <a href="{{ route('profile.show') }}" class="inline-flex items-center text-sm font-medium text-yellow-800 hover:text-yellow-900 underline">
+                                                    <i class="fas fa-user-edit mr-1"></i>
+                                                    Lengkapi Profil Sekarang
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @endauth
                         
                         <form id="bookingForm" class="space-y-6" method="POST" action="{{ route('bookings.store') }}" novalidate>
                             @csrf
