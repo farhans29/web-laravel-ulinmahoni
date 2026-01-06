@@ -44,7 +44,8 @@ class Transaction extends Model
         'transaction_code',
         'transaction_status',
         'status',
-        'paid_at'
+        'paid_at',
+        'expired_at'
     ];
 
     protected $hidden = [
