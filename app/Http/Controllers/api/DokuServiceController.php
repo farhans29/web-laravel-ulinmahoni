@@ -96,10 +96,14 @@ class DokuServiceController extends ApiController
                     'transaction_date' => now(),
                 ]);
 
+                // Get the first validation error for responseMessage
+                $firstError = $validator->errors()->first();
+
                 return response()->json([
                     'responseCode' => '4012501',
-                    'responseMessage' => 'Invalid Field Format',
-                    'virtualAccountData' => null
+                    'responseMessage' => $firstError,
+                    'virtualAccountData' => null,
+                    'validationErrors' => $validator->errors()->toArray()
                 ], 400);
             }
 
