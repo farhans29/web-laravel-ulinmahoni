@@ -43,7 +43,7 @@ class DokuServiceController extends ApiController
                 'virtualAccountNo' => 'required|string|max:255',
                 'virtualAccountName' => 'required|string|max:255',
                 'trxId' => 'required|string|max:255',
-                'paymentRequestId' => 'nullable|string|max:255',
+                'paymentRequestId' => 'required|string|max:255',
                 'paidAmount' => 'nullable|array',
                 'paidAmount.value' => 'required_with:paidAmount|string',
                 'paidAmount.currency' => 'required_with:paidAmount|string|max:3',
@@ -96,11 +96,15 @@ class DokuServiceController extends ApiController
                     'transaction_date' => now(),
                 ]);
 
+                // Get the first validation error for responseMessage
+                $firstError = $validator->errors()->first();
+
                 return response()->json([
-                    'status' => 'error',
-                    'message' => 'Validation failed',
-                    'errors' => $validator->errors()
-                ], 422);
+                    'responseCode' => '4012501',
+                    'responseMessage' => $firstError,
+                    'virtualAccountData' => null,
+                    'validationErrors' => $validator->errors()->toArray()
+                ], 400);
             }
 
             // Extract payment data from DOKU format
@@ -149,6 +153,12 @@ class DokuServiceController extends ApiController
                     'virtualAccountNo' => $virtualAccountNo,
                     'virtualAccountName' => $virtualAccountName,
                     'trxId' => $trxId,
+                    'paymentRequestId' => $paymentRequestId, // Always include paymentRequestId
+                ];
+
+                $response = [
+                    'responseCode' => '2002500',
+                    'responseMessage' => 'Successful',
                 ];
 
                 if ($request->has('totalAmount')) {
@@ -175,22 +185,16 @@ class DokuServiceController extends ApiController
                     if ($expiredDate) {
                         $virtualAccountData['expiredDate'] = $expiredDate;
                     }
-
-                    if (!empty($additionalInfo)) {
-                        $virtualAccountData['additionalInfo'] = $additionalInfo;
-                    }
-
-                    $responseCode = '2002700';
-                } else {
-                    $virtualAccountData['paymentRequestId'] = $paymentRequestId;
-                    $responseCode = '2002500';
                 }
 
-                return response()->json([
-                    'responseCode' => $responseCode,
-                    'responseMessage' => 'Successful',
-                    'virtualAccountData' => $virtualAccountData
-                ], 200);
+                $response['virtualAccountData'] = $virtualAccountData;
+
+                // additionalInfo should be outside virtualAccountData
+                if (!empty($additionalInfo)) {
+                    $response['additionalInfo'] = $additionalInfo;
+                }
+
+                return response()->json($response, 200);
             }
 
             // Find associated user (this logic should be customized based on your user mapping)
@@ -257,6 +261,12 @@ class DokuServiceController extends ApiController
                     'virtualAccountNo' => $virtualAccountNo,
                     'virtualAccountName' => $virtualAccountName,
                     'trxId' => $trxId,
+                    'paymentRequestId' => $paymentRequestId, // Always include paymentRequestId
+                ];
+
+                $response = [
+                    'responseCode' => '2002500',
+                    'responseMessage' => 'Successful',
                 ];
 
                 if ($request->has('totalAmount')) {
@@ -268,18 +278,16 @@ class DokuServiceController extends ApiController
                     if ($virtualAccountTrxType) $virtualAccountData['virtualAccountTrxType'] = $virtualAccountTrxType;
                     if ($feeAmount) $virtualAccountData['feeAmount'] = $feeAmount;
                     if ($expiredDate) $virtualAccountData['expiredDate'] = $expiredDate;
-                    if (!empty($additionalInfo)) $virtualAccountData['additionalInfo'] = $additionalInfo;
-                    $responseCode = '2002700';
-                } else {
-                    $virtualAccountData['paymentRequestId'] = $paymentRequestId;
-                    $responseCode = '2002500';
                 }
 
-                return response()->json([
-                    'responseCode' => $responseCode,
-                    'responseMessage' => 'Successful',
-                    'virtualAccountData' => $virtualAccountData
-                ], 200);
+                $response['virtualAccountData'] = $virtualAccountData;
+
+                // additionalInfo should be outside virtualAccountData
+                if (!empty($additionalInfo)) {
+                    $response['additionalInfo'] = $additionalInfo;
+                }
+
+                return response()->json($response, 200);
             }
 
             // Update transaction status to success
@@ -406,6 +414,12 @@ class DokuServiceController extends ApiController
                 'virtualAccountNo' => $virtualAccountNo,
                 'virtualAccountName' => $virtualAccountName,
                 'trxId' => $trxId,
+                'paymentRequestId' => $paymentRequestId, // Always include paymentRequestId
+            ];
+
+            $responseData = [
+                'responseCode' => '2002500',
+                'responseMessage' => 'Successful',
             ];
 
             // Add fields based on request format
@@ -434,23 +448,14 @@ class DokuServiceController extends ApiController
                 if ($expiredDate) {
                     $virtualAccountData['expiredDate'] = $expiredDate;
                 }
-
-                if (!empty($additionalInfo)) {
-                    $virtualAccountData['additionalInfo'] = $additionalInfo;
-                }
-
-                $responseCode = '2002700';
-            } else {
-                // Old format response
-                $virtualAccountData['paymentRequestId'] = $paymentRequestId;
-                $responseCode = '2002500';
             }
 
-            $responseData = [
-                'responseCode' => $responseCode,
-                'responseMessage' => 'Successful',
-                'virtualAccountData' => $virtualAccountData
-            ];
+            $responseData['virtualAccountData'] = $virtualAccountData;
+
+            // additionalInfo should be outside virtualAccountData
+            if (!empty($additionalInfo)) {
+                $responseData['additionalInfo'] = $additionalInfo;
+            }
 
             // Log transaction to database (queued)
             LogDokuTransaction::dispatch([
