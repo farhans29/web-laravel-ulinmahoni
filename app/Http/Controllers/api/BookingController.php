@@ -423,13 +423,13 @@ class BookingController extends ApiController
                 $calculatedDays = $checkOut->diffInDays($checkIn);
 
                 // Verify the calculated days match the provided booking_days
-                if ($calculatedDays != $request->booking_days) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'The check-in/check-out dates do not match the provided booking days',
-                        'calculated_days' => $calculatedDays
-                    ], 422);
-                }
+                // if ($calculatedDays != $request->booking_days) {
+                //     return response()->json([
+                //         'status' => 'error',
+                //         'message' => 'The check-in/check-out dates do not match the provided booking days',
+                //         'calculated_days' => $calculatedDays
+                //     ], 422);
+                // }
 
                 $bookingDays = $calculatedDays;
                 $roomPrice = $request->daily_price * $bookingDays;
