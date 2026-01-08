@@ -134,53 +134,203 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Route::redirect('/', 'login');
-Route::redirect('/','/homepage');
-Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
+// Homepage redirect to default locale
+Route::redirect('/', '/id/homepage');
 
+// ========================================
+// Localized Routes Group
+// Note: SetLocale middleware is already applied globally in Kernel.php
+// ========================================
 
-// Information Pages Routes
-Route::prefix('id')->group(function () {
-    Route::view('/sewa', 'pages.info.indonesia.sewa')->name('id.sewa');
-    Route::view('/kerjasama', 'pages.info.indonesia.kerjasama')->name('id.kerjasama');
-    Route::view('/business', 'pages.info.indonesia.business')->name('id.business');
-    Route::view('/tentang', 'pages.info.indonesia.tentang')->name('id.tentang');
+// ========================================
+// Indonesian Routes (ID)
+// ========================================
+Route::prefix('id')->name('id.')->group(function () {
+    // Authentication
+    Route::get('/login', function () {
+        return view('auth.login');
+    })->name('login');
+    Route::get('/register', function () {
+        return view('auth.register');
+    })->name('register');
 
-    Route::get('/homepage', [HomeController::class, 'indexId'])->name('id.homepage');
-    Route::get('/houses/{id}', [HouseController::class, 'showId'])->name('id.houses.show');
-    Route::get('/rooms/{slug}', [RoomController::class, 'showId'])->name('id.rooms.show');
+    // Homepage
+    Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
+
+    // Information Pages
+    Route::view('/sewa', 'pages.info.indonesia.sewa')->name('sewa');
+    Route::view('/kerjasama', 'pages.info.indonesia.kerjasama')->name('kerjasama');
+    Route::view('/business', 'pages.info.indonesia.business')->name('business');
+    Route::view('/tentang', 'pages.info.indonesia.tentang')->name('tentang');
+
+    // Properties
+    Route::get('/properties', [AllPropertiesController::class, 'index'])->name('properties.index');
+    Route::get('/properties/search', [PropertyController::class, 'search'])->name('properties.search');
+    Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
+
+    // Houses
+    Route::get('/houses', [HouseController::class, 'index'])->name('houses');
+    Route::get('/houses/{id}', [HouseController::class, 'show'])->name('houses.show');
+    Route::get('/houses/rooms', [RoomController::class, 'index'])->name('houses.rooms');
+
+    // Rooms
+    Route::prefix('rooms')->name('rooms.')->group(function () {
+        Route::get('property/{propertyId}', [RoomController::class, 'showPropertyRooms'])->name('property.show');
+        Route::post('property/{propertyId}', [RoomController::class, 'store'])->name('store');
+        Route::put('{id}', [RoomController::class, 'update'])->name('update');
+        Route::delete('{id}', [RoomController::class, 'destroy'])->name('destroy');
+        Route::get('{slug}', [RoomController::class, 'show'])->name('show');
+        Route::post('book', [RoomController::class, 'book'])->name('book');
+    });
+
+    // Apartments
+    Route::get('/apartments', [ApartController::class, 'index'])->name('apartments');
+    Route::get('/apartments/{id}', [ApartController::class, 'show'])->name('apartments.show');
+
+    // Villas
+    Route::get('/villas', [VillaController::class, 'index'])->name('villas');
+    Route::get('/villas/{id}', [VillaController::class, 'show'])->name('villas.show');
+
+    // Hotels
+    Route::get('/hotels', [HotelController::class, 'index'])->name('hotels');
+    Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
+
+    // Promos
+    Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
+    Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show');
+
+    // Bookings - Authentication Required
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    });
+
+    // Bookings - Email Verification Required
+    Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+        Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+        Route::post('/bookings/{id}/upload-attachment', [BookingController::class, 'uploadAttachment'])->name('bookings.upload-attachment');
+        Route::get('/bookings/{id}/view-attachment', [BookingController::class, 'generateAttachmentUrl'])->name('bookings.view-attachment');
+        Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
+        Route::post('/bookings/{id}/mark-expired', [BookingController::class, 'markExpired'])->name('bookings.mark-expired');
+        Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
+        Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
+    });
+
+    // Legal Pages
+    Route::get('/privacy-policy', function () {
+        return view('pages.privacy-policy.privacy-policy');
+    })->name('privacy-policy');
+    Route::get('/terms-of-services', function () {
+        return view('pages.terms-of-services.terms-of-services');
+    })->name('terms-of-services');
+    Route::get('/rental-agreement', function () {
+        return view('pages.rental-agreement.rental-agreement');
+    })->name('rental-agreement');
 });
 
-Route::prefix('en')->group(function () {
+// ========================================
+// English Routes (EN)
+// ========================================
+Route::prefix('en')->name('en.')->group(function () {
+    // Authentication
     Route::get('/login', function () {
         return view('auth.en.login');
-    })->name('en.login');
+    })->name('login');
     Route::get('/register', function () {
         return view('auth.en.register');
-    })->name('en.register');
-    Route::view('/rental', 'pages.info.english.rental')->name('en.rental');
-    Route::view('/partnership', 'pages.info.english.partnership')->name('en.partnership');
-    Route::view('/business', 'pages.info.english.business')->name('en.business');
-    Route::view('/about', 'pages.info.english.about')->name('en.about');
+    })->name('register');
 
-    Route::get('/homepage', [HomeController::class, 'indexEn'])->name('en.homepage');
-    Route::get('/houses/{id}', [HouseController::class, 'showEn'])->name('en.houses.show');
-    Route::get('/rooms/{slug}', [RoomController::class, 'showEn'])->name('en.rooms.show');
+    // Homepage
+    Route::get('/homepage', [HomeController::class, 'index'])->name('homepage');
+
+    // Information Pages
+    Route::view('/rental', 'pages.info.english.rental')->name('rental');
+    Route::view('/partnership', 'pages.info.english.partnership')->name('partnership');
+    Route::view('/business', 'pages.info.english.business')->name('business');
+    Route::view('/about', 'pages.info.english.about')->name('about');
+
+    // Properties
+    Route::get('/properties', [AllPropertiesController::class, 'index'])->name('properties.index');
+    Route::get('/properties/search', [PropertyController::class, 'search'])->name('properties.search');
+    Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
+
+    // Houses
+    Route::get('/houses', [HouseController::class, 'index'])->name('houses');
+    Route::get('/houses/{id}', [HouseController::class, 'show'])->name('houses.show');
+    Route::get('/houses/rooms', [RoomController::class, 'index'])->name('houses.rooms');
+
+    // Rooms
+    Route::prefix('rooms')->name('rooms.')->group(function () {
+        Route::get('property/{propertyId}', [RoomController::class, 'showPropertyRooms'])->name('property.show');
+        Route::post('property/{propertyId}', [RoomController::class, 'store'])->name('store');
+        Route::put('{id}', [RoomController::class, 'update'])->name('update');
+        Route::delete('{id}', [RoomController::class, 'destroy'])->name('destroy');
+        Route::get('{slug}', [RoomController::class, 'show'])->name('show');
+        Route::post('book', [RoomController::class, 'book'])->name('book');
+    });
+
+    // Apartments
+    Route::get('/apartments', [ApartController::class, 'index'])->name('apartments');
+    Route::get('/apartments/{id}', [ApartController::class, 'show'])->name('apartments.show');
+
+    // Villas
+    Route::get('/villas', [VillaController::class, 'index'])->name('villas');
+    Route::get('/villas/{id}', [VillaController::class, 'show'])->name('villas.show');
+
+    // Hotels
+    Route::get('/hotels', [HotelController::class, 'index'])->name('hotels');
+    Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
+
+    // Promos
+    Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
+    Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show');
+
+    // Bookings - Authentication Required
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    });
+
+    // Bookings - Email Verification Required
+    Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+        Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+        Route::post('/bookings/{id}/upload-attachment', [BookingController::class, 'uploadAttachment'])->name('bookings.upload-attachment');
+        Route::get('/bookings/{id}/view-attachment', [BookingController::class, 'generateAttachmentUrl'])->name('bookings.view-attachment');
+        Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
+        Route::post('/bookings/{id}/mark-expired', [BookingController::class, 'markExpired'])->name('bookings.mark-expired');
+        Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
+        Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
+    });
+
+    // Legal Pages
+    Route::get('/privacy-policy', function () {
+        return view('pages.privacy-policy.privacy-policy');
+    })->name('privacy-policy');
+    Route::get('/terms-of-services', function () {
+        return view('pages.terms-of-services.terms-of-services');
+    })->name('terms-of-services');
+    Route::get('/rental-agreement', function () {
+        return view('pages.rental-agreement.rental-agreement');
+    })->name('rental-agreement');
 });
-// Route::view('/en/rental', 'pages.info.english.rental')->name('en.rental');
-// Route::view('/en/partnership', 'pages.info.english.partnership')->name('en.partnership');
-// Route::view('/en/business', 'pages.info.english.business')->name('en.business');
-// Route::view('/en/about', 'pages.info.english.about')->name('en.about');
 
-// Route::get('/en/homepage', [HomeController::class, 'indexEn'])->name('en.homepage');
-// Route::get('/en/houses/{id}', [HouseController::class, 'showEn'])->name('en.houses.show');
-// Route::get('/en/rooms/{slug}', [RoomController::class, 'showEn'])->name('en.rooms.show');
+// ========================================
+// Non-localized Routes (Shared Resources)
+// ========================================
 
-// Default routes (redirect to preferred language)
+// Attachment viewing with signed URL (shared across locales)
+Route::get('/attachments/{id}', [BookingController::class, 'viewAttachment'])
+    ->name('attachments.view')
+    ->middleware('signed');
+
+// Default Homepage (redirect to Indonesian locale)
+Route::redirect('/homepage', '/id/homepage')->name('homepage');
+
+// Default routes (redirect to Indonesian locale)
 Route::redirect('/sewa', '/id/sewa');
 Route::redirect('/kerjasama', '/id/kerjasama');
 Route::redirect('/business', '/id/business');
 Route::redirect('/tentang', '/id/tentang');
 
+// Non-localized property routes (for backward compatibility)
 Route::get('/properties', [AllPropertiesController::class, 'index'])->name('properties.index');
 Route::get('/properties/search', [PropertyController::class, 'search'])->name('properties.search');
 Route::get('/properties/{id}', [PropertyController::class, 'show'])->name('properties.show');
@@ -198,56 +348,42 @@ Route::prefix('rooms')->group(function () {
     Route::post('book', [RoomController::class, 'book'])->name('rooms.book');
 });
 
-// Apartment Routes
 Route::get('/apartments', [ApartController::class, 'index'])->name('apartments');
 Route::get('/apartments/{id}', [ApartController::class, 'show'])->name('apartments.show');
 
-// Villa Routes
 Route::get('/villas', [VillaController::class, 'index'])->name('villas');
 Route::get('/villas/{id}', [VillaController::class, 'show'])->name('villas.show');
 
-// Hotel Routes
 Route::get('/hotels', [HotelController::class, 'index'])->name('hotels');
 Route::get('/hotels/{id}', [HotelController::class, 'show'])->name('hotels.show');
 
 Route::get('/promos', [PromoController::class, 'index'])->name('promos.index');
 Route::get('/promo/{id}', [PromoController::class, 'show'])->name('promos.show');
 
-// Bookings Routes
-// View bookings - only requires authentication (no email verification needed)
+// Bookings Routes (non-localized for backward compatibility)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
 });
 
-// Create bookings and other actions - requires email verification
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
     Route::post('/bookings/{id}/upload-attachment', [BookingController::class, 'uploadAttachment'])->name('bookings.upload-attachment');
-    // This route generates a signed URL for viewing attachments
     Route::get('/bookings/{id}/view-attachment', [BookingController::class, 'generateAttachmentUrl'])->name('bookings.view-attachment');
-    
-    // This route handles the actual attachment viewing with a signed URL
-    Route::get('/attachments/{id}', [BookingController::class, 'viewAttachment'])
-        ->name('attachments.view')
-        ->middleware('signed');
     Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
-    // Mark booking as expired
     Route::post('/bookings/{id}/mark-expired', [BookingController::class, 'markExpired'])->name('bookings.mark-expired');
     Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 });
 
-// Privacy Policy
+// Legal Pages (non-localized)
 Route::get('/privacy-policy', function () {
     return view('pages.privacy-policy.privacy-policy');
 })->name('privacy-policy');
 
-// TERMS OF SERVICES
 Route::get('/terms-of-services', function () {
     return view('pages.terms-of-services.terms-of-services');
 })->name('terms-of-services');
 
-// RENTAL AGREEMENT
 Route::get('/rental-agreement', function () {
     return view('pages.rental-agreement.rental-agreement');
 })->name('rental-agreement');

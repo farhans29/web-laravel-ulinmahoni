@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Room Details - {{ $room['name'] }}</title>
+    <title>{{ __('properties.room_detail.room_details') }} - {{ $room['name'] }}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
@@ -30,11 +30,11 @@
             <!-- Breadcrumb -->
             <nav class="mb-8">
                 <ol class="flex items-center space-x-2 text-gray-500">
-                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">Home</a></li>
+                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">{{ __('properties.navigation.home') }}</a></li>
                     <li><span class="mx-2">/</span></li>
-                    <li><a href="{{ url()->previous() }}" class="hover:text-gray-700">Property</a></li>
+                    <li><a href="{{ url()->previous() }}" class="hover:text-gray-700">{{ __('properties.room_detail.property') }}</a></li>
                     <li><span class="mx-2">/</span></li>
-                    
+
                     <li class="text-gray-900">{{ $room['name'] }}</li>
                 </ol>
             </nav>
@@ -136,7 +136,7 @@
                                 @else
                                     <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                         <i class="fas fa-image text-4xl text-gray-400"></i>
-                                        <span class="ml-2 font-medium text-gray-500">No Image</span>
+                                        <span class="ml-2 font-medium text-gray-500">{{ __('properties.images.no_image') }}</span>
                                     </div>
                                 @endif
                                 
@@ -190,23 +190,23 @@
                                 @if(!empty($room['price_original_daily']) && $room['price_original_daily'] > 0)
                                 <div class="mt-4">
                                     <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</p>
-                                    <p class="text-sm text-gray-500">per malam</p>
+                                    <p class="text-sm text-gray-500">{{ __('properties.room_detail.per_night') }}</p>
                                 </div>
                                 @else
                                 <div class="mt-4">
-                                    <p class="text-3xl font-bold text-teal-600">Hubungi Kami</p>
-                                    <p class="text-sm text-gray-500">untuk harga per malam</p>
+                                    <p class="text-3xl font-bold text-teal-600">{{ __('properties.room_detail.contact_us') }}</p>
+                                    <p class="text-sm text-gray-500">{{ __('properties.room_detail.for_price_night') }}</p>
                                 </div>
                                 @endif
                                 @if(!empty($room['price_original_monthly']) && $room['price_original_monthly'] > 0)
                                 <div class="mt-4">
                                     <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</p>
-                                    <p class="text-sm text-gray-500">per bulan</p>
+                                    <p class="text-sm text-gray-500">{{ __('properties.room_detail.per_month') }}</p>
                                 </div>
                                 @else
                                 <div class="mt-4">
-                                    <p class="text-3xl font-bold text-teal-600">Hubungi Kami</p>
-                                    <p class="text-sm text-gray-500">untuk harga per bulan</p>
+                                    <p class="text-3xl font-bold text-teal-600">{{ __('properties.room_detail.contact_us') }}</p>
+                                    <p class="text-sm text-gray-500">{{ __('properties.room_detail.for_price_month') }}</p>
                                 </div>
                                 @endif
                             </div>
@@ -215,7 +215,7 @@
                             <!-- Room Facilities -->
                             @if(!empty($room['facility']) && is_array($room['facility']) && count($room['facility']) > 0)
                             <div class="mb-8">
-                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Fasilitas Kamar</h2>
+                                <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ __('properties.room_detail.room_facilities') }}</h2>
                                 <div class="grid grid-cols-2 gap-6">
                                     @foreach($room['facility'] as $facility)
                                         <div class="flex items-center space-x-3 py-2">
@@ -227,15 +227,15 @@
                             </div>
                             @else
                             <div class="mb-8">
-                                <h2 class="text-xl font-semibold text-gray-900 mb-4">Fasilitas Kamar</h2>
-                                <p class="text-gray-500">Tidak ada fasilitas yang tercantum</p>
+                                <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ __('properties.room_detail.room_facilities') }}</h2>
+                                <p class="text-gray-500">{{ __('properties.room_detail.no_facilities_listed') }}</p>
                             </div>
                             @endif
 
                             <!-- Room Description -->
                             <div class="space-y-6">
                                 <div class="prose prose-lg max-w-none">
-                                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Deskripsi Kamar</h3>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ __('properties.room_detail.room_description') }}</h3>
                                     <p class="text-gray-600 leading-relaxed">{{ $room['descriptions'] }}</p>
                                 </div>
                             </div>
@@ -249,14 +249,14 @@
                         <!-- Status and Price Summary -->
                         <div class="flex items-center justify-between mb-8">
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-900 mb-2">Pesan Kamar</h2>
-                                <p class="text-gray-500">Isi detail dibawah ini</p>
+                                <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ __('properties.booking.book_room') }}</h2>
+                                <p class="text-gray-500">{{ __('properties.booking.fill_details') }}</p>
                             </div>
                             <div class="text-right">
                                 <!-- Room Status -->
                                 <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
                                     {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $room['status'] == 1 ? 'Tersedia' : 'Tidak Tersedia' }}
+                                    {{ $room['status'] == 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
                                 </span>
 
                                 <!-- Availability Status -->
@@ -271,16 +271,16 @@
                                 $missingFields = [];
 
                                 if (empty($user->first_name)) {
-                                    $missingFields[] = 'Nama Depan';
+                                    $missingFields[] = __('properties.booking.first_name');
                                 }
                                 if (empty($user->last_name)) {
-                                    $missingFields[] = 'Nama Belakang';
+                                    $missingFields[] = __('properties.booking.last_name');
                                 }
                                 if (empty($user->name)) {
-                                    $missingFields[] = 'Nama Lengkap';
+                                    $missingFields[] = __('properties.booking.full_name');
                                 }
                                 if (empty($user->phone_number)) {
-                                    $missingFields[] = 'Nomor Telepon';
+                                    $missingFields[] = __('properties.booking.phone_number');
                                 }
                             @endphp
 
@@ -292,10 +292,10 @@
                                         </div>
                                         <div class="ml-3 flex-1">
                                             <h3 class="text-sm font-medium text-yellow-800">
-                                                Lengkapi Profil Anda
+                                                {{ __('properties.booking.complete_profile') }}
                                             </h3>
                                             <div class="mt-2 text-sm text-yellow-700">
-                                                <p class="mb-2">Mohon lengkapi informasi berikut sebelum memesan:</p>
+                                                <p class="mb-2">{{ __('properties.booking.please_complete') }}</p>
                                                 <ul class="list-disc list-inside space-y-1">
                                                     @foreach($missingFields as $field)
                                                         <li>{{ $field }}</li>
@@ -305,7 +305,7 @@
                                             <div class="mt-3">
                                                 <a href="{{ route('profile.show') }}" class="inline-flex items-center text-sm font-medium text-yellow-800 hover:text-yellow-900 underline">
                                                     <i class="fas fa-user-edit mr-1"></i>
-                                                    Lengkapi Profil Sekarang
+                                                    {{ __('properties.booking.complete_profile_now') }}
                                                 </a>
                                             </div>
                                         </div>
@@ -326,15 +326,15 @@
                             {{-- <input type="hidden" name="tax_fees" id="taxFees" value="{{ $room['tax_fees'] ?? 0 }}"> --}}
                             <!-- Rental Type -->
                             <div class="mb-6">
-                                <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pemesanan</label>
+                                <label for="rent_type" class="block text-sm font-medium text-gray-700 mb-2">{{ __('properties.booking.booking_type') }}</label>
                                 <select id="rent_type" name="rent_type"
                                     class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                                     onchange="updateRentalType()">
                                     @if($room['periode_daily'] == 1)
-                                        <option value="daily" {{ $room['periode_monthly'] == 1 ? '' : 'selected' }}>Harian</option>
+                                        <option value="daily" {{ $room['periode_monthly'] == 1 ? '' : 'selected' }}>{{ __('properties.booking.daily') }}</option>
                                     @endif
                                     @if($room['periode_monthly'] == 1)
-                                        <option value="monthly" {{ $room['periode_daily'] == 1 ? '' : 'selected' }}>Bulanan</option>
+                                        <option value="monthly" {{ $room['periode_daily'] == 1 ? '' : 'selected' }}>{{ __('properties.booking.monthly') }}</option>
                                     @endif
                                 </select>
                             </div>
@@ -344,13 +344,13 @@
                                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                                     <div class="flex items-center mb-3">
                                         <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
-                                        <h3 class="text-sm font-semibold text-gray-800">Pemesanan Harian</h3>
+                                        <h3 class="text-sm font-semibold text-gray-800">{{ __('properties.booking.daily_booking') }}</h3>
                                     </div>
 
                                     <!-- Check-in Date -->
                                     <div class="mb-4">
                                         <label for="check_in" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-sign-in-alt mr-1 text-gray-500"></i>Check In
+                                            <i class="fas fa-sign-in-alt mr-1 text-gray-500"></i>{{ __('properties.booking.check_in') }}
                                         </label>
                                         <input type="text" id="check_in" name="check_in"
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
@@ -361,7 +361,7 @@
                                     <!-- Check-out Date -->
                                     <div>
                                         <label for="check_out" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-sign-out-alt mr-1 text-gray-500"></i>Check Out
+                                            <i class="fas fa-sign-out-alt mr-1 text-gray-500"></i>{{ __('properties.booking.check_out') }}
                                         </label>
                                         <input type="text" id="check_out" name="check_out"
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
@@ -376,13 +376,13 @@
                                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
                                     <div class="flex items-center mb-3">
                                         <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>
-                                        <h3 class="text-sm font-semibold text-gray-800">Pemesanan Bulanan</h3>
+                                        <h3 class="text-sm font-semibold text-gray-800">{{ __('properties.booking.monthly_booking') }}</h3>
                                     </div>
 
                                     <!-- Check-in Date -->
                                     <div class="mb-4">
                                         <label for="check_in_monthly" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-calendar-check mr-1 text-gray-500"></i>Check In
+                                            <i class="fas fa-calendar-check mr-1 text-gray-500"></i>{{ __('properties.booking.check_in') }}
                                         </label>
                                         <input type="text" id="check_in_monthly" name="check_in_monthly"
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
@@ -393,13 +393,13 @@
                                     <!-- Months Selection -->
                                     <div>
                                         <label for="months" class="block text-sm font-medium text-gray-700 mb-2">
-                                            <i class="fas fa-hourglass-half mr-1 text-gray-500"></i>Durasi Sewa
+                                            <i class="fas fa-hourglass-half mr-1 text-gray-500"></i>{{ __('properties.booking.duration') }}
                                         </label>
                                         <select id="months" name="months"
                                             class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-200 transition-all"
                                             onchange="updatePriceSummary()">
                                             @for ($i = 1; $i <= 12; $i++)
-                                                <option value="{{ $i }}">{{ $i }} Bulan</option>
+                                                <option value="{{ $i }}">{{ $i }} {{ __('properties.booking.months') }}</option>
                                             @endfor
                                         </select>
                                         <input type="hidden" name="booking_months" id="bookingMonths" value="1">
@@ -412,9 +412,9 @@
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center">
                                             <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                                            <span class="text-gray-600 font-medium">Status Ketersediaan:</span>
+                                            <span class="text-gray-600 font-medium">{{ __('properties.booking.availability_status') }}</span>
                                         </div>
-                                        <span class="text-xs text-gray-500">Menunggu pemilihan tanggal...</span>
+                                        <span class="text-xs text-gray-500">{{ __('properties.booking.waiting_date_selection') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -462,36 +462,36 @@
                             
                             <!-- Price Summary -->
                             <div class="bg-gray-50 p-4 rounded-lg mb-6">
-                                <h4 class="font-medium text-gray-900 mb-3">Harga Keseluruhan</h4>
+                                <h4 class="font-medium text-gray-900 mb-3">{{ __('properties.booking.total_price') }}</h4>
                                 <div class="space-y-3 text-sm">
                                     <div class="flex items-center justify-between">
-                                        <span class="text-gray-600" id="rateTypeDisplay">Daily Rate: </span>
+                                        <span class="text-gray-600" id="rateTypeDisplay">{{ __('properties.booking.daily_rate') }}: </span>
                                         <div class="text-right">
                                             <div class="text-gray-900" id="rateDisplay">
                                                 <!-- Daily Rate Display -->
                                                 <div id="dailyRateDisplay" class="hidden">
                                                     <span class="text-black-600">Rp {{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
-                                                    <div class="text-xs text-gray-500 mt-1">per malam</div>
+                                                    <div class="text-xs text-gray-500 mt-1">{{ __('properties.room_detail.per_night') }}</div>
                                                 </div>
                                                 <!-- Monthly Rate Display -->
                                                 <div id="monthlyRateDisplay" class="hidden">
                                                     <span class="text-black-600">Rp {{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
-                                                    <div class="text-xs text-gray-500 mt-1">per bulan</div>
+                                                    <div class="text-xs text-gray-500 mt-1">{{ __('properties.room_detail.per_month') }}</div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Durasi: </span>
+                                        <span class="text-gray-600">{{ __('properties.booking.duration_label') }} </span>
                                         <span class="text-gray-900" id="durationDisplay">-</span>
                                     </div>
-                                    
+
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Total Harga Kamar:</span>
+                                        <span class="text-gray-600">{{ __('properties.booking.room_total') }}</span>
                                         <span class="text-gray-900" id="roomTotal">-</span>
                                     </div>
                                     <div class="flex justify-between">
-                                        <span class="text-gray-600">Biaya Layanan: </span>
+                                        <span class="text-gray-600">{{ __('properties.booking.service_fees') }} </span>
                                         <span class="text-gray-900" id="serviceFeesDisplay">-</span>
                                     </div>
                                     {{-- <div class="flex justify-between">
@@ -505,7 +505,7 @@
                                     </div> --}}
                                     
                                     <div class="flex justify-between font-medium text-lg pt-3 border-t mt-3">
-                                        <span>Total:</span>
+                                        <span>{{ __('properties.booking.total') }}</span>
                                         <span class="text-teal-600" id="grandTotal">-</span>
                                     </div>
                                 </div>
@@ -524,12 +524,12 @@
                                         </div>
                                         <div class="ml-3 text-sm">
                                             <label for="agreementCheckbox" class="text-gray-700">
-                                                Saya setuju dengan <a href="/rental-agreement" target="_blank" class="text-teal-600 hover:text-teal-700 underline">Perjanjian Sewa Menyewa</a>
+                                                {{ __('properties.booking.rental_agreement') }} <a href="/rental-agreement" target="_blank" class="text-teal-600 hover:text-teal-700 underline">{{ __('properties.booking.rental_agreement_link') }}</a>
                                             </label>
                                         </div>
                                     </div>
                                     <div id="agreementError" class="hidden mt-2 text-sm text-red-600">
-                                        <p><i class="fas fa-exclamation-circle mr-1"></i>Anda harus menyetujui Perjanjian Sewa Menyewa untuk melanjutkan.</p>
+                                        <p><i class="fas fa-exclamation-circle mr-1"></i>{{ __('properties.booking.must_agree') }}</p>
                                     </div>
                                 </div>
                             @endauth
@@ -541,22 +541,22 @@
                                         class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium flex items-center justify-center gap-2"
                                         onclick="window.location.href = '/login'">
                                         <i class="fas fa-lock"></i>
-                                        Masuk untuk memesan
+                                        {{ __('properties.booking.login_to_book') }}
                                     </button>
-                                    <p class="text-sm text-gray-500 text-center mt-2">Mohon login atau register untuk membuat pemesanan</p>
+                                    <p class="text-sm text-gray-500 text-center mt-2">{{ __('properties.booking.please_login') }}</p>
                                 @else
                                     <button type="button" id="checkAvailabilityButton"
                                         onclick="checkRoomAvailability()"
                                         class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
                                         {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        {{ $room['status'] == 1 ? 'Cek Ketersediaan Kamar' : 'Kamar Tidak Tersedia' }}
+                                        {{ $room['status'] == 1 ? __('properties.booking.check_availability') : __('properties.booking.room_unavailable') }}
                                     </button>
                                     <button type="submit" id="submitButton"
                                         class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium hidden">
-                                        Pesan Sekarang
+                                        {{ __('properties.booking.book_now') }}
                                     </button>
                                     <div id="unavailableMessage" class="hidden mt-2 text-sm text-red-600">
-                                        <p><i class="fas fa-exclamation-triangle mr-1"></i>Ruang tidak tersedia untuk tanggal yang dipilih. Silakan pilih tanggal lain.</p>
+                                        <p><i class="fas fa-exclamation-triangle mr-1"></i>{{ __('properties.booking.room_unavailable_dates') }}</p>
                                     </div>
                                 @endguest
                             </div>
@@ -634,15 +634,15 @@
             console.log('Validating date order');
             if (new Date(checkOutDate) <= new Date(checkInDate)) {
                 console.log('Date validation failed - check-out before or same as check-in');
-                showAvailabilityStatus('error', 'Tanggal check-out harus setelah check-in');
-                updateSubmitButton(false, 'Tanggal tidak valid');
+                showAvailabilityStatus('error', '{{ __("properties.booking.date_invalid") }}');
+                updateSubmitButton(false, '{{ __("properties.booking.date_invalid") }}');
                 return;
             }
             // console.log('Date validation passed');
             
             // Show loading state
             // console.log('Setting loading state');
-            showAvailabilityStatus('loading', 'Memeriksa ketersediaan...');
+            showAvailabilityStatus('loading', '{{ __("properties.booking.checking_availability") }}');
             
             availabilityCheckTimeout = setTimeout(async () => {
                 // console.log('Starting async availability check');
@@ -708,16 +708,16 @@
                         
                         if (isAvailable) {
                             console.log('✓ Room is available');
-                            showAvailabilityStatus('available', '✓ Kamar tersedia');
+                            showAvailabilityStatus('available', '✓ {{ __("properties.status.available") }}');
                             updateSubmitButton(true);
                         } else {
                             console.log('✗ Room is unavailable');
-                            showAvailabilityStatus('unavailable', '✗ Kamar tidak tersedia untuk tanggal ini');
+                            showAvailabilityStatus('unavailable', '✗ {{ __("properties.status.unavailable") }}');
                             if (conflictingBookings.length > 0) {
                                 // console.log('Found conflicting bookings:', conflictingBookings);
-                                showAvailabilityStatus('unavailable', `✗ Tidak tersedia - ${conflictingBookings.length} pemesanan konflik`);
+                                showAvailabilityStatus('unavailable', `✗ {{ __("properties.status.unavailable") }} - ${conflictingBookings.length}`);
                             }
-                            updateSubmitButton(false, 'Kamar tidak tersedia');
+                            updateSubmitButton(false, '{{ __("properties.booking.room_unavailable") }}');
                         }
                     } else {
                         console.error('Invalid API response structure:', data);
@@ -792,7 +792,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         ${statusIcon}
-                        <span class="font-medium">Status Ketersediaan:</span>
+                        <span class="font-medium">{{ __("properties.booking.availability_status") }}</span>
                     </div>
                     <span>${statusMessage}</span>
                 </div>
@@ -811,9 +811,9 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                        <span class="text-gray-600 font-medium">Status Ketersediaan:</span>
+                        <span class="text-gray-600 font-medium">{{ __("properties.booking.availability_status") }}</span>
                     </div>
-                    <span class="text-gray-500 text-xs">Menunggu pemilihan tanggal...</span>
+                    <span class="text-gray-500 text-xs">{{ __("properties.booking.waiting_date_selection") }}</span>
                 </div>
             `;
         }
@@ -849,9 +849,9 @@
                 if (customMessage) {
                     checkAvailabilityButton.textContent = customMessage;
                 } else if ({{ $room['status'] ?? 0 }} == 0) {
-                    checkAvailabilityButton.textContent = 'Kamar Tidak Tersedia';
+                    checkAvailabilityButton.textContent = '{{ __("properties.booking.room_unavailable") }}';
                 } else {
-                    checkAvailabilityButton.textContent = 'Cek Ketersediaan Kamar';
+                    checkAvailabilityButton.textContent = '{{ __("properties.booking.check_availability") }}';
                 }
             }
         }
@@ -902,27 +902,27 @@
                     case 'loading':
                         className += 'bg-blue-50 border-blue-200 text-blue-800';
                         statusIcon = '<i class="fas fa-spinner fa-spin mr-2"></i>';
-                        statusMessage = 'Memeriksa ketersediaan...';
+                        statusMessage = '{{ __("properties.booking.checking_availability") }}';
                         break;
                     case 'available':
                         className += 'bg-green-50 border-green-200 text-green-800';
                         statusIcon = '<i class="fas fa-check-circle mr-2 text-green-500"></i>';
-                        statusMessage = 'Tersedia';
+                        statusMessage = '{{ __("properties.status.available") }}';
                         break;
                     case 'unavailable':
                         className += 'bg-red-50 border-red-200 text-red-700';
                         statusIcon = '<i class="fas fa-times-circle mr-2 text-red-500"></i>';
-                        statusMessage = 'Tidak Tersedia';
+                        statusMessage = '{{ __("properties.status.unavailable") }}';
                         break;
                     case 'error':
                         className += 'bg-yellow-50 border-yellow-200 text-yellow-800';
                         statusIcon = '<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>';
-                        statusMessage = 'Validasi Gagal';
+                        statusMessage = '{{ __("properties.booking.date_invalid") }}';
                         break;
                     default:
                         className += 'bg-gray-50 border-gray-200 text-gray-600';
                         statusIcon = '<i class="fas fa-info-circle mr-2 text-blue-500"></i>';
-                        statusMessage = 'Menunggu pemilihan tanggal...';
+                        statusMessage = '{{ __("properties.booking.waiting_date_selection") }}';
                 }
                 
                 // Special handling for conflicting bookings
@@ -1017,7 +1017,7 @@
                 const durationDisplay = document.getElementById('durationDisplay');
                 
                 // Toggle rate display in summary
-                if (rateTypeDisplay) rateTypeDisplay.textContent = rentType === 'monthly' ? 'Harga Bulanan' : 'Harga Harian';
+                if (rateTypeDisplay) rateTypeDisplay.textContent = rentType === 'monthly' ? '{{ __("properties.booking.monthly_rate") }}' : '{{ __("properties.booking.daily_rate") }}';
                 if (dailyRateDisplay) dailyRateDisplay.classList.toggle('hidden', rentType !== 'daily');
                 if (monthlyRateDisplay) monthlyRateDisplay.classList.toggle('hidden', rentType !== 'monthly');
 
@@ -1031,12 +1031,12 @@
                         duration = nights;
                         rate = parseFloat(priceDailyInput.value) || 0;
                         roomTotal = duration * rate;
-                        if (durationDisplay) durationDisplay.textContent = `${duration} malam`;
+                        if (durationDisplay) durationDisplay.textContent = `${duration} {{ __("properties.room_detail.per_night") }}`.replace('per ', '');
                     } else {
                         duration = parseInt(monthsSelect.value || '1', 10);
                         rate = parseFloat(priceMonthlyInput.value) || 0;
                         roomTotal = duration * rate;
-                        if (durationDisplay) durationDisplay.textContent = `${duration} bulan`;
+                        if (durationDisplay) durationDisplay.textContent = `${duration} {{ __("properties.booking.months") }}`;
                     }
                 } catch (error) {
                     console.error('Error updating price summary:', error);
@@ -1075,7 +1075,7 @@
                     // Update rate display
                     dailyRateDisplay.classList.add('hidden');
                     monthlyRateDisplay.classList.remove('hidden');
-                    rateTypeDisplay.textContent = 'Harga Bulanan';
+                    rateTypeDisplay.textContent = '{{ __("properties.booking.monthly_rate") }}';
 
                     // Set months to default to 1
                     if (monthsSelect) {
@@ -1115,7 +1115,7 @@
                     // Update rate display
                     dailyRateDisplay.classList.remove('hidden');
                     monthlyRateDisplay.classList.add('hidden');
-                    rateTypeDisplay.textContent = 'Harga Harian';
+                    rateTypeDisplay.textContent = '{{ __("properties.booking.daily_rate") }}';
 
                     // Set dates to defaults with 14-day minimum
                     const today = new Date();

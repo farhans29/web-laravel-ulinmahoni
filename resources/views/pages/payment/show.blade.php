@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Payment Details - Ulin Mahoni</title>
+    <title>{{ __('properties.payment.page_title') }} - Ulin Mahoni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     @include('components.homepage.styles')
@@ -20,7 +20,7 @@
                 alt="Payment Hero" 
                 class="w-full h-full object-cover"> --}}
             <div class="absolute inset-0 gradient-overlay flex items-center justify-center">
-                <h1 class="text-4xl text-white font-medium">Payment Details</h1>
+                <h1 class="text-4xl text-white font-medium">{{ __('properties.payment.payment_details') }}</h1>
             </div>
         </div>
 
@@ -28,8 +28,8 @@
         <section class="py-12 bg-gray-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-gray-900">Selesaikan Pembayaran</h2>
-                    <p class="text-gray-600 mt-1">Pilih metode pembayaran yang Anda inginkan</p>
+                    <h2 class="text-2xl font-bold text-gray-900">{{ __('properties.payment.complete_payment') }}</h2>
+                    <p class="text-gray-600 mt-1">{{ __('properties.payment.choose_payment_method') }}</p>
                 </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -45,15 +45,15 @@
 
                             <!-- Voucher Section -->
                             <div class="mb-6">
-                                <label class="block text-lg font-medium text-gray-700 mb-2">Kode Voucher (Opsional)</label>
+                                <label class="block text-lg font-medium text-gray-700 mb-2">{{ __('properties.payment.voucher_code') }}</label>
                                 <div class="flex gap-2">
                                     <input type="text" id="voucherCodeInput"
                                         class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500"
-                                        placeholder="Masukkan kode voucher">
+                                        placeholder="{{ __('properties.payment.enter_voucher') }}">
                                     <button type="button" id="applyVoucherBtn"
                                         class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50"
                                         disabled>
-                                        <span id="voucherBtnText">Terapkan</span>
+                                        <span id="voucherBtnText">{{ __('properties.payment.apply') }}</span>
                                         <span id="voucherBtnLoading" class="hidden">
                                             <i class="fas fa-spinner fa-spin"></i>
                                         </span>
@@ -65,7 +65,7 @@
                                         <div>
                                             <p class="font-medium text-green-800" id="voucherName"></p>
                                             <p class="text-sm text-green-600" id="voucherDescription"></p>
-                                            <p class="text-sm font-bold text-green-700 mt-1">Diskon: <span id="voucherDiscount"></span></p>
+                                            <p class="text-sm font-bold text-green-700 mt-1">{{ __('properties.payment.discount') }} <span id="voucherDiscount"></span></p>
                                         </div>
                                         <button type="button" id="removeVoucherBtn" class="text-red-600 hover:text-red-800">
                                             <i class="fas fa-times"></i>
@@ -77,12 +77,37 @@
                             <!-- Payment Method -->
                             <div class="space-y-6">
                                 <div>
-                                    <label class="block text-lg font-medium text-gray-700 mb-4">Metode Pembayaran</label>
+                                    <label class="block text-lg font-medium text-gray-700 mb-4">{{ __('properties.payment.payment_method') }}</label>
+
+                                    <!-- Manual Transfer Payment -->
+                                    <div class="mb-6">
+                                        <h3 class="text-md font-medium text-gray-700 mb-3">Transfer Manual (Direct)</h3>
+                                        <p class="text-sm text-gray-600 mb-3">Transfer langsung ke rekening kami</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <label class="bank-card relative p-6 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md bg-white">
+                                                <input type="radio" name="payment_selection" value="bri_manual" class="sr-only"
+                                                    data-payment-type="manual_transfer"
+                                                    data-bank="bri_manual"
+                                                    data-bank-name="BRI Manual"
+                                                    data-bank-logo="https://images.seeklogo.com/logo-png/45/1/bank-bri-logo-png_seeklogo-459990.png">
+                                                <div class="flex items-center">
+                                                    <div class="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-lg border border-gray-200 mr-4 flex-shrink-0">
+                                                        <img src="https://images.seeklogo.com/logo-png/45/1/bank-bri-logo-png_seeklogo-459990.png" alt="BRI" class="w-12 h-12 object-contain">
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <div class="font-bold text-gray-900 text-lg mb-1">BRI</div>
+                                                        <div class="text-sm text-gray-600 font-mono">0505 01 001671 567</div>
+                                                        <div class="text-xs text-gray-500 mt-1">Kelola Aset Properti</div>
+                                                    </div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
 
                                     <!-- Virtual Account Payment -->
                                     <div class="mb-6">
-                                        <h3 class="text-md font-medium text-gray-700 mb-3">Transfer Bank (Virtual Account)</h3>
-                                        <p class="text-sm text-gray-600 mb-3">Pilih bank untuk generate Virtual Account</p>
+                                        <h3 class="text-md font-medium text-gray-700 mb-3">{{ __('properties.payment.bank_transfer_va') }}</h3>
+                                        <p class="text-sm text-gray-600 mb-3">{{ __('properties.payment.select_bank_va') }}</p>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         @php
                                             $banks = config('services.doku.banks');
@@ -122,7 +147,7 @@
                                                 </div>
                                                 <div class="flex-1">
                                                     <div class="font-bold text-gray-900 text-lg mb-1">{{ $bankCode }}</div>
-                                                    <div class="text-sm text-gray-600">Virtual Account</div>
+                                                    <div class="text-sm text-gray-600">{{ __('properties.payment.virtual_account') }}</div>
                                                 </div>
                                             </div>
                                         </label>
@@ -132,7 +157,7 @@
 
                                     <!-- QRIS Payment -->
                                     <div class="mb-6">
-                                        <h3 class="text-md font-medium text-gray-700 mb-3">E-Wallet / QRIS</h3>
+                                        <h3 class="text-md font-medium text-gray-700 mb-3">{{ __('properties.payment.ewallet_qris') }}</h3>
                                         <div>
                                             <label class="payment-card relative p-6 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md bg-white block">
                                                 <input type="radio" name="payment_selection" value="qris" class="sr-only" data-payment-type="qris">
@@ -142,7 +167,7 @@
                                                     </div>
                                                     <div class="flex-1">
                                                         <div class="font-bold text-gray-900 text-lg mb-1">QRIS</div>
-                                                        <div class="text-sm text-gray-600">Scan QR Code</div>
+                                                        <div class="text-sm text-gray-600">{{ __('properties.payment.scan_qr') }}</div>
                                                     </div>
                                                 </div>
                                             </label>
@@ -151,7 +176,7 @@
 
                                     <!-- Credit Card Payment -->
                                     <div class="mb-6">
-                                        <h3 class="text-md font-medium text-gray-700 mb-3">Kartu Kredit / Debit</h3>
+                                        <h3 class="text-md font-medium text-gray-700 mb-3">{{ __('properties.payment.credit_debit') }}</h3>
                                         <div>
                                             <label class="payment-card relative p-6 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-teal-500 hover:shadow-md bg-white block">
                                                 <input type="radio" name="payment_selection" value="credit_card" class="sr-only" data-payment-type="credit_card">
@@ -161,8 +186,8 @@
                                                         <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/1200px-Mastercard-logo.svg.png" alt="Mastercard" class="h-8 w-auto object-contain">
                                                     </div>
                                                     <div class="flex-1">
-                                                        <div class="font-bold text-gray-900 text-lg mb-1">Kartu Kredit/Debit</div>
-                                                        <div class="text-sm text-gray-600">Visa, Mastercard, JCB, dan kartu lainnya</div>
+                                                        <div class="font-bold text-gray-900 text-lg mb-1">{{ __('properties.payment.credit_debit') }}</div>
+                                                        <div class="text-sm text-gray-600">{{ __('properties.payment.other_cards') }}</div>
                                                     </div>
                                                 </div>
                                             </label>
@@ -173,10 +198,10 @@
                             
                             <!-- Submit Button -->
                             <div class="mt-8 pt-6 border-t border-gray-200">
-                                <button type="submit" id="submitPayment" 
+                                <button type="submit" id="submitPayment"
                                     class="w-full bg-teal-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled>
-                                    <span id="submitText">Lanjutkan Pembayaran</span>
+                                    <span id="submitText">{{ __('properties.payment.continue_payment') }}</span>
                                     <span id="loadingSpinner" class="hidden">
                                         <i class="fas fa-spinner fa-spin ml-2"></i>
                                     </span>
@@ -189,55 +214,55 @@
                 <!-- Booking Summary -->
                 <div class="lg:col-span-1">
                     <div class="bg-white rounded-lg shadow-sm p-6 sticky top-6">
-                        <h2 class="text-lg font-medium text-gray-900 mb-4">Ringkasan Pemesanan</h2>
-                        
+                        <h2 class="text-lg font-medium text-gray-900 mb-4">{{ __('properties.payment.booking_summary') }}</h2>
+
                         <div class="space-y-4">
                             <div>
-                                <h4 class="font-medium">Detail Transaksi</h4>
-                                <p class="text-sm text-gray-600 font-bold mb-6">Order ID: {{ $booking->order_id }}</p>
-                                <p class="text-sm text-gray-600">Kode: {{ $booking->transaction_code }}</p>
-                                <p class="text-sm text-gray-600">Tanggal: {{ $booking->created_at->format('d M Y H:i') }}</p>
-                                <p class="text-sm text-gray-600">Status: {{ ucfirst($booking->transaction_status) }}</p>
+                                <h4 class="font-medium">{{ __('properties.payment.transaction_details') }}</h4>
+                                <p class="text-sm text-gray-600 font-bold mb-6">{{ __('properties.payment.order_id') }} {{ $booking->order_id }}</p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.code') }} {{ $booking->transaction_code }}</p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.date') }} {{ $booking->created_at->format('d M Y H:i') }}</p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.status') }} {{ ucfirst($booking->transaction_status) }}</p>
                             </div>
 
                             <div>
-                                <h4 class="font-medium">Detail Tamu</h4>
-                                <h4 class="font-medium text-gray-600">Nama</h4>
+                                <h4 class="font-medium">{{ __('properties.payment.guest_details') }}</h4>
+                                <h4 class="font-medium text-gray-600">{{ __('properties.payment.name') }}</h4>
                                 <p class="text-sm text-gray-600 mb-2">{{ $booking->user_name }}</p>
-                                <h4 class="font-medium text-gray-600">Email</h4>
+                                <h4 class="font-medium text-gray-600">{{ __('properties.payment.email') }}</h4>
                                 <p class="text-sm text-gray-600 mb-2">{{ $booking->user_email }}</p>
-                                <h4 class="font-medium text-gray-600">Nomor Telepon</h4>
+                                <h4 class="font-medium text-gray-600">{{ __('properties.payment.phone_number') }}</h4>
                                 <p class="text-sm text-gray-600 mb-2">{{ $booking->user_phone_number }}</p>
                             </div>
 
                             <div>
-                                <h4 class="font-medium">Detail Properti</h4>
+                                <h4 class="font-medium">{{ __('properties.payment.property_details') }}</h4>
                                 <p class="text-sm text-gray-600">{{ $booking->property_name }} ({{ $booking->room_name }})</p>
-                                <p class="text-sm text-gray-600">Type: {{ ucfirst($booking->property_type) }}</p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.type') }} {{ ucfirst($booking->property_type) }}</p>
                             </div>
 
                             <div>
-                                <h4 class="font-medium">Jangka Waktu</h4>
-                                <p class="text-sm text-gray-600">Check-in: {{ $booking->check_in->format('d F Y') }}</p>
-                                <p class="text-sm text-gray-600">Check-out: {{ $booking->check_out->format('d F Y') }}</p>
+                                <h4 class="font-medium">{{ __('properties.payment.duration') }}</h4>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.check_in') }} {{ $booking->check_in->format('d F Y') }}</p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.check_out') }} {{ $booking->check_out->format('d F Y') }}</p>
 
                                 @if($booking->booking_months > 0)
-                                    <p class="text-sm text-gray-600">Durasi: {{ $booking->booking_months }} bulan</p>
+                                    <p class="text-sm text-gray-600">{{ str_replace('{count}', $booking->booking_months, __('properties.payment.duration_months')) }}</p>
                                 @elseif($booking->booking_days > 0)
-                                    <p class="text-sm text-gray-600">Durasi: {{ $booking->booking_days }} hari</p>
+                                    <p class="text-sm text-gray-600">{{ str_replace('{count}', $booking->booking_days, __('properties.payment.duration_days')) }}</p>
                                 @endif
 
                             </div>
 
                             <div class="pt-4 border-t">
-                                <h4 class="font-medium mb-2">Pricing</h4>
+                                <h4 class="font-medium mb-2">{{ __('properties.payment.pricing') }}</h4>
                                 <!-- <p class="text-sm text-gray-600">Harga Harian: {{ number_format($booking->daily_price, 0) }}</p> -->
-                                <p class="text-sm text-gray-600">Harga Kamar: Rp <span id="summaryRoomPrice">{{ number_format($booking->room_price, 0) }}</span></p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.room_price') }} <span id="summaryRoomPrice">{{ number_format($booking->room_price, 0) }}</span></p>
                                 {{-- <p class="text-sm text-gray-600">Biaya Admin: {{ number_format($booking->admin_fees, 0) }}</p> --}}
-                                <p class="text-sm text-gray-600 mt-2 pt-2 border-t">Subtotal: Rp <span id="summarySubtotal">{{ number_format($booking->room_price + ($booking->admin_fees ?? 0), 0) }}</span></p>
-                                <p id="summaryDiscountRow" class="text-sm text-green-600 hidden">Diskon Voucher: -Rp <span id="summaryDiscountAmount">0</span></p>
-                                <p class="text-sm text-gray-600">Biaya Layanan: +Rp <span id="summaryServiceFee">{{ number_format($booking->service_fees, 0) }}</span></p>
-                                <p class="text-sm font-bold text-gray-900 mt-2 pt-2 border-t">Grand Total: Rp <span id="summaryTotal">{{ number_format($booking->grandtotal_price, 0) }}</span></p>
+                                <p class="text-sm text-gray-600 mt-2 pt-2 border-t">{{ __('properties.payment.subtotal') }} <span id="summarySubtotal">{{ number_format($booking->room_price + ($booking->admin_fees ?? 0), 0) }}</span></p>
+                                <p id="summaryDiscountRow" class="text-sm text-green-600 hidden">{{ __('properties.payment.voucher_discount') }} <span id="summaryDiscountAmount">0</span></p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.service_fee') }} <span id="summaryServiceFee">{{ number_format($booking->service_fees, 0) }}</span></p>
+                                <p class="text-sm font-bold text-gray-900 mt-2 pt-2 border-t">{{ __('properties.payment.grand_total') }} <span id="summaryTotal">{{ number_format($booking->grandtotal_price, 0) }}</span></p>
                             </div>
                         </div>
                     </div>
@@ -254,29 +279,29 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Virtual Account Berhasil Dibuat!</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">{{ __('properties.payment.va_success') }}</h3>
                     <div class="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
                         <div class="text-left space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Bank:</span>
+                                <span class="text-sm text-gray-600">{{ __('properties.payment.bank') }}</span>
                                 <span class="text-sm font-medium" id="modalBank"></span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Nomor VA:</span>
+                                <span class="text-sm text-gray-600">{{ __('properties.payment.va_number') }}</span>
                                 <span class="text-sm font-bold" id="modalVANumber"></span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Jumlah:</span>
+                                <span class="text-sm text-gray-600">{{ __('properties.payment.amount') }}</span>
                                 <span class="text-sm font-medium" id="modalAmount"></span>
                             </div>
                         </div>
                     </div>
                     <div class="mt-4 space-y-2">
                         <a id="howToPayLink" href="#" target="_blank" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                            Lihat Cara Pembayaran
+                            {{ __('properties.payment.how_to_pay') }}
                         </a>
                         <button id="closeModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                            Tutup
+                            {{ __('properties.payment.close') }}
                         </button>
                     </div>
                 </div>
@@ -292,13 +317,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Terjadi Kesalahan</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">{{ __('properties.payment.error_occurred') }}</h3>
                     <div class="mt-2 px-4 py-3">
                         <p class="text-sm text-gray-600" id="errorMessage"></p>
                     </div>
                     <div class="mt-4">
                         <button id="closeErrorModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                            Tutup
+                            {{ __('properties.payment.close') }}
                         </button>
                     </div>
                 </div>
@@ -314,20 +339,20 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">QRIS Berhasil Dibuat!</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">{{ __('properties.payment.qris_success') }}</h3>
                     <div class="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
                         <div class="text-center">
-                            <p class="text-sm text-gray-600 mb-3">Scan QR Code</p>
+                            <p class="text-sm text-gray-600 mb-3">{{ __('properties.payment.qr_code') }}</p>
                             <div id="qrisCodeContainer" class="flex justify-center mb-3">
                                 <img id="qrisCodeImage" src="" alt="QRIS Code" class="w-64 h-64 border-2 border-gray-300 rounded">
                             </div>
                             <div class="text-left space-y-2">
                                 <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Jumlah:</span>
+                                    <span class="text-sm text-gray-600">{{ __('properties.payment.amount') }}</span>
                                     <span class="text-sm font-medium" id="modalQrisAmount"></span>
                                 </div>
                                 <div class="flex justify-between">
-                                    <span class="text-sm text-gray-600">Berlaku hingga:</span>
+                                    <span class="text-sm text-gray-600">{{ __('properties.payment.valid_until') }}</span>
                                     <span class="text-sm font-medium" id="modalQrisExpiry"></span>
                                 </div>
                             </div>
@@ -335,7 +360,7 @@
                     </div>
                     <div class="mt-4">
                         <button id="closeQrisModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                            Tutup
+                            {{ __('properties.payment.close') }}
                         </button>
                     </div>
                 </div>
@@ -351,26 +376,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Halaman Pembayaran Siap!</h3>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">{{ __('properties.payment.payment_page_ready') }}</h3>
                     <div class="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
                         <div class="text-left space-y-2">
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Invoice:</span>
+                                <span class="text-sm text-gray-600">{{ __('properties.payment.invoice') }}</span>
                                 <span class="text-sm font-medium" id="modalCCInvoice"></span>
                             </div>
                             <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Jumlah:</span>
+                                <span class="text-sm text-gray-600">{{ __('properties.payment.amount') }}</span>
                                 <span class="text-sm font-medium" id="modalCCAmount"></span>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 mt-3">Klik tombol di bawah untuk melanjutkan ke halaman pembayaran kartu kredit/debit</p>
+                        <p class="text-xs text-gray-500 mt-3">{{ __('properties.payment.redirect_info') }}</p>
                     </div>
                     <div class="mt-4 space-y-2">
                         <a id="ccPaymentLink" href="#" target="_blank" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                            Lanjut ke Pembayaran
+                            {{ __('properties.payment.continue_to_payment') }}
                         </a>
                         <button id="closeCCModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
-                            Tutup
+                            {{ __('properties.payment.close') }}
                         </button>
                     </div>
                 </div>
@@ -383,7 +408,18 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         @include('components.homepage.scripts')
-        
+
+        // Translation strings for JavaScript
+        const translations = {
+            voucher_applied: @json(__('properties.payment.voucher_applied')),
+            please_select_payment: @json(__('properties.payment.please_select_payment')),
+            processing_payment: @json(__('properties.payment.processing_payment')),
+            pay_with_qris: @json(__('properties.payment.pay_with_qris')),
+            pay_with_card: @json(__('properties.payment.pay_with_card')),
+            pay_with_bank: @json(__('properties.payment.pay_with_bank')),
+            please_select_bank: @json(__('properties.payment.please_select_bank'))
+        };
+
         const paymentForm = document.getElementById('paymentForm');
         const submitBtn = document.getElementById('submitPayment');
         const submitText = document.getElementById('submitText');
@@ -392,14 +428,27 @@
 
         // Voucher state
         let appliedVoucher = null;
-        const roomPrice = {{ $booking->room_price }};
-        const serviceFee = {{ $booking->service_fees }};
+        const roomPrice = {{ $booking->room_price ?? 0 }};
+        const serviceFee = {{ $booking->service_fees ?? 0 }};
         const adminFees = {{ $booking->admin_fees ?? 0 }};
+
+        // Debug: Log booking values
+        console.log('Booking Values:', {
+            roomPrice: roomPrice,
+            serviceFee: serviceFee,
+            adminFees: adminFees,
+            grandtotal: {{ $booking->grandtotal_price ?? 0 }}
+        });
 
         // Calculate subtotal before service fee (for voucher calculation)
         // Formula: Subtotal = Room Price + Admin Fees (without service fee)
         const subtotalBeforeServiceFee = roomPrice + adminFees;
-        const originalTotal = {{ $booking->grandtotal_price }};
+        const originalTotal = {{ $booking->grandtotal_price ?? 0 }};
+
+        console.log('Calculated Values:', {
+            subtotalBeforeServiceFee: subtotalBeforeServiceFee,
+            originalTotal: originalTotal
+        });
 
         // Voucher UI elements
         const voucherCodeInput = document.getElementById('voucherCodeInput');
@@ -470,7 +519,7 @@
                 // Update summary
                 updatePriceSummary();
 
-                showVoucherMessage('Voucher berhasil diterapkan!', 'success');
+                showVoucherMessage(translations.voucher_applied, 'success');
 
             } catch (error) {
                 showVoucherMessage(error.message, 'error');
@@ -541,11 +590,11 @@
                 // Update submit button text
                 submitBtn.disabled = false;
                 if (paymentType === 'qris') {
-                    submitText.textContent = 'Bayar dengan QRIS';
+                    submitText.textContent = translations.pay_with_qris;
                 } else if (paymentType === 'credit_card') {
-                    submitText.textContent = 'Bayar dengan Kartu Kredit/Debit';
+                    submitText.textContent = translations.pay_with_card;
                 } else if (paymentType === 'bank_transfer') {
-                    submitText.textContent = `Bayar dengan ${bankName}`;
+                    submitText.textContent = translations.pay_with_bank.replace('{bank}', bankName);
                     // Store bank info for VA generation
                     let bankInput = paymentForm.querySelector('input[name="bank"]');
                     if (!bankInput) {
@@ -555,6 +604,8 @@
                         paymentForm.appendChild(bankInput);
                     }
                     bankInput.value = radio.value;
+                } else if (paymentType === 'manual_transfer') {
+                    submitText.textContent = 'Bayar dengan Transfer Manual';
                 }
 
                 // Update visual selection
@@ -575,19 +626,26 @@
             e.preventDefault();
 
             if (!selectedPaymentMethod) {
-                alert('Silakan pilih metode pembayaran');
+                alert(translations.please_select_payment);
                 return;
             }
 
             // Show loading state
             submitBtn.disabled = true;
-            submitText.textContent = 'Memproses pembayaran...';
+            submitText.textContent = translations.processing_payment;
             loadingSpinner.classList.remove('hidden');
 
             try {
                 // Calculate final amount using formula: Subtotal - Voucher + Service Fee
                 const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
                 const finalAmount = subtotalBeforeServiceFee - discountAmount + serviceFee;
+
+                console.log('Payment Calculation:', {
+                    subtotalBeforeServiceFee: subtotalBeforeServiceFee,
+                    discountAmount: discountAmount,
+                    serviceFee: serviceFee,
+                    finalAmount: finalAmount
+                });
 
                 // Base request payload
                 const basePayload = {
@@ -597,6 +655,8 @@
                     customer_phone: '{{ $booking->user_phone_number }}',
                     amount: parseFloat(finalAmount)
                 };
+
+                console.log('Base Payload for Payment:', basePayload);
 
                 let paymentData, endpoint, updateParams;
 
@@ -735,6 +795,31 @@
 
                     // Show VA modal
                     showSuccessModal(paymentData.data);
+
+                } else if (selectedPaymentMethod === 'manual_transfer') {
+                    // Manual Transfer Payment - Direct update without API call
+                    updateParams = {
+                        payment_method: 'bri_manual',
+                        bank: 'BRI Manual',
+                        virtual_account_no: '0505 01 001671 567',
+                        manual_transfer_data: JSON.stringify({
+                            bank_name: 'BRI',
+                            account_number: '0505 01 001671 567',
+                            account_name: 'Kelola Aset Properti'
+                        })
+                    };
+
+                    // Add voucher data if applied
+                    if (appliedVoucher) {
+                        updateParams.voucher_code = appliedVoucher.code;
+                        updateParams.discount_amount = appliedVoucher.calculation.discount_amount;
+                    }
+
+                    // Update booking directly
+                    await updateBookingPayment(updateParams);
+
+                    // Show manual transfer confirmation modal
+                    showManualTransferModal();
                 }
 
             } catch (error) {
@@ -828,6 +913,80 @@
 
             // Show modal
             document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function showManualTransferModal() {
+            // Calculate final amount using formula: Subtotal - Voucher + Service Fee
+            const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
+            const finalAmount = subtotalBeforeServiceFee - discountAmount + serviceFee;
+
+            // Create modal HTML dynamically
+            const modalHtml = `
+                <div id="manualTransferModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-md bg-white">
+                        <div class="mt-3 text-center">
+                            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Transfer Manual Berhasil</h3>
+                            <div class="mt-4 px-4 py-3 bg-gray-50 rounded-lg">
+                                <div class="text-left space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Bank</span>
+                                        <span class="text-sm font-medium">BRI</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">No. Rekening</span>
+                                        <span class="text-sm font-bold font-mono">0505 01 001671 567</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Atas Nama</span>
+                                        <span class="text-sm font-medium">Kelola Aset Properti</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-sm text-gray-600">Jumlah</span>
+                                        <span class="text-sm font-medium">Rp ${finalAmount.toLocaleString('id-ID')}</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p class="text-xs text-yellow-800">
+                                        <strong>Catatan:</strong> Silakan transfer sesuai jumlah di atas dan simpan bukti transfer untuk konfirmasi.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="mt-4 space-y-2">
+                                <button id="closeManualTransferModalBtn" class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            // Show modal
+            document.getElementById('manualTransferModal').classList.remove('hidden');
+
+            // Add close handler
+            document.getElementById('closeManualTransferModalBtn').addEventListener('click', function() {
+                document.getElementById('manualTransferModal').classList.add('hidden');
+                document.getElementById('manualTransferModal').remove();
+                window.location.href = '{{ route("bookings.index") }}';
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('manualTransferModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    this.remove();
+                    window.location.href = '{{ route("bookings.index") }}';
+                }
+            });
         }
 
         function showErrorModal(message) {
