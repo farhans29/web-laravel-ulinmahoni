@@ -9,6 +9,14 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
   @include('components.homepage.styles')
+  <style>
+    /* Override placeholder color for date inputs */
+    input[name="check_in"]::placeholder,
+    input[name="check_out"]::placeholder {
+      color: #000000 !important;
+      opacity: 1 !important;
+    }
+  </style>
 </head>
 <body>
   @include('components.homepage.header')
@@ -83,7 +91,7 @@
                                 onfocus="(this.type='date')"
                                 onblur="if(!this.value) this.type='text'"
                                 placeholder="Tanggal Check In"
-                                class="w-full pl-10 h-12 border border-gray-500 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                                class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                         <div class="w-1/2 relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
@@ -93,7 +101,7 @@
                                 onfocus="(this.type='date')"
                                 onblur="if(!this.value) this.type='text'"
                                 placeholder="Tanggal Check Out"
-                                class="w-full pl-10 h-12 border border-gray-500 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                                class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                     </div>
                     
