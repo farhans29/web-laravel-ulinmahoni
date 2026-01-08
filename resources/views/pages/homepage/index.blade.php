@@ -77,23 +77,23 @@
                     <div class="flex-1 flex gap-4">
                         <div class="w-1/2 relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" 
-                                name="check_in" 
+                            <input type="text"
+                                name="check_in"
                                 value="{{ request('check_in') }}"
-                                onfocus="(this.type='date')" 
+                                onfocus="(this.type='date')"
                                 onblur="if(!this.value) this.type='text'"
                                 placeholder="Tanggal Check In"
-                                class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                                class="w-full pl-10 h-12 border border-gray-500 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                         <div class="w-1/2 relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" 
-                                name="check_out" 
+                            <input type="text"
+                                name="check_out"
                                 value="{{ request('check_out') }}"
-                                onfocus="(this.type='date')" 
+                                onfocus="(this.type='date')"
                                 onblur="if(!this.value) this.type='text'"
                                 placeholder="Tanggal Check Out"
-                                class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
+                                class="w-full pl-10 h-12 border border-gray-500 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                     </div>
                     
