@@ -8,11 +8,11 @@
                 <a href="{{ route('villas.show', ['id' => $villa['id']]) }}" class="block h-full">
                     <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
                         <div class="relative">
-                            <div class="relative pb-[56.25%] h-48">
+                            <div class="relative h-[140px]">
                                 <div class="absolute inset-0">
                                     @if($villa['image'])
-                                        <img src="data:image/jpeg;base64,{{ $villa['image'] }}" 
-                                             alt="{{ $villa['name'] }}" 
+                                        <img src="data:image/jpeg;base64,{{ $villa['image'] }}"
+                                             alt="{{ $villa['name'] }}"
                                              class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
                                     @else
                                         <div class="bg-gray-100 w-full h-full flex items-center justify-center">
@@ -22,17 +22,17 @@
                                     @endif
                                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
                                 </div>
-                                <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
+                                <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-xs">
                                     {{ $villa['type'] }}
                                 </span>
                             </div>
                         </div>
 
-                        <div class="p-4 flex-1 flex flex-col">
+                        <div class="p-3 flex-1 flex flex-col">
                             <div class="flex-1">
-                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $villa['name'] }}</h3>
-                                <p class="text-gray-500 text-sm mb-1">{{ $villa['subLocation'] }}</p>
-                                <p class="text-gray-500 text-xs mb-3">{{ $villa['distance'] }}</p>
+                                <h3 class="text-sm font-medium text-gray-800 mb-1">{{ $villa['name'] }}</h3>
+                                <p class="text-gray-500 text-xs mb-1">{{ $villa['subLocation'] }}</p>
+                                <p class="text-gray-500 text-xs mb-2">{{ $villa['distance'] }}</p>
                             </div>
 
                             <div class="mt-auto">
@@ -42,8 +42,8 @@
                                             mulai dari <span class="line-through">Rp{{ number_format($villa['price']['original'], 0, ',', '.') }}</span>
                                         </p>
                                         <div class="flex items-center">
-                                            <p class="text-lg font-bold text-gray-800">
-                                                Rp{{ number_format($villa['price']['discounted'], 0, ',', '.') }} 
+                                            <p class="text-base font-bold text-gray-800">
+                                                Rp{{ number_format($villa['price']['discounted'], 0, ',', '.') }}
                                                 <span class="text-xs font-normal">/bulan</span>
                                             </p>
                                         </div>
@@ -93,12 +93,12 @@
     
     .property-card {
         height: 100%;
-        min-height: 420px;
+        min-height: 300px;
     }
-    
+
     @media (min-width: 1024px) {
         .property-swiper .swiper-slide {
-            width: 20%; /* 5 cards per view on large screens */
+            width: 16.666%; /* 6 cards per view on large screens */
             height: auto;
         }
     }
@@ -135,17 +135,17 @@
                 // Mobile
                 320: {
                     slidesPerView: 1,
-                    spaceBetween: 16
+                    spaceBetween: 12
                 },
                 // Tablet
                 768: {
-                    slidesPerView: 2,
-                    spaceBetween: 16
+                    slidesPerView: 3,
+                    spaceBetween: 12
                 },
                 // Desktop
                 1024: {
-                    slidesPerView: 5,
-                    spaceBetween: 16
+                    slidesPerView: 6,
+                    spaceBetween: 12
                 }
             }
         });

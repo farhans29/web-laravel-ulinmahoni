@@ -142,11 +142,74 @@
             </nav>
 
             <!-- Image Gallery Section -->
-            <div x-data="{ showModal: false, modalImg: '', modalAlt: '' }" class="image-gallery relative mb-8">
+            <div x-data="{
+                showModal: false,
+                modalImg: '',
+                modalAlt: '',
+                currentImageIndex: 0,
+                images: [
+                    '{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}',
+                    @foreach($secondaryImages as $image)
+                        '{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}',
+                    @endforeach
+                ],
+                showImage(index) {
+                    this.currentImageIndex = index;
+                    this.modalImg = this.images[index];
+                    this.showModal = true;
+                },
+                nextImage() {
+                    this.currentImageIndex = (this.currentImageIndex + 1) % this.images.length;
+                    this.modalImg = this.images[this.currentImageIndex];
+                },
+                prevImage() {
+                    this.currentImageIndex = this.currentImageIndex > 0 ? this.currentImageIndex - 1 : this.images.length - 1;
+                    this.modalImg = this.images[this.currentImageIndex];
+                }
+            }" class="image-gallery relative mb-8">
                 <!-- Image Popup Modal -->
-                <div x-show="showModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70" style="display: none;" @click.away="showModal=false" @click.self="showModal=false" @keydown.escape.window="showModal=false">
-                    <img :src="modalImg" :alt="modalAlt" class="max-h-[80vh] max-w-[90vw] rounded shadow-lg border-4 border-white object-contain" @click.stop>
-                    <button @click="showModal=false" class="absolute top-4 right-6 text-white text-3xl font-bold focus:outline-none">&times;</button>
+                <div x-show="showModal"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+                    style="display: none;"
+                    @click.away="showModal=false"
+                    @click.self="showModal=false"
+                    @keydown.escape.window="showModal=false"
+                    @keydown.arrow-right.window="showModal && nextImage()"
+                    @keydown.arrow-left.window="showModal && prevImage()">
+
+                    <div class="relative">
+                        <img :src="modalImg" :alt="modalAlt" class="max-h-[80vh] max-w-[90vw] rounded shadow-lg border-4 border-white object-contain" style="aspect-ratio: 16/9; object-fit: contain;" @click.stop>
+
+                        <!-- Arrow Navigation Buttons -->
+                        <template x-if="images.length > 1">
+                            <div>
+                                <!-- Previous Button -->
+                                <button @click.stop="prevImage()"
+                                    class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                    <i class="fas fa-chevron-left text-teal-600 text-xl"></i>
+                                </button>
+
+                                <!-- Next Button -->
+                                <button @click.stop="nextImage()"
+                                    class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-gray-100 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                    <i class="fas fa-chevron-right text-teal-600 text-xl"></i>
+                                </button>
+
+                                <!-- Image Counter -->
+                                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm">
+                                    <span x-text="currentImageIndex + 1"></span> / <span x-text="images.length"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <button @click="showModal=false" class="absolute top-4 right-6 text-white text-3xl font-bold focus:outline-none hover:text-gray-300 transition-colors">&times;</button>
                 </div>
                 
                 <!-- Main Image with overlay badges -->
@@ -160,8 +223,8 @@
                             this.src='{{ asset('images/placeholder-property.jpg') }}';"> --}}
                         <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
-                            class="w-full h-full object-fill object-center"
-                            @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
+                            class="w-full h-full object-fill object-center cursor-pointer"
+                            @click.prevent="showImage(0); modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
@@ -192,14 +255,14 @@
                                 <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
                                     <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
                                         alt="{{ $house['name'] ?? 'Property Image' }} - Main"
-                                        @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
+                                        @click.prevent="showImage(0); modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                                         class="w-full h-full object-cover cursor-pointer hover:opacity-80">
                                 </div>
                                 @foreach($secondaryImages as $index => $image)
                                     <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
                                         <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}"
                                             alt="{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}"
-                                            @click.prevent="showModal=true; modalImg='{{ env('ADMIN_URL') }}/storage/{{ $image['image'] ?? $mainImage ?? $primaryImage }}'; modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"
+                                            @click.prevent="showImage({{ $index + 1 }}); modalAlt='{{ $house['name'] ?? 'Property Image' }} - Image {{ $index + 2 }}'"
                                             class="w-full h-full object-cover cursor-pointer hover:opacity-80">
                                     </div>
                                 @endforeach

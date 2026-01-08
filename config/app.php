@@ -91,7 +91,7 @@ return [
     |
     */
 
-    'locale' => 'en',
+    'locale' => 'id',
 
     /*
     |--------------------------------------------------------------------------
@@ -104,7 +104,23 @@ return [
     |
     */
 
-    'fallback_locale' => 'en',
+    'fallback_locale' => 'id',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Available Locales
+    |--------------------------------------------------------------------------
+    |
+    | List of locales supported by the application.
+    |
+    */
+
+    'locales' => ['id', 'en'],
+
+    'locale_names' => [
+        'id' => 'Bahasa Indonesia',
+        'en' => 'English',
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -227,6 +243,7 @@ return [
     'aliases' => Facade::defaultAliases()->merge([
         'Helper' => App\Helpers\Helper::class,
         'Divider' => App\Helpers\Divider::class,
+        'Locale' => App\Helpers\LocaleHelper::class,
         'Alert' => RealRashid\SweetAlert\Facades\Alert::class,
         'Socialite' => Laravel\Socialite\Facades\Socialite::class,
         // 'Socialite' => \SocialiteProviders\Manager\ServiceProvider::class,
