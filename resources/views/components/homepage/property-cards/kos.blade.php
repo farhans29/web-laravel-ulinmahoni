@@ -38,38 +38,38 @@
                     </div>
 
                     <!-- Content -->
-                    <div class="p-4 flex-1 flex flex-col">
+                    <div class="p-3 flex-1 flex flex-col">
                         <!-- Property Name -->
-                        <h3 class="text-base font-bold text-gray-800 mb-1.5 line-clamp-1 group-hover:text-teal-600 transition-colors">
+                        <h3 class="text-base font-bold text-gray-800 mb-1 line-clamp-1 group-hover:text-teal-600 transition-colors">
                             {{ $kosan['name'] }}
                         </h3>
 
                         <!-- Location -->
-                        <div class="flex items-start text-gray-600 text-sm mb-2">
-                            <i class="fas fa-map-marker-alt mt-0.5 mr-2 text-gray-400 flex-shrink-0"></i>
+                        <div class="flex items-start text-gray-600 text-sm mb-1">
+                            <i class="fas fa-map-marker-alt mt-0.5 mr-1.5 text-gray-400 flex-shrink-0"></i>
                             <span class="line-clamp-2">{{ $kosan['subLocation'] }}</span>
                         </div>
 
                         @if(!empty($kosan['distance']))
-                        <p class="text-gray-500 text-xs mb-2">
+                        <p class="text-gray-500 text-xs mb-1.5">
                             <i class="fas fa-route mr-1"></i>{{ $kosan['distance'] }}
                         </p>
                         @endif
 
                         <!-- Features -->
                         @if(!empty($kosan['features']))
-                        <div class="flex flex-wrap gap-2 mb-2">
+                        <div class="flex flex-wrap gap-1.5 mb-1.5">
                             @php
                                 $features = $kosan['features'] ?? [];
                                 $displayFeatures = array_slice($features, 0, 3);
                             @endphp
                             @foreach($displayFeatures as $feature)
-                                <span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                                <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">
                                     {{ $feature }}
                                 </span>
                             @endforeach
                             @if(count($features) > 3)
-                                <span class="bg-gray-100 text-gray-500 text-xs px-2 py-1 rounded">
+                                <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded">
                                     +{{ count($features) - 3 }}
                                 </span>
                             @endif
@@ -77,7 +77,7 @@
                         @endif
 
                         <!-- Price Section -->
-                        <div class="mt-auto pt-2.5 border-t border-gray-100">
+                        <div class="mt-auto pt-2 border-t border-gray-100">
                             @php
                                 $roomPrice = $kosan['room_price_original_monthly'];
                             @endphp
@@ -172,7 +172,7 @@
 
     .property-card {
         height: 100%;
-        min-height: 450px;
+        min-height: 400px;
     }
 
     /* Line clamp utilities */
