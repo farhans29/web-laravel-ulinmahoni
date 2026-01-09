@@ -38,27 +38,27 @@
                     </div>
 
                     <!-- Content -->
-                    <div class="p-4 flex-1 flex flex-col">
+                    <div class="p-2.5 flex-1 flex flex-col">
                         <!-- Property Name -->
-                        <h3 class="text-base font-bold text-gray-800 mb-2 line-clamp-1 group-hover:text-teal-600 transition-colors">
+                        <h3 class="text-base font-bold text-gray-800 mb-1.5 line-clamp-1 group-hover:text-teal-600 transition-colors">
                             {{ $kosan['name'] }}
                         </h3>
 
                         <!-- Location -->
-                        <div class="flex items-start text-gray-600 text-sm mb-3">
-                            <i class="fas fa-map-marker-alt mt-0.5 mr-2 text-gray-400 flex-shrink-0"></i>
+                        <div class="flex items-start text-gray-600 text-sm mb-1.5">
+                            <i class="fas fa-map-marker-alt mt-0.5 mr-1.5 text-gray-400 flex-shrink-0"></i>
                             <span class="line-clamp-2">{{ $kosan['subLocation'] }}</span>
                         </div>
 
                         <!-- Price Section -->
-                        <div class="mt-auto pt-3 border-t border-gray-100">
+                        <div class="mt-auto pt-2 border-t border-gray-100">
                             @php
                                 $roomPrice = $kosan['room_price_original_monthly'];
                             @endphp
                             @if(!empty($roomPrice))
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <div class="text-xs text-gray-500 mb-1">Mulai dari</div>
+                                    <div class="text-xs text-gray-500 mb-0.5">Mulai dari</div>
                                     <div class="text-lg font-bold text-teal-600">
                                         Rp{{ number_format($roomPrice, 0, ',', '.') }}
                                     </div>
@@ -117,7 +117,7 @@
     
     .property-card {
         height: 100%;
-        min-height: 320px;
+        min-height: 280px;
     }
     
     @media (min-width: 1024px) {
