@@ -38,46 +38,20 @@
                     </div>
 
                     <!-- Content -->
-                    <div class="p-3 flex-1 flex flex-col">
+                    <div class="p-4 flex-1 flex flex-col">
                         <!-- Property Name -->
-                        <h3 class="text-base font-bold text-gray-800 mb-1 line-clamp-1 group-hover:text-teal-600 transition-colors">
+                        <h3 class="text-base font-bold text-gray-800 mb-2 line-clamp-1 group-hover:text-teal-600 transition-colors">
                             {{ $kosan['name'] }}
                         </h3>
 
                         <!-- Location -->
-                        <div class="flex items-start text-gray-600 text-sm mb-1">
-                            <i class="fas fa-map-marker-alt mt-0.5 mr-1.5 text-gray-400 flex-shrink-0"></i>
+                        <div class="flex items-start text-gray-600 text-sm mb-3">
+                            <i class="fas fa-map-marker-alt mt-0.5 mr-2 text-gray-400 flex-shrink-0"></i>
                             <span class="line-clamp-2">{{ $kosan['subLocation'] }}</span>
                         </div>
 
-                        @if(!empty($kosan['distance']))
-                        <p class="text-gray-500 text-xs mb-1.5">
-                            <i class="fas fa-route mr-1"></i>{{ $kosan['distance'] }}
-                        </p>
-                        @endif
-
-                        <!-- Features -->
-                        @if(!empty($kosan['features']))
-                        <div class="flex flex-wrap gap-1.5 mb-1.5">
-                            @php
-                                $features = $kosan['features'] ?? [];
-                                $displayFeatures = array_slice($features, 0, 3);
-                            @endphp
-                            @foreach($displayFeatures as $feature)
-                                <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded">
-                                    {{ $feature }}
-                                </span>
-                            @endforeach
-                            @if(count($features) > 3)
-                                <span class="bg-gray-100 text-gray-500 text-xs px-2 py-0.5 rounded">
-                                    +{{ count($features) - 3 }}
-                                </span>
-                            @endif
-                        </div>
-                        @endif
-
                         <!-- Price Section -->
-                        <div class="mt-auto pt-2 border-t border-gray-100">
+                        <div class="mt-auto pt-3 border-t border-gray-100">
                             @php
                                 $roomPrice = $kosan['room_price_original_monthly'];
                             @endphp
@@ -131,92 +105,39 @@
     .property-swiper {
         padding: 20px 40px;
     }
-
+    
     .swiper-button-next,
     .swiper-button-prev {
-        color: #0d9488;
-        background: white;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        transition: all 0.3s ease;
+        color: #0d9488; /* teal-600 */
     }
-
-    .swiper-button-next:after,
-    .swiper-button-prev:after {
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .swiper-button-next:hover,
-    .swiper-button-prev:hover {
-        background: #0d9488;
-        color: white;
-        transform: scale(1.1);
-    }
-
-    .swiper-pagination-bullet {
-        width: 10px;
-        height: 10px;
-        background: #d1d5db;
-        opacity: 1;
-        transition: all 0.3s ease;
-    }
-
+    
     .swiper-pagination-bullet-active {
-        background: #0d9488;
-        width: 24px;
-        border-radius: 5px;
+        background: #0d9488; /* teal-600 */
     }
-
+    
     .property-card {
         height: 100%;
-        min-height: 400px;
+        min-height: 320px;
     }
-
-    /* Line clamp utilities */
-    .line-clamp-1 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 1;
-    }
-
-    .line-clamp-2 {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-    }
-
+    
     @media (min-width: 1024px) {
         .property-swiper .swiper-slide {
-            width: 20%;
+            width: 20%; /* 5 cards per view on large screens */
             height: auto;
         }
     }
-
+    
     @media (min-width: 768px) and (max-width: 1023px) {
         .property-swiper .swiper-slide {
-            width: 50%;
+            width: 50%; /* 2 cards per view on medium screens */
             height: auto;
         }
     }
-
+    
     @media (max-width: 767px) {
-        .property-swiper {
-            padding: 20px 20px;
-        }
-
         .property-swiper .swiper-slide {
-            width: 100%;
+            width: 100%; /* 1 card per view on small screens */
             height: auto;
-        }
-
-        .swiper-button-next,
-        .swiper-button-prev {
-            display: none;
         }
     }
 </style>
