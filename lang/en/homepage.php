@@ -17,11 +17,11 @@ return [
     ],
 
     'property_types' => [
-        'kos' => 'Boarding House',
-        'house' => 'House',
-        'apartment' => 'Apartment',
-        'villa' => 'Villa',
-        'hotel' => 'Hotel',
+        'Kos' => 'Kos',
+        'House' => 'House',
+        'Apartment' => 'Apartment',
+        'Villa' => 'Villa',
+        'Hotel' => 'Hotel',
     ],
 
     'period' => [

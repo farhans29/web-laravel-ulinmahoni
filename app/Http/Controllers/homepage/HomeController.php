@@ -32,14 +32,16 @@ class HomeController extends Controller {
 
     /**
      * Display the homepage with categorized properties and hero media.
-     * 
+     *
      * This method:
      * - Sets up the hero media section (video/image)
      * - Fetches all active properties from the database
      * - Categorizes properties by type (House, Apartment, Villa, Hotel)
      * - Formats property data for display
+     * - Returns a single view that adapts to the current locale set by SetLocale middleware
+     * - The view uses app()->getLocale() and __() helper for translations
      * - Handles and logs any errors that occur during data retrieval
-     * 
+     *
      * @return \Illuminate\View\View Returns the homepage view with formatted property data
      */
     public function index()
@@ -83,11 +85,6 @@ class HomeController extends Controller {
             ];
 
             foreach ($properties as $property) {
-                // $tag = $property->tags; // Direct string comparison
-                
-                // if (array_key_exists($tag, $propertyTypes)) {
-                //     $propertyTypes[$tag][] = $this->formatProperty($property);
-                // }
                 $normalizedTag = ucfirst(strtolower(trim($property->tags)));
 
                 if (array_key_exists($normalizedTag, $propertyTypes)) {
@@ -95,15 +92,7 @@ class HomeController extends Controller {
                 }
             }
 
-            // Log the final data for debugging
-            // Log::info('Property data by type:', [
-            //     'houses_count' => count($propertyTypes['House']),
-            //     'kos_count' => count($propertyTypes['Kos']),
-            //     'apartments_count' => count($propertyTypes['Apartment']),
-            //     'villas_count' => count($propertyTypes['Villa']),
-            //     'hotels_count' => count($propertyTypes['Hotel'])
-            // ]);
-
+            // Use the same view for all locales - the view will detect locale via app()->getLocale()
             return view("pages.homepage.index", [
                 'kos' => $propertyTypes['Kos'],
                 'houses' => $propertyTypes['House'],
@@ -118,185 +107,9 @@ class HomeController extends Controller {
             Log::error('Error fetching properties: ' . $e->getMessage(), [
                 'exception' => $e
             ]);
-            
+
+            // Use the same view for all locales - the view will detect locale via app()->getLocale()
             return view("pages.homepage.index", [
-                'kos' => [],
-                'houses' => [],
-                'apartments' => [],
-                'villas' => [],
-                'hotels' => [],
-                'heroMedia' => $heroMedia,
-                'promos' => $promos
-            ]);
-        }
-    }
-    public function indexId()
-    {
-        $heroMedia = [
-            'type' => 'video',
-            'sources' => [
-                'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg',
-                'video' => 'images/assets/My_Movie.mp4'
-                // 'video' => ''
-            ]
-        ];
-
-        // Get promos data from DB
-        $promos = \App\Models\Promo::where('status', 1)
-            ->orderByDesc('idrec')
-            ->get()
-            ->map(function ($promo) {
-                return [
-                    'id' => $promo->idrec,
-                    'title' => $promo->title,
-                    'image' => $promo->image,
-                    'badge' => 'Promo',
-                    'description' => $promo->descriptions,
-                ];
-            });
-
-        try {
-            // Get active properties (status = 1)
-            $properties = Property::where('status', 1)
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            // Prepare property data by type
-            $propertyTypes = [
-                'Kos' => [],
-                'House' => [],
-                'Apartment' => [],
-                'Villa' => [],
-                'Hotel' => [],
-            ];
-
-            foreach ($properties as $property) {
-                // $tag = $property->tags; // Direct string comparison
-                
-                // if (array_key_exists($tag, $propertyTypes)) {
-                //     $propertyTypes[$tag][] = $this->formatProperty($property);
-                // }
-                $normalizedTag = ucfirst(strtolower(trim($property->tags)));
-
-                if (array_key_exists($normalizedTag, $propertyTypes)) {
-                    $propertyTypes[$normalizedTag][] = $this->formatProperty($property);
-                }
-            }
-
-            // Log the final data for debugging
-            // Log::info('Property data by type:', [
-            //     'houses_count' => count($propertyTypes['House']),
-            //     'kos_count' => count($propertyTypes['Kos']),
-            //     'apartments_count' => count($propertyTypes['Apartment']),
-            //     'villas_count' => count($propertyTypes['Villa']),
-            //     'hotels_count' => count($propertyTypes['Hotel'])
-            // ]);
-
-            return view("pages.homepage.id.index", [
-                'kos' => $propertyTypes['Kos'],
-                'houses' => $propertyTypes['House'],
-                'apartments' => $propertyTypes['Apartment'],
-                'villas' => $propertyTypes['Villa'],
-                'hotels' => $propertyTypes['Hotel'],
-                'heroMedia' => $heroMedia,
-                'promos' => $promos
-            ]);
-
-        } catch (Exception $e) {
-            Log::error('Error fetching properties: ' . $e->getMessage(), [
-                'exception' => $e
-            ]);
-            
-            return view("pages.homepage.id.index", [
-                'kos' => [],
-                'houses' => [],
-                'apartments' => [],
-                'villas' => [],
-                'hotels' => [],
-                'heroMedia' => $heroMedia,
-                'promos' => $promos
-            ]);
-        }
-    }
-
-    public function indexEn()
-    {
-        $heroMedia = [
-            'type' => 'video',
-            'sources' => [
-                'image' => 'images/assets/pics/WhatsApp Image 2025-02-20 at 14.30.45.jpeg',
-                'video' => 'images/assets/My_Movie.mp4'
-                // 'video' => ''
-            ]
-        ];
-
-        // Get promos data from DB
-        $promos = \App\Models\Promo::where('status', 1)
-            ->orderByDesc('idrec')
-            ->get()
-            ->map(function ($promo) {
-                return [
-                    'id' => $promo->idrec,
-                    'title' => $promo->title,
-                    'image' => $promo->image,
-                    'badge' => 'Promo',
-                    'description' => $promo->descriptions,
-                ];
-            });
-
-        try {
-            // Get active properties (status = 1)
-            $properties = Property::where('status', 1)
-                ->orderBy('created_at', 'desc')
-                ->get();
-
-            // Prepare property data by type
-            $propertyTypes = [
-                'Kos' => [],
-                'House' => [],
-                'Apartment' => [],
-                'Villa' => [],
-                'Hotel' => [],
-            ];
-
-            foreach ($properties as $property) {
-                // $tag = $property->tags; // Direct string comparison
-                
-                // if (array_key_exists($tag, $propertyTypes)) {
-                //     $propertyTypes[$tag][] = $this->formatProperty($property);
-                // }
-                $normalizedTag = ucfirst(strtolower(trim($property->tags)));
-
-                if (array_key_exists($normalizedTag, $propertyTypes)) {
-                    $propertyTypes[$normalizedTag][] = $this->formatProperty($property);
-                }
-            }
-
-            // Log the final data for debugging
-            // Log::info('Property data by type:', [
-            //     'houses_count' => count($propertyTypes['House']),
-            //     'kos_count' => count($propertyTypes['Kos']),
-            //     'apartments_count' => count($propertyTypes['Apartment']),
-            //     'villas_count' => count($propertyTypes['Villa']),
-            //     'hotels_count' => count($propertyTypes['Hotel'])
-            // ]);
-
-            return view("pages.homepage.en.index", [
-                'kos' => $propertyTypes['Kos'],
-                'houses' => $propertyTypes['House'],
-                'apartments' => $propertyTypes['Apartment'],
-                'villas' => $propertyTypes['Villa'],
-                'hotels' => $propertyTypes['Hotel'],
-                'heroMedia' => $heroMedia,
-                'promos' => $promos
-            ]);
-
-        } catch (Exception $e) {
-            Log::error('Error fetching properties: ' . $e->getMessage(), [
-                'exception' => $e
-            ]);
-            
-            return view("pages.homepage.en.index", [
                 'kos' => [],
                 'houses' => [],
                 'apartments' => [],

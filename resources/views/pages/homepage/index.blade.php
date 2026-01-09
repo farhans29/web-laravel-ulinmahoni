@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ulin Mahoni</title>
+  <title>{{ __('homepage.hero.title') }}</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
@@ -47,8 +47,8 @@
 
       <!-- Overlay with text -->
       <div class="absolute inset-0 gradient-overlay flex flex-col justify-center md:justify-end p-8 md:p-12 lg:p-12  text-white">
-        <h1 class="text-2xl md:text-5xl lg:text-4xl font-light mb-3 max-w-4xl">A safe and harmonious environment</h1>
-        <p class="text-xl md:text-xl font-light mb-24">#UlinMahoni</p>
+        <h1 class="text-2xl md:text-5xl lg:text-4xl font-light mb-3 max-w-4xl">{{ __('homepage.hero.subtitle') }}</h1>
+        <p class="text-xl md:text-xl font-light mb-24">{{ __('homepage.hero.subtitle') }}</p>
     </div>
 
       <!-- Search Section -->
@@ -60,12 +60,12 @@
                     <div class="md:w-48 relative">
                         <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <select name="type" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                            <option value="">Semua Properti</option>
-                            <option value="kos" {{ request('type') == 'Kos' ? 'selected' : '' }}>Kos</option>
-                            <option value="house" {{ request('type') == 'House' ? 'selected' : '' }}>House</option>
-                            <option value="apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
-                            <option value="villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
-                            <option value="hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
+                            <option value="">{{ __('homepage.search.all_properties') }}</option>
+                            <option value="Kos" {{ request('type') == 'Kos' ? 'selected' : '' }}>{{ __('homepage.property_types.Kos') }}</option>
+                            <option value="House" {{ request('type') == 'House' ? 'selected' : '' }}>{{ __('homepage.property_types.House') }}</option>
+                            <option value="Apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>{{ __('homepage.property_types.Apartment') }}</option>
+                            <option value="Villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>{{ __('homepage.property_types.Villa') }}</option>
+                            <option value="Hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>{{ __('homepage.property_types.Hotel') }}</option>
                         </select>
                         <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                     </div>
@@ -74,9 +74,9 @@
                     <div class="md:w-48 relative">
                         <i class="fas fa-clock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                         <select name="period" class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent appearance-none bg-white transition-all duration-200">
-                            <option value="">Semua Periode</option>
-                            <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>Daily</option>
-                            <option value="monthly" {{ request('period') == 'monthly' ? 'selected' : '' }}>Monthly</option>
+                            <option value="">{{ __('homepage.search.all_periods') }}</option>
+                            <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>{{ __('homepage.period.daily') }}</option>
+                            <option value="monthly" {{ request('period') == 'monthly' ? 'selected' : '' }}>{{ __('homepage.period.monthly') }}</option>
                         </select>
                         <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
                     </div>
@@ -90,7 +90,7 @@
                                 value="{{ request('check_in') }}"
                                 onfocus="(this.type='date')"
                                 onblur="if(!this.value) this.type='text'"
-                                placeholder="Tanggal Check In"
+                                placeholder="{{ __('homepage.search.check_in') }}"
                                 class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                         <div class="w-1/2 relative">
@@ -100,7 +100,7 @@
                                 value="{{ request('check_out') }}"
                                 onfocus="(this.type='date')"
                                 onblur="if(!this.value) this.type='text'"
-                                placeholder="Tanggal Check Out"
+                                placeholder="{{ __('homepage.search.check_out') }}"
                                 class="w-full pl-10 h-12 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200">
                         </div>
                     </div>
@@ -157,7 +157,7 @@
                     <div class="md:w-48">
                         <button type="submit" class="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-all duration-200 flex items-center justify-center">
                             <i class="fas fa-search mr-2"></i>
-                            <span>Cari Hunian</span>
+                            <span>{{ __('homepage.search.submit') }}</span>
                         </button>
                     </div>
                 </div>

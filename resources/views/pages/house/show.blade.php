@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $house['name'] }} - Property Details</title>
+    <title>{{ $house['name'] }} - {{ __('properties.page.property_details') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Styles -->
@@ -133,9 +133,9 @@
             <!-- Breadcrumb -->
             <nav class="mb-8">
                 <ol class="flex items-center space-x-2 text-gray-500">
-                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">Home</a></li>
+                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">{{ __('properties.navigation.home') }}</a></li>
                     <li><span class="mx-2">/</span></li>
-                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">Properties</a></li>
+                    <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">{{ __('properties.navigation.properties') }}</a></li>
                     <li><span class="mx-2">/</span></li>
                     <li class="text-gray-900">{{ $house['name'] }}</li>
                 </ol>
@@ -229,7 +229,7 @@
                     @else
                         <div class="w-full h-full flex items-center justify-center">
                             <i class="fas fa-image text-4xl text-gray-400"></i>
-                            <span class="ml-2 font-medium text-gray-500">No Image</span>
+                            <span class="ml-2 font-medium text-gray-500">{{ __('properties.images.no_image') }}</span>
                         </div>
                     @endif
 
@@ -285,7 +285,7 @@
 
                         <!-- Features/Promotions -->
                         <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-3">Fasilitas</h3>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">{{ __('properties.sections.facilities') }}</h3>
                             <div class="flex flex-wrap gap-2">
                                 @foreach($house['general'] as $generalFeature)
                                     <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
@@ -308,17 +308,17 @@
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row gap-3 mt-8">
                             <button onclick="scrollToRooms()" class="flex-1 bg-teal-600 text-white py-3 px-6 rounded-lg hover:bg-teal-700 transition-colors flex items-center justify-center">
-                                <i class="fas fa-calendar-check mr-2"></i> Pesan Sekarang
+                                <i class="fas fa-calendar-check mr-2"></i> {{ __('properties.buttons.book_now') }}
                             </button>
                             <a href="https://wa.me/6281188099700/" target="_blank" class="flex-1 border border-teal-600 text-teal-600 py-3 px-6 rounded-lg hover:bg-teal-50 transition-colors flex items-center justify-center">
-                                <i class="fab fa-whatsapp mr-2"></i> Hubungi untuk Info Lebih Lanjut
+                                <i class="fab fa-whatsapp mr-2"></i> {{ __('properties.buttons.contact_info') }}
                             </a>
                         </div>
                     </div>
 
                     <!-- Right Column - Price Section -->
                     <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-6">Harga Sewa</h3>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-6">{{ __('properties.sections.rental_price') }}</h3>
                         
                         @php
                             $hasDailyPrice = !empty($house['price_original_daily']) && $house['price_original_daily'] > 0;
@@ -330,22 +330,22 @@
                                 <div class="text-gray-400 mb-2">
                                     <i class="fas fa-info-circle text-2xl"></i>
                                 </div>
-                                <p class="text-gray-600 font-medium">Harga sewa belum tersedia</p>
-                                <p class="text-sm text-gray-500 mt-1">Silakan hubungi kami untuk informasi lebih lanjut</p>
+                                <p class="text-gray-600 font-medium">{{ __('properties.price_info.not_available') }}</p>
+                                <p class="text-sm text-gray-500 mt-1">{{ __('properties.price_info.contact_us') }}</p>
                             </div>
                         @else
                             @if($hasDailyPrice)
                             <!-- Daily Price -->
                             <div class="bg-gray-50 p-4 rounded-lg mb-4">
                                 <p class="text-base text-gray-500 mb-1">
-                                    <i class="far fa-calendar mr-2"></i>Harian
+                                    <i class="far fa-calendar mr-2"></i>{{ __('properties.price_info.daily') }}
                                 </p>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-baseline">
                                         <span class="text-2xl font-bold text-gray-900">
                                             Rp{{ number_format($house['price_original_daily'], 0, ',', '.') }}
                                         </span>
-                                        <span class="text-gray-500 ml-2">/malam</span>
+                                        <span class="text-gray-500 ml-2">{{ __('properties.price_info.per_night') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -355,14 +355,14 @@
                             <!-- Monthly Price -->
                             <div class="{{ $hasDailyPrice ? 'mt-4' : '' }} bg-teal-50 border border-teal-100 p-4 rounded-lg">
                                 <p class="text-base text-gray-600 mb-1">
-                                    <i class="far fa-calendar-alt mr-2"></i>Bulanan
+                                    <i class="far fa-calendar-alt mr-2"></i>{{ __('properties.price_info.monthly') }}
                                 </p>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-baseline">
                                         <span class="text-2xl font-bold text-teal-700">
                                             Rp{{ number_format($house['price_original_monthly'], 0, ',', '.') }}
                                         </span>
-                                        <span class="text-gray-500 ml-2">/bulan</span>
+                                        <span class="text-gray-500 ml-2">{{ __('properties.price_info.per_month_full') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -372,11 +372,11 @@
                             <div class="mt-4 text-sm text-gray-500">
                                 <p class="flex items-center">
                                     <i class="fas fa-info-circle mr-2 text-teal-600"></i>
-                                    Harga sudah termasuk PPN
+                                    {{ __('properties.price_info.includes_tax') }}
                                 </p>
                                 <p class="flex items-center mt-1">
                                     <i class="fas fa-credit-card mr-2 text-teal-600"></i>
-                                    Pembayaran dengan metode transfer bank
+                                    {{ __('properties.price_info.payment_method') }}
                                 </p>
                             </div>
                         @endif
@@ -388,7 +388,7 @@
             <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Property Description -->
                 <div class="lg:col-span-2">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Tentang Properti</h2>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ __('properties.sections.about_property') }}</h2>
                     <div class="prose max-w-none">
                         <p class="text-gray-600">
                             {{ $house['description'] }}
@@ -413,7 +413,7 @@
 
                     <!-- Location Map -->
                     <div class="mt-8">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">Lokasi</h3>
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">{{ __('properties.details.location') }}</h3>
                         <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
                             <div class="flex flex-col lg:flex-row gap-8">
                                 <!-- Left Column - Map -->
@@ -465,7 +465,7 @@
                                     <div class="mt-2 text-right">
                                         <small class="text-sm">
                                             <a href="https://www.openstreetmap.org/?mlat={{ $lat }}&amp;mlon={{ $lng }}#map=18/{{ $lat }}/{{ $lng }}" target="_blank" class="text-teal-600 hover:underline">
-                                                View Larger Map
+                                                {{ __('properties.buttons.view_larger_map') }}
                                             </a>
                                         </small>
                                     </div>
@@ -473,13 +473,13 @@
 
                                 <!-- Right Column - Address Details -->
                                 <div class="lg:w-1/2 lg:border-l lg:pl-8 lg:border-gray-200">
-                                    <h4 class="text-xl font-semibold text-gray-900 mb-4">Alamat</h4>
+                                    <h4 class="text-xl font-semibold text-gray-900 mb-4">{{ __('properties.address.title') }}</h4>
 
                                     @if(!empty($house['address']))
                                         <div class="space-y-4">
                                             @if(!empty($house['address']['full_address']))
                                                 <div class="pb-3 border-b border-gray-100">
-                                                    <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Alamat Lengkap</h5>
+                                                    <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{{ __('properties.address.full_address') }}</h5>
                                                     <p class="text-base text-gray-900 leading-relaxed">{{ $house['address']['full_address'] }}</p>
                                                 </div>
                                             @endif
@@ -487,35 +487,35 @@
                                             <div class="grid grid-cols-2 gap-4">
                                                 @if(!empty($house['address']['village']))
                                                     <div>
-                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kelurahan</h5>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{{ __('properties.address.village') }}</h5>
                                                         <p class="text-sm text-gray-900">{{ $house['address']['village'] }}</p>
                                                     </div>
                                                 @endif
 
                                                 @if(!empty($house['address']['subdistrict']))
                                                     <div>
-                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kecamatan</h5>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{{ __('properties.address.subdistrict') }}</h5>
                                                         <p class="text-sm text-gray-900">{{ $house['address']['subdistrict'] }}</p>
                                                     </div>
                                                 @endif
 
                                                 @if(!empty($house['address']['city']))
                                                     <div>
-                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kota/Kabupaten</h5>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{{ __('properties.address.city') }}</h5>
                                                         <p class="text-sm text-gray-900">{{ $house['address']['city'] }}</p>
                                                     </div>
                                                 @endif
 
                                                 @if(!empty($house['address']['province']))
                                                     <div>
-                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Provinsi</h5>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{{ __('properties.address.province') }}</h5>
                                                         <p class="text-sm text-gray-900">{{ $house['address']['province'] }}</p>
                                                     </div>
                                                 @endif
 
                                                 @if(!empty($house['address']['postal_code']))
                                                     <div>
-                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Kode Pos</h5>
+                                                        <h5 class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{{ __('properties.address.postal_code') }}</h5>
                                                         <p class="text-sm text-gray-900">{{ $house['address']['postal_code'] }}</p>
                                                     </div>
                                                 @endif
@@ -527,7 +527,7 @@
 
                                     @if(!empty($house['distance']))
                                         <div class="mt-4 pt-4 border-t border-gray-200">
-                                            <h5 class="text-sm font-semibold text-gray-700 mb-2">Jarak</h5>
+                                            <h5 class="text-sm font-semibold text-gray-700 mb-2">{{ __('properties.details.distance') }}</h5>
                                             <p class="text-gray-600 flex items-center">
                                                 <svg class="w-4 h-4 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
@@ -544,7 +544,7 @@
 
                     <!-- Rooms Section -->
                     <div id="rooms-section" class="mt-12" x-data="{ openCategories: [] }">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-6">Kamar Tersedia</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ __('properties.sections.available_rooms') }}</h2>
 
                         @php
                             // Group rooms by name
@@ -561,7 +561,7 @@
                                 >
                                     <h3 class="text-xl font-semibold text-gray-800">
                                         {{ $roomName }}
-                                        <span class="ml-2 text-sm font-normal text-gray-600">({{ $rooms->count() }} {{ $rooms->count() > 1 ? 'kamar' : 'kamar' }})</span>
+                                        <span class="ml-2 text-sm font-normal text-gray-600">({{ $rooms->count() }} {{ __('properties.room.rooms_count') }})</span>
                                     </h3>
                                     <svg
                                         class="w-6 h-6 text-gray-600 transition-transform duration-200"
@@ -620,7 +620,7 @@
                                                     @else
                                                         <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                                             <i class="fas fa-image text-4xl text-gray-400"></i>
-                                                            <span class="ml-2 text-gray-500">No Image</span>
+                                                            <span class="ml-2 text-gray-500">{{ __('properties.images.no_image') }}</span>
                                                         </div>
                                                     @endif
                                                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16">
@@ -636,7 +636,7 @@
                                                 <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p>
 
                                                 <div class="mb-4">
-                                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">Fasilitas Kamar:</h4>
+                                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('properties.room.room_facilities') }}</h4>
                                                     <div class="flex flex-wrap gap-2">
                                                         @if(!empty($room['facility']))
                                                             @foreach($room['facility'] as $facility)
@@ -645,14 +645,14 @@
                                                                 </span>
                                                             @endforeach
                                                         @else
-                                                            <span class="text-gray-500 text-sm">Fasilitas Tidak Tersedia</span>
+                                                            <span class="text-gray-500 text-sm">{{ __('properties.room.no_facilities') }}</span>
                                                         @endif
                                                     </div>
                                                 </div>
 
                                                 <!-- Rental Periods -->
                                                 <div class="mb-4">
-                                                    <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">Periode Sewa &amp; Harga:</h4>
+                                                    <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">{{ __('properties.room.period_price') }}</h4>
                                                     <ul class="space-y-2">
                                                         @php
                                                             $hasValidPeriod = false;
@@ -661,7 +661,7 @@
                                                         @if($room['price_original_daily'] > 0)
                                                             @php $hasValidPeriod = true; @endphp
                                                             <li class="flex items-center">
-                                                                <span class="w-24 text-sm font-semibold text-gray-800">Daily</span>
+                                                                <span class="w-24 text-sm font-semibold text-gray-800">{{ __('properties.room.daily') }}</span>
                                                                 <span class="font-medium">
                                                                     Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}
                                                                 </span>
@@ -670,7 +670,7 @@
                                                         @if($room['price_original_monthly'] > 0 )
                                                             @php $hasValidPeriod = true; @endphp
                                                             <li class="flex items-center">
-                                                                <span class="w-24 text-sm font-semibold text-gray-800">Monthly</span>
+                                                                <span class="w-24 text-sm font-semibold text-gray-800">{{ __('properties.room.monthly') }}</span>
                                                                 <span class="font-medium">
                                                                     Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}
                                                                 </span>
@@ -680,7 +680,7 @@
                                                         @if(!$hasValidPeriod)
                                                             <li>
                                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                                    Periode Belum Tersedia
+                                                                    {{ __('properties.room.period_not_available') }}
                                                                     <i class="fas fa-exclamation-circle ml-1"></i>
                                                                 </span>
                                                             </li>
@@ -691,7 +691,7 @@
                                                 @if($room['status'] === 1)
                                                     <div class="flex items-center justify-between mt-4">
                                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            Tersedia
+                                                            {{ __('properties.status.available') }}
                                                         </span>
                                                     </div>
                                                 @endif
@@ -704,7 +704,7 @@
                             </div>
                         @empty
                             <div class="text-center py-8">
-                                <p class="text-gray-500">Belum ada kamar tersedia saat ini.</p>
+                                <p class="text-gray-500">{{ __('properties.room.no_rooms') }}</p>
                             </div>
                         @endforelse
                     </div>
