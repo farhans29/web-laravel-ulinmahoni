@@ -1,6 +1,6 @@
 <!-- Property Types Component -->
 <section class="section-light">
-    <div class="container mx-auto px-4 md:px-8 max-w-[95%] xl:max-w-[90%]">
+    <div class="container mx-auto px-2 md:px-4 max-w-[98%] xl:max-w-[95%]">
         {{-- <div class="section-title">
             <h3 class="text-4xl font-medium">Properties</h3>
             <div class="divider mt-2 md-2">
@@ -12,7 +12,7 @@
 
         <div class="w-full">
             <!-- Property Type Tabs -->
-            <div class="flex border-b border-gray-200 mb-6">
+            <div class="flex border-b border-gray-200 mb-8">
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="kos">
                     Kos
                 </button>
