@@ -6,7 +6,7 @@
             <div class="property-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 h-full flex flex-col">
                     <!-- Image Container -->
                     <div class="relative overflow-hidden">
-                        <div class="relative aspect-[4/3] bg-gray-100">
+                        <div class="relative" style="aspect-ratio: 4/3; background-color: #f3f4f6;">
                             @php
                                 $mainImage = $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
                             @endphp
