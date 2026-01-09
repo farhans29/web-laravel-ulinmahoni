@@ -57,17 +57,17 @@
                             @endphp
                             @if(!empty($roomPrice))
                             <div>
-                                <div class="text-lg font-bold text-teal-600">
+                                <div class="text-lg font-bold text-gray-900">
                                     Rp{{ number_format($roomPrice, 0, ',', '.') }}
                                 </div>
                                 <div class="text-xs text-gray-500">/bulan</div>
                             </div>
-                            <span class="text-teal-600 hover:text-teal-700 text-sm font-medium">
-                                Lihat <i class="fas fa-arrow-right text-xs ml-1"></i>
+                            <span class="text-gray-900 hover:text-gray-700 text-sm font-bold">
+                                {{ __('homepage.actions.view') }} <i class="fas fa-arrow-right text-xs ml-1"></i>
                             </span>
                             @else
-                            <span class="text-teal-600 hover:text-teal-700 text-sm font-medium w-full text-center">
-                                Lihat Detail <i class="fas fa-arrow-right text-xs ml-1"></i>
+                            <span class="text-gray-900 hover:text-gray-700 text-sm font-bold w-full text-center">
+                                {{ __('homepage.actions.view_detail') }} <i class="fas fa-arrow-right text-xs ml-1"></i>
                             </span>
                             @endif
                         </div>
@@ -81,7 +81,7 @@
             <div class="w-16 h-16 mx-auto mb-4 text-gray-300">
                 <i class="fas fa-home text-5xl"></i>
             </div>
-            <p class="text-gray-500">Tidak ada kosan yang tersedia saat ini.</p>
+            <p class="text-gray-500">{{ __('homepage.messages.no_kos_available') }}</p>
         </div>
     </div>
     @endforelse
