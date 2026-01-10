@@ -1,6 +1,6 @@
 <!-- Property Types Component -->
 <section class="section-light">
-    <div class="container mx-auto px-4 md:px-8 max-w-[95%] xl:max-w-[90%]">
+    <div class="container mx-auto px-2 md:px-4 max-w-[98%] xl:max-w-[95%]">
         {{-- <div class="section-title">
             <h3 class="text-4xl font-medium">Properties</h3>
             <div class="divider mt-2 md-2">
@@ -12,23 +12,23 @@
 
         <div class="w-full">
             <!-- Property Type Tabs -->
-            <div class="flex border-b border-gray-200 mb-6">
+            <div class="flex border-b border-gray-200 mb-8">
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="kos">
-                    Kos
+                    {{ __('homepage.property_types.Kos') }}
                 </button>
-                {{--  
+                {{--
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="house">
-                    House
+                    {{ __('homepage.property_types.House') }}
                 </button>
                 --}}
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="apartment">
-                    Apartment
+                    {{ __('homepage.property_types.Apartment') }}
                 </button>
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="villa">
-                    Villa
+                    {{ __('homepage.property_types.Villa') }}
                 </button>
                 <button class="property-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="hotel">
-                    Hotel
+                    {{ __('homepage.property_types.Hotel') }}
                 </button>
             </div>
 
@@ -52,7 +52,7 @@
                 <!-- Browse All Button -->
                 <div class="text-center py-8">
                     <a href="{{ route('properties.index') }}" class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-teal-600/20">
-                        <span>Lihat Semua Properti</span>
+                        <span>{{ __('homepage.actions.view_all_properties') }}</span>
                         <i class="fas fa-arrow-right ml-2 text-sm"></i>
                     </a>
                 </div>

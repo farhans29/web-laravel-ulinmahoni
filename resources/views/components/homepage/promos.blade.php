@@ -2,10 +2,10 @@
 <section class="section-dark">
     <div class="section-container">
         <div class="section-title">
-            <h3 class="text-4xl font-medium">Promo Berlangsung</h3>
+            <h3 class="text-4xl font-medium">{{ __('homepage.titles.ongoing_promos') }}</h3>
             <div class="divider mt-2 md-2">
                 <div class="divider-line"></div>
-                <p class="divider-text">Penawaran Terbatas</p>
+                <p class="divider-text">{{ __('homepage.subtitles.limited_offers') }}</p>
                 <div class="divider-line"></div>
             </div>
         </div>
@@ -43,8 +43,8 @@
             @else
                 <div class="text-center py-12">
                     <i class="fas fa-tag text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-600">Tidak ada promo yang tersedia saat ini</p>
-                    <p class="text-sm text-gray-500 mt-2">Silakan cek kembali nanti untuk penawaran terbaru</p>
+                    <p class="text-gray-600">{{ __('homepage.messages.no_promos') }}</p>
+                    <p class="text-sm text-gray-500 mt-2">{{ __('homepage.messages.check_back_later') }}</p>
                 </div>
             @endif
 

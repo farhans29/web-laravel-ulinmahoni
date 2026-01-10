@@ -35,4 +35,31 @@ return [
         'areas' => 'Popular Areas',
         'featured' => 'Featured Properties',
     ],
+
+    'actions' => [
+        'view' => 'View',
+        'view_detail' => 'View Details',
+        'view_all_properties' => 'View All Properties',
+    ],
+
+    'titles' => [
+        'ongoing_promos' => 'Ongoing Promotions',
+        'available_areas' => 'Available Areas',
+    ],
+
+    'subtitles' => [
+        'limited_offers' => 'Limited Offers',
+        'areas_around_you' => 'Available areas around you',
+    ],
+
+    'messages' => [
+        'no_promos' => 'No promotions available at this time',
+        'check_back_later' => 'Please check back later for the latest offers',
+        'no_kos_available' => 'No kos available at this time.',
+    ],
+
+    'cities' => [
+        'bogor' => 'Bogor',
+        'jakarta' => 'Jakarta',
+    ],
 ];

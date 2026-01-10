@@ -21,7 +21,10 @@
                  style="display: none;"
                  @click.away="mobileMenuOpen = false">
                 <div class="flex items-center justify-between p-4 border-b">
-                    <a href="/homepage" class="flex items-center">
+                    @php
+                        $mobileLocale = app()->getLocale();
+                    @endphp
+                    <a href="/{{ $mobileLocale }}/homepage" class="flex items-center">
                         <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-8 w-auto">
                     </a>
                     <button @click="mobileMenuOpen = false" class="text-gray-500 hover:text-gray-700">
@@ -33,16 +36,24 @@
                 <nav class="p-4">
                     <ul class="space-y-3">
                         <li>
-                            <a href="/sewa" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Sewa Berjangka</a>
+                            <a href="/{{ $mobileLocale }}/homepage" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                {{ $mobileLocale === 'en' ? 'Home' : 'Beranda' }}
+                            </a>
                         </li>
                         <li>
-                            <a href="/kerjasama" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Kerjasama Ulin Mahoni</a>
+                            <a href="/{{ $mobileLocale }}/{{ $mobileLocale === 'en' ? 'partnership' : 'kerjasama' }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                {{ $mobileLocale === 'en' ? 'Partnership' : 'Kerjasama Ulin Mahoni' }}
+                            </a>
                         </li>
                         <li>
-                            <a href="/business" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Ulin Mahoni untuk Bisnis</a>
+                            <a href="/{{ $mobileLocale }}/business" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                {{ $mobileLocale === 'en' ? 'Ulin Mahoni for Business' : 'Ulin Mahoni untuk Bisnis' }}
+                            </a>
                         </li>
                         <li>
-                            <a href="/tentang" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">Tentang Ulin Mahoni</a>
+                            <a href="/{{ $mobileLocale }}/{{ $mobileLocale === 'en' ? 'about' : 'tentang' }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors">
+                                {{ $mobileLocale === 'en' ? 'About Ulin Mahoni' : 'Tentang Ulin Mahoni' }}
+                            </a>
                         </li>
                     </ul>
                 </nav>
@@ -57,34 +68,37 @@
         </div>
 
         <!-- Logo for Desktop -->
-        <a href="/homepage" class="hidden md:flex items-center">
+        @php
+            $logoLocale = app()->getLocale();
+        @endphp
+        <a href="/{{ $logoLocale }}/homepage" class="hidden md:flex items-center">
             <img src="{{ asset('images/assets/ulinmahoni-logo.svg') }}" alt="Ulin Mahoni Logo" class="h-10 w-auto">
         </a>
         
         <!-- Navigation -->
         <nav class="hidden md:flex">
             <ul class="flex space-x-6">
+                @php
+                    $locale = app()->getLocale();
+                @endphp
                 <li>
-                    {{-- <a href="/sewa" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                        Sewa Berjangka
-                    </a> --}}
-                    <a href="/homepage" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                        Home
-                    </a>
-                </li>
-                <li>    
-                    <a href="/kerjasama" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                        Kerjasama Ulin Mahoni
+                    <a href="/{{ $locale }}/homepage" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                        {{ $locale === 'en' ? 'Home' : 'Beranda' }}
                     </a>
                 </li>
                 <li>
-                    <a href="/business" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                        Ulin Mahoni untuk Bisnis
+                    <a href="/{{ $locale }}/{{ $locale === 'en' ? 'partnership' : 'kerjasama' }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                        {{ $locale === 'en' ? 'Partnership' : 'Kerjasama Ulin Mahoni' }}
                     </a>
                 </li>
                 <li>
-                    <a href="/tentang" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
-                        Tentang Ulin Mahoni
+                    <a href="/{{ $locale }}/business" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                        {{ $locale === 'en' ? 'Ulin Mahoni for Business' : 'Ulin Mahoni untuk Bisnis' }}
+                    </a>
+                </li>
+                <li>
+                    <a href="/{{ $locale }}/{{ $locale === 'en' ? 'about' : 'tentang' }}" class="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                        {{ $locale === 'en' ? 'About Ulin Mahoni' : 'Tentang Ulin Mahoni' }}
                     </a>
                 </li>
             </ul>
@@ -94,14 +108,22 @@
     <!-- Language Switcher -->
     <div class="flex items-center space-x-4">
         @php
+            // Get current locale from app (set by SetLocale middleware)
+            $currentLocale = app()->getLocale();
+            $isEn = $currentLocale === 'en';
+
+            // Get current path and remove locale prefix
             $currentPath = request()->path();
-            $isEn = str_starts_with($currentPath, 'en/') || $currentPath === 'en';
-            
-            // Define paths for both languages
-            $idPath = preg_replace('/^en\/?/', '', $currentPath);
-            $idPath = $idPath === '' ? '/' : $idPath;
-            $enPath = 'en' . ($currentPath === '/' ? '' : '/') . $currentPath;
-            
+            $pathWithoutLocale = preg_replace('/^(id|en)\/?/', '', $currentPath);
+
+            // Build proper localized paths
+            $idPath = 'id/' . $pathWithoutLocale;
+            $enPath = 'en/' . $pathWithoutLocale;
+
+            // Clean up double slashes and ensure proper format
+            $idPath = '/' . preg_replace('#/+#', '/', $idPath);
+            $enPath = '/' . preg_replace('#/+#', '/', $enPath);
+
             // Define flag SVGs
             $idFlag = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><path d="M31,8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4v9H31V8Z" fill="#ea3323"></path><path d="M5,28H27c2.209,0,4-1.791,4-4v-8H1v8c0,2.209,1.791,4,4,4Z" fill="#fff"></path><path d="M5,28H27c2.209,0,4-1.791,4-4V8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4V24c0,2.209,1.791,4,4,4ZM2,8c0-1.654,1.346-3,3-3H27c1.654,0,3,1.346,3,3V24c0,1.654-1.346,3-3,3H5c-1.654,0-3-1.346-3-3V8Z" opacity=".15"></path><path d="M27,5H5c-1.657,0-3,1.343-3,3v1c0-1.657,1.343-3,3-3H27c1.657,0,3,1.343,3,3v-1c0-1.657-1.343-3-3-3Z" fill="#fff" opacity=".2"></path></svg>';
             $enFlag = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 60 30"><clipPath id="a"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="b"><path d="M30 15h30v15zv15H0zH0V0z"/></clipPath><g clip-path="url(#a)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#b)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M0 15h60M30 0v30" stroke="#C8102E" stroke-width="6"/></g></svg>';
@@ -131,13 +153,13 @@
                  class="absolute right-0 mt-2 w-32 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
                  style="display: none;">
                 <div class="py-1">
-                    <a href="/{{ $idPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ !$isEn ? 'bg-gray-50' : '' }}">
+                    <a href="{{ $idPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ !$isEn ? 'bg-gray-50' : '' }}">
                         <span class="flex items-center">
                             {!! $idFlag !!}
                             <span class="ml-2">Indonesia</span>
                         </span>
                     </a>
-                    <a href="/{{ $enPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ $isEn ? 'bg-gray-50' : '' }}">
+                    <a href="{{ $enPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ $isEn ? 'bg-gray-50' : '' }}">
                         <span class="flex items-center">
                             {!! $enFlag !!}
                             <span class="ml-2">English</span>
@@ -147,8 +169,15 @@
             </div>
         </div>
         @guest
-            <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900 px-4 py-2 rounded-lg transition-colors duration-200">Masuk</a>
-            <a href="{{ route('register') }}" class="text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors duration-200">Daftar</a>
+            @php
+                $authLocale = app()->getLocale();
+            @endphp
+            <a href="{{ route('login') }}" class="text-sm font-medium text-gray-700 hover:text-gray-900 px-4 py-2 rounded-lg transition-colors duration-200">
+                {{ $authLocale === 'en' ? 'Sign In' : 'Masuk' }}
+            </a>
+            <a href="{{ route('register') }}" class="text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-lg transition-colors duration-200">
+                {{ $authLocale === 'en' ? 'Sign Up' : 'Daftar' }}
+            </a>
         @else
             <!-- Profile dropdown -->
             <div x-data="{ open: false }" class="relative">

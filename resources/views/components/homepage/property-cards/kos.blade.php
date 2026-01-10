@@ -1,182 +1,88 @@
-<!-- Swiper container -->
-<div class="swiper property-swiper">
-        <div class="swiper-wrapper mb-8">
-            @forelse($kos as $kosan)
-            <div class="swiper-slide">
-                <a href="{{ route('houses.show', ['id' => $kosan['id']]) }}" class="block h-full">
-                    <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
-                        <div class="relative">
-                            <div class="relative pb-[56.25%] h-48">
-                                <div class="absolute inset-0">
-                                    @php
-                                        $mainImage = $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
-                                    @endphp
-                                    
-                                    @if($mainImage)
-                                        {{-- <img src="data:image/jpeg;base64,{{ $mainImage }}" 
-                                             alt="{{ $kosan['name'] }}" 
-                                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"> --}}
-                                             <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}" class="w-full h-full object-cover" alt="">
-                                        
-                                        @if(count($kosan['images'] ?? []) > 1)
-                                            <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-                                                +{{ count($kosan['images']) - 1 }} more
-                                            </div>
-                                        @endif
-                                    @else
-                                        <div class="bg-gray-100 w-full h-full flex items-center justify-center">
-                                            <i class="fas fa-image text-4xl text-gray-400"></i>
-                                            <span class="ml-2 text-gray-500">No Image</span>
-                                        </div>
-                                    @endif
-                                    <!-- <p>{{ $kosan['image'] }}</p> -->
-                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
-                                </div>
-                                <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
-                                    {{ $kosan['type'] }}
-                                </span>
-                            </div>
-                        </div>
+<!-- Grid container -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    @forelse($kos as $kosan)
+    <div>
+        <a href="{{ route('houses.show', ['id' => $kosan['id']]) }}" class="block h-full group">
+            <div class="property-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 h-full flex flex-col">
+                    <!-- Image Container -->
+                    <div class="relative overflow-hidden">
+                        <div class="relative" style="aspect-ratio: 4/3; background-color: #f3f4f6;">
+                            @php
+                                $mainImage = $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
+                            @endphp
 
-                        <div class="p-4 flex-1 flex flex-col">
-                            <div class="flex-1">
-                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $kosan['name'] }}</h3>
-                                <p class="text-gray-500 text-sm mb-1">{{ $kosan['subLocation'] }}</p>
-                                <p class="text-gray-500 text-xs mb-3">{{ $kosan['distance'] }}</p>
-                            </div>
+                            @if($mainImage)
+                                <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
+                                     alt="{{ $kosan['name'] }}"
+                                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-gray-400\'><i class=\'fas fa-building text-3xl\'></i></div>';">
 
-                            <div class="mt-auto">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <!-- <p class="text-xs text-gray-500">
-                                            mulai dari <span class="line-through">Rp{{ number_format($kosan['price_original_monthly'], 0, ',', '.') }}</span>
-                                        </p> -->
-                                        <div class="flex items-center">
-                                            <p class="text-lg font-bold text-gray-800">
-                                                @php
-                                                    $roomPrice = $kosan['room_price_original_monthly'];
-                                                @endphp
-                                                @if(empty($roomPrice))
-                                                    <span class="text-lg font-bold"></span>
-                                                @else
-                                                <!-- Rp{{ number_format($roomPrice, 0, ',', '.') }}
-                                                    <span class="text-xs font-normal">/malam</span>     -->
-                                                Rp{{ number_format($roomPrice, 0, ',', '.') }}
-                                                    <span class="text-xs font-normal">/bulan</span>
-                                                @endif
-                                            </p>
-                                        </div>
+                                @if(count($kosan['images'] ?? []) > 1)
+                                    <div class="absolute top-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-full font-medium shadow-md backdrop-blur-sm">
+                                        <i class="fas fa-images mr-1"></i>{{ count($kosan['images']) }}
                                     </div>
-
-                                    <div class="flex flex-col space-y-1 text-xs text-gray-500">
-                                        @php
-                                            $features = $kosan['features'] ?? [];
-                                            $featureCount = count($features);
-                                            $displayFeatures = array_slice($features, 0, 2);
-                                            $remainingFeatures = $featureCount - 2;
-                                        @endphp
-                                        @foreach($displayFeatures as $feature)
-                                            <span class="border border-gray-300 rounded-lg px-2 py-1 text-center whitespace-nowrap">{{ $feature }}</span>
-                                        @endforeach
-                                        @if($featureCount > 2)
-                                            <span class="border border-gray-300 rounded-lg px-2 py-1 text-center bg-gray-100 text-gray-500 cursor-default" title="{{ implode(', ', $features) }}">
-                                                +{{ $remainingFeatures }} more
-                                            </span>
-                                        @endif
-                                    </div>
+                                @endif
+                            @else
+                                <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                                    <i class="fas fa-building text-4xl mb-2"></i>
+                                    <span class="text-sm">No Image</span>
                                 </div>
-                            </div>
+                            @endif
+
+                            @if(isset($kosan['check_in']) && isset($kosan['check_out']))
+                            <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-md">
+                                <i class="fas fa-check mr-1"></i>Tersedia
+                            </span>
+                            @endif
                         </div>
                     </div>
-                </a>
-            </div>
-            @empty
-            <div class="swiper-slide">
-                <div class="text-center p-6">
-                    <p class="text-gray-500">Tidak ada kosan yang tersedia.</p>
+
+                    <!-- Content -->
+                    <div class="p-3 flex-1 flex flex-col">
+                        <!-- Property Name -->
+                        <h4 class="font-semibold text-gray-800 mb-1 line-clamp-1 hover:text-teal-600 transition-colors">
+                            {{ $kosan['name'] }}
+                        </h4>
+
+                        <!-- Location -->
+                        <div class="flex items-start text-gray-600 text-sm mb-2">
+                            <i class="fas fa-map-marker-alt mt-0.5 mr-1.5 text-gray-400 flex-shrink-0"></i>
+                            <span class="line-clamp-2">{{ $kosan['subLocation'] }}</span>
+                        </div>
+
+                        <!-- Price Section -->
+                        <div class="mt-auto flex items-center justify-between pt-2 border-t border-gray-100">
+                            @php
+                                $roomPrice = $kosan['room_price_original_monthly'];
+                            @endphp
+                            @if(!empty($roomPrice))
+                            <div>
+                                <div class="text-lg font-bold text-gray-900">
+                                    Rp{{ number_format($roomPrice, 0, ',', '.') }}
+                                </div>
+                                <div class="text-xs text-gray-500">/bulan</div>
+                            </div>
+                            <span class="text-gray-900 hover:text-gray-700 text-sm font-bold">
+                                {{ __('homepage.actions.view') }} <i class="fas fa-arrow-right text-xs ml-1"></i>
+                            </span>
+                            @else
+                            <span class="text-gray-900 hover:text-gray-700 text-sm font-bold w-full text-center">
+                                {{ __('homepage.actions.view_detail') }} <i class="fas fa-arrow-right text-xs ml-1"></i>
+                            </span>
+                            @endif
+                        </div>
+                    </div>
                 </div>
-            </div>
-            @endforelse
+            </a>
         </div>
-        
-        <!-- Add Navigation -->
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-        <!-- Add Pagination -->
-        <div class="swiper-pagination"></div>
+    @empty
+    <div class="col-span-full">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 text-gray-300">
+                <i class="fas fa-home text-5xl"></i>
+            </div>
+            <p class="text-gray-500">{{ __('homepage.messages.no_kos_available') }}</p>
+        </div>
     </div>
-
-<style>
-    .property-swiper {
-        padding: 20px 40px;
-    }
-    
-    .swiper-button-next,
-    .swiper-button-prev {
-        color: #0d9488; /* teal-600 */
-    }
-    
-    .swiper-pagination-bullet-active {
-        background: #0d9488; /* teal-600 */
-    }
-    
-    .property-card {
-        height: 100%;
-        min-height: 420px;
-    }
-    
-    @media (min-width: 1024px) {
-        .property-swiper .swiper-slide {
-            width: 20%; /* 5 cards per view on large screens */
-            height: auto;
-        }
-    }
-    
-    @media (min-width: 768px) and (max-width: 1023px) {
-        .property-swiper .swiper-slide {
-            width: 50%; /* 2 cards per view on medium screens */
-            height: auto;
-        }
-    }
-    
-    @media (max-width: 767px) {
-        .property-swiper .swiper-slide {
-            width: 100%; /* 1 card per view on small screens */
-            height: auto;
-        }
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        new Swiper('.property-swiper', {
-            slidesPerView: 'auto',
-            spaceBetween: 16,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            breakpoints: {
-                // Mobile
-                320: {
-                    slidesPerView: 1,
-                    spaceBetween: 16
-                },
-                // Tablet
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 16
-                },
-                // Desktop
-                1024: {
-                    slidesPerView: 5,
-                    spaceBetween: 16
-                }
-            }
-        });
-    });
-</script>
+    @endforelse
+</div>

@@ -35,4 +35,31 @@ return [
         'areas' => 'Area Populer',
         'featured' => 'Properti Unggulan',
     ],
+
+    'actions' => [
+        'view' => 'Lihat',
+        'view_detail' => 'Lihat Detail',
+        'view_all_properties' => 'Lihat Semua Properti',
+    ],
+
+    'titles' => [
+        'ongoing_promos' => 'Promo Berlangsung',
+        'available_areas' => 'Area Tersedia',
+    ],
+
+    'subtitles' => [
+        'limited_offers' => 'Penawaran Terbatas',
+        'areas_around_you' => 'Area tersedia di sekitar anda',
+    ],
+
+    'messages' => [
+        'no_promos' => 'Tidak ada promo yang tersedia saat ini',
+        'check_back_later' => 'Silakan cek kembali nanti untuk penawaran terbaru',
+        'no_kos_available' => 'Tidak ada kosan yang tersedia saat ini.',
+    ],
+
+    'cities' => [
+        'bogor' => 'Bogor',
+        'jakarta' => 'Jakarta',
+    ],
 ];

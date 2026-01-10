@@ -2,10 +2,10 @@
 <section class="section-light">
     <div class="section-container">
         <div class="section-title">
-            <h3 class="text-4xl font-medium">Area Tersedia</h3>
+            <h3 class="text-4xl font-medium">{{ __('homepage.titles.available_areas') }}</h3>
             <div class="divider mt-2 md-2">
                 <div class="divider-line"></div>
-                <p class="divider-text">Area tersedia di sekitar anda</p>
+                <p class="divider-text">{{ __('homepage.subtitles.areas_around_you') }}</p>
                 <div class="divider-line"></div>
             </div>
         </div>
@@ -15,11 +15,11 @@
             <div class="flex border-b border-gray-200">
                 <!-- BOGOR AREA -->
                 <button class="area-tab-trigger px-6 py-3 text-lg font-medium text-gray-500 hover:text-gray-700" data-tab="bogor">
-                    Bogor
+                    {{ __('homepage.cities.bogor') }}
                 </button>
                 <!-- JAKARTA AREA -->
                 <button class="area-tab-trigger px-6 py-3 text-lg font-medium text-teal-600 border-b-2 border-teal-600" data-tab="jakarta">
-                    Jakarta
+                    {{ __('homepage.cities.jakarta') }}
                 </button>
             </div>
 
