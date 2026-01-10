@@ -14,6 +14,7 @@ use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\VoucherService;
 use App\Jobs\ExpireBooking;
+use App\Notifications\BookingConfirmationNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -624,6 +625,49 @@ class BookingController extends ApiController
                 'expired_at' => $dokuPaymentResponse['expired_at'] ?? null
             ]);
 
+           // Send booking confirmation email
+            // if ($request->user_email) {
+            //     try {
+            //         // Create a temporary user object for notification
+            //         $notificationUser = new \Illuminate\Notifications\AnonymousNotifiable();
+            //         $notificationUser->notify(new BookingConfirmationNotification(
+            //             [
+            //                 'property_id' => $request->property_id,
+            //                 'order_id' => $order_id,
+            //                 'room_id' => $request->room_id,
+            //                 'status' => '1',
+            //                 'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
+            //             ],
+            //             $transactionData,
+            //             // $dokuPaymentResponse['payment_url'] ?? null
+            //         ));
+
+            //         \Log::info('Booking confirmation email queued', [
+            //             'order_id' => $order_id,
+            //             'user_email' => $request->user_email
+            //         ]);
+            //     } catch (\Exception $e) {
+            //         // Log error but don't fail the booking
+            //         \Log::error('Failed to send booking confirmation email', [
+            //             'order_id' => $order_id,
+            //             'user_email' => $request->user_email,
+            //             'error' => $e->getMessage(),
+            //             'trace' => $e->getTraceAsString()
+            //         ]);
+            //     }
+            // }
+
+            // Send booking confirmation email
+            if ($request->user_email) {
+                $this->sendEmailBooking($request->user_email, [
+                    'property_id' => $request->property_id,
+                    'order_id' => $order_id,
+                    'room_id' => $request->room_id,
+                    'status' => '1',
+                    'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
+                ], $transactionData, $dokuPaymentResponse['payment_url'] ?? null);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -1039,6 +1083,42 @@ class BookingController extends ApiController
                 'message' => 'Error updating payment method',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Send booking confirmation email to user
+     *
+     * @param \App\Models\User $user
+     * @param array $bookingData
+     * @param array $transactionData
+     * @param string|null $paymentUrl
+     * @return void
+     */
+    public function sendEmailBooking($userEmail, $bookingData, $transactionData, $paymentUrl = null)
+    {
+        try {
+            // Create an anonymous notifiable for the email
+            $notificationUser = new \Illuminate\Notifications\AnonymousNotifiable();
+            $notificationUser->route('mail', $userEmail);
+            $notificationUser->notify(new BookingConfirmationNotification(
+                $bookingData,
+                $transactionData,
+                $paymentUrl
+            ));
+
+            Log::info('Booking confirmation email queued', [
+                'order_id' => $transactionData['order_id'] ?? null,
+                'user_email' => $userEmail
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't fail the booking
+            Log::error('Failed to send booking confirmation email', [
+                'order_id' => $transactionData['order_id'] ?? null,
+                'user_email' => $userEmail,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
     
