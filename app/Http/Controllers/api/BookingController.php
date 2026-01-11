@@ -626,47 +626,40 @@ class BookingController extends ApiController
             ]);
 
            // Send booking confirmation email
-            // if ($request->user_email) {
-            //     try {
-            //         // Create a temporary user object for notification
-            //         $notificationUser = new \Illuminate\Notifications\AnonymousNotifiable();
-            //         $notificationUser->notify(new BookingConfirmationNotification(
-            //             [
-            //                 'property_id' => $request->property_id,
-            //                 'order_id' => $order_id,
-            //                 'room_id' => $request->room_id,
-            //                 'status' => '1',
-            //                 'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
-            //             ],
-            //             $transactionData,
-            //             // $dokuPaymentResponse['payment_url'] ?? null
-            //         ));
-
-            //         \Log::info('Booking confirmation email queued', [
-            //             'order_id' => $order_id,
-            //             'user_email' => $request->user_email
-            //         ]);
-            //     } catch (\Exception $e) {
-            //         // Log error but don't fail the booking
-            //         \Log::error('Failed to send booking confirmation email', [
-            //             'order_id' => $order_id,
-            //             'user_email' => $request->user_email,
-            //             'error' => $e->getMessage(),
-            //             'trace' => $e->getTraceAsString()
-            //         ]);
-            //     }
-            // }
-
-            // Send booking confirmation email
             if ($request->user_email) {
-                $this->sendEmailBooking($request->user_email, [
+                // Create a temporary user model with the email
+                $user = new \App\Models\User();
+                $user->email = $request->user_email;
+                $user->id = $request->user_id ?? 0; // Use provided user_id or default to 0 for guests
+
+                // Prepare booking data
+                $bookingData = [
                     'property_id' => $request->property_id,
                     'order_id' => $order_id,
                     'room_id' => $request->room_id,
                     'status' => '1',
                     'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
-                ], $transactionData, $dokuPaymentResponse['payment_url'] ?? null);
+                ];
+
+                // Send email using the centralized method
+                $this->sendEmailBooking(
+                    $user,
+                    $bookingData,
+                    $transactionData,
+                    $dokuPaymentResponse['payment_url'] ?? null
+                );
             }
+
+            // Send booking confirmation email
+            // if ($request->user_email) {
+            //     $this->sendEmailBooking($request->user_email, [
+            //         'property_id' => $request->property_id,
+            //         'order_id' => $order_id,
+            //         'room_id' => $request->room_id,
+            //         'status' => '1',
+            //         'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
+            //     ], $transactionData, $dokuPaymentResponse['payment_url'] ?? null);
+            // }
 
             DB::commit();
 
@@ -1095,13 +1088,10 @@ class BookingController extends ApiController
      * @param string|null $paymentUrl
      * @return void
      */
-    public function sendEmailBooking($userEmail, $bookingData, $transactionData, $paymentUrl = null)
+    public function sendEmailBooking($user, $bookingData, $transactionData, $paymentUrl = null)
     {
         try {
-            // Create an anonymous notifiable for the email
-            $notificationUser = new \Illuminate\Notifications\AnonymousNotifiable();
-            $notificationUser->route('mail', $userEmail);
-            $notificationUser->notify(new BookingConfirmationNotification(
+            $user->notify(new BookingConfirmationNotification(
                 $bookingData,
                 $transactionData,
                 $paymentUrl
@@ -1109,13 +1099,15 @@ class BookingController extends ApiController
 
             Log::info('Booking confirmation email queued', [
                 'order_id' => $transactionData['order_id'] ?? null,
-                'user_email' => $userEmail
+                'user_id' => $user->id,
+                'user_email' => $user->email
             ]);
         } catch (\Exception $e) {
             // Log error but don't fail the booking
             Log::error('Failed to send booking confirmation email', [
                 'order_id' => $transactionData['order_id'] ?? null,
-                'user_email' => $userEmail,
+                'user_id' => $user->id,
+                'user_email' => $user->email,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
