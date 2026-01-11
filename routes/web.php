@@ -28,6 +28,7 @@ use App\Http\Controllers\house\HouseController;
 use App\Http\Controllers\villa\VillaController;
 use App\Http\Controllers\hotel\HotelController;
 use App\Http\Controllers\AllPropertiesController;
+use App\Http\Controllers\LanguageController;
 use Faker\Guesser\Name;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -48,6 +49,9 @@ use Illuminate\Support\Facades\Storage;
 Route::get('/email/verification-confirmation', function () {
     return view('auth.verify-email-confirmation');
 })->middleware('auth')->name('verification.confirmation');
+
+// Language Switch Route
+Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');
 
 // Route::get('/inventory', [SearchProductController::class, 'index'])->name('search-product');
 

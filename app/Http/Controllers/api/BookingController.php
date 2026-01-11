@@ -14,6 +14,7 @@ use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\VoucherService;
 use App\Jobs\ExpireBooking;
+use App\Notifications\BookingConfirmationNotification;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -624,6 +625,42 @@ class BookingController extends ApiController
                 'expired_at' => $dokuPaymentResponse['expired_at'] ?? null
             ]);
 
+           // Send booking confirmation email
+            if ($request->user_email) {
+                // Create a temporary user model with the email
+                $user = new \App\Models\User();
+                $user->email = $request->user_email;
+                $user->id = $request->user_id ?? 0; // Use provided user_id or default to 0 for guests
+
+                // Prepare booking data
+                $bookingData = [
+                    'property_id' => $request->property_id,
+                    'order_id' => $order_id,
+                    'room_id' => $request->room_id,
+                    'status' => '1',
+                    'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
+                ];
+
+                // Send email using the centralized method
+                $this->sendEmailBooking(
+                    $user,
+                    $bookingData,
+                    $transactionData,
+                    $dokuPaymentResponse['payment_url'] ?? null
+                );
+            }
+
+            // Send booking confirmation email
+            // if ($request->user_email) {
+            //     $this->sendEmailBooking($request->user_email, [
+            //         'property_id' => $request->property_id,
+            //         'order_id' => $order_id,
+            //         'room_id' => $request->room_id,
+            //         'status' => '1',
+            //         'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly'
+            //     ], $transactionData, $dokuPaymentResponse['payment_url'] ?? null);
+            // }
+
             DB::commit();
 
             return response()->json([
@@ -1039,6 +1076,41 @@ class BookingController extends ApiController
                 'message' => 'Error updating payment method',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Send booking confirmation email to user
+     *
+     * @param \App\Models\User $user
+     * @param array $bookingData
+     * @param array $transactionData
+     * @param string|null $paymentUrl
+     * @return void
+     */
+    public function sendEmailBooking($user, $bookingData, $transactionData, $paymentUrl = null)
+    {
+        try {
+            $user->notify(new BookingConfirmationNotification(
+                $bookingData,
+                $transactionData,
+                $paymentUrl
+            ));
+
+            Log::info('Booking confirmation email queued', [
+                'order_id' => $transactionData['order_id'] ?? null,
+                'user_id' => $user->id,
+                'user_email' => $user->email
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't fail the booking
+            Log::error('Failed to send booking confirmation email', [
+                'order_id' => $transactionData['order_id'] ?? null,
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
     

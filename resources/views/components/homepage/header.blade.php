@@ -116,14 +116,6 @@
             $currentPath = request()->path();
             $pathWithoutLocale = preg_replace('/^(id|en)\/?/', '', $currentPath);
 
-            // Build proper localized paths
-            $idPath = 'id/' . $pathWithoutLocale;
-            $enPath = 'en/' . $pathWithoutLocale;
-
-            // Clean up double slashes and ensure proper format
-            $idPath = '/' . preg_replace('#/+#', '/', $idPath);
-            $enPath = '/' . preg_replace('#/+#', '/', $enPath);
-
             // Define flag SVGs
             $idFlag = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 32 32"><path d="M31,8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4v9H31V8Z" fill="#ea3323"></path><path d="M5,28H27c2.209,0,4-1.791,4-4v-8H1v8c0,2.209,1.791,4,4,4Z" fill="#fff"></path><path d="M5,28H27c2.209,0,4-1.791,4-4V8c0-2.209-1.791-4-4-4H5c-2.209,0-4,1.791-4,4V24c0,2.209,1.791,4,4,4ZM2,8c0-1.654,1.346-3,3-3H27c1.654,0,3,1.346,3,3V24c0,1.654-1.346,3-3,3H5c-1.654,0-3-1.346-3-3V8Z" opacity=".15"></path><path d="M27,5H5c-1.657,0-3,1.343-3,3v1c0-1.657,1.343-3,3-3H27c1.657,0,3,1.343,3,3v-1c0-1.657-1.343-3-3-3Z" fill="#fff" opacity=".2"></path></svg>';
             $enFlag = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 60 30"><clipPath id="a"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="b"><path d="M30 15h30v15zv15H0zH0V0z"/></clipPath><g clip-path="url(#a)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#b)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M0 15h60M30 0v30" stroke="#C8102E" stroke-width="6"/></g></svg>';
@@ -153,18 +145,31 @@
                  class="absolute right-0 mt-2 w-32 rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
                  style="display: none;">
                 <div class="py-1">
-                    <a href="{{ $idPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ !$isEn ? 'bg-gray-50' : '' }}">
-                        <span class="flex items-center">
-                            {!! $idFlag !!}
-                            <span class="ml-2">Indonesia</span>
-                        </span>
-                    </a>
-                    <a href="{{ $enPath }}" class="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ $isEn ? 'bg-gray-50' : '' }}">
-                        <span class="flex items-center">
-                            {!! $enFlag !!}
-                            <span class="ml-2">English</span>
-                        </span>
-                    </a>
+                    <!-- Indonesian Language Form -->
+                    <form method="POST" action="{{ route('language.switch') }}" class="block">
+                        @csrf
+                        <input type="hidden" name="locale" value="id">
+                        <input type="hidden" name="redirect_url" value="{{ request()->fullUrl() }}">
+                        <button type="submit" class="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ !$isEn ? 'bg-gray-50' : '' }}">
+                            <span class="flex items-center">
+                                {!! $idFlag !!}
+                                <span class="ml-2">Indonesia</span>
+                            </span>
+                        </button>
+                    </form>
+                    
+                    <!-- English Language Form -->
+                    <form method="POST" action="{{ route('language.switch') }}" class="block">
+                        @csrf
+                        <input type="hidden" name="locale" value="en">
+                        <input type="hidden" name="redirect_url" value="{{ request()->fullUrl() }}">
+                        <button type="submit" class="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ $isEn ? 'bg-gray-50' : '' }}">
+                            <span class="flex items-center">
+                                {!! $enFlag !!}
+                                <span class="ml-2">English</span>
+                            </span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
