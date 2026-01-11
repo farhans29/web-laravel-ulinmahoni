@@ -107,7 +107,16 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/register', function () {
         return view('auth.register');
     })->name('register');
-    
+
+    // Password Reset Routes
+    Route::get('/forgot-password', function () {
+        return view('auth.forgot-password');
+    })->name('password.request');
+
+    Route::get('/reset-password', function () {
+        return view('auth.reset-password');
+    })->name('password.reset'); 
+
     // Email Verification Notice
     Route::get('/email/verify', function () {
         return view('auth.verify-email');

@@ -5,11 +5,13 @@ namespace App\Http\Controllers\api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\PasswordReset;
+use App\Notifications\PasswordResetConfirmationNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Laravel\Fortify\Rules\Password;
 use Illuminate\Support\Facades\Password as PasswordFacade;
 use Illuminate\Support\Str;
@@ -262,6 +264,22 @@ class AuthController extends Controller
         $user->update([
             'password' => Hash::make($request->password)
         ]);
+
+        // Send password reset confirmation email
+        try {
+            $user->notify(new PasswordResetConfirmationNotification($user));
+            Log::info('Password reset confirmation notification queued', [
+                'user_id' => $user->id,
+                'email' => $user->email
+            ]);
+        } catch (\Exception $e) {
+            // Log the error but don't fail the password reset
+            Log::error('Failed to queue password reset confirmation notification', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage()
+            ]);
+        }
 
         // Delete the used token
         DB::table('password_resets')->where('email', $request->email)->delete();
