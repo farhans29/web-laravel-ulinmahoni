@@ -128,6 +128,17 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new VerifyEmailNotification);
     }
 
+    /**
+     * Send the password reset notification.
+     *
+     * @param string $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        $this->notify(new \App\Notifications\PasswordResetNotification($token));
+    }
+
     // If you still need the full name somewhere in your application, you can keep this method
     // but it won't be included in JSON responses unless explicitly called
     /**
