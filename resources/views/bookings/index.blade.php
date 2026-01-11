@@ -3,11 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Bookings - Ulin Mahoni</title>
+    <title>{{ __('booking.index.page_title') }} - Ulin Mahoni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Translation strings for JavaScript
+        const translations = {
+            invalid_file_type: '{{ __("booking.js.invalid_file_type") }}',
+            invalid_file_type_text: '{{ __("booking.js.invalid_file_type_text") }}',
+            file_too_large: '{{ __("booking.js.file_too_large") }}',
+            file_too_large_text: '{{ __("booking.js.file_too_large_text") }}',
+            confirm_upload: '{{ __("booking.js.confirm_upload") }}',
+            confirm_upload_text: '{{ __("booking.js.confirm_upload_text") }}',
+            upload_failed: '{{ __("booking.js.upload_failed") }}',
+            upload_failed_text: '{{ __("booking.js.upload_failed_text") }}',
+            upload_payment_proof: '{{ __("booking.js.upload_payment_proof") }}',
+            upload_payment_proof_text: '{{ __("booking.js.upload_payment_proof_text") }}',
+            invalid_file_type_js: '{{ __("booking.js.invalid_file_type_js") }}',
+            invalid_file_type_js_text: '{{ __("booking.js.invalid_file_type_js_text") }}',
+            file_too_large_js: '{{ __("booking.js.file_too_large_js") }}',
+            file_too_large_js_text: '{{ __("booking.js.file_too_large_js_text") }}',
+            booking_details: '{{ __("booking.js.booking_details") }}',
+            booking_information: '{{ __("booking.js.booking_information") }}',
+            property_details: '{{ __("booking.js.property_details") }}',
+            booking_dates: '{{ __("booking.js.booking_dates") }}',
+            order_id: '{{ __("booking.js.order_id") }}',
+            transaction_type: '{{ __("booking.js.transaction_type") }}',
+            user_name: '{{ __("booking.js.user_name") }}',
+            phone: '{{ __("booking.js.phone") }}',
+            email: '{{ __("booking.js.email") }}',
+            status_label: '{{ __("booking.js.status_label") }}',
+            virtual_account_number: '{{ __("booking.js.virtual_account_number") }}',
+            transfer_to_va: '{{ __("booking.js.transfer_to_va") }}',
+            property_label: '{{ __("booking.js.property_label") }}',
+            room: '{{ __("booking.js.room") }}',
+            type: '{{ __("booking.js.type") }}',
+            total_price: '{{ __("booking.js.total_price") }}',
+            check_in_label: '{{ __("booking.js.check_in_label") }}',
+            check_out_label: '{{ __("booking.js.check_out_label") }}',
+            expired_suffix: '{{ __("booking.js.expired_suffix") }}',
+            days: '{{ __("booking.js.days") }}',
+            months: '{{ __("booking.js.months") }}',
+            paid_label: '{{ __("booking.js.paid_label") }}',
+            no_attachment: '{{ __("booking.js.no_attachment") }}',
+            transaction: '{{ __("booking.js.transaction") }}',
+            virtual_account: '{{ __("booking.js.virtual_account") }}',
+            bank: '{{ __("booking.js.bank") }}',
+            close: '{{ __("booking.actions.close") }}',
+            cancel: '{{ __("booking.actions.cancel") }}',
+            confirm_upload_btn: '{{ __("booking.actions.confirm_upload") }}',
+        };
+
     // Make confirmFileUpload available globally
     window.confirmFileUpload = async function(input) {
         if (!input.files || input.files.length === 0) {
@@ -22,8 +69,8 @@
         if (!validTypes.includes(file.type)) {
             Swal.fire({
                 icon: 'error',
-                title: 'Invalid File Type',
-                text: 'Only JPG and PNG images are allowed.',
+                title: translations.invalid_file_type,
+                text: translations.invalid_file_type_text,
                 confirmButtonColor: '#0d9488',
             });
             input.value = '';
@@ -34,8 +81,8 @@
         if (file.size > maxSize) {
             Swal.fire({
                 icon: 'error',
-                title: 'File Too Large',
-                text: 'Maximum file size is 10MB.',
+                title: translations.file_too_large,
+                text: translations.file_too_large_text,
                 confirmButtonColor: '#0d9488',
             });
             input.value = '';
@@ -47,10 +94,10 @@
         reader.onload = async function(e) {
             try {
                 const result = await Swal.fire({
-                    title: 'Confirm Upload',
+                    title: translations.confirm_upload,
                     html: `
                         <div class="text-center">
-                            <p class="mb-4">Are you sure you want to upload this image?</p>
+                            <p class="mb-4">${translations.confirm_upload_text}</p>
                             <img src="${e.target.result}" class="max-w-full h-auto rounded-lg mx-auto mb-4" style="max-height: 300px;" alt="Preview">
                             <p class="text-sm text-gray-600">${file.name} (${(file.size / 1024).toFixed(2)} KB)</p>
                             <div id="upload-progress" class="hidden mt-4">
@@ -64,8 +111,8 @@
                     showCancelButton: true,
                     confirmButtonColor: '#0d9488',
                     cancelButtonColor: '#6b7280',
-                    confirmButtonText: 'Yes, upload it!',
-                    cancelButtonText: 'Cancel',
+                    confirmButtonText: translations.confirm_upload_btn,
+                    cancelButtonText: translations.cancel,
                     reverseButtons: true,
                     showLoaderOnConfirm: false,
                     allowOutsideClick: false,
@@ -96,8 +143,8 @@
                 console.error('Upload error:', error);
                 Swal.fire({
                     icon: 'error',
-                    title: 'Upload Failed',
-                    text: 'An error occurred while uploading the file. Please try again.',
+                    title: translations.upload_failed,
+                    text: translations.upload_failed_text,
                     confirmButtonColor: '#0d9488',
                 });
                 input.value = '';
@@ -118,7 +165,7 @@
                 alt="Bookings Hero" 
                 class="w-full h-full object-cover" >
             <div class="absolute inset-0 gradient-overlay flex items-center justify-center">
-                <h1 class="text-4xl text-white font-medium">Pemesanan Saya</h1>
+                <h1 class="text-4xl text-white font-medium">{{ __('booking.index.page_subtitle') }}</h1>
             </div>
         </div>
 
@@ -129,14 +176,14 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-4 flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-300 text-yellow-800 rounded">
             <i class="fas fa-exclamation-triangle"></i>
-            <span class="font-semibold">Mohon upload bukti pembayaran Anda untuk menghindari pembayaran yang terlewat dan untuk memastikan pesanan Anda!</span>
+            <span class="font-semibold">{{ __('booking.index.payment_reminder') }}</span>
         </div>
         <div class="bg-white rounded-xl shadow-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <div x-data="{ tab: 'all' }">
                     <div class="flex border-b border-gray-200 mb-4">
-                        <button @click="tab = 'all'" :class="tab === 'all' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">Mendatang</button>
-                        <button @click="tab = 'completed'" :class="tab === 'completed' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">Selesai</button>
+                        <button @click="tab = 'all'" :class="tab === 'all' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">{{ __('booking.index.tabs.upcoming') }}</button>
+                        <button @click="tab = 'completed'" :class="tab === 'completed' ? 'border-teal-500 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="w-1/2 py-3 px-1 text-center border-b-2 font-medium text-sm focus:outline-none transition">{{ __('booking.index.tabs.completed') }}</button>
                     </div>
 
                     <!-- All Bookings Tab -->
@@ -146,25 +193,25 @@
                             <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Details
+                                        {{ __('booking.index.table_headers.details') }}
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Order #
+                                        {{ __('booking.index.table_headers.order_number') }}
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Property
+                                        {{ __('booking.index.table_headers.property') }}
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Check In - Out
+                                        {{ __('booking.index.table_headers.check_in_out') }}
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total Biaya
+                                        {{ __('booking.index.table_headers.total_cost') }}
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
+                                        {{ __('booking.index.table_headers.status') }}
                                     </th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Attachment
+                                        {{ __('booking.index.table_headers.attachment') }}
                                     </th>
                                 </tr>
                             </thead>
@@ -197,7 +244,7 @@
                                                     '{{ $booking->payment_bank ?? '' }}'
                                                 )"
                                                         class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors duration-200"
-                                                        title="View Details">
+                                                        title="{{ __('booking.actions.view_details') }}">
                                                     <i class="fas fa-info-circle"></i>
                                                 </button>
                                             </div>
@@ -215,15 +262,15 @@
                                             </div>
                                             
                                            <div class="text-xs text-gray-500">
-                                               <span class="font-semibold text-xs text-gray-500">Transaction:</span>
+                                               <span class="font-semibold text-xs text-gray-500">{{ __('booking.js.transaction') }}</span>
                                                <span class="text-xs text-gray-900">{{ strtoupper($booking->transaction_type) }}</span>
 
                                                @if($booking->virtual_account_no)
                                                    <div class="mt-2 p-3 bg-blue-50 border border-blue-300 rounded-lg">
-                                                       <div class="text-xs text-gray-600 mb-1">Virtual Account:</div>
+                                                       <div class="text-xs text-gray-600 mb-1">{{ __('booking.js.virtual_account') }}</div>
                                                        <div class="text-base font-bold text-blue-900 tracking-wider">{{ $booking->virtual_account_no }}</div>
                                                        @if($booking->payment_bank)
-                                                           <div class="text-xs text-blue-700 mt-1">Bank {{ strtoupper($booking->payment_bank) }}</div>
+                                                           <div class="text-xs text-blue-700 mt-1">{{ __('booking.js.bank') }} {{ strtoupper($booking->payment_bank) }}</div>
                                                        @endif
                                                    </div>
                                                @endif
@@ -263,9 +310,9 @@
                                             <div class="text-xs text-gray-500 flex items-center">
                                                 <i class="far fa-clock mr-1"></i>
                                                 @if(!empty($booking->booking_days))
-                                                    {{ $booking->booking_days }} hari
+                                                    {{ $booking->booking_days }} {{ __('booking.js.days') }}
                                                 @elseif(!empty($booking->booking_months))
-                                                    {{ $booking->booking_months }} bulan
+                                                    {{ $booking->booking_months }} {{ __('booking.js.months') }}
                                                 @else
                                                     -
                                                 @endif
@@ -278,7 +325,7 @@
                                             @if($booking->paid_at)
                                                 <div class="text-xs text-green-600 flex items-center">
                                                     <i class="fas fa-check-circle mr-1"></i>
-                                                    Paid: {{ \Carbon\Carbon::parse($booking->paid_at)->format('d M Y H:i') }}
+                                                    {{ __('booking.js.paid_label') }}: {{ \Carbon\Carbon::parse($booking->paid_at)->format('d M Y H:i') }}
                                                 </div>
                                             @endif
                                             {{-- 
@@ -299,20 +346,21 @@
 
                                             // Status mapping
                                             $statusMap = [
-                                                'pending' => ['bg-red-50', 'text-red-700', 'bg-red-400', 'Menunggu Pembayaran'],
-                                                'waiting' => ['bg-yellow-50', 'text-yellow-700', 'bg-yellow-400', 'Menunggu Konfirmasi'],
-                                                'success' => ['bg-green-50', 'text-green-700', 'bg-green-500', 'Berhasil Dibayar'],
-                                                'paid' => ['bg-green-50', 'text-green-700', 'bg-green-500', 'Berhasil Dibayar'],
-                                                'canceled' => ['bg-gray-50', 'text-gray-700', 'bg-gray-500', 'Dibatalkan'],
-                                                'expired' => ['bg-gray-100', 'text-gray-500', 'bg-gray-400', 'Expired']
+                                                'pending' => ['bg-red-50', 'text-red-700', 'bg-red-400', __('booking.status_extended.pending')],
+                                                'waiting' => ['bg-yellow-50', 'text-yellow-700', 'bg-yellow-400', __('booking.status_extended.waiting')],
+                                                'success' => ['bg-green-50', 'text-green-700', 'bg-green-500', __('booking.status_extended.success')],
+                                                'paid' => ['bg-green-50', 'text-green-700', 'bg-green-500', __('booking.status_extended.paid')],
+                                                'canceled' => ['bg-gray-50', 'text-gray-700', 'bg-gray-500', __('booking.status_extended.canceled')],
+                                                'expired' => ['bg-gray-100', 'text-gray-500', 'bg-gray-400', __('booking.status_extended.expired')]
                                             ];
 
-                                            [$badgeBg, $badgeText, $dot, $transactionText] = $statusMap[$status] ?? ['bg-gray-100', 'text-gray-700', 'bg-gray-400', 'Gagal'];
+                                            [$badgeBg, $badgeText, $dot, $transactionText] = $statusMap[$status] ?? ['bg-gray-100', 'text-gray-700', 'bg-gray-400', __('booking.status_extended.failed')];
 
                                             // Handle pending status
                                             if ($status === 'pending') {
                                                 $shouldShowTimer = true;
                                                 // if ($hoursDiff >= 1) {
+                                                //     [$badgeBg, $badgeText, $dot, $transactionText] = ['bg-gray-100', 'text-gray-500', 'bg-gray-400', __('booking.status_extended.expired')];
                                                 //     [$badgeBg, $badgeText, $dot, $transactionText] = ['bg-gray-100', 'text-gray-500', 'bg-gray-400', 'Expired'];
                                                 //     $status = 'expired';
                                                 //     $shouldShowTimer = false;
@@ -334,7 +382,7 @@
                                                 <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm {{ $badgeBg }} {{ $badgeText }} border border-gray-200"
                                                       data-booking-id="{{ $booking->idrec }}"
                                                       data-expires-at="{{ $shouldShowTimer && $remainingMinutes > 0 ? $expiresAt->toIso8601String() : '' }}"
-                                                      data-initial-text="Menunggu Pembayaran"
+                                                      data-initial-text="{{ __('booking.status_extended.pending') }}"
                                                       data-status="{{ $status }}">
                                                     <span class="w-2 h-2 rounded-full {{ $dot }} inline-block"></span>
                                                     <span class="tracking-wide capitalize text-center">{{ $transactionText }}</span>
@@ -355,9 +403,9 @@
                                                         <label for="attachment-{{ $booking->idrec }}"
                                                             class="cursor-pointer inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
                                                             <i class="fas fa-paperclip mr-2"></i>
-                                                            <span class="upload-text">Upload</span>
+                                                            <span class="upload-text">{{ __('booking.actions.upload') }}</span>
                                                             <span class="upload-loader hidden ml-2">
-                                                                <i class="fas fa-spinner fa-spin"></i> Uploading...
+                                                                <i class="fas fa-spinner fa-spin"></i> {{ __('booking.actions.uploading') }}
                                                             </span>
                                                         </label>
                                                     </div>
@@ -376,8 +424,8 @@
                                                     if (!validTypes.includes(file.type)) {
                                                         Swal.fire({
                                                             icon: 'error',
-                                                            title: 'Invalid file type',
-                                                            text: 'Please upload a JPEG or PNG image.',
+                                                            title: translations.invalid_file_type_js,
+                                                            text: translations.invalid_file_type_js_text,
                                                         });
                                                         input.value = '';
                                                         return;
@@ -387,8 +435,8 @@
                                                     if (file.size > maxSize) {
                                                         Swal.fire({
                                                             icon: 'error',
-                                                            title: 'File too large',
-                                                            text: 'Maximum file size is 10MB.',
+                                                            title: translations.file_too_large_js,
+                                                            text: translations.file_too_large_js_text,
                                                         });
                                                         input.value = '';
                                                         return;
@@ -397,12 +445,12 @@
 
                                                     // Show confirmation
                                                     Swal.fire({
-                                                        title: 'Upload Payment Proof',
-                                                        text: 'Are you sure you want to upload this file?',
+                                                        title: translations.upload_payment_proof,
+                                                        text: translations.upload_payment_proof_text,
                                                         icon: 'question',
                                                         showCancelButton: true,
-                                                        confirmButtonText: 'Yes, upload it!',
-                                                        cancelButtonText: 'Cancel',
+                                                        confirmButtonText: translations.confirm_upload_btn,
+                                                        cancelButtonText: translations.cancel,
                                                         reverseButtons: true
                                                     }).then((result) => {
                                                         if (result.isConfirmed) {
@@ -446,7 +494,7 @@
                                                 <div class="flex justify-center items-center h-full">
                                                     <a href="{{ route('bookings.view-attachment', $booking->idrec) }}" target="_blank" 
                                                        class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors duration-200"
-                                                       title="View Attachment">
+                                                       title="{{ __('booking.actions.view_attachment') }}">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                 </div>
@@ -459,8 +507,8 @@
                                         <td colspan="7" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center justify-center text-gray-500">
                                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
-                                                <p class="text-lg">Tidak ada pemesanan</p>
-                                                <p class="text-sm mt-2">Pemesanan Anda akan muncul di sini</p>
+                                                <p class="text-lg">{{ __('booking.index.empty_states.no_bookings') }}</p>
+                                                <p class="text-sm mt-2">{{ __('booking.index.empty_states.no_bookings_desc') }}</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -473,12 +521,12 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check In - Out</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attachment</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.order_number') }}</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.property') }}</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.check_in_out') }}</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.total_cost') }}</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.status') }}</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.attachment') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -578,7 +626,7 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             @if(!$booking->attachment)
-                                                <span class="text-gray-400 italic">No attachment</span>
+                                                <span class="text-gray-400 italic">{{ __('booking.js.no_attachment') }}</span>
                                             @else
                                                 <div class="flex justify-center items-center h-full">
                                                     <a href="{{ asset('storage/' . $booking->attachment) }}" target="_blank" class="text-teal-600 hover:text-teal-700">
@@ -593,8 +641,8 @@
                                         <td colspan="6" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center justify-center text-gray-500">
                                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
-                                                <p class="text-lg">Tidak ada pemesanan selesai</p>
-                                                <p class="text-sm mt-2">Pemesanan selesai akan muncul di sini</p>
+                                                <p class="text-lg">{{ __('booking.index.empty_states.no_completed_bookings') }}</p>
+                                                <p class="text-sm mt-2">{{ __('booking.index.empty_states.no_completed_bookings_desc') }}</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -616,7 +664,7 @@
             <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-semibold text-gray-900">Booking Details</h3>
+                        <h3 class="text-lg font-semibold text-gray-900">{{ __('booking.js.booking_details') }}</h3>
                         <button onclick="closeBookingDetails()" class="text-gray-400 hover:text-gray-600">
                             <i class="fas fa-times text-xl"></i>
                         </button>
@@ -629,7 +677,7 @@
                 </div>
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
                     <button onclick="closeBookingDetails()" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-                        Close
+                        {{ __('booking.actions.close') }}
                     </button>
                 </div>
             </div>
@@ -798,74 +846,74 @@
         modalContent.innerHTML = `
             <div class="space-y-4">
                 <div class="bg-gray-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-900 mb-2">Booking Information</h4>
+                    <h4 class="font-semibold text-gray-900 mb-2">${translations.booking_information}</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p class="font-medium text-gray-500">Order ID:</p>
+                            <span class="font-semibold text-gray-500">{{ __('booking.js.order_id') }}</span>
                             <p class="text-gray-900 font-semibold">${orderId}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Transaction Type:</p>
+                            <p class="font-medium text-gray-500">{{ __('booking.js.transaction_type') }}</p>
                             <p class="text-gray-900">${transactionType.toUpperCase()}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">User Name:</p>
+                            <p class="font-medium text-gray-500">{{ __('booking.js.user_name') }}</p>
                             <p class="text-gray-900">${userName}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Phone:</p>
+                            <p class="font-medium text-gray-500">{{ __('booking.js.phone') }}</p>
                             <p class="text-gray-900">${userPhone}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Email:</p>
+                            <p class="font-medium text-gray-500">{{ __('booking.js.email') }}</p>
                             <p class="text-gray-900">${userEmail}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Status:</p>
+                            <p class="font-medium text-gray-500">{{ __('booking.js.status_label') }}</p>
                             <p class="px-3 py-1 rounded-full inline-block ${getStatusClass(transactionStatus)}">${transactionStatus.toUpperCase()}</p>
                         </div>
                     </div>
                     ${virtualAccountNo ? `
                         <div class="mt-3 p-3 bg-blue-50 border border-blue-300 rounded-lg">
-                            <p class="text-xs text-gray-600 mb-1">Virtual Account Number:</p>
+                            <p class="text-xs text-gray-600 mb-1">${translations.virtual_account_number}</p>
                             <p class="text-lg font-bold text-blue-900 tracking-wider">${virtualAccountNo}</p>
                             ${paymentBank ? `<p class="text-xs text-blue-700 mt-1">Bank ${paymentBank.toUpperCase()}</p>` : ''}
-                            <p class="text-xs text-gray-600 mt-2">Transfer ke nomor VA di atas untuk menyelesaikan pembayaran</p>
+                            <p class="text-xs text-gray-600 mt-2">${translations.transfer_to_va}</p>
                         </div>
                     ` : ''}
                 </div>
 
                 <div class="bg-blue-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-900 mb-2">Property Details</h4>
+                    <h4 class="font-semibold text-gray-900 mb-2">${translations.property_details}</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p class="font-medium text-gray-500">Property:</p>
+                            <p class="font-medium text-gray-500">${translations.property_label}</p>
                             <p class="text-gray-900">${propertyName}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Room:</p>
+                            <p class="font-medium text-gray-500">${translations.room}</p>
                             <p class="text-gray-900">${roomName}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Type:</p>
+                            <p class="font-medium text-gray-500">${translations.type}</p>
                             <p class="text-gray-900">${propertyType}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Total Price:</p>
+                            <p class="font-medium text-gray-500">${translations.total_price}</p>
                             <p class="text-gray-900 font-semibold">${grandtotalPrice}</p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="bg-green-50 p-4 rounded-lg">
-                    <h4 class="font-semibold text-gray-900 mb-2">Booking Dates</h4>
+                    <h4 class="font-semibold text-gray-900 mb-2">${translations.booking_dates}</h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p class="font-medium text-gray-500">Check In:</p>
+                            <p class="font-medium text-gray-500">${translations.check_in_label}</p>
                             <p class="text-gray-900">${checkIn}</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Check Out:</p>
+                            <p class="font-medium text-gray-500">${translations.check_out_label}</p>
                             <p class="text-gray-900">${checkOut}</p>
                         </div>
                     </div>

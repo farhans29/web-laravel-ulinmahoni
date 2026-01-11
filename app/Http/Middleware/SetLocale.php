@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Cookie;
 
 class SetLocale
 {
@@ -18,7 +19,7 @@ class SetLocale
      */
     public function handle(Request $request, Closure $next)
     {
-        // Priority: URL prefix > Session > Browser Accept-Language > Default (id)
+        // Priority: Cookie > URL prefix > Session > Browser Accept-Language > Default (id)
         $locale = $this->determineLocale($request);
 
         // Set application locale
@@ -41,13 +42,19 @@ class SetLocale
      */
     private function determineLocale(Request $request): string
     {
-        // 1. Check URL prefix (highest priority)
+        // 1. Check cookie (highest priority for persistence)
+        $cookieLocale = $request->cookie('locale');
+        if ($cookieLocale && in_array($cookieLocale, ['id', 'en'])) {
+            return $cookieLocale;
+        }
+
+        // 2. Check URL prefix
         $urlSegment = $request->segment(1);
         if (in_array($urlSegment, ['id', 'en'])) {
             return $urlSegment;
         }
 
-        // 2. Check session
+        // 3. Check session
         if (Session::has('locale')) {
             $locale = Session::get('locale');
             if (in_array($locale, ['id', 'en'])) {
@@ -55,13 +62,13 @@ class SetLocale
             }
         }
 
-        // 3. Check browser Accept-Language header
+        // 4. Check browser Accept-Language header
         $browserLocale = $request->getPreferredLanguage(['id', 'en']);
         if ($browserLocale) {
             return $browserLocale;
         }
 
-        // 4. Default to Indonesian (since most content is Indonesian)
+        // 5. Default to Indonesian (since most content is Indonesian)
         return 'id';
     }
 }

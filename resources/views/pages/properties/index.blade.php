@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Available Rooms - Ulin Mahoni</title>
-    <meta name="description" content="Find available rooms for rent. Browse by daily or monthly rates with real-time availability.">
+    <title>{{ __('properties.index.page_title') }} - Ulin Mahoni</title>
+    <meta name="description" content="{{ __('properties.index.page_subtitle') }}. Browse by daily or monthly rates with real-time availability.">
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/favicon.ico') }}">
@@ -23,16 +23,16 @@
     <main class="container mx-auto px-4 py-8">
         <!-- Page Header -->
         <div class="mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Kamar Tersedia</h1>
-            <p class="text-gray-600">Cari kamar yang ideal untuk Anda</p>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">{{ __('properties.index.page_title') }}</h1>
+            <p class="text-gray-600">{{ __('properties.index.page_subtitle') }}</p>
 
             <!-- Active Filters -->
             <div id="activeFilters" class="hidden mt-4 bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
                 <div class="flex flex-wrap items-center gap-2 text-sm">
-                    <span class="font-medium text-gray-700">Filter Aktif:</span>
+                    <span class="font-medium text-gray-700">{{ __('properties.index.active_filters') }}</span>
                     <div id="filterBadges" class="flex flex-wrap gap-2"></div>
                     <button onclick="clearAllFilters()" class="ml-auto text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center">
-                        <i class="fas fa-times mr-1"></i> Hapus Semua Filter
+                        <i class="fas fa-times mr-1"></i> {{ __('properties.index.clear_all_filters') }}
                     </button>
                 </div>
             </div>
@@ -43,16 +43,16 @@
             <!-- View Options -->
             <div class="p-4 border-b border-gray-100 flex items-center justify-between">
                 <div class="flex items-center gap-2">
-                    <span class="text-sm font-medium text-gray-700">Tampilan:</span>
+                    <span class="text-sm font-medium text-gray-700">{{ __('properties.index.view') }}</span>
                     <div class="flex bg-gray-100 rounded-lg p-1">
                         <button type="button" onclick="setView('categorical')" id="viewCategorical" class="px-4 py-1.5 text-sm font-medium rounded transition-colors">
-                            <i class="fas fa-th-large mr-1"></i> Kategori
+                            <i class="fas fa-th-large mr-1"></i> {{ __('properties.index.categorical_view') }}
                         </button>
                         <button type="button" onclick="setView('grid')" id="viewGrid" class="px-4 py-1.5 text-sm font-medium rounded transition-colors">
-                            <i class="fas fa-th mr-1"></i> Grid
+                            <i class="fas fa-th mr-1"></i> {{ __('properties.index.grid_view') }}
                         </button>
                         <button type="button" onclick="setView('list')" id="viewList" class="px-4 py-1.5 text-sm font-medium rounded transition-colors">
-                            <i class="fas fa-list mr-1"></i> List
+                            <i class="fas fa-list mr-1"></i> {{ __('properties.index.list_view') }}
                         </button>
                     </div>
                 </div>
@@ -62,34 +62,34 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Property Type -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Tipe Properti</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">{{ __('properties.index.property_type') }}</label>
                         <div class="relative">
                             <i class="fas fa-building absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <select name="type" id="filterType" class="w-full pl-10 pr-3 h-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm">
-                                <option value="">Semua Tipe</option>
-                                <option value="Kos" {{ request('type') == 'Kos' ? 'selected' : '' }}>Kos</option>
-                                <option value="Apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>Apartment</option>
-                                <option value="Villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>Villa</option>
-                                <option value="Hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
+                                <option value="">{{ __('properties.index.all_types') }}</option>
+                                <option value="Kos" {{ request('type') == 'Kos' ? 'selected' : '' }}>{{ __('properties.types.kos') }}</option>
+                                <option value="Apartment" {{ request('type') == 'Apartment' ? 'selected' : '' }}>{{ __('properties.types.apartment') }}</option>
+                                <option value="Villa" {{ request('type') == 'Villa' ? 'selected' : '' }}>{{ __('properties.types.villa') }}</option>
+                                <option value="Hotel" {{ request('type') == 'Hotel' ? 'selected' : '' }}>{{ __('properties.types.hotel') }}</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Rent Period (hidden in categorical view) -->
                     <div id="periodFilterContainer">
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Periode Sewa</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">{{ __('properties.index.rental_period') }}</label>
                         <div class="relative">
                             <i class="fas fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <select name="period" id="filterPeriod" class="w-full pl-10 pr-3 h-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-sm">
-                                <option value="monthly" {{ request('period') == 'monthly' || !request('period') ? 'selected' : '' }}>Bulanan</option>
-                                <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>Harian</option>
+                                <option value="monthly" {{ request('period') == 'monthly' || !request('period') ? 'selected' : '' }}>{{ __('properties.index.monthly') }}</option>
+                                <option value="daily" {{ request('period') == 'daily' ? 'selected' : '' }}>{{ __('properties.index.daily') }}</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Check-in Date -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Check In</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">{{ __('properties.index.check_in') }}</label>
                         <div class="relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <input
@@ -104,7 +104,7 @@
 
                     <!-- Check-out Date -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1.5">Check Out</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1.5">{{ __('properties.index.check_out') }}</label>
                         <div class="relative">
                             <i class="far fa-calendar-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <input
@@ -123,13 +123,13 @@
                         type="button"
                         onclick="clearAllFilters()"
                         class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200">
-                        Reset
+                        {{ __('properties.index.reset') }}
                     </button>
                     <button
                         type="submit"
                         class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center">
                         <i class="fas fa-search mr-2"></i>
-                        Cari Kamar
+                        {{ __('properties.index.search_rooms') }}
                     </button>
                 </div>
             </form>
@@ -138,7 +138,7 @@
         <!-- Loading Indicator -->
         <div id="loadingIndicator" class="hidden text-center py-16">
             <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-teal-600"></div>
-            <p class="mt-4 text-gray-600">Mencari kamar tersedia...</p>
+            <p class="mt-4 text-gray-600">{{ __('properties.index.searching') }}</p>
         </div>
 
         <!-- Results Container -->
@@ -157,6 +157,28 @@
 
     <!-- Scripts -->
     <script>
+        // Translation strings for JavaScript
+        const translations = {
+            no_rooms_available: '{{ __("properties.js.no_rooms_available") }}',
+            no_rooms_for_dates: '{{ __("properties.js.no_rooms_for_dates") }}',
+            no_rooms_match_criteria: '{{ __("properties.js.no_rooms_match_criteria") }}',
+            reset_filter: '{{ __("properties.js.reset_filter") }}',
+            bed: '{{ __("properties.js.bed") }}',
+            view_details: '{{ __("properties.js.view_details") }}',
+            per_day: '{{ __("properties.js.per_day") }}',
+            per_month: '{{ __("properties.js.per_month") }}',
+            daily: '{{ __("properties.js.daily") }}',
+            monthly: '{{ __("properties.js.monthly") }}',
+            daily_rental: '{{ __("properties.index.daily_rental") }}',
+            monthly_rental: '{{ __("properties.index.monthly_rental") }}',
+            properties_available: '{{ __("properties.index.properties_available") }}',
+            rooms_available: '{{ __("properties.index.rooms_available") }}',
+            start_from: '{{ __("properties.index.start_from") }}',
+            error_occurred: '{{ __("properties.index.error_occurred") }}',
+            try_again: '{{ __("properties.index.try_again") }}',
+            available: '{{ __("properties.index.available") }}',
+        };
+
         // Global variables
         let currentPage = 1;
         let currentFilters = {};
@@ -348,10 +370,10 @@
                     <div class="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="max-w-md mx-auto">
                             <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
-                            <h3 class="text-xl font-medium text-gray-700 mb-2">Terjadi Kesalahan</h3>
+                            <h3 class="text-xl font-medium text-gray-700 mb-2">${translations.error_occurred}</h3>
                             <p class="text-gray-500 mb-6">${error.message}</p>
                             <button onclick="searchRooms()" class="inline-flex items-center px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
-                                <i class="fas fa-sync-alt mr-2"></i> Coba Lagi
+                                <i class="fas fa-sync-alt mr-2"></i> ${translations.try_again}
                             </button>
                         </div>
                     </div>
@@ -389,10 +411,10 @@
                     <div class="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="max-w-md mx-auto">
                             <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
-                            <h3 class="text-xl font-medium text-gray-700 mb-2">Terjadi Kesalahan</h3>
+                            <h3 class="text-xl font-medium text-gray-700 mb-2">${translations.error_occurred}</h3>
                             <p class="text-gray-500 mb-6">${error.message}</p>
                             <button onclick="searchRoomsCategorical()" class="inline-flex items-center px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
-                                <i class="fas fa-sync-alt mr-2"></i> Coba Lagi
+                                <i class="fas fa-sync-alt mr-2"></i> ${translations.try_again}
                             </button>
                         </div>
                     </div>
@@ -440,8 +462,8 @@
                                 <i class="fas fa-calendar-day text-white text-xl"></i>
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-800">Sewa Harian</h2>
-                                <p class="text-sm text-gray-600">${dailyProperties.length} properti tersedia</p>
+                                <h2 class="text-2xl font-bold text-gray-800">${translations.daily_rental}</h2>
+                                <p class="text-sm text-gray-600">${dailyProperties.length} ${translations.properties_available}</p>
                             </div>
                         </div>
                         <div class="space-y-6">
@@ -460,8 +482,8 @@
                                 <i class="fas fa-calendar-alt text-white text-xl"></i>
                             </div>
                             <div>
-                                <h2 class="text-2xl font-bold text-gray-800">Sewa Bulanan</h2>
-                                <p class="text-sm text-gray-600">${monthlyProperties.length} properti tersedia</p>
+                                <h2 class="text-2xl font-bold text-gray-800">${translations.monthly_rental}</h2>
+                                <p class="text-sm text-gray-600">${monthlyProperties.length} ${translations.properties_available}</p>
                             </div>
                         </div>
                         <div class="space-y-6">
@@ -575,12 +597,12 @@
                                     <div class="flex items-center gap-4 text-sm text-gray-500">
                                         <span>
                                             <i class="fas fa-door-open mr-1"></i>
-                                            ${property.available_rooms_count} kamar tersedia
+                                            ${property.available_rooms_count} ${translations.rooms_available}
                                         </span>
                                         ${property.lowest_price ? `
                                             <span>
                                                 <i class="fas fa-tag mr-1"></i>
-                                                Mulai dari <strong class="text-teal-600">Rp ${formatRupiah(property.lowest_price)}</strong>/${periodLabel}
+                                                ${translations.start_from} <strong class="text-teal-600">Rp ${formatRupiah(property.lowest_price)}</strong>/${periodLabel}
                                             </span>
                                         ` : ''}
                                     </div>
@@ -680,7 +702,7 @@
                                         <!-- Room Details -->
                                         <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
                                             ${room.bed_count ? `
-                                                <span><i class="fas fa-bed mr-1"></i>${room.bed_count} kasur</span>
+                                                <span><i class="fas fa-bed mr-1"></i>${room.bed_count} ${translations.bed}</span>
                                             ` : ''}
                                             ${room.room_size ? `
                                                 <span><i class="fas fa-expand-arrows-alt mr-1"></i>${room.room_size}m²</span>
@@ -698,7 +720,7 @@
                                                 </div>
                                             </div>
                                             <a href="${roomRoute}" class="room-link bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors duration-200 flex items-center">
-                                                Lihat Detail
+                                                ${translations.view_details}
                                                 <i class="fas fa-arrow-right ml-2 text-sm"></i>
                                             </a>
                                         </div>
@@ -770,7 +792,7 @@
                                 </div>
                             </div>
                             <a href="${roomRoute}" class="room-link text-teal-600 hover:text-teal-700 text-sm font-medium">
-                                Lihat <i class="fas fa-arrow-right text-xs ml-1"></i>
+                                ${translations.view_details} <i class="fas fa-arrow-right text-xs ml-1"></i>
                             </a>
                         </div>
                     </div>
@@ -789,15 +811,15 @@
                         <div class="w-20 h-20 mx-auto mb-4 text-gray-300">
                             <i class="fas fa-search text-5xl"></i>
                         </div>
-                        <h3 class="text-xl font-medium text-gray-700 mb-2">Tidak ada kamar tersedia</h3>
+                        <h3 class="text-xl font-medium text-gray-700 mb-2">${translations.no_rooms_available}</h3>
                         <p class="text-gray-500 mb-6">
                             ${hasDateFilter
-                                ? 'Tidak ada kamar tersedia untuk tanggal yang dipilih. Coba ubah tanggal check-in atau check-out.'
-                                : 'Tidak ada kamar yang sesuai dengan kriteria pencarian Anda. Coba ubah filter pencarian.'}
+                                ? translations.no_rooms_for_dates
+                                : translations.no_rooms_match_criteria}
                         </p>
                         <button onclick="clearAllFilters()" class="inline-flex items-center px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm font-medium transition-colors duration-200">
                             <i class="fas fa-sync-alt mr-2"></i>
-                            Reset Filter
+                            ${translations.reset_filter}
                         </button>
                     </div>
                 </div>
@@ -886,7 +908,7 @@
             if (currentFilters.period && currentFilters.period !== 'monthly') {
                 badges += `
                     <span class="bg-green-100 text-green-800 text-xs font-medium px-3 py-1.5 rounded-full flex items-center">
-                        ${currentFilters.period === 'daily' ? 'Harian' : 'Bulanan'}
+                        ${currentFilters.period === 'daily' ? translations.daily : translations.monthly}
                         <button onclick="removeFilter('period')" class="ml-1.5 text-green-600 hover:text-green-800">
                             <i class="fas fa-times text-xs"></i>
                         </button>
