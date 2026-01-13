@@ -15,8 +15,10 @@ use App\Http\Controllers\Api\DokuServiceController as DokuController;
 use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\VoucherAdminController;
 use App\Http\Controllers\Api\SearchController;
+use App\Http\Controllers\Api\ChatController;
 
 use App\Http\Middleware\VerifyApiKey;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -163,6 +165,21 @@ Route::prefix('v1')->group(function () {
         // SEARCH API ROUTES
         Route::prefix('search')->group(function () {
             Route::get('/rooms', [SearchController::class, 'searchRooms'])->name('api.search.rooms');
+        });
+
+        // CHAT API ROUTES
+        Route::prefix('chat')->group(function () {
+            // User routes
+            Route::get('/conversations', [ChatController::class, 'listConversations']);
+            Route::get('/conversations/{id}', [ChatController::class, 'getConversation']);
+            Route::post('/conversations', [ChatController::class, 'createConversation']);
+            Route::post('/conversations/{id}/messages', [ChatController::class, 'sendMessage']);
+            Route::post('/conversations/{id}/read', [ChatController::class, 'markAsRead']);
+            Route::put('/messages/{id}', [ChatController::class, 'editMessage']);
+
+            // Admin routes - these methods handle authorization internally
+            Route::get('/admin/conversations', [ChatController::class, 'adminListConversations']);
+            Route::post('/conversations/{id}/participants', [ChatController::class, 'assignParticipant']);
         });
 
         // COMMENTED FOR REVIEW

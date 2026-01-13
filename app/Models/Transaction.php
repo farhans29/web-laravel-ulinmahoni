@@ -147,4 +147,9 @@ class Transaction extends Model
 
         return null;
     }
+
+    public function chatConversations()
+    {
+        return $this->hasMany(ChatConversation::class, 'order_id', 'order_id');
+    }
 }
