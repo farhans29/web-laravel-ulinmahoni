@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\VoucherController;
 use App\Http\Controllers\Api\VoucherAdminController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\PromoBannerController;
 
 use App\Http\Middleware\VerifyApiKey;
 use Illuminate\Support\Facades\Auth;
@@ -180,6 +181,17 @@ Route::prefix('v1')->group(function () {
             // Admin routes - these methods handle authorization internally
             Route::get('/admin/conversations', [ChatController::class, 'adminListConversations']);
             Route::post('/conversations/{id}/participants', [ChatController::class, 'assignParticipant']);
+        });
+
+        // PROMO BANNER API ROUTES
+        // Use ?id= query param to get single banner
+        Route::prefix('promo-banner')->group(function () {
+            Route::get('/', [PromoBannerController::class, 'index']);
+            Route::post('/', [PromoBannerController::class, 'store']);
+            Route::put('/{id}', [PromoBannerController::class, 'update']);
+            Route::delete('/{id}', [PromoBannerController::class, 'destroy']);
+            Route::post('/{id}/images', [PromoBannerController::class, 'addImages']);
+            Route::delete('/{id}/images/{imageId}', [PromoBannerController::class, 'removeImage']);
         });
 
         // COMMENTED FOR REVIEW
