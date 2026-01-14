@@ -112,7 +112,7 @@ class BookingController extends ApiController
     public function index(Request $request)
     {
         // Auto-expire pending bookings when user accesses their bookings
-        $this->checkAndExpireBookings();
+        // $this->checkAndExpireBookings();
 
         try {
             $query = Transaction::query();

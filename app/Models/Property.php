@@ -293,5 +293,9 @@ class Property extends Model
             return [];
         }
     }
-    
+
+    public function chatConversations()
+    {
+        return $this->hasMany(ChatConversation::class, 'property_id', 'idrec');
+    }
 } 

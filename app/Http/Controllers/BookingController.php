@@ -514,7 +514,7 @@ class BookingController extends Controller
     public function index()
     {
         // Auto-expire pending bookings when user accesses their bookings
-        $this->checkAndExpireBookings();
+        // $this->checkAndExpireBookings();
 
         $tab = request()->get('tab', 'all');
         $userId = Auth::id();
