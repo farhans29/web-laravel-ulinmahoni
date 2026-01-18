@@ -62,13 +62,8 @@ class SetLocale
             }
         }
 
-        // 4. Check browser Accept-Language header
-        $browserLocale = $request->getPreferredLanguage(['id', 'en']);
-        if ($browserLocale) {
-            return $browserLocale;
-        }
-
-        // 5. Default to Indonesian (since most content is Indonesian)
+        // 4. Default to Indonesian (since most content is Indonesian)
+        // Note: Browser Accept-Language detection removed to ensure consistent default
         return 'id';
     }
 }
