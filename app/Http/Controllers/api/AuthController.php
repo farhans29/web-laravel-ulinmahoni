@@ -86,6 +86,70 @@ class AuthController extends Controller
         }
     }
 
+    public function registerWithoutVerification(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone_number' => ['nullable', 'string', 'max:20', 'unique:users'],
+            'password' => ['required', 'string', new Password],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $user = User::create([
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'name' => $request->username,
+                'username' => $request->username,
+                'email' => $request->email,
+                'phone_number' => $request->phone_number ?? null,
+                'password' => Hash::make($request->password),
+                'status' => 1,
+                'is_admin' => 0,
+                'email_verified_at' => now(),
+            ]);
+
+            // Create token for immediate login
+            $token = $user->createToken('auth-token')->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Registration successful.',
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'username' => $user->username,
+                        'email' => $user->email,
+                        'first_name' => $user->first_name,
+                        'last_name' => $user->last_name,
+                        'status' => $user->status,
+                        'is_admin' => $user->is_admin,
+                        'profile_photo_url' => $user->profile_photo_url,
+                        'email_verified_at' => $user->email_verified_at,
+                    ],
+                    'token' => $token,
+                    'requires_email_verification' => false
+                ]
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Registration failed',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
