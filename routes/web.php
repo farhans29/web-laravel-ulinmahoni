@@ -147,8 +147,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Route::redirect('/', 'login');
-// Homepage redirect to default locale
-Route::redirect('/', '/id/homepage');
+// Homepage - serve directly at root URL for clean URLs
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // ========================================
 // Localized Routes Group
@@ -334,8 +334,8 @@ Route::get('/attachments/{id}', [BookingController::class, 'viewAttachment'])
     ->name('attachments.view')
     ->middleware('signed');
 
-// Default Homepage (redirect to Indonesian locale)
-Route::redirect('/homepage', '/id/homepage')->name('homepage');
+// Default Homepage (redirect to root for clean URL)
+Route::redirect('/homepage', '/')->name('homepage');
 
 // Default routes (redirect to Indonesian locale)
 Route::redirect('/sewa', '/id/sewa');

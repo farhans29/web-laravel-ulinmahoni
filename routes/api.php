@@ -48,6 +48,7 @@ Route::prefix('v1')->group(function () {
     
     // AUTH ROUTES WITHOUT PREFIX AUTH
     Route::post('register', [AuthController::class, 'register']);
+    Route::post('register-without-verification', [AuthController::class, 'registerWithoutVerification']);
     Route::post('login', [AuthController::class, 'login']);
     Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
@@ -62,6 +63,7 @@ Route::prefix('v1')->group(function () {
 
         // Public authentication endpoints
         Route::post('register', [AuthController::class, 'register']);
+        Route::post('register-without-verification', [AuthController::class, 'registerWithoutVerification']);
         Route::post('login', [AuthController::class, 'login']);
         Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('reset-password', [AuthController::class, 'resetPassword']);
