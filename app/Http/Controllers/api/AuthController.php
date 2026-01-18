@@ -116,8 +116,10 @@ class AuthController extends Controller
                 'password' => Hash::make($request->password),
                 'status' => 1,
                 'is_admin' => 0,
-                'email_verified_at' => now(),
             ]);
+
+            // Mark email as verified immediately (no email verification required for API registration)
+            $user->markEmailAsVerified();
 
             // Create token for immediate login
             $token = $user->createToken('auth-token')->plainTextToken;
