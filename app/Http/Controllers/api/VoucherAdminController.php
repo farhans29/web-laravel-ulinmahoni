@@ -28,6 +28,7 @@ class VoucherAdminController extends ApiController
         $validator = Validator::make($request->all(), [
             'status' => 'nullable|in:active,inactive,expired',
             'scope_type' => 'nullable|in:global,property,room',
+            'property_id' => 'nullable|integer',
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date|after_or_equal:date_from',
             'search' => 'nullable|string|max:255',
@@ -39,7 +40,7 @@ class VoucherAdminController extends ApiController
             return $this->respondBadRequest('Validation failed', $validator->errors());
         }
 
-        $query = Voucher::query();
+        $query = Voucher::with('property');
 
         // Apply filters
         if ($request->has('status')) {
@@ -48,6 +49,11 @@ class VoucherAdminController extends ApiController
 
         if ($request->has('scope_type')) {
             $query->where('scope_type', $request->scope_type);
+        }
+
+        // Filter by property_id (works with scope_type = property)
+        if ($request->has('property_id')) {
+            $query->where('property_id', $request->property_id);
         }
 
         if ($request->has('date_from')) {
@@ -141,6 +147,7 @@ class VoucherAdminController extends ApiController
             'scope_type' => 'required|in:global,property,room',
             'scope_ids' => 'nullable|array',
             'scope_ids.*' => 'integer',
+            'property_id' => 'nullable|integer|exists:m_properties,idrec',
             'status' => 'nullable|in:active,inactive',
             'created_by' => 'required|integer|exists:users,id'
         ]);
@@ -172,6 +179,7 @@ class VoucherAdminController extends ApiController
                 'min_transaction_amount' => $request->min_transaction_amount ?? 0,
                 'scope_type' => $request->scope_type,
                 'scope_ids' => $request->scope_ids,
+                'property_id' => $request->property_id ?? null,  // NULL or 0 = global, otherwise bound to property
                 'status' => $request->status ?? 'active',
                 'created_by' => $request->created_by,
                 'updated_by' => $request->created_by
@@ -218,6 +226,7 @@ class VoucherAdminController extends ApiController
             'scope_type' => 'nullable|in:global,property,room',
             'scope_ids' => 'nullable|array',
             'scope_ids.*' => 'integer',
+            'property_id' => 'nullable|integer',
             'status' => 'nullable|in:active,inactive,expired',
             'updated_by' => 'required|integer|exists:users,id'
         ]);
@@ -242,6 +251,7 @@ class VoucherAdminController extends ApiController
                 'min_transaction_amount',
                 'scope_type',
                 'scope_ids',
+                'property_id',
                 'status'
             ]);
 

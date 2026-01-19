@@ -100,10 +100,24 @@ class VoucherService
             $errors[] = 'You have already used this voucher the maximum number of times';
         }
 
-        // Check property/room scope restrictions
-        if ($voucher->scope_type === 'property' && $propertyId) {
+        // Check if voucher is bound to a specific property via property_id column
+        // property_id = 0 or NULL means global (can be used at any property)
+        $propertyValidated = false;
+        if (!empty($voucher->property_id) && $voucher->property_id != 0) {
+            // Voucher is bound to a specific property - property_id is REQUIRED in request
+            if (!$propertyId) {
+                $errors[] = 'This voucher requires a property_id to be specified';
+            } elseif ($voucher->property_id != $propertyId) {
+                $errors[] = 'This voucher is not valid for the selected property';
+            }
+            $propertyValidated = true;  // Property was validated via property_id column
+        }
+
+        // Check property/room scope restrictions (legacy scope_type/scope_ids)
+        // Only check scope_ids if property was NOT already validated via property_id
+        if (!$propertyValidated && $voucher->scope_type === 'property' && $propertyId) {
             $scopeIds = $voucher->scope_ids ?? [];
-            if (!in_array($propertyId, $scopeIds)) {
+            if (!empty($scopeIds) && !in_array($propertyId, $scopeIds)) {
                 $errors[] = 'This voucher is not valid for the selected property';
             }
         }
