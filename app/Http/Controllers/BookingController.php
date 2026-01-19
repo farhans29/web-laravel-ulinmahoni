@@ -471,6 +471,12 @@ class BookingController extends Controller
                         // Increment usage count
                         $voucher->increment('current_usage_count');
 
+                        // Calculate amounts for logging
+                        // Original amount is the grandtotal BEFORE discount was applied
+                        $originalAmount = $booking->grandtotal_price; // This is still the old value (before DB update above)
+                        $discountAmount = $request->discount_amount;
+                        $finalAmount = $originalAmount - $discountAmount;
+
                         // Log usage
                         $voucherService->logUsage([
                             'voucher_id' => $voucher->idrec,
@@ -480,9 +486,9 @@ class BookingController extends Controller
                             'transaction_id' => $booking->idrec,
                             'property_id' => $booking->property_id,
                             'room_id' => $booking->room_id,
-                            'original_amount' => $booking->grandtotal_price + $request->discount_amount,
-                            'discount_amount' => $request->discount_amount,
-                            'final_amount' => $booking->grandtotal_price
+                            'original_amount' => $originalAmount,
+                            'discount_amount' => $discountAmount,
+                            'final_amount' => $finalAmount
                         ]);
                     }
                 } catch (\Exception $e) {
