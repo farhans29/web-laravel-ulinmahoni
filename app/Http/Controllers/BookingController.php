@@ -753,6 +753,7 @@ class BookingController extends Controller
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'room_name' => $room->name,
+                'booking_type' => $request->booking_type,
                 'booking_days' => $bookingDays,
                 'booking_months' => $bookingMonths,
                 'daily_price' => $request->rent_type === 'daily' ? $price : null,
