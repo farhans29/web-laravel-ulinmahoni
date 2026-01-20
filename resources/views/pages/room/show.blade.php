@@ -255,8 +255,8 @@
                             <div class="text-right">
                                 <!-- Room Status -->
                                 <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
-                                    {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $room['status'] == 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
+                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
                                 </span>
 
                                 <!-- Availability Status -->
@@ -548,9 +548,9 @@
                                 @else
                                     <button type="button" id="checkAvailabilityButton"
                                         onclick="checkRoomAvailability()"
-                                        class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
-                                        {{ $room['status'] == 0 ? 'disabled' : '' }}>
-                                        {{ $room['status'] == 1 ? __('properties.booking.check_availability') : __('properties.booking.room_unavailable') }}
+                                        class="w-full {{ $room['status'] == 0 || $room['rental_status'] == 1 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 || $room['rental_status'] == 1 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
+                                        {{ $room['status'] == 0 || $room['rental_status'] == 1 ? 'disabled' : '' }}>
+                                        {{ $room['status'] == 1 && $room['rental_status'] != 1 ? __('properties.booking.check_availability') : __('properties.booking.room_unavailable') }}
                                     </button>
                                     <button type="submit" id="submitButton"
                                         class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium hidden">
