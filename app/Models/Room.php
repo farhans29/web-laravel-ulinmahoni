@@ -26,6 +26,7 @@ class Room extends Model
         'periode_daily',
         'periode_monthly',
         'status',
+        'rental_status',
         'created_by',
         'updated_by',
         'price',

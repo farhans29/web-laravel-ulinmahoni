@@ -38,7 +38,8 @@ class RoomController extends Controller {
                         'daily' => false,
                         'monthly' => false
                     ]),
-                    'status' => $room->status
+                    'status' => $room->status,
+                    'rental_status' => $room->rental_status
                 ];
             });
 
@@ -83,6 +84,7 @@ class RoomController extends Controller {
                     'full_address' => $property->address ?? null
                 ],
                 'status' => $property->status ?? null,
+                // 'rental_status' => $property->rental_status ?? null,
                 'rooms' => $formattedRooms ?? []
             ];
 
@@ -266,7 +268,8 @@ class RoomController extends Controller {
                 'updated_at' => $room->updated_at,
                 'created_by' => $room->created_by,
                 'updated_by' => $room->updated_by,
-                'status' => $room->status
+                'status' => $room->status,
+                'rental_status' => $room->rental_status
             ];
 
             return view('pages.room.show', [

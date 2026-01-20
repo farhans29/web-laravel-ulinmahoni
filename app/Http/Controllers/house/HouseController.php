@@ -308,7 +308,8 @@ class HouseController extends Controller {
                 'price_original_monthly' => $room->price_original_monthly,
                 'price_discounted_daily' => $room->price_discounted_daily,
                 'price_discounted_monthly' => $room->price_discounted_monthly,
-                'status' => $room->status
+                'status' => $room->status,
+                'rental_status'=>$room->rental_status
             ];
         })->toArray();
     }
