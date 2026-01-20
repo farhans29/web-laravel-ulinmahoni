@@ -1038,12 +1038,12 @@ class BookingController extends ApiController
             }
 
             // Check if transaction_type is already set
-            if (!is_null($booking->transaction_type)) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Payment method has already been set and cannot be changed'
-                ], 400);
-            }
+            // if (!is_null($booking->transaction_type)) {
+            //     return response()->json([
+            //         'status' => 'error',
+            //         'message' => 'Payment method has already been set and cannot be changed'
+            //     ], 400);
+            // }
 
             // Update payment method
             $updated = DB::table('t_transactions')
@@ -1051,7 +1051,7 @@ class BookingController extends ApiController
                 ->whereNull('transaction_type') // Additional safety check
                 ->update([
                     'transaction_type' => $request->payment_method,
-                    'transaction_status' => 'waiting',
+                    // 'transaction_status' => 'waiting',
                     'paid_at' => null,
                     'updated_at' => now()
                 ]);
