@@ -1048,7 +1048,7 @@ class BookingController extends ApiController
             // Update payment method
             $updated = DB::table('t_transactions')
                 ->where('idrec', $id)
-                ->whereNull('transaction_type') // Additional safety check
+                // ->whereNull('transaction_type') // Additional safety check
                 ->update([
                     'transaction_type' => $request->payment_method,
                     // 'transaction_status' => 'waiting',
