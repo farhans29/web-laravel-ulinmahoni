@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Auth\Notifications\VerifyEmail as BaseVerifyEmail;
 
@@ -60,7 +61,7 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
             'Accept' => 'application/json',
         ])->post(env('MAIL_HOST'), [
             'from' => [
-                'email' => 'noreply@ulinmahoni.com',
+                'email' => 'no-reply@ulinmahoni.com',
                 'name' => 'Ulinmahoni - Account Registration'
             ],
             'to' => [
@@ -84,5 +85,50 @@ class VerifyEmailNotification extends BaseVerifyEmail implements ShouldQueue
         return (new \Illuminate\Notifications\Messages\MailMessage)
             ->line('Please verify your email address by clicking the button below.')
             ->action('Verify Email Address', $verificationUrl);
+    }
+
+    /**
+     * Send verification email via SMTP
+     *
+     * @param  mixed  $notifiable
+     * @return bool
+     */
+    public function sendViaSMTP($notifiable)
+    {
+        try {
+            $verificationUrl = $this->verificationUrl($notifiable);
+
+            // Configure SMTP mailer with custom env variables
+            config([
+                'mail.mailers.smtp.host' => env('SMTP_MAIL_HOST'),
+                'mail.mailers.smtp.port' => env('SMTP_MAIL_PORT', 587),
+                'mail.mailers.smtp.username' => env('SMTP_MAIL_USERNAME'),
+                'mail.mailers.smtp.password' => env('SMTP_MAIL_PASSWORD'),
+            ]);
+
+            Mail::mailer('smtp')->send('emails.verify-email', [
+                'user' => $notifiable,
+                'verificationUrl' => $verificationUrl
+            ], function ($message) use ($notifiable) {
+                $message->to($notifiable->getEmailForVerification())
+                    ->from(env('SMTP_MAIL_USERNAME', 'no-reply@ulinmahoni.com'), 'Ulinmahoni - Account Registration')
+                    ->subject('Ulinmahoni - Account Registration');
+            });
+
+            Log::info('Verification email sent via SMTP', [
+                'user_id' => $notifiable->getKey(),
+                'email' => $notifiable->getEmailForVerification()
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send verification email via SMTP', [
+                'user_id' => $notifiable->getKey(),
+                'email' => $notifiable->getEmailForVerification(),
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
     }
 }

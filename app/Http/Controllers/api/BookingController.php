@@ -500,7 +500,7 @@ class BookingController extends ApiController
             $property = $request->property_id ? Property::find($request->property_id) : null;
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'UMA-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
             // Set expiration time to 1 hour from now
             $expiredAt = now()->addHour();
@@ -1091,20 +1091,31 @@ class BookingController extends ApiController
     public function sendEmailBooking($user, $bookingData, $transactionData, $paymentUrl = null)
     {
         try {
-            $user->notify(new BookingConfirmationNotification(
+            $notification = new BookingConfirmationNotification(
                 $bookingData,
                 $transactionData,
                 $paymentUrl
-            ));
+            );
 
-            Log::info('Booking confirmation email queued', [
-                'order_id' => $transactionData['order_id'] ?? null,
-                'user_id' => $user->id,
-                'user_email' => $user->email
-            ]);
+            // Use SMTP to send email directly
+            $result = $notification->sendViaSMTP($user);
+
+            if ($result) {
+                Log::info('Booking confirmation email sent via SMTP', [
+                    'order_id' => $transactionData['order_id'] ?? null,
+                    'user_id' => $user->id,
+                    'user_email' => $user->email
+                ]);
+            } else {
+                Log::warning('Booking confirmation email via SMTP returned false', [
+                    'order_id' => $transactionData['order_id'] ?? null,
+                    'user_id' => $user->id,
+                    'user_email' => $user->email
+                ]);
+            }
         } catch (\Exception $e) {
             // Log error but don't fail the booking
-            Log::error('Failed to send booking confirmation email', [
+            Log::error('Failed to send booking confirmation email via SMTP', [
                 'order_id' => $transactionData['order_id'] ?? null,
                 'user_id' => $user->id,
                 'user_email' => $user->email,
