@@ -1014,7 +1014,9 @@ class BookingController extends ApiController
         try {
             // Validate request
             $validator = Validator::make($request->all(), [
-                'payment_method' => 'required'
+                'payment_method' => 'required',
+                'virtual_account_no' => 'nullable|string',
+                'bank' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -1045,16 +1047,27 @@ class BookingController extends ApiController
             //     ], 400);
             // }
 
+            // Prepare update data
+            $updateData = [
+                'transaction_type' => $request->payment_method,
+                'paid_at' => null,
+                'updated_at' => now()
+            ];
+
+            // Add virtual account number if provided
+            if ($request->has('virtual_account_no')) {
+                $updateData['virtual_account_no'] = $request->virtual_account_no;
+            }
+
+            // Add bank if provided
+            if ($request->has('bank')) {
+                $updateData['payment_bank'] = $request->bank;
+            }
+
             // Update payment method
             $updated = DB::table('t_transactions')
                 ->where('idrec', $id)
-                // ->whereNull('transaction_type') // Additional safety check
-                ->update([
-                    'transaction_type' => $request->payment_method,
-                    // 'transaction_status' => 'waiting',
-                    'paid_at' => null,
-                    'updated_at' => now()
-                ]);
+                ->update($updateData);
 
             if (!$updated) {
                 throw new \Exception('Failed to update payment method. It may have already been set.');
