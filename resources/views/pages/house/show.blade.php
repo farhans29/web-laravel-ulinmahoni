@@ -688,10 +688,16 @@
                                                     </ul>
                                                 </div>
 
-                                                @if($room['status'] === 1)
+                                                @if($room['status'] === 1 && $room['rental_status'] !== 1)
                                                     <div class="flex items-center justify-between mt-4">
                                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                             {{ __('properties.status.available') }}
+                                                        </span>
+                                                    </div>
+                                                @else
+                                                    <div class="flex items-center justify-between mt-4">
+                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                            {{ __('properties.status.unavailable') }}
                                                         </span>
                                                     </div>
                                                 @endif
