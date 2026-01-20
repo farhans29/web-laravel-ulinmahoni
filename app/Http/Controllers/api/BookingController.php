@@ -1016,7 +1016,7 @@ class BookingController extends ApiController
             $validator = Validator::make($request->all(), [
                 'payment_method' => 'required',
                 'virtual_account_no' => 'nullable|string',
-                'bank' => 'nullable|string'
+                'payment_bank' => 'nullable|string'
             ]);
 
             if ($validator->fails()) {
@@ -1060,8 +1060,8 @@ class BookingController extends ApiController
             }
 
             // Add bank if provided
-            if ($request->has('bank')) {
-                $updateData['payment_bank'] = $request->bank;
+            if ($request->has('payment_bank')) {
+                $updateData['payment_bank'] = $request->payment_bank;
             }
 
             // Update payment method
