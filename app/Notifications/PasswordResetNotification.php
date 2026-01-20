@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Notifications\Notification;
 
 class PasswordResetNotification extends Notification implements ShouldQueue
@@ -101,5 +102,53 @@ class PasswordResetNotification extends Notification implements ShouldQueue
             ->line('You are receiving this email because we received a password reset request for your account.')
             ->action('Reset Password', $resetUrl)
             ->line('If you did not request a password reset, no further action is required.');
+    }
+
+    /**
+     * Send password reset email via SMTP
+     *
+     * @param  mixed  $notifiable
+     * @return bool
+     */
+    public function sendViaSMTP($notifiable)
+    {
+        try {
+            // Generate reset URL (use frontend_url if set, otherwise use app.url)
+            $baseUrl = config('app.frontend_url', config('app.url'));
+            $resetUrl = $baseUrl . '/reset-password?token=' . $this->token . '&email=' . urlencode($notifiable->email);
+
+            // Configure SMTP mailer with custom env variables
+            config([
+                'mail.mailers.smtp.host' => env('SMTP_MAIL_HOST'),
+                'mail.mailers.smtp.port' => env('SMTP_MAIL_PORT', 587),
+                'mail.mailers.smtp.username' => env('SMTP_MAIL_USERNAME'),
+                'mail.mailers.smtp.password' => env('SMTP_MAIL_PASSWORD'),
+            ]);
+
+            Mail::mailer('smtp')->send('emails.password-reset', [
+                'user' => $notifiable,
+                'resetUrl' => $resetUrl,
+                'token' => $this->token
+            ], function ($message) use ($notifiable) {
+                $message->to($notifiable->email)
+                    ->from(env('SMTP_MAIL_USERNAME', 'noreply@ulinmahoni.com'), 'Ulinmahoni - Password Reset')
+                    ->subject('Reset Your Password - Ulinmahoni');
+            });
+
+            Log::info('Password reset email sent via SMTP', [
+                'user_id' => $notifiable->id,
+                'email' => $notifiable->email
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send password reset email via SMTP', [
+                'user_id' => $notifiable->id,
+                'email' => $notifiable->email,
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
     }
 }

@@ -546,16 +546,24 @@
                                     </button>
                                     <p class="text-sm text-gray-500 text-center mt-2">{{ __('properties.booking.please_login') }}</p>
                                 @else
-                                    <button type="button" id="checkAvailabilityButton"
-                                        onclick="checkRoomAvailability()"
-                                        class="w-full {{ $room['status'] == 0 || $room['rental_status'] == 1 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 || $room['rental_status'] == 1 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
-                                        {{ $room['status'] == 0 || $room['rental_status'] == 1 ? 'disabled' : '' }}>
-                                        {{ $room['status'] == 1 && $room['rental_status'] != 1 ? __('properties.booking.check_availability') : __('properties.booking.room_unavailable') }}
-                                    </button>
-                                    <button type="submit" id="submitButton"
-                                        class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium hidden">
-                                        {{ __('properties.booking.book_now') }}
-                                    </button>
+                                    @if($room['rental_status'] == 1)
+                                        <button type="button" id="checkAvailabilityButton"
+                                            class="w-full bg-gray-400 text-white py-4 px-6 rounded-lg text-lg font-medium cursor-not-allowed"
+                                            disabled>
+                                            {{ __('properties.booking.room_unavailable') }}
+                                        </button>
+                                    @else
+                                        <button type="button" id="checkAvailabilityButton"
+                                            onclick="checkRoomAvailability()"
+                                            class="w-full {{ $room['status'] == 0 ? 'bg-gray-400' : 'bg-teal-600' }} text-white py-4 px-6 rounded-lg {{ $room['status'] == 0 ? '' : 'hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200' }} text-lg font-medium"
+                                            {{ $room['status'] == 0 ? 'disabled' : '' }}>
+                                            {{ $room['status'] == 1 ? __('properties.booking.check_availability') : __('properties.booking.room_unavailable') }}
+                                        </button>
+                                        <button type="submit" id="submitButton"
+                                            class="w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium hidden">
+                                            {{ __('properties.booking.book_now') }}
+                                        </button>
+                                    @endif
                                     <div id="unavailableMessage" class="hidden mt-2 text-sm text-red-600">
                                         <p><i class="fas fa-exclamation-triangle mr-1"></i>{{ __('properties.booking.room_unavailable_dates') }}</p>
                                     </div>
