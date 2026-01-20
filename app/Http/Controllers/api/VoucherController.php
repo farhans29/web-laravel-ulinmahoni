@@ -162,13 +162,19 @@ class VoucherController extends ApiController
 
         $query = Voucher::available();
 
-        // Filter by scope
+        // Filter by property_id (new column - voucher bound to specific property)
+        if ($request->has('property_id')) {
+            $query->forProperty($request->property_id);
+        }
+
+        // Filter by scope (legacy scope_type/scope_ids)
         if ($request->has('property_id')) {
             $query->where(function($q) use ($request) {
                 $q->where('scope_type', 'global')
+                  ->orWhereNull('scope_type')
                   ->orWhere(function($sq) use ($request) {
                       $sq->where('scope_type', 'property')
-                         ->whereJsonContains('scope_ids', $request->property_id);
+                         ->whereJsonContains('scope_ids', (int) $request->property_id);
                   });
             });
         }
@@ -176,14 +182,15 @@ class VoucherController extends ApiController
         if ($request->has('room_id')) {
             $query->where(function($q) use ($request) {
                 $q->where('scope_type', 'global')
+                  ->orWhereNull('scope_type')
                   ->orWhere(function($sq) use ($request) {
                       $sq->where('scope_type', 'room')
-                         ->whereJsonContains('scope_ids', $request->room_id);
+                         ->whereJsonContains('scope_ids', (int) $request->room_id);
                   });
             });
         }
 
-        $vouchers = $query->orderBy('discount_percentage', 'desc')->get();
+        $vouchers = $query->with('property')->orderBy('discount_percentage', 'desc')->get();
 
         return response()->json([
             'status' => 'success',

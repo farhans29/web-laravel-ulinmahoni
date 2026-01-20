@@ -28,6 +28,7 @@ class Voucher extends Model
         'min_transaction_amount',
         'scope_type',
         'scope_ids',
+        'property_id',
         'status',
         'created_by',
         'updated_by'
@@ -77,6 +78,11 @@ class Voucher extends Model
         return $this->belongsTo(User::class, 'updated_by', 'id');
     }
 
+    public function property()
+    {
+        return $this->belongsTo(Property::class, 'property_id', 'idrec');
+    }
+
     public function properties()
     {
         return $this->belongsToMany(Property::class, 'm_voucher_properties', 'voucher_id', 'property_id', 'idrec', 'idrec');
@@ -113,6 +119,15 @@ class Voucher extends Model
     public function scopeByCode($query, $code)
     {
         return $query->where('code', strtoupper($code));
+    }
+
+    public function scopeForProperty($query, $propertyId)
+    {
+        return $query->where(function ($q) use ($propertyId) {
+            $q->whereNull('property_id')  // Global vouchers (NULL = all properties)
+              ->orWhere('property_id', 0)  // Global vouchers (0 = all properties)
+              ->orWhere('property_id', $propertyId);  // Property-specific vouchers
+        });
     }
 
     // Accessors

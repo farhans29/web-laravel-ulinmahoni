@@ -323,6 +323,7 @@
                             <input type="hidden" name="price_daily" id="priceDaily" value="{{ $room['price_original_daily'] }}">
                             <input type="hidden" name="price_monthly" id="priceMonthly" value="{{ $room['price_original_monthly'] }}">
                             <input type="hidden" name="service_fees" id="serviceFees" value="{{ $room['service_fees'] }}">
+                            <input type="hidden" name="booking_type" id="bookingType" value="">
                             {{-- <input type="hidden" name="tax_fees" id="taxFees" value="{{ $room['tax_fees'] ?? 0 }}"> --}}
                             <!-- Rental Type -->
                             <div class="mb-6">
@@ -1066,6 +1067,12 @@
                 const dailyRateDisplay = document.getElementById('dailyRateDisplay');
                 const monthlyRateDisplay = document.getElementById('monthlyRateDisplay');
                 const rateTypeDisplay = document.getElementById('rateTypeDisplay');
+                const bookingTypeInput = document.getElementById('bookingType');
+
+                // Update booking_type based on rental selection
+                if (bookingTypeInput) {
+                    bookingTypeInput.value = rentTypeSelect.value;
+                }
 
                 if (rentTypeSelect.value === 'monthly') {
                     // Show monthly component, hide daily component

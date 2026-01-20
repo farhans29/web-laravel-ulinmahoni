@@ -493,7 +493,12 @@
                 const data = await response.json();
 
                 if (!response.ok || data.status !== 'success') {
-                    throw new Error(data.message || 'Voucher tidak valid');
+                    // Handle specific validation errors from the API
+                    let errorMessage = data.message || 'Voucher tidak valid';
+                    if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+                        errorMessage = data.errors.join(', ');
+                    }
+                    throw new Error(errorMessage);
                 }
 
                 // Apply voucher

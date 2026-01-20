@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Notifications\Notification;
 
 class BookingConfirmationNotification extends Notification implements ShouldQueue
@@ -68,7 +69,7 @@ class BookingConfirmationNotification extends Notification implements ShouldQueu
                 'Accept' => 'application/json',
             ])->post('https://send.api.mailtrap.io/api/send', [
                 'from' => [
-                    'email' => 'noreply@ulinmahoni.com',
+                    'email' => 'no-reply@ulinmahoni.com',
                     'name' => 'Ulinmahoni - Booking Confirmation'
                 ],
                 'to' => [
@@ -137,5 +138,52 @@ class BookingConfirmationNotification extends Notification implements ShouldQueu
         $message .= "Best regards,\nThe Ulinmahoni Team";
 
         return $message;
+    }
+
+    /**
+     * Send booking confirmation email via SMTP
+     *
+     * @param mixed $notifiable
+     * @return bool
+     */
+    public function sendViaSMTP($notifiable)
+    {
+        try {
+            // Configure SMTP mailer with custom env variables
+            config([
+                'mail.mailers.smtp.host' => env('SMTP_MAIL_HOST'),
+                'mail.mailers.smtp.port' => env('SMTP_MAIL_PORT', 587),
+                'mail.mailers.smtp.username' => env('SMTP_MAIL_USERNAME'),
+                'mail.mailers.smtp.password' => env('SMTP_MAIL_PASSWORD'),
+            ]);
+
+            Mail::mailer('smtp')->send('emails.booking-confirmation', [
+                'user' => $notifiable,
+                'booking' => $this->booking,
+                'transaction' => $this->transaction,
+                'paymentUrl' => $this->paymentUrl
+            ], function ($message) use ($notifiable) {
+                $message->to($notifiable->email)
+                    ->from(env('SMTP_MAIL_USERNAME', 'no-reply@ulinmahoni.com'), 'Ulinmahoni - Booking Confirmation')
+                    ->subject('Booking Confirmation - Order #' . $this->transaction['order_id']);
+            });
+
+            Log::info('Booking confirmation email sent via SMTP', [
+                'user_id' => $notifiable->id,
+                'email' => $notifiable->email,
+                'order_id' => $this->transaction['order_id']
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to send booking confirmation email via SMTP', [
+                'user_id' => $notifiable->id,
+                'email' => $notifiable->email,
+                'order_id' => $this->transaction['order_id'],
+                'error' => $e->getMessage()
+            ]);
+
+            return false;
+        }
     }
 }

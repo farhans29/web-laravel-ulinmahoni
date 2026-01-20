@@ -123,20 +123,31 @@ class BookingController extends Controller
     public function sendEmailBooking($user, $bookingData, $transactionData, $paymentUrl = null)
     {
         try {
-            $user->notify(new BookingConfirmationNotification(
+            $notification = new BookingConfirmationNotification(
                 $bookingData,
                 $transactionData,
                 $paymentUrl
-            ));
+            );
 
-            Log::info('Booking confirmation email queued', [
-                'order_id' => $transactionData['order_id'] ?? null,
-                'user_id' => $user->id,
-                'user_email' => $user->email
-            ]);
+            // Use SMTP to send email directly
+            $result = $notification->sendViaSMTP($user);
+
+            if ($result) {
+                Log::info('Booking confirmation email sent via SMTP', [
+                    'order_id' => $transactionData['order_id'] ?? null,
+                    'user_id' => $user->id,
+                    'user_email' => $user->email
+                ]);
+            } else {
+                Log::warning('Booking confirmation email via SMTP returned false', [
+                    'order_id' => $transactionData['order_id'] ?? null,
+                    'user_id' => $user->id,
+                    'user_email' => $user->email
+                ]);
+            }
         } catch (\Exception $e) {
             // Log error but don't fail the booking
-            Log::error('Failed to send booking confirmation email', [
+            Log::error('Failed to send booking confirmation email via SMTP', [
                 'order_id' => $transactionData['order_id'] ?? null,
                 'user_id' => $user->id,
                 'user_email' => $user->email,
@@ -471,6 +482,12 @@ class BookingController extends Controller
                         // Increment usage count
                         $voucher->increment('current_usage_count');
 
+                        // Calculate amounts for logging
+                        // Original amount is the grandtotal BEFORE discount was applied
+                        $originalAmount = $booking->grandtotal_price; // This is still the old value (before DB update above)
+                        $discountAmount = $request->discount_amount;
+                        $finalAmount = $originalAmount - $discountAmount;
+
                         // Log usage
                         $voucherService->logUsage([
                             'voucher_id' => $voucher->idrec,
@@ -480,9 +497,9 @@ class BookingController extends Controller
                             'transaction_id' => $booking->idrec,
                             'property_id' => $booking->property_id,
                             'room_id' => $booking->room_id,
-                            'original_amount' => $booking->grandtotal_price + $request->discount_amount,
-                            'discount_amount' => $request->discount_amount,
-                            'final_amount' => $booking->grandtotal_price
+                            'original_amount' => $originalAmount,
+                            'discount_amount' => $discountAmount,
+                            'final_amount' => $finalAmount
                         ]);
                     }
                 } catch (\Exception $e) {
@@ -716,7 +733,7 @@ class BookingController extends Controller
             // Generate order_id in format UMW-yymmddXXXPP
             $propertyInitial = $room->property->initial ?? 'HX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'UMW-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
 
             // Set expiration time to 1 hour from now
             $expiredAt = now()->addHour();
@@ -736,6 +753,7 @@ class BookingController extends Controller
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'room_name' => $room->name,
+                'booking_type' => $request->booking_type,
                 'booking_days' => $bookingDays,
                 'booking_months' => $bookingMonths,
                 'daily_price' => $request->rent_type === 'daily' ? $price : null,
