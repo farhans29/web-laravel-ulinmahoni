@@ -137,7 +137,8 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function sendPasswordResetNotification($token)
     {
-        $this->notify(new \App\Notifications\PasswordResetNotification($token));
+        $notification = new \App\Notifications\PasswordResetNotification($token);
+        $notification->sendViaSMTP($this);
     }
 
     // If you still need the full name somewhere in your application, you can keep this method

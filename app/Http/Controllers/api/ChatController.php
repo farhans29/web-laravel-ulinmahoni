@@ -48,7 +48,9 @@ class ChatController extends ApiController
                     'messages.sender',
                     'messages.attachments',
                     'participants.user',
-                    'property:idrec,name'
+                    'property:idrec,name',
+                    'transaction:idrec,order_id,room_id,room_name',
+                    'transaction.room:idrec,no'
                 ])
                 ->orderBy('last_message_at', 'desc');
 
@@ -131,7 +133,8 @@ class ChatController extends ApiController
             $conversation = ChatConversation::with([
                 'participants.user',
                 'property:idrec,name',
-                'transaction'
+                'transaction:idrec,order_id,room_id,room_name',
+                'transaction.room:idrec,no'
             ])->find($id);
 
             if (!$conversation) {
@@ -667,7 +670,8 @@ class ChatController extends ApiController
                     'messages.attachments',
                     'participants.user',
                     'property:idrec,name',
-                    'transaction:idrec,order_id,user_name,user_email'
+                    'transaction:idrec,order_id,user_name,user_email,room_id,room_name',
+                    'transaction.room:idrec,no'
                 ]);
 
             // Filter by property
