@@ -159,22 +159,16 @@ class HomeController extends Controller {
         // Use the first image from the images array as the main image, fallback to property image
         $mainImage = !empty($images) ? $images[0]['image'] : $property->image;
 
-        // Get thumbnail - prioritize images with thumbnail field
-        $thumbnail = null;
-        if (!empty($images)) {
-            // Find first image with thumbnail
-            foreach ($images as $image) {
-                if (!empty($image['thumbnail'])) {
-                    $thumbnail = $image['thumbnail'];
-                    break;
-                }
-            }
-            // If no thumbnail found, use the first image
-            if (!$thumbnail && !empty($images[0]['image'])) {
-                $thumbnail = $images[0]['image'];
-            }
+        // Get thumbnail - use thumbnail_image accessor (where thumbnail = 1)
+        $thumbnailImage = $property->thumbnail_image;
+        $thumbnail = $thumbnailImage['image'] ?? null;
+
+        // Fallback to first image if no thumbnail found
+        if (!$thumbnail && !empty($images[0]['image'])) {
+            $thumbnail = $images[0]['image'];
         }
-        // Fallback to property image if no thumbnail
+
+        // Fallback to property image if still no thumbnail
         if (!$thumbnail) {
             $thumbnail = $property->image;
         }
