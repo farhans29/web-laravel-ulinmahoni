@@ -125,6 +125,44 @@ class Property extends Model
     }
 
     /**
+     * Get thumbnail image for property where thumbnail = 1.
+     *
+     * @return array|null
+     */
+    public function getThumbnailImageAttribute()
+    {
+        try {
+            $thumbnail = \DB::selectOne("
+                SELECT
+                    idrec,
+                    property_id,
+                    image,
+                    thumbnail,
+                    caption
+                FROM m_property_images
+                WHERE property_id = ? AND thumbnail = 1
+                LIMIT 1
+            ", [$this->idrec]);
+
+            if (empty($thumbnail)) {
+                return null;
+            }
+
+            return [
+                'id' => $thumbnail->idrec ?? null,
+                'property_id' => $thumbnail->property_id ?? $this->idrec,
+                'image' => $thumbnail->image ?? null,
+                'thumbnail' => $thumbnail->thumbnail ?? null,
+                'caption' => $thumbnail->caption ?? ''
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('Error fetching property thumbnail: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Get all images for each property using raw query.
      *
      * @return array

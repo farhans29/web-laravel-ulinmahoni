@@ -633,12 +633,12 @@
 
                                             <div class="p-6">
                                                 <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h3>
-                                                <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p>
+                                                <!-- <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p> -->
 
                                                 <div class="mb-4">
                                                     <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('properties.room.room_facilities') }}</h4>
                                                     <div class="flex flex-wrap gap-2">
-                                                        @if(!empty($room['facility']))
+                                                        @if(!empty($room['facility']) && is_array($room['facility']) && count($room['facility']) > 0)
                                                             @foreach($room['facility'] as $facility)
                                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
                                                                     {{ strtoupper($facility) }}

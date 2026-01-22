@@ -8,7 +8,8 @@
                     <div class="relative overflow-hidden">
                         <div class="relative" style="aspect-ratio: 4/3; background-color: #f3f4f6;">
                             @php
-                                $mainImage = $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
+                                // Use thumbnail first, fallback to first image, then property image
+                                $mainImage = $kosan['thumbnail'] ?? $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
                             @endphp
 
                             @if($mainImage)
