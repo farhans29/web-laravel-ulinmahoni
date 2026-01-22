@@ -19,13 +19,13 @@
                     <div class="absolute bottom-4 left-4 text-white">
                         <h3 class="text-xl font-medium">{{ $property['name'] }}</h3>
                         <h4 class="text-lg font-medium">{{ $property['city'] }}</h4>
-                        <p class="text-sm">
+                        <!-- <p class="text-sm">
                             @if($property['room_count'] > 0)
                                 {{ $property['room_count'] }} {{ __('homepage.areas.rooms_available') }}
                             @else
                                 {{ __('homepage.areas.view_details') }}
                             @endif
-                        </p>
+                        </p> -->
                     </div>
                 </div>
             </div>
