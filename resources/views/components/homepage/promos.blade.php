@@ -1,100 +1,151 @@
 <!-- Promo berlangsung Section -->
-<section class="section-dark">
-    <div class="section-container">
-        <div class="section-title">
-            <h3 class="text-4xl font-medium">{{ __('homepage.titles.ongoing_promos') }}</h3>
-            <div class="divider mt-2 md-2">
-                <div class="divider-line"></div>
-                <p class="divider-text">{{ __('homepage.subtitles.limited_offers') }}</p>
-                <div class="divider-line"></div>
-            </div>
-        </div>
-
+<section class="promo-section">
+    <div class="promo-container">
         <!-- Swiper container -->
         <div class="swiper promo-swiper">
             @if(count($promos) > 0)
-                <div class="swiper-wrapper mb-8">
+                <div class="swiper-wrapper">
                     @foreach ($promos as $promo)
                     <div class="swiper-slide">
-                        <a href="/promo/{{ $promo['id'] }}" class="block">
-                            <div class="bg-white rounded-lg overflow-hidden shadow-md">
+                        <a href="/promo/{{ $promo['id'] }}" class="promo-link">
+                            <div class="promo-image-container">
                                 @if($promo['image'])
-                                    <img src="data:image/png;base64,{{ $promo['image'] }}" 
-                                             alt="{{ $promo['title'] }}" 
-                                         class="w-full h-48 object-cover transition-transform duration-300 hover:scale-105">
+                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $promo['image'] }}"
+                                         alt="{{ $promo['title'] }}"
+                                         class="promo-image"
+                                         onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'promo-no-image\'><i class=\'fas fa-image\'></i></div>';">
                                 @else
-                                    <div class="bg-gray-100 w-full h-48 flex items-center justify-center">
-                                        <i class="fas fa-image text-4xl text-gray-400"></i>
-                                        <span class="ml-2 text-gray-500">No Image</span>
+                                    <div class="promo-no-image">
+                                        <i class="fas fa-image"></i>
                                     </div>
                                 @endif
-                                <div class="p-4">
-                                    <div class="flex items-center mb-2">
-                                        <span class="bg-yellow-400 text-xs px-2 py-1 rounded-full text-gray-800 font-medium">{{ $promo['badge'] }}</span>
-                                    </div>
-                                    <h3 class="font-medium text-gray-800 mb-1">{{ $promo['title'] }}</h3>
-                                    <p class="text-gray-600 text-sm">{{ $promo['description'] }}</p>
-                                </div>
                             </div>
                         </a>
                     </div>
                     @endforeach
                 </div>
+
+                <!-- Navigation & Pagination -->
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-pagination"></div>
             @else
-                <div class="text-center py-12">
-                    <i class="fas fa-tag text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-gray-600">{{ __('homepage.messages.no_promos') }}</p>
-                    <p class="text-sm text-gray-500 mt-2">{{ __('homepage.messages.check_back_later') }}</p>
+                <div class="promo-empty">
+                    <i class="fas fa-tag"></i>
+                    <p>{{ __('homepage.messages.no_promos') }}</p>
                 </div>
             @endif
-
-            <!-- Add Navigation -->
-            <div class="swiper-button-next"></div>
-            <div class="swiper-button-prev"></div>
-            <!-- Add Pagination -->
-            <div class="swiper-pagination"></div>
         </div>
     </div>
 </section>
 
 <style>
+    .promo-section {
+        width: 100%;
+        background-color: #f8fafc;
+        padding: 1rem 0;
+    }
+
+    .promo-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
     .promo-swiper {
-        padding: 20px 40px;
+        width: 100%;
+        padding: 0.5rem 0 2.5rem 0;
     }
-    
-    .swiper-button-next,
-    .swiper-button-prev {
-        color: #0d9488; /* teal-600 */
+
+    .promo-link {
+        display: block;
+        width: 100%;
     }
-    
-    .swiper-pagination-bullet-active {
-        background: #0d9488; /* teal-600 */
+
+    /* Full width image with 1911x372 aspect ratio */
+    .promo-image-container {
+        width: 100%;
+        aspect-ratio: 1911 / 372;
+        background-color: #e5e7eb;
+        overflow: hidden;
     }
-    
-    @media (min-width: 1024px) {
-        .promo-swiper .swiper-slide {
-            width: 33.333%; /* 3 cards per view on large screens */
-        }
+
+    .promo-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
     }
-    
-    @media (min-width: 768px) and (max-width: 1023px) {
-        .promo-swiper .swiper-slide {
-            width: 50%; /* 2 cards per view on medium screens */
-        }
+
+    .promo-link:hover .promo-image {
+        transform: scale(1.02);
     }
-    
-    @media (max-width: 767px) {
-        .promo-swiper .swiper-slide {
-            width: 100%; /* 1 card per view on small screens */
-        }
+
+    .promo-no-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #e5e7eb;
+        color: #9ca3af;
+    }
+
+    .promo-no-image i {
+        font-size: 3rem;
+    }
+
+    .promo-empty {
+        text-align: center;
+        padding: 3rem 0;
+        color: #6b7280;
+    }
+
+    .promo-empty i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .promo-empty p {
+        margin: 0;
+    }
+
+    /* Swiper navigation */
+    .promo-swiper .swiper-button-next,
+    .promo-swiper .swiper-button-prev {
+        color: #ffffff;
+        background: rgba(0, 0, 0, 0.5);
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+    }
+
+    .promo-swiper .swiper-button-next::after,
+    .promo-swiper .swiper-button-prev::after {
+        font-size: 1rem;
+    }
+
+    .promo-swiper .swiper-pagination-bullet {
+        background: #9ca3af;
+    }
+
+    .promo-swiper .swiper-pagination-bullet-active {
+        background: #0d9488;
     }
 </style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         new Swiper('.promo-swiper', {
-            slidesPerView: 'auto',
-            spaceBetween: 24,
+            slidesPerView: 1,
+            spaceBetween: 0,
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev',
@@ -102,23 +153,6 @@
             pagination: {
                 el: '.swiper-pagination',
                 clickable: true,
-            },
-            breakpoints: {
-                // Mobile
-                320: {
-                    slidesPerView: 1,
-                    spaceBetween: 16
-                },
-                // Tablet
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 20
-                },
-                // Desktop
-                1024: {
-                    slidesPerView: 3,
-                    spaceBetween: 24
-                }
             }
         });
     });
