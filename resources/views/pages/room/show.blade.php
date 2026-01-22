@@ -236,7 +236,7 @@
                             <div class="space-y-6">
                                 <div class="prose prose-lg max-w-none">
                                     <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ __('properties.room_detail.room_description') }}</h3>
-                                    <p class="text-gray-600 leading-relaxed">{{ $room['descriptions'] }}</p>
+                                    <pre class="text-gray-600 leading-relaxed whitespace-pre-wrap font-sans">{!! $room['descriptions'] !!}</pre>
                                 </div>
                             </div>
                         </div>
