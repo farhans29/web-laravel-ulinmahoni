@@ -26,8 +26,8 @@
             <!-- Area Content -->
             <div class="area-tab-contents mt-6">
                 @include('components.homepage.area-cards.jakarta')
-                @include('components.homepage.area-cards.tangerang')
                 @include('components.homepage.area-cards.bogor')
+                @include('components.homepage.area-cards.tangerang')
                 @include('components.homepage.area-cards.depok')
                 @include('components.homepage.area-cards.bekasi')
             </div>

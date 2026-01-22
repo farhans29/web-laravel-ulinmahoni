@@ -18,7 +18,7 @@
         }
 
         .promo-hero:hover img {
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
         .badge {
@@ -62,18 +62,24 @@
 
             <!-- Promo Content -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-                <!-- Hero Section -->
-                <div class="relative h-96 promo-hero overflow-hidden">
-                    <img src="data:image/png;base64,{{ $promo['image'] }}" 
-                         alt="{{ $promo['title'] }}" 
-                         class="w-full h-full object-cover">
+                <!-- Hero Section with 1911x372 aspect ratio -->
+                <div class="relative promo-hero overflow-hidden" style="aspect-ratio: 1911/372;">
+                    @if($promo['image'])
+                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $promo['image'] }}"
+                             alt="{{ $promo['title'] }}"
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full bg-gray-200 flex items-center justify-center\'><i class=\'fas fa-image text-6xl text-gray-400\'></i></div>';">
+                    @else
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-6xl text-gray-400"></i>
+                        </div>
+                    @endif
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                     <div class="absolute bottom-0 left-0 p-8 text-white">
                         <span class="badge bg-yellow-400 text-xs px-3 py-1 rounded-full text-gray-800 font-medium mb-4 inline-block">
                             {{ $promo['badge'] }}
                         </span>
                         <h1 class="text-4xl font-bold mb-2">{{ $promo['title'] }}</h1>
-                        <p class="text-xl opacity-90">{{ $promo['description'] }}</p>
                     </div>
                 </div>
 
@@ -81,13 +87,15 @@
                 <div class="grid md:grid-cols-2 gap-8 p-8">
                     <!-- Left Column -->
                     <div>
+                        <!-- Description -->
+                        @if(!empty($promo['description']))
                         <div class="mb-8">
-                            <h2 class="text-2xl font-semibold mb-4">Harga Spesial</h2>
-                            <div class="space-y-2">
-                                <p class="text-gray-500 line-through">Rp {{ number_format($promo['original_price'], 0, ',', '.') }}</p>
-                                <p class="text-3xl font-bold text-teal-600">Rp {{ number_format($promo['discounted_price'], 0, ',', '.') }}</p>
+                            <h2 class="text-2xl font-semibold mb-4">Deskripsi Promo</h2>
+                            <div class="text-gray-600 leading-relaxed">
+                                {!! nl2br(e($promo['description'])) !!}
                             </div>
                         </div>
+                        @endif
 
                         <div class="mb-8">
                             <h2 class="text-2xl font-semibold mb-4">Cara Klaim</h2>
@@ -116,21 +124,30 @@
                             </ul>
                         </div>
 
+                        <!-- Gallery if multiple images -->
+                        @if(!empty($promo['images']) && count($promo['images']) > 1)
                         <div class="mb-8">
-                            <h2 class="text-2xl font-semibold mb-4">Periode Promo</h2>
-                            <div class="flex items-center text-gray-600">
-                                <i class="far fa-calendar-alt text-teal-500 mr-2"></i>
-                                <p>Berlaku sampai {{ \Carbon\Carbon::parse($promo['valid_until'])->format('d F Y') }}</p>
+                            <h2 class="text-2xl font-semibold mb-4">Galeri</h2>
+                            <div class="grid grid-cols-3 gap-2">
+                                @foreach($promo['images'] as $image)
+                                    <div class="aspect-video rounded-lg overflow-hidden">
+                                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] }}"
+                                             alt="{{ $image['caption'] ?? $promo['title'] }}"
+                                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-pointer"
+                                             onerror="this.onerror=null; this.parentElement.style.display='none';">
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
+                        @endif
                     </div>
                 </div>
 
                 <!-- CTA Section -->
                 <div class="bg-gray-50 p-8 text-center">
-                    <button class="cta-button bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-lg">
-                        Klaim Promo Sekarang
-                    </button>
+                    <a href="{{ route('homepage') }}" class="cta-button inline-block bg-teal-600 hover:bg-teal-700 text-white font-semibold py-3 px-8 rounded-lg">
+                        Lihat Properti
+                    </a>
                     <p class="text-gray-500 mt-2">*Syarat dan ketentuan berlaku</p>
                 </div>
             </div>

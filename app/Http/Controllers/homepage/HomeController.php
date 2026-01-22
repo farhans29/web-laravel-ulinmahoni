@@ -55,15 +55,24 @@ class HomeController extends Controller {
             ]
         ];
 
-        // Get promos data from DB
-        $promos = \App\Models\Promo::where('status', 1)
+        // Get promo banners data from DB
+        $promos = \App\Models\PromoBanner::where('status', 1)
+            ->with(['primaryImage', 'images'])
             ->orderByDesc('idrec')
             ->get()
             ->map(function ($promo) {
+                // Get primary image or first image from images relationship
+                $image = null;
+                if ($promo->primaryImage) {
+                    $image = $promo->primaryImage->image;
+                } elseif ($promo->images->isNotEmpty()) {
+                    $image = $promo->images->first()->image;
+                }
+
                 return [
                     'id' => $promo->idrec,
                     'title' => $promo->title,
-                    'image' => $promo->image,
+                    'image' => $image,
                     'badge' => 'Promo',
                     'description' => $promo->descriptions,
                 ];
@@ -92,6 +101,9 @@ class HomeController extends Controller {
                 }
             }
 
+            // Prepare property data by city/area
+            $propertyAreas = $this->getPropertiesByArea($properties);
+
             // Use the same view for all locales - the view will detect locale via app()->getLocale()
             return view("pages.homepage.index", [
                 'kos' => $propertyTypes['Kos'],
@@ -100,7 +112,8 @@ class HomeController extends Controller {
                 'villas' => $propertyTypes['Villa'],
                 'hotels' => $propertyTypes['Hotel'],
                 'heroMedia' => $heroMedia,
-                'promos' => $promos
+                'promos' => $promos,
+                'propertyAreas' => $propertyAreas
             ]);
 
         } catch (Exception $e) {
@@ -116,7 +129,14 @@ class HomeController extends Controller {
                 'villas' => [],
                 'hotels' => [],
                 'heroMedia' => $heroMedia,
-                'promos' => $promos
+                'promos' => $promos,
+                'propertyAreas' => [
+                    'jakarta' => [],
+                    'bogor' => [],
+                    'tangerang' => [],
+                    'depok' => [],
+                    'bekasi' => []
+                ]
             ]);
         }
     }
@@ -198,8 +218,75 @@ class HomeController extends Controller {
     }
 
     /**
+     * Get properties grouped by city/area.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $properties
+     * @return array Properties grouped by area (jakarta, bogor, tangerang, depok, bekasi)
+     */
+    private function getPropertiesByArea($properties)
+    {
+        $areas = [
+            'jakarta' => [],
+            'bogor' => [],
+            'tangerang' => [],
+            'depok' => [],
+            'bekasi' => []
+        ];
+
+        foreach ($properties as $property) {
+            $city = strtolower(trim($property->city ?? ''));
+
+            // Check which area the property belongs to
+            if (str_contains($city, 'jakarta')) {
+                $areas['jakarta'][] = $this->formatPropertyForArea($property);
+            } elseif (str_contains($city, 'bogor')) {
+                $areas['bogor'][] = $this->formatPropertyForArea($property);
+            } elseif (str_contains($city, 'tangerang')) {
+                $areas['tangerang'][] = $this->formatPropertyForArea($property);
+            } elseif (str_contains($city, 'depok')) {
+                $areas['depok'][] = $this->formatPropertyForArea($property);
+            } elseif (str_contains($city, 'bekasi')) {
+                $areas['bekasi'][] = $this->formatPropertyForArea($property);
+            }
+        }
+
+        return $areas;
+    }
+
+    /**
+     * Format a property for area cards display.
+     *
+     * @param Property $property
+     * @return array
+     */
+    private function formatPropertyForArea($property)
+    {
+        // Get room count for the property
+        $roomCount = $property->rooms()->count();
+
+        // Get thumbnail image
+        $thumbnailImage = $property->thumbnail_image;
+        $thumbnail = $thumbnailImage['image'] ?? null;
+
+        // Fallback to first image or property image
+        if (!$thumbnail) {
+            $images = $property->images;
+            $thumbnail = !empty($images[0]['image']) ? $images[0]['image'] : $property->image;
+        }
+
+        return [
+            'id' => $property->idrec,
+            'name' => $property->name,
+            'subdistrict' => $property->subdistrict,
+            'city' => $property->city,
+            'thumbnail' => $thumbnail,
+            'room_count' => $roomCount
+        ];
+    }
+
+    /**
      * Display the coming soon page.
-     * 
+     *
      * @return \Illuminate\View\View Returns the coming soon page view
      */
     public function comingSoon()

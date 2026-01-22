@@ -1,89 +1,329 @@
 <!-- Grid container -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+<div class="property-cards-grid">
     @forelse($kos as $kosan)
-    <div>
-        <a href="{{ route('houses.show', ['id' => $kosan['id']]) }}" class="block h-full group">
-            <div class="property-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 h-full flex flex-col">
-                    <!-- Image Container -->
-                    <div class="relative overflow-hidden">
-                        <div class="relative" style="aspect-ratio: 4/3; background-color: #f3f4f6;">
-                            @php
-                                // Use thumbnail first, fallback to first image, then property image
-                                $mainImage = $kosan['thumbnail'] ?? $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
-                            @endphp
+    <div class="property-card-wrapper">
+        <a href="{{ route('houses.show', ['id' => $kosan['id']]) }}" class="property-card-link">
+            <div class="property-card">
+                <!-- Image Container -->
+                <div class="property-card-image">
+                    @php
+                        // Use thumbnail first, fallback to first image, then property image
+                        $mainImage = $kosan['thumbnail'] ?? $kosan['images'][0]['image'] ?? $kosan['image'] ?? null;
+                    @endphp
 
-                            @if($mainImage)
-                                <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
-                                     alt="{{ $kosan['name'] }}"
-                                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                                     onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-gray-400\'><i class=\'fas fa-building text-3xl\'></i></div>';">
+                    @if($mainImage)
+                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
+                             alt="{{ $kosan['name'] }}"
+                             class="property-card-img"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'property-card-no-image\'><i class=\'fas fa-building\'></i></div>';">
 
-                                @if(count($kosan['images'] ?? []) > 1)
-                                    <div class="absolute top-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1.5 rounded-full font-medium shadow-md backdrop-blur-sm">
-                                        <i class="fas fa-images mr-1"></i>{{ count($kosan['images']) }}
-                                    </div>
-                                @endif
-                            @else
-                                <div class="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                                    <i class="fas fa-building text-4xl mb-2"></i>
-                                    <span class="text-sm">No Image</span>
-                                </div>
-                            @endif
-
-                            @if(isset($kosan['check_in']) && isset($kosan['check_out']))
-                            <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium shadow-md">
-                                <i class="fas fa-check mr-1"></i>Tersedia
-                            </span>
-                            @endif
+                        @if(count($kosan['images'] ?? []) > 1)
+                            <div class="property-card-image-count">
+                                <i class="fas fa-images"></i>{{ count($kosan['images']) }}
+                            </div>
+                        @endif
+                    @else
+                        <div class="property-card-no-image">
+                            <i class="fas fa-building"></i>
+                            <span>No Image</span>
                         </div>
+                    @endif
+
+                    @if(isset($kosan['check_in']) && isset($kosan['check_out']))
+                    <span class="property-card-available-badge">
+                        <i class="fas fa-check"></i>Tersedia
+                    </span>
+                    @endif
+                </div>
+
+                <!-- Content -->
+                <div class="property-card-content">
+                    <!-- Property Name -->
+                    <h4 class="property-card-title">
+                        {{ $kosan['name'] }}
+                    </h4>
+
+                    <!-- Location -->
+                    <div class="property-card-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ $kosan['subLocation'] }}</span>
                     </div>
 
-                    <!-- Content -->
-                    <div class="p-3 flex-1 flex flex-col">
-                        <!-- Property Name -->
-                        <h4 class="font-semibold text-gray-800 mb-1 line-clamp-1 hover:text-teal-600 transition-colors">
-                            {{ $kosan['name'] }}
-                        </h4>
-
-                        <!-- Location -->
-                        <div class="flex items-start text-gray-600 text-sm mb-2">
-                            <i class="fas fa-map-marker-alt mt-0.5 mr-1.5 text-gray-400 flex-shrink-0"></i>
-                            <span class="line-clamp-2">{{ $kosan['subLocation'] }}</span>
-                        </div>
-
-                        <!-- Price Section -->
-                        <div class="mt-auto flex items-center justify-between pt-2 border-t border-gray-100">
-                            @php
-                                $roomPrice = $kosan['room_price_original_monthly'];
-                            @endphp
-                            @if(!empty($roomPrice))
-                            <div>
-                                <div class="text-lg font-bold text-gray-900">
-                                    Rp{{ number_format($roomPrice, 0, ',', '.') }}
-                                </div>
-                                <div class="text-xs text-gray-500">/bulan</div>
+                    <!-- Price Section -->
+                    <div class="property-card-price-section">
+                        @php
+                            $roomPrice = $kosan['room_price_original_monthly'];
+                        @endphp
+                        @if(!empty($roomPrice))
+                        <div class="property-card-price">
+                            <div class="property-card-price-value">
+                                Rp{{ number_format($roomPrice, 0, ',', '.') }}
                             </div>
-                            <span class="text-gray-900 hover:text-gray-700 text-sm font-bold">
-                                {{ __('homepage.actions.view') }} <i class="fas fa-arrow-right text-xs ml-1"></i>
-                            </span>
-                            @else
-                            <span class="text-gray-900 hover:text-gray-700 text-sm font-bold w-full text-center">
-                                {{ __('homepage.actions.view_detail') }} <i class="fas fa-arrow-right text-xs ml-1"></i>
-                            </span>
-                            @endif
+                            <div class="property-card-price-period">/bulan</div>
                         </div>
+                        <span class="property-card-view-btn">
+                            {{ __('homepage.actions.view') }} <i class="fas fa-arrow-right"></i>
+                        </span>
+                        @else
+                        <span class="property-card-view-btn property-card-view-btn-center">
+                            {{ __('homepage.actions.view_detail') }} <i class="fas fa-arrow-right"></i>
+                        </span>
+                        @endif
                     </div>
                 </div>
-            </a>
-        </div>
-    @empty
-    <div class="col-span-full">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-            <div class="w-16 h-16 mx-auto mb-4 text-gray-300">
-                <i class="fas fa-home text-5xl"></i>
             </div>
-            <p class="text-gray-500">{{ __('homepage.messages.no_kos_available') }}</p>
+        </a>
+    </div>
+    @empty
+    <div class="property-cards-empty">
+        <div class="property-cards-empty-content">
+            <div class="property-cards-empty-icon">
+                <i class="fas fa-home"></i>
+            </div>
+            <p>{{ __('homepage.messages.no_kos_available') }}</p>
         </div>
     </div>
     @endforelse
 </div>
+
+<style>
+    /* All values in rem for uniform scaling at any zoom level */
+    .property-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 1rem; /* 16px */
+    }
+
+    @media (min-width: 40rem) { /* 640px */
+        .property-cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 64rem) { /* 1024px */
+        .property-cards-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (min-width: 80rem) { /* 1280px */
+        .property-cards-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    .property-card-wrapper {
+        height: 100%;
+    }
+
+    .property-card-link {
+        display: block;
+        height: 100%;
+        text-decoration: none;
+    }
+
+    .property-card {
+        background: #ffffff;
+        border-radius: 0.5rem; /* 8px */
+        overflow: hidden;
+        box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.1);
+        border: 0.0625rem solid #e5e7eb; /* 1px */
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .property-card:hover {
+        box-shadow: 0 0.25rem 0.375rem rgba(0, 0, 0, 0.1);
+    }
+
+    .property-card-image {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 4 / 3;
+        background-color: #f3f4f6;
+    }
+
+    .property-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .property-card:hover .property-card-img {
+        transform: scale(1.05);
+    }
+
+    .property-card-no-image {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #9ca3af;
+    }
+
+    .property-card-no-image i {
+        font-size: 2rem; /* 32px */
+        margin-bottom: 0.5rem; /* 8px */
+    }
+
+    .property-card-no-image span {
+        font-size: 0.875rem; /* 14px */
+    }
+
+    .property-card-image-count {
+        position: absolute;
+        top: 0.75rem; /* 12px */
+        right: 0.75rem; /* 12px */
+        background: rgba(0, 0, 0, 0.6);
+        color: #ffffff;
+        font-size: 0.75rem; /* 12px */
+        padding: 0.375rem 0.625rem; /* 6px 10px */
+        border-radius: 9999px;
+        font-weight: 500;
+        backdrop-filter: blur(4px);
+    }
+
+    .property-card-image-count i {
+        margin-right: 0.25rem; /* 4px */
+    }
+
+    .property-card-available-badge {
+        position: absolute;
+        top: 0.5rem; /* 8px */
+        right: 0.5rem; /* 8px */
+        background: #22c55e;
+        color: #ffffff;
+        font-size: 0.75rem; /* 12px */
+        padding: 0.25rem 0.5rem; /* 4px 8px */
+        border-radius: 9999px;
+        font-weight: 500;
+    }
+
+    .property-card-available-badge i {
+        margin-right: 0.25rem; /* 4px */
+    }
+
+    .property-card-content {
+        padding: 0.75rem; /* 12px */
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .property-card-title {
+        font-size: 1rem; /* 16px */
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 0.25rem 0; /* 4px */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transition: color 0.2s ease;
+    }
+
+    .property-card:hover .property-card-title {
+        color: #0d9488;
+    }
+
+    .property-card-location {
+        display: flex;
+        align-items: flex-start;
+        color: #4b5563;
+        font-size: 0.875rem; /* 14px */
+        margin-bottom: 0.5rem; /* 8px */
+    }
+
+    .property-card-location i {
+        margin-top: 0.125rem; /* 2px */
+        margin-right: 0.375rem; /* 6px */
+        color: #9ca3af;
+        flex-shrink: 0;
+    }
+
+    .property-card-location span {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .property-card-price-section {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.5rem; /* 8px */
+        border-top: 0.0625rem solid #f3f4f6; /* 1px */
+    }
+
+    .property-card-price {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .property-card-price-value {
+        font-size: 1.125rem; /* 18px */
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .property-card-price-period {
+        font-size: 0.75rem; /* 12px */
+        color: #6b7280;
+    }
+
+    .property-card-view-btn {
+        font-size: 0.875rem; /* 14px */
+        font-weight: 700;
+        color: #111827;
+        transition: color 0.2s ease;
+    }
+
+    .property-card-view-btn:hover {
+        color: #374151;
+    }
+
+    .property-card-view-btn i {
+        font-size: 0.75rem; /* 12px */
+        margin-left: 0.25rem; /* 4px */
+    }
+
+    .property-card-view-btn-center {
+        width: 100%;
+        text-align: center;
+    }
+
+    .property-cards-empty {
+        grid-column: 1 / -1;
+    }
+
+    .property-cards-empty-content {
+        background: #ffffff;
+        border-radius: 0.75rem; /* 12px */
+        box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.1);
+        border: 0.0625rem solid #f3f4f6; /* 1px */
+        padding: 2rem; /* 32px */
+        text-align: center;
+    }
+
+    .property-cards-empty-icon {
+        width: 4rem; /* 64px */
+        height: 4rem; /* 64px */
+        margin: 0 auto 1rem; /* 16px */
+        color: #d1d5db;
+    }
+
+    .property-cards-empty-icon i {
+        font-size: 3rem; /* 48px */
+    }
+
+    .property-cards-empty-content p {
+        color: #6b7280;
+        margin: 0;
+    }
+</style>
