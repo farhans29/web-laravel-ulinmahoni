@@ -268,8 +268,8 @@ class PromoBannerService
             $images = $bannerGroup->filter(fn($item) => $item->img_id !== null)
                 ->map(fn($imageItem) => [
                     'id' => $imageItem->img_id,
-                    'image' => env('APP_URL') . '/storage/' . $imageItem->image_data,
-                    'thumbnail' => $imageItem->thumbnail_data ? env('APP_URL') . '/storage/' . $imageItem->thumbnail_data : null,
+                    'image' => env('ADMIN_URL') . '/storage/' . $imageItem->image_data,
+                    'thumbnail' => $imageItem->thumbnail_data ? env('ADMIN_URL') . '/storage/' . $imageItem->thumbnail_data : null,
                     'caption' => $imageItem->caption,
                     'sort_order' => $imageItem->sort_order,
                 ])
