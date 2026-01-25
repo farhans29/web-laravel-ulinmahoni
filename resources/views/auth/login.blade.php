@@ -83,6 +83,8 @@
                 </div>
             @endif
 
+            <x-jet-validation-errors class="mt-4"/>
+
             <form class="mt-8 space-y-6" method="POST" action="{{ route('login') }}">
                 @csrf
                 <div class="rounded-md shadow-sm space-y-4">
@@ -148,8 +150,6 @@
                     Masuk dengan Apple
                 </a> --}}
             </div>
-
-            <x-jet-validation-errors class="mt-4"/>
 
             <div class="text-center mt-4">
                 <p class="text-sm text-gray-600">
