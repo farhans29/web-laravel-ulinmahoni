@@ -470,6 +470,14 @@ class BookingController extends Controller
                 ->where('idrec', $id)
                 ->update($updateData);
 
+            // Also update t_payment grandtotal_price if discount was applied
+            if ($request->has('discount_amount') && $request->discount_amount > 0) {
+                $newGrandtotal = $booking->grandtotal_price - $request->discount_amount;
+                DB::table('t_payment')
+                    ->where('order_id', $booking->order_id)
+                    ->update(['grandtotal_price' => $newGrandtotal]);
+            }
+
             // Log voucher usage if voucher was applied
             if ($request->has('voucher_code') && $request->discount_amount > 0) {
                 try {
