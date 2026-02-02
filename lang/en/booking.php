@@ -82,6 +82,7 @@ return [
         'close' => 'Close',
         'cancel' => 'Cancel',
         'confirm_upload' => 'Yes, upload it!',
+        'renew_booking' => 'Renew Booking',
     ],
 
     'js' => [
@@ -125,5 +126,24 @@ return [
         'transaction' => 'Transaction:',
         'virtual_account' => 'Virtual Account:',
         'bank' => 'Bank',
+        // Renewal feature
+        'renew_modal_title' => 'Renew Booking',
+        'renew_modal_subtitle' => 'Extend your stay by selecting new dates',
+        'new_check_in' => 'New Check-in Date',
+        'new_check_out' => 'New Check-out Date',
+        'months_count' => 'Number of Months',
+        'voucher_code' => 'Voucher Code (Optional)',
+        'confirm_renew' => 'Confirm Renewal',
+        'processing' => 'Processing...',
+        'renew_success' => 'Booking Renewed Successfully!',
+        'renew_success_text' => 'Your booking has been renewed. Redirecting to payment page...',
+        'renew_error' => 'Renewal Failed',
+        'renew_error_text' => 'Failed to renew booking. Please try again.',
+        'room_unavailable' => 'Room Not Available',
+        'room_unavailable_text' => 'The room is not available for the selected dates.',
+        'invalid_dates' => 'Invalid Dates',
+        'invalid_dates_text' => 'Please select valid check-in and check-out dates.',
+        'daily_booking' => 'Daily Booking',
+        'monthly_booking' => 'Monthly Booking',
     ],
 ];
