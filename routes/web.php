@@ -164,7 +164,7 @@ Route::prefix('id')->name('id.')->group(function () {
         return view('auth.login');
     })->name('login');
     Route::get('/register', function () {
-        return view('auth.register');
+        return view('auth.register-fallback');
     })->name('register');
 
     // Homepage
@@ -249,7 +249,7 @@ Route::prefix('en')->name('en.')->group(function () {
         return view('auth.en.login');
     })->name('login');
     Route::get('/register', function () {
-        return view('auth.en.register');
+        return view('auth.register-fallback');
     })->name('register');
 
     // Homepage
