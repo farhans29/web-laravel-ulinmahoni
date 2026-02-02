@@ -39,4 +39,7 @@ return [
     'reset_link_sent' => 'Password reset link has been sent to your email!',
     'email_not_found' => 'We couldn\'t find an account with that email address.',
 
+    // Registration
+    'registration_disabled' => 'Sorry, registration is currently unavailable. Please contact our Customer Service for more information.',
+
 ];

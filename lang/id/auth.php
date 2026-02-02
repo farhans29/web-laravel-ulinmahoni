@@ -39,4 +39,7 @@ return [
     'reset_link_sent' => 'Link reset kata sandi telah dikirim ke email Anda!',
     'email_not_found' => 'Kami tidak dapat menemukan akun dengan alamat email tersebut.',
 
+    // Registration
+    'registration_disabled' => 'Mohon maaf saat ini belum bisa mendaftar, silahkan hubungi Customer Service kami untuk informasi lebih lanjut.',
+
 ];
