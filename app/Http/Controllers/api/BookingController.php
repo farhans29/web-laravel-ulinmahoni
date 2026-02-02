@@ -684,7 +684,318 @@ class BookingController extends ApiController
             ], 500);
         }
     }
-    
+
+    public function renewBooking(Request $request, $orderId)
+    {
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'check_in' => 'required|date|after_or_equal:today',
+            'check_out' => 'required|date|after:check_in',
+            'voucher_code' => 'nullable|string|min:8|max:20'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            // Retrieve original booking by order_id
+            $originalTransaction = Transaction::where('order_id', $orderId)
+                ->where('status', '1')
+                ->first();
+
+            if (!$originalTransaction) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Original booking not found'
+                ], 404);
+            }
+
+            // Validate that only paid/completed bookings can be renewed
+            if (!in_array($originalTransaction->transaction_status, ['paid', 'completed'])) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Only paid or completed bookings can be renewed',
+                    'current_status' => $originalTransaction->transaction_status
+                ], 400);
+            }
+
+            // Get room details to verify it still exists
+            $room = Room::find($originalTransaction->room_id);
+            if (!$room) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Room from original booking no longer exists'
+                ], 400);
+            }
+
+            // Validate that the booking type is available for this room
+            $bookingType = $originalTransaction->booking_type;
+            if ($bookingType === 'daily') {
+                $hasDailyPrice = !empty($room->price_original_daily) && floatval($room->price_original_daily) > 0;
+                if (!$hasDailyPrice) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Daily booking is not available for this room'
+                    ], 400);
+                }
+            } else if ($bookingType === 'monthly') {
+                $hasMonthlyPrice = !empty($room->price_original_monthly) && floatval($room->price_original_monthly) > 0;
+                if (!$hasMonthlyPrice) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Monthly booking is not available for this room'
+                    ], 400);
+                }
+            }
+
+            // Check availability for new dates
+            $checkIn = Carbon::parse($request->check_in)->startOfDay();
+            $checkOut = Carbon::parse($request->check_out)->endOfDay();
+
+            $conflictingBookings = DB::table('t_transactions')
+                ->where('property_id', $originalTransaction->property_id)
+                ->where('room_id', $originalTransaction->room_id)
+                ->where('status', '1')
+                ->whereNotIn('transaction_status', ['cancelled', 'expired'])
+                ->where('check_in', '<', $checkOut)
+                ->where('check_out', '>', $checkIn)
+                ->limit(1)
+                ->get();
+
+            if (!$conflictingBookings->isEmpty()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Room is not available for the selected dates',
+                    'conflicting_bookings' => $conflictingBookings
+                ], 409);
+            }
+
+            DB::beginTransaction();
+
+            // Calculate pricing based on booking type
+            $bookingDays = null;
+            $bookingMonths = null;
+            $roomPrice = 0;
+            $adminFees = 0;
+            $serviceFees = 30000;
+            $tax = 0;
+
+            // Set check-in time to 14:00:00 and check-out time to 12:00:00
+            $checkInWithTime = Carbon::parse($request->check_in)->setTime(14, 0, 0);
+            $checkOutWithTime = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+
+            if ($originalTransaction->booking_type === 'daily') {
+                // Calculate days
+                $bookingDays = $checkInWithTime->copy()->startOfDay()->diffInDays($checkOutWithTime->copy()->startOfDay());
+
+                // Get current daily price from room
+                $dailyPrice = $room->price_original_daily ?? $originalTransaction->daily_price;
+                $roomPrice = $dailyPrice * $bookingDays;
+
+                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
+            } else {
+                // Monthly booking
+                $bookingMonths = $originalTransaction->booking_months ?? 1;
+
+                // Get current monthly price from room
+                $monthlyPrice = $room->price_original_monthly ?? $originalTransaction->monthly_price;
+                $roomPrice = $monthlyPrice * $bookingMonths;
+
+                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
+            }
+
+            // Voucher processing
+            $voucherId = null;
+            $voucherCode = null;
+            $discountAmount = 0;
+            $subtotalBeforeDiscount = $subtotalBeforeServiceFee;
+
+            if ($request->filled('voucher_code')) {
+                $voucherService = app(VoucherService::class);
+
+                // Validate and apply voucher
+                $voucherValidation = $voucherService->validateVoucher(
+                    $request->voucher_code,
+                    $originalTransaction->user_id,
+                    $subtotalBeforeServiceFee,
+                    $originalTransaction->property_id,
+                    $originalTransaction->room_id
+                );
+
+                if (!$voucherValidation['valid']) {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Voucher validation failed',
+                        'errors' => $voucherValidation['errors']
+                    ], 422);
+                }
+
+                $voucher = $voucherValidation['voucher'];
+                $calculation = $voucherService->calculateDiscount($voucher, $subtotalBeforeServiceFee);
+
+                $voucherId = $voucher->idrec;
+                $voucherCode = $voucher->code;
+                $discountAmount = $calculation['discount_amount'];
+
+                // Increment voucher usage count
+                $voucher->increment('current_usage_count');
+            }
+
+            // Calculate final grand total
+            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees;
+
+            // Generate new order_id
+            $property = Property::find($originalTransaction->property_id);
+            $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
+            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+            $newOrderId = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+
+            // Set expiration time to 1 hour from now
+            $expiredAt = now()->addHour();
+
+            // Prepare transaction data (copy from original + new values)
+            $transactionData = [
+                // USER DATA (copied from original)
+                'user_id' => $originalTransaction->user_id,
+                'user_name' => $originalTransaction->user_name,
+                'user_phone_number' => $originalTransaction->user_phone_number,
+                'user_email' => $originalTransaction->user_email,
+                // PROPERTY DATA (copied from original)
+                'property_id' => $originalTransaction->property_id,
+                'property_name' => $originalTransaction->property_name,
+                'property_type' => $originalTransaction->property_type,
+                // ROOM DATA (copied from original)
+                'room_id' => $originalTransaction->room_id,
+                'room_name' => $originalTransaction->room_name,
+                // ORDER DETAILS (new values)
+                'order_id' => $newOrderId,
+                'transaction_date' => now(),
+                'booking_type' => $originalTransaction->booking_type,
+                'booking_days' => $bookingDays,
+                'booking_months' => $bookingMonths,
+                // PRICES (recalculated)
+                'room_price' => $roomPrice,
+                'daily_price' => $originalTransaction->booking_type === 'daily' ? ($room->price_original_daily ?? $originalTransaction->daily_price) : null,
+                'monthly_price' => $originalTransaction->booking_type === 'monthly' ? ($room->price_original_monthly ?? $originalTransaction->monthly_price) : null,
+                'admin_fees' => $adminFees,
+                'service_fees' => $serviceFees,
+                'tax' => $tax,
+                'grandtotal_price' => $grandtotalPrice,
+                // VOUCHER DATA (new voucher if provided)
+                'voucher_id' => $voucherId,
+                'voucher_code' => $voucherCode,
+                'discount_amount' => $discountAmount,
+                'subtotal_before_discount' => $subtotalBeforeDiscount,
+                // CODE AND STATUS
+                'transaction_type' => $originalTransaction->transaction_type,
+                'transaction_code' => 'TRX-' . Str::random(16),
+                'transaction_status' => 'pending',
+                'status' => '1',
+                // DATES (new dates)
+                'check_in' => $checkInWithTime,
+                'check_out' => $checkOutWithTime,
+                'expired_at' => $expiredAt,
+            ];
+
+            // Create new transaction
+            $newTransaction = Transaction::create($transactionData);
+
+            // Log voucher usage if voucher was applied
+            if ($voucherId && $voucherCode) {
+                $voucherService = app(VoucherService::class);
+                $voucherService->logUsage([
+                    'voucher_id' => $voucherId,
+                    'voucher_code' => $voucherCode,
+                    'user_id' => $originalTransaction->user_id,
+                    'order_id' => $newOrderId,
+                    'transaction_id' => $newTransaction->idrec,
+                    'property_id' => $originalTransaction->property_id,
+                    'room_id' => $originalTransaction->room_id,
+                    'original_amount' => $subtotalBeforeDiscount,
+                    'discount_amount' => $discountAmount,
+                    'final_amount' => $grandtotalPrice
+                ]);
+            }
+
+            // Create new booking record
+            $bookingData = [
+                'property_id' => $originalTransaction->property_id,
+                'order_id' => $newOrderId,
+                'room_id' => $originalTransaction->room_id,
+                'status' => '1',
+                'booking_type' => $originalTransaction->booking_type
+            ];
+            Booking::create($bookingData);
+
+            // Create new payment record
+            $paymentData = [
+                'property_id' => $originalTransaction->property_id,
+                'room_id' => $originalTransaction->room_id,
+                'order_id' => $newOrderId,
+                'user_id' => $originalTransaction->user_id,
+                'grandtotal_price' => $grandtotalPrice,
+                'payment_status' => 'unpaid',
+                'created_by' => $originalTransaction->user_id,
+                'updated_by' => $originalTransaction->user_id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+            Payment::create($paymentData);
+
+            // Log renewal
+            Log::info("Booking renewed successfully", [
+                'original_order_id' => $orderId,
+                'new_order_id' => $newOrderId,
+                'user_id' => $originalTransaction->user_id,
+                'expired_at' => $expiredAt
+            ]);
+
+            // Send booking confirmation email
+            if ($originalTransaction->user_email) {
+                $user = new \App\Models\User();
+                $user->email = $originalTransaction->user_email;
+                $user->id = $originalTransaction->user_id;
+
+                $this->sendEmailBooking(
+                    $user,
+                    $bookingData,
+                    $transactionData,
+                    null // Payment URL will be generated separately if needed
+                );
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Booking renewed successfully',
+                'data' => [
+                    'original_order_id' => $orderId,
+                    'new_order_id' => $newOrderId,
+                    'transaction' => $newTransaction->toArray(),
+                    'expired_at' => $expiredAt->toISOString()
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Booking renewal failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'original_order_id' => $orderId
+            ]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Error renewing booking',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+            ], 500);
+        }
+    }
 
     public function update(Request $request, $id)
     {

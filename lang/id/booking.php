@@ -82,6 +82,7 @@ return [
         'close' => 'Close',
         'cancel' => 'Cancel',
         'confirm_upload' => 'Yes, upload it!',
+        'renew_booking' => 'Perpanjang Sewa',
     ],
 
     'js' => [
@@ -125,5 +126,24 @@ return [
         'transaction' => 'Transaction:',
         'virtual_account' => 'Virtual Account:',
         'bank' => 'Bank',
+        // Renewal feature
+        'renew_modal_title' => 'Perpanjang Sewa',
+        'renew_modal_subtitle' => 'Perpanjang masa sewa dengan memilih tanggal baru',
+        'new_check_in' => 'Tanggal Check-in Baru',
+        'new_check_out' => 'Tanggal Check-out Baru',
+        'months_count' => 'Jumlah Bulan',
+        'voucher_code' => 'Kode Voucher (Opsional)',
+        'confirm_renew' => 'Konfirmasi Perpanjangan',
+        'processing' => 'Memproses...',
+        'renew_success' => 'Perpanjangan Berhasil!',
+        'renew_success_text' => 'Booking Anda telah diperpanjang. Mengarahkan ke halaman pembayaran...',
+        'renew_error' => 'Perpanjangan Gagal',
+        'renew_error_text' => 'Gagal memperpanjang booking. Silakan coba lagi.',
+        'room_unavailable' => 'Kamar Tidak Tersedia',
+        'room_unavailable_text' => 'Kamar tidak tersedia untuk tanggal yang dipilih.',
+        'invalid_dates' => 'Tanggal Tidak Valid',
+        'invalid_dates_text' => 'Silakan pilih tanggal check-in dan check-out yang valid.',
+        'daily_booking' => 'Sewa Harian',
+        'monthly_booking' => 'Sewa Bulanan',
     ],
 ];
