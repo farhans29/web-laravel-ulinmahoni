@@ -104,6 +104,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/{id}/update-attachment', [BookingController::class, 'updateAttachment']);
             Route::put('/{id}/payment-method', [BookingController::class, 'updatePaymentMethod']);
             Route::post('/{order_id}/check-in', [BookingController::class, 'checkInByOrderId']);
+            Route::post('/{order_id}/renew', [BookingController::class, 'renewBooking']);
             // Removed duplicate check-availability route
         });
 

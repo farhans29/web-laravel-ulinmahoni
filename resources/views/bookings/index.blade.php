@@ -8,6 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // API Key from .env
+        const API_KEY = '{{ config("services.api.key") }}';
+
         // Translation strings for JavaScript
         const translations = {
             invalid_file_type: '{{ __("booking.js.invalid_file_type") }}',
@@ -53,6 +56,19 @@
             close: '{{ __("booking.actions.close") }}',
             cancel: '{{ __("booking.actions.cancel") }}',
             confirm_upload_btn: '{{ __("booking.actions.confirm_upload") }}',
+            // Renewal translations
+            renew_modal_title: '{{ __("booking.js.renew_modal_title") }}',
+            renew_modal_subtitle: '{{ __("booking.js.renew_modal_subtitle") }}',
+            confirm_renew: '{{ __("booking.js.confirm_renew") }}',
+            processing: '{{ __("booking.js.processing") }}',
+            renew_success: '{{ __("booking.js.renew_success") }}',
+            renew_success_text: '{{ __("booking.js.renew_success_text") }}',
+            renew_error: '{{ __("booking.js.renew_error") }}',
+            renew_error_text: '{{ __("booking.js.renew_error_text") }}',
+            room_unavailable: '{{ __("booking.js.room_unavailable") }}',
+            room_unavailable_text: '{{ __("booking.js.room_unavailable_text") }}',
+            invalid_dates: '{{ __("booking.js.invalid_dates") }}',
+            invalid_dates_text: '{{ __("booking.js.invalid_dates_text") }}',
         };
 
     // Make confirmFileUpload available globally
@@ -527,6 +543,7 @@
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.total_cost') }}</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.status') }}</th>
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('booking.index.table_headers.attachment') }}</th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -635,10 +652,17 @@
                                                 </div>
                                             @endif
                                         </td>
+                                        <td class="px-6 py-4">
+                                            <button onclick="openRenewModal('{{ $booking->order_id }}', '{{ $booking->room_id }}', '{{ $booking->booking_type }}', '{{ $booking->booking_months ?? 1 }}')"
+                                                    class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors duration-200 text-sm font-medium">
+                                                <i class="fas fa-redo mr-2"></i>
+                                                {{ __('booking.actions.renew_booking') }}
+                                            </button>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-6 py-12 text-center">
+                                        <td colspan="7" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center justify-center text-gray-500">
                                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
                                                 <p class="text-lg">{{ __('booking.index.empty_states.no_completed_bookings') }}</p>
@@ -657,6 +681,112 @@
 </section>
 
     @include('components.homepage.footer')
+
+    <!-- Renewal Booking Modal -->
+    <div id="renewBookingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ __('booking.js.renew_modal_title') }}</h3>
+                            <p class="text-sm text-gray-500 mt-1">{{ __('booking.js.renew_modal_subtitle') }}</p>
+                        </div>
+                        <button onclick="closeRenewModal()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <form id="renewBookingForm" class="px-6 py-4">
+                    <input type="hidden" id="renew_order_id" name="order_id">
+
+                    <!-- Booking Type Selector -->
+                    <div id="bookingTypeSelector" class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Booking Type *
+                        </label>
+                        <div class="flex gap-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="booking_type_selector" value="daily" checked
+                                       class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                                       onchange="toggleBookingTypeFields()">
+                                <span class="ml-2 text-sm text-gray-700">{{ __('booking.js.daily_booking') }}</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="booking_type_selector" value="monthly"
+                                       class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                                       onchange="toggleBookingTypeFields()">
+                                <span class="ml-2 text-sm text-gray-700">{{ __('booking.js.monthly_booking') }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="dailyFields" class="space-y-4">
+                        <div>
+                            <label for="renew_check_in" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ __('booking.js.new_check_in') }} *
+                            </label>
+                            <input type="date" id="renew_check_in" name="check_in" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        </div>
+                        <div>
+                            <label for="renew_check_out" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ __('booking.js.new_check_out') }} *
+                            </label>
+                            <input type="date" id="renew_check_out" name="check_out" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        </div>
+                    </div>
+
+                    <div id="monthlyFields" class="space-y-4 hidden">
+                        <div>
+                            <label for="renew_check_in_monthly" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ __('booking.js.new_check_in') }} *
+                            </label>
+                            <input type="date" id="renew_check_in_monthly" name="check_in_monthly"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        </div>
+                        <div>
+                            <label for="renew_months" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ __('booking.js.months_count') }} *
+                            </label>
+                            <input type="number" id="renew_months" name="months" min="1" value="1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                   onchange="updateCheckOutDate()">
+                        </div>
+                        <div>
+                            <label for="renew_check_out_monthly" class="block text-sm font-medium text-gray-700 mb-1">
+                                {{ __('booking.js.new_check_out') }}
+                            </label>
+                            <input type="date" id="renew_check_out_monthly" name="check_out_monthly" readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label for="renew_voucher_code" class="block text-sm font-medium text-gray-700 mb-1">
+                            {{ __('booking.js.voucher_code') }}
+                        </label>
+                        <input type="text" id="renew_voucher_code" name="voucher_code" maxlength="20"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+                               placeholder="Enter voucher code">
+                    </div>
+                </form>
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
+                    <button onclick="closeRenewModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
+                        {{ __('booking.actions.cancel') }}
+                    </button>
+                    <button onclick="submitRenewal()" id="renewSubmitBtn"
+                            class="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors">
+                        <span id="renewBtnText">{{ __('booking.js.confirm_renew') }}</span>
+                        <span id="renewBtnLoader" class="hidden">
+                            <i class="fas fa-spinner fa-spin"></i> {{ __('booking.js.processing') }}
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Booking Details Modal -->
     <div id="bookingDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
@@ -926,6 +1056,327 @@
     function closeBookingDetails() {
         const modal = document.getElementById('bookingDetailsModal');
         modal.classList.add('hidden');
+    }
+
+    // Store room data globally for validation
+    let currentRoomData = null;
+
+    // Renewal Modal Functions
+    async function openRenewModal(orderId, roomId, bookingType, months) {
+        const modal = document.getElementById('renewBookingModal');
+
+        // Add a small delay before showing loading to avoid flash
+        let loadingShown = false;
+        const loadingTimeout = setTimeout(() => {
+            loadingShown = true;
+            Swal.fire({
+                title: 'Loading...',
+                text: 'Fetching room details',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }, 200);
+
+        try {
+            // Fetch room details via API
+            const response = await fetch(`/api/v1/rooms/${roomId}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'x-api-key': API_KEY,
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch room details');
+            }
+
+            const data = await response.json();
+            const roomData = data.data;
+
+            // Store room data for validation
+            currentRoomData = roomData;
+
+            // Clear the loading timeout and close dialog if it was shown
+            clearTimeout(loadingTimeout);
+            if (loadingShown) {
+                // Add small delay before closing to avoid flash
+                await new Promise(resolve => setTimeout(resolve, 300));
+                Swal.close();
+            }
+
+            // Set order ID
+            document.getElementById('renew_order_id').value = orderId;
+
+            // Reset form first
+            document.getElementById('renewBookingForm').reset();
+
+            // Check which booking types are available
+            const hasDailyPrice = roomData.price_original_daily && parseFloat(roomData.price_original_daily) > 0;
+            const hasMonthlyPrice = roomData.price_original_monthly && parseFloat(roomData.price_original_monthly) > 0;
+
+            // Get booking type selector elements
+            const dailyRadio = document.querySelector('input[name="booking_type_selector"][value="daily"]');
+            const monthlyRadio = document.querySelector('input[name="booking_type_selector"][value="monthly"]');
+            const dailyLabel = dailyRadio.closest('label');
+            const monthlyLabel = monthlyRadio.closest('label');
+            const bookingTypeContainer = document.getElementById('bookingTypeSelector');
+
+            // Handle booking type availability
+            if (!hasDailyPrice && !hasMonthlyPrice) {
+                // No pricing available - show error with slight delay
+                await new Promise(resolve => setTimeout(resolve, 300));
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Room Unavailable',
+                    text: 'This room has no pricing information available for renewal.',
+                    confirmButtonColor: '#0d9488',
+                });
+                return;
+            } else if (hasDailyPrice && !hasMonthlyPrice) {
+                // Only daily available
+                bookingTypeContainer.classList.add('hidden');
+                dailyRadio.checked = true;
+                monthlyRadio.disabled = true;
+            } else if (!hasDailyPrice && hasMonthlyPrice) {
+                // Only monthly available
+                bookingTypeContainer.classList.add('hidden');
+                monthlyRadio.checked = true;
+                dailyRadio.disabled = true;
+            } else {
+                // Both available - let user choose
+                bookingTypeContainer.classList.remove('hidden');
+                dailyRadio.disabled = false;
+                monthlyRadio.disabled = false;
+
+                // Set default based on original booking type
+                if (bookingType === 'monthly') {
+                    monthlyRadio.checked = true;
+                    document.getElementById('renew_months').value = months;
+                } else {
+                    dailyRadio.checked = true;
+                }
+            }
+
+            // Set minimum date to today for all date inputs
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('renew_check_in').min = today;
+            document.getElementById('renew_check_out').min = today;
+            document.getElementById('renew_check_in_monthly').min = today;
+
+            // Show appropriate fields
+            toggleBookingTypeFields();
+
+            modal.classList.remove('hidden');
+        } catch (error) {
+            console.error('Error fetching room details:', error);
+
+            // Clear the loading timeout and close dialog if it was shown
+            clearTimeout(loadingTimeout);
+            if (loadingShown) {
+                Swal.close();
+            }
+
+            // Add small delay before showing error
+            await new Promise(resolve => setTimeout(resolve, 300));
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load room details. Please try again.',
+                confirmButtonColor: '#0d9488',
+            });
+        }
+    }
+
+    function toggleBookingTypeFields() {
+        const selectedType = document.querySelector('input[name="booking_type_selector"]:checked').value;
+        const dailyFields = document.getElementById('dailyFields');
+        const monthlyFields = document.getElementById('monthlyFields');
+
+        if (selectedType === 'monthly') {
+            // Show monthly fields, hide daily fields
+            dailyFields.classList.add('hidden');
+            monthlyFields.classList.remove('hidden');
+
+            // Update required attributes
+            document.getElementById('renew_check_in').removeAttribute('required');
+            document.getElementById('renew_check_out').removeAttribute('required');
+            document.getElementById('renew_check_in_monthly').setAttribute('required', 'required');
+            document.getElementById('renew_months').setAttribute('required', 'required');
+        } else {
+            // Show daily fields, hide monthly fields
+            dailyFields.classList.remove('hidden');
+            monthlyFields.classList.add('hidden');
+
+            // Update required attributes
+            document.getElementById('renew_check_in').setAttribute('required', 'required');
+            document.getElementById('renew_check_out').setAttribute('required', 'required');
+            document.getElementById('renew_check_in_monthly').removeAttribute('required');
+            document.getElementById('renew_months').removeAttribute('required');
+        }
+    }
+
+    function closeRenewModal() {
+        const modal = document.getElementById('renewBookingModal');
+        modal.classList.add('hidden');
+        document.getElementById('renewBookingForm').reset();
+    }
+
+    function updateCheckOutDate() {
+        const checkIn = document.getElementById('renew_check_in_monthly').value;
+        const months = parseInt(document.getElementById('renew_months').value) || 1;
+
+        if (checkIn) {
+            const checkInDate = new Date(checkIn);
+            checkInDate.setMonth(checkInDate.getMonth() + months);
+
+            const checkOutDate = checkInDate.toISOString().split('T')[0];
+            document.getElementById('renew_check_out_monthly').value = checkOutDate;
+        }
+    }
+
+    // Auto-update check-out date when check-in or months change for monthly bookings
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkInMonthly = document.getElementById('renew_check_in_monthly');
+        if (checkInMonthly) {
+            checkInMonthly.addEventListener('change', updateCheckOutDate);
+        }
+    });
+
+    async function submitRenewal() {
+        const orderId = document.getElementById('renew_order_id').value;
+        const bookingType = document.querySelector('input[name="booking_type_selector"]:checked').value;
+
+        let checkIn, checkOut;
+
+        if (bookingType === 'monthly') {
+            checkIn = document.getElementById('renew_check_in_monthly').value;
+            checkOut = document.getElementById('renew_check_out_monthly').value;
+
+            if (!checkIn) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '{{ __("booking.js.invalid_dates") }}',
+                    text: '{{ __("booking.js.invalid_dates_text") }}',
+                    confirmButtonColor: '#0d9488',
+                });
+                return;
+            }
+
+            // Auto-calculate check-out if not set
+            if (!checkOut) {
+                updateCheckOutDate();
+                checkOut = document.getElementById('renew_check_out_monthly').value;
+            }
+        } else {
+            checkIn = document.getElementById('renew_check_in').value;
+            checkOut = document.getElementById('renew_check_out').value;
+
+            if (!checkIn || !checkOut) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '{{ __("booking.js.invalid_dates") }}',
+                    text: '{{ __("booking.js.invalid_dates_text") }}',
+                    confirmButtonColor: '#0d9488',
+                });
+                return;
+            }
+        }
+
+        const voucherCode = document.getElementById('renew_voucher_code').value;
+
+        // Validate dates
+        if (new Date(checkIn) >= new Date(checkOut)) {
+            Swal.fire({
+                icon: 'error',
+                title: '{{ __("booking.js.invalid_dates") }}',
+                text: 'Check-out date must be after check-in date.',
+                confirmButtonColor: '#0d9488',
+            });
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = document.getElementById('renewSubmitBtn');
+        const btnText = document.getElementById('renewBtnText');
+        const btnLoader = document.getElementById('renewBtnLoader');
+        submitBtn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoader.classList.remove('hidden');
+
+        try {
+            const payload = {
+                check_in: checkIn,
+                check_out: checkOut
+            };
+
+            if (voucherCode) {
+                payload.voucher_code = voucherCode;
+            }
+
+            const response = await fetch(`/api/v1/booking/${orderId}/renew`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'x-api-key': API_KEY,
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === 'success') {
+                closeRenewModal();
+
+                // Get the new order ID from the response
+                const newOrderId = data.data.new_order_id;
+
+                await Swal.fire({
+                    icon: 'success',
+                    title: '{{ __("booking.js.renew_success") }}',
+                    text: '{{ __("booking.js.renew_success_text") }}',
+                    confirmButtonColor: '#0d9488',
+                    timer: 2000,
+                    timerProgressBar: true,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                });
+
+                // Redirect to payment page for the new booking
+                window.location.href = `/payment/${newOrderId}`;
+            } else {
+                let errorMessage = data.message || '{{ __("booking.js.renew_error_text") }}';
+
+                // Handle specific error cases
+                if (response.status === 409) {
+                    errorMessage = '{{ __("booking.js.room_unavailable_text") }}';
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: '{{ __("booking.js.renew_error") }}',
+                    text: errorMessage,
+                    confirmButtonColor: '#0d9488',
+                });
+            }
+        } catch (error) {
+            console.error('Renewal error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: '{{ __("booking.js.renew_error") }}',
+                text: '{{ __("booking.js.renew_error_text") }}',
+                confirmButtonColor: '#0d9488',
+            });
+        } finally {
+            // Reset loading state
+            submitBtn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoader.classList.add('hidden');
+        }
     }
     </script>
 

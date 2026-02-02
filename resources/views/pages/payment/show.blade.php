@@ -433,22 +433,22 @@
         const adminFees = {{ $booking->admin_fees ?? 0 }};
 
         // Debug: Log booking values
-        console.log('Booking Values:', {
-            roomPrice: roomPrice,
-            serviceFee: serviceFee,
-            adminFees: adminFees,
-            grandtotal: {{ $booking->grandtotal_price ?? 0 }}
-        });
+        // console.log('Booking Values:', {
+        //     roomPrice: roomPrice,
+        //     serviceFee: serviceFee,
+        //     adminFees: adminFees,
+        //     grandtotal: {{ $booking->grandtotal_price ?? 0 }}
+        // });
 
         // Calculate subtotal before service fee (for voucher calculation)
         // Formula: Subtotal = Room Price + Admin Fees (without service fee)
         const subtotalBeforeServiceFee = roomPrice + adminFees;
         const originalTotal = {{ $booking->grandtotal_price ?? 0 }};
 
-        console.log('Calculated Values:', {
-            subtotalBeforeServiceFee: subtotalBeforeServiceFee,
-            originalTotal: originalTotal
-        });
+        // console.log('Calculated Values:', {
+        //     subtotalBeforeServiceFee: subtotalBeforeServiceFee,
+        //     originalTotal: originalTotal
+        // });
 
         // Voucher UI elements
         const voucherCodeInput = document.getElementById('voucherCodeInput');
