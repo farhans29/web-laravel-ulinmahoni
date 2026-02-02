@@ -105,7 +105,7 @@ Route::get('/login', function () {
 // Authentication Routes
 Route::middleware(['guest'])->group(function () {
     Route::get('/register', function () {
-        return view('auth.register');
+        return view('auth.register-fallback');
     })->name('register');
 
     // Password Reset Routes
