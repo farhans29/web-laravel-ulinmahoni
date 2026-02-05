@@ -216,9 +216,9 @@
                             @if(!empty($room['facility']) && is_array($room['facility']) && count($room['facility']) > 0)
                             <div class="mb-8">
                                 <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ __('properties.room_detail.room_facilities') }}</h2>
-                                <div class="grid grid-cols-2 gap-6">
+                                <div class="grid grid-cols-2 gap-2">
                                     @foreach($room['facility'] as $facility)
-                                        <div class="flex items-center space-x-3 py-2">
+                                        <div class="flex items-center space-x-2 py-1">
                                             <i class="fas fa-check text-teal-600"></i>
                                             <span class="text-gray-600">{{ strtoupper($facility) }}</span>
                                         </div>

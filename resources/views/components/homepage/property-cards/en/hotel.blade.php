@@ -32,10 +32,10 @@
                             <div class="flex-1">
                                 <h3 class="text-base font-medium text-gray-800 mb-1">{{ $hotel['name'] }}</h3>
                                 <p class="text-gray-500 text-sm mb-1">{{ $hotel['subLocation'] }}</p>
-                                <p class="text-gray-500 text-xs mb-3">{{ $hotel['distance'] }}</p>
+                                <p class="text-gray-500 text-xs mb-1">{{ $hotel['distance'] }}</p>
                             </div>
 
-                            <div class="mt-auto">
+                            <div>
                                 <div class="flex items-center justify-between">
                                     <div>
                                         <p class="text-xs text-gray-500">
@@ -93,7 +93,6 @@
     
     .property-card {
         height: 100%;
-        min-height: 420px;
     }
     
     @media (min-width: 1024px) {

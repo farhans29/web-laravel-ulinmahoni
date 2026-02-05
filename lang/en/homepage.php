@@ -59,6 +59,7 @@ return [
     ],
 
     'cities' => [
+        'all' => 'All',
         'bogor' => 'Bogor',
         'jakarta' => 'Jakarta',
     ],
