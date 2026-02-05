@@ -24,7 +24,10 @@
 
         <!-- Location Tabs -->
         <div class="location-tabs-wrapper">
-            <button class="location-tab-trigger active" data-location="jakarta">
+            <button class="location-tab-trigger active" data-location="all">
+                {{ __('homepage.cities.all') }}
+            </button>
+            <button class="location-tab-trigger" data-location="jakarta">
                 {{ __('homepage.cities.jakarta') }}
             </button>
             <button class="location-tab-trigger" data-location="bogor">
@@ -35,7 +38,10 @@
         <!-- Property Type Content -->
         <div class="property-tab-contents">
             <!-- Kos Content -->
-            <div class="property-tab-content active" data-tab="kos" data-location="jakarta">
+            <div class="property-tab-content active" data-tab="kos" data-location="all">
+                @include('components.homepage.property-cards.kos', ['kos' => $kos ?? []])
+            </div>
+            <div class="property-tab-content" data-tab="kos" data-location="jakarta">
                 @include('components.homepage.property-cards.kos', ['kos' => $kosJakarta ?? []])
             </div>
             <div class="property-tab-content" data-tab="kos" data-location="bogor">
@@ -43,6 +49,9 @@
             </div>
 
             <!-- Apartment Content -->
+            <div class="property-tab-content" data-tab="apartment" data-location="all">
+                @include('components.homepage.property-cards.apartment', ['apartments' => $apartments ?? []])
+            </div>
             <div class="property-tab-content" data-tab="apartment" data-location="jakarta">
                 @include('components.homepage.property-cards.apartment', ['apartments' => $apartmentsJakarta ?? []])
             </div>
@@ -51,6 +60,9 @@
             </div>
 
             <!-- Villa Content -->
+            <div class="property-tab-content" data-tab="villa" data-location="all">
+                @include('components.homepage.property-cards.villa', ['villas' => $villas ?? []])
+            </div>
             <div class="property-tab-content" data-tab="villa" data-location="jakarta">
                 @include('components.homepage.property-cards.villa', ['villas' => $villasJakarta ?? []])
             </div>
@@ -59,6 +71,9 @@
             </div>
 
             <!-- Hotel Content -->
+            <div class="property-tab-content" data-tab="hotel" data-location="all">
+                @include('components.homepage.property-cards.hotel', ['hotels' => $hotels ?? []])
+            </div>
             <div class="property-tab-content" data-tab="hotel" data-location="jakarta">
                 @include('components.homepage.property-cards.hotel', ['hotels' => $hotelsJakarta ?? []])
             </div>
@@ -91,7 +106,7 @@
     /* Use rem for consistent scaling - 1rem = 16px at 100% zoom */
     .property-types-container {
         width: 100%;
-        max-width: 87.5rem; /* 1400px */
+        max-width: 80rem; /* 1280px - matches search bar */
         margin: 0 auto;
         padding: 0 1rem;
         box-sizing: border-box;
@@ -247,13 +262,6 @@
         .browse-all-btn {
             padding: 0.625rem 1.25rem; /* 10px 20px */
             font-size: 0.8125rem; /* 13px */
-        }
-    }
-
-    @media (min-width: 75rem) { /* 1200px */
-        .property-types-container {
-            max-width: 100rem; /* 1600px */
-            padding: 0 2rem; /* 32px */
         }
     }
 </style>

@@ -5,7 +5,7 @@ const propertyContents = document.querySelectorAll('.property-tab-content');
 
 // Track current selections
 let currentPropertyType = 'kos'; // Default to kos
-let currentLocation = 'jakarta'; // Default to jakarta
+let currentLocation = 'all'; // Default to all locations
 
 // Function to update content visibility based on current selections
 function updatePropertyContent() {

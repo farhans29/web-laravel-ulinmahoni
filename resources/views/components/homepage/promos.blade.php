@@ -1,8 +1,9 @@
 <!-- Promo berlangsung Section -->
 <section class="promo-section">
-    <div class="promo-container">
-        <!-- Swiper container -->
-        <div class="swiper promo-swiper">
+    <div class="promo-container-centered">
+        <div class="promo-container">
+            <!-- Swiper container -->
+            <div class="swiper promo-swiper">
             @if(count($promos) > 0)
                 <div class="swiper-wrapper">
                     @foreach ($promos as $promo)
@@ -35,6 +36,7 @@
                     <p>{{ __('homepage.messages.no_promos') }}</p>
                 </div>
             @endif
+            </div>
         </div>
     </div>
 </section>
@@ -44,6 +46,12 @@
         width: 100%;
         background-color: #f8fafc;
         padding: 1rem 0;
+    }
+
+    .promo-container-centered {
+        max-width: 80rem;    /* Match search bar - 1280px */
+        margin: 0 auto;      /* Center horizontally */
+        padding: 0 1rem;     /* Side spacing like search bar */
     }
 
     .promo-container {

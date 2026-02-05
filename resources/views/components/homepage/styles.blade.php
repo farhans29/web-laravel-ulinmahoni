@@ -142,7 +142,7 @@
 .section-container {
     max-width: 80rem;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 1rem;  /* Changed from 1.5rem to match search bar */
 }
 
 .section-title {
