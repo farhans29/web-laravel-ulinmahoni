@@ -235,7 +235,7 @@
         align-items: flex-start;
         color: #4b5563;
         font-size: 0.875rem; /* 14px */
-        margin-bottom: 0.5rem; /* 8px */
+        margin-bottom: 0.25rem; /* 4px - tighter spacing */
     }
 
     .property-card-location i {
@@ -253,7 +253,6 @@
     }
 
     .property-card-price-section {
-        margin-top: auto;
         display: flex;
         align-items: center;
         justify-content: space-between;
