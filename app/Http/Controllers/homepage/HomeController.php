@@ -104,6 +104,9 @@ class HomeController extends Controller {
             // Prepare property data by city/area
             $propertyAreas = $this->getPropertiesByArea($properties);
 
+            // Prepare property data by type and location for property-types component
+            $propertyTypesByLocation = $this->getPropertiesByTypeAndLocation($propertyTypes);
+
             // Use the same view for all locales - the view will detect locale via app()->getLocale()
             return view("pages.homepage.index", [
                 'kos' => $propertyTypes['Kos'],
@@ -113,7 +116,18 @@ class HomeController extends Controller {
                 'hotels' => $propertyTypes['Hotel'],
                 'heroMedia' => $heroMedia,
                 'promos' => $promos,
-                'propertyAreas' => $propertyAreas
+                'propertyAreas' => $propertyAreas,
+                // Property types by location
+                'kosJakarta' => $propertyTypesByLocation['kos']['jakarta'],
+                'kosBogor' => $propertyTypesByLocation['kos']['bogor'],
+                'housesJakarta' => $propertyTypesByLocation['house']['jakarta'],
+                'housesBogor' => $propertyTypesByLocation['house']['bogor'],
+                'apartmentsJakarta' => $propertyTypesByLocation['apartment']['jakarta'],
+                'apartmentsBogor' => $propertyTypesByLocation['apartment']['bogor'],
+                'villasJakarta' => $propertyTypesByLocation['villa']['jakarta'],
+                'villasBogor' => $propertyTypesByLocation['villa']['bogor'],
+                'hotelsJakarta' => $propertyTypesByLocation['hotel']['jakarta'],
+                'hotelsBogor' => $propertyTypesByLocation['hotel']['bogor'],
             ]);
 
         } catch (Exception $e) {
@@ -136,7 +150,18 @@ class HomeController extends Controller {
                     'tangerang' => [],
                     'depok' => [],
                     'bekasi' => []
-                ]
+                ],
+                // Property types by location
+                'kosJakarta' => [],
+                'kosBogor' => [],
+                'housesJakarta' => [],
+                'housesBogor' => [],
+                'apartmentsJakarta' => [],
+                'apartmentsBogor' => [],
+                'villasJakarta' => [],
+                'villasBogor' => [],
+                'hotelsJakarta' => [],
+                'hotelsBogor' => [],
             ]);
         }
     }
@@ -215,6 +240,31 @@ class HomeController extends Controller {
             'images' => $images,    // Keep all images array for gallery
             'status' => $property->status
         ];
+    }
+
+    /**
+     * Get properties grouped by type and location.
+     *
+     * @param array $propertyTypes Array of properties grouped by type
+     * @return array Properties grouped by type and location
+     */
+    private function getPropertiesByTypeAndLocation($propertyTypes)
+    {
+        $result = [];
+        $cities = ['jakarta', 'bogor'];
+
+        foreach ($propertyTypes as $type => $properties) {
+            $typeLower = strtolower($type);
+            $result[$typeLower] = [];
+
+            foreach ($cities as $city) {
+                $result[$typeLower][$city] = array_values(array_filter($properties, function($property) use ($city) {
+                    return stripos($property['subLocation'] ?? '', $city) !== false;
+                }));
+            }
+        }
+
+        return $result;
     }
 
     /**
