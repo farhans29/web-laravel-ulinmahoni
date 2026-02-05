@@ -22,30 +22,67 @@
             </button>
         </div>
 
+        <!-- Location Tabs -->
+        <div class="location-tabs-wrapper">
+            <button class="location-tab-trigger active" data-location="jakarta">
+                {{ __('homepage.cities.jakarta') }}
+            </button>
+            <button class="location-tab-trigger" data-location="bogor">
+                {{ __('homepage.cities.bogor') }}
+            </button>
+        </div>
+
         <!-- Property Type Content -->
         <div class="property-tab-contents">
-            <div class="property-tab-content active" data-tab="kos">
-                @include('components.homepage.property-cards.kos')
+            <!-- Kos Content -->
+            <div class="property-tab-content active" data-tab="kos" data-location="jakarta">
+                @include('components.homepage.property-cards.kos', ['kos' => $kosJakarta ?? []])
             </div>
-            <div class="property-tab-content hidden" data-tab="house">
-                @include('components.homepage.property-cards.house')
+            <div class="property-tab-content" data-tab="kos" data-location="bogor">
+                @include('components.homepage.property-cards.kos', ['kos' => $kosBogor ?? []])
             </div>
-            <div class="property-tab-content hidden" data-tab="apartment">
-                @include('components.homepage.property-cards.apartment')
+
+            <!-- Apartment Content -->
+            <div class="property-tab-content" data-tab="apartment" data-location="jakarta">
+                @include('components.homepage.property-cards.apartment', ['apartments' => $apartmentsJakarta ?? []])
             </div>
-            <div class="property-tab-content hidden" data-tab="villa">
-                @include('components.homepage.property-cards.villa')
+            <div class="property-tab-content" data-tab="apartment" data-location="bogor">
+                @include('components.homepage.property-cards.apartment', ['apartments' => $apartmentsBogor ?? []])
             </div>
-            <div class="property-tab-content hidden" data-tab="hotel">
-                @include('components.homepage.property-cards.hotel')
+
+            <!-- Villa Content -->
+            <div class="property-tab-content" data-tab="villa" data-location="jakarta">
+                @include('components.homepage.property-cards.villa', ['villas' => $villasJakarta ?? []])
             </div>
-            <!-- Browse All Button -->
-            <div class="browse-all-wrapper">
-                <a href="{{ route('properties.index') }}" class="browse-all-btn">
-                    <span>{{ __('homepage.actions.view_all_properties') }}</span>
-                    <i class="fas fa-arrow-right"></i>
-                </a>
+            <div class="property-tab-content" data-tab="villa" data-location="bogor">
+                @include('components.homepage.property-cards.villa', ['villas' => $villasBogor ?? []])
             </div>
+
+            <!-- Hotel Content -->
+            <div class="property-tab-content" data-tab="hotel" data-location="jakarta">
+                @include('components.homepage.property-cards.hotel', ['hotels' => $hotelsJakarta ?? []])
+            </div>
+            <div class="property-tab-content" data-tab="hotel" data-location="bogor">
+                @include('components.homepage.property-cards.hotel', ['hotels' => $hotelsBogor ?? []])
+            </div>
+
+            {{-- House Content (commented out since House tab is not active) --}}
+            {{--
+            <div class="property-tab-content" data-tab="house" data-location="jakarta">
+                @include('components.homepage.property-cards.house', ['houses' => $housesJakarta ?? []])
+            </div>
+            <div class="property-tab-content" data-tab="house" data-location="bogor">
+                @include('components.homepage.property-cards.house', ['houses' => $housesBogor ?? []])
+            </div>
+            --}}
+        </div>
+
+        <!-- Browse All Button (outside tab contents) -->
+        <div class="browse-all-wrapper">
+            <a href="{{ route('properties.index') }}" class="browse-all-btn">
+                <span>{{ __('homepage.actions.view_all_properties') }}</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
         </div>
     </div>
 </section>
@@ -88,6 +125,48 @@
     .property-tabs-wrapper .property-tab-trigger.text-teal-600 {
         color: #0d9488;
         border-bottom-color: #0d9488;
+    }
+
+    .location-tabs-wrapper {
+        display: flex;
+        border-bottom: 0.0625rem solid #e5e7eb; /* 1px */
+        margin-bottom: 1.5rem; /* 24px */
+        gap: 0;
+    }
+
+    .location-tabs-wrapper .location-tab-trigger {
+        padding: 0.75rem 1.5rem; /* 12px 24px */
+        font-size: 1.125rem; /* 18px */
+        font-weight: 500;
+        color: #6b7280;
+        background: transparent;
+        border: none;
+        border-bottom: 0.125rem solid transparent; /* 2px */
+        cursor: pointer;
+        transition: color 0.2s ease, border-color 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .location-tabs-wrapper .location-tab-trigger:hover {
+        color: #374151;
+    }
+
+    .location-tabs-wrapper .location-tab-trigger.active {
+        color: #0d9488;
+        border-bottom-color: #0d9488;
+    }
+
+    /* Property tab content visibility */
+    .property-tab-content {
+        display: none;
+    }
+
+    .property-tab-content.active {
+        display: block;
+    }
+
+    .property-tab-content.hidden {
+        display: none !important;
     }
 
     .browse-all-wrapper {
@@ -138,6 +217,24 @@
         }
 
         .property-tabs-wrapper .property-tab-trigger {
+            padding: 0.625rem 1rem; /* 10px 16px */
+            font-size: 1rem; /* 16px */
+            flex-shrink: 0;
+        }
+
+        .location-tabs-wrapper {
+            margin-bottom: 1rem; /* 16px */
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .location-tabs-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .location-tabs-wrapper .location-tab-trigger {
             padding: 0.625rem 1rem; /* 10px 16px */
             font-size: 1rem; /* 16px */
             flex-shrink: 0;
