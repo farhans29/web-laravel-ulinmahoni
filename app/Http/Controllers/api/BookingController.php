@@ -1315,7 +1315,7 @@ class BookingController extends ApiController
 
     /**
      * Update payment method for a booking
-     * 
+     *
      * @param Request $request
      * @param string $id
      * @return \Illuminate\Http\JsonResponse
@@ -1327,7 +1327,12 @@ class BookingController extends ApiController
             $validator = Validator::make($request->all(), [
                 'payment_method' => 'required',
                 'virtual_account_no' => 'nullable|string',
-                'payment_bank' => 'nullable|string'
+                'payment_bank' => 'nullable|string',
+                'deposit_fee' => 'nullable|numeric|min:0',
+                'parking_fee' => 'nullable|numeric|min:0',
+                'parking_type' => 'nullable|string',
+                'voucher_code' => 'nullable|string',
+                'discount_amount' => 'nullable|numeric|min:0'
             ]);
 
             if ($validator->fails()) {
@@ -1350,14 +1355,6 @@ class BookingController extends ApiController
                 ], 404);
             }
 
-            // Check if transaction_type is already set
-            // if (!is_null($booking->transaction_type)) {
-            //     return response()->json([
-            //         'status' => 'error',
-            //         'message' => 'Payment method has already been set and cannot be changed'
-            //     ], 400);
-            // }
-
             // Prepare update data
             $updateData = [
                 'transaction_type' => $request->payment_method,
@@ -1375,14 +1372,51 @@ class BookingController extends ApiController
                 $updateData['payment_bank'] = $request->payment_bank;
             }
 
-            // Update payment method
+            // Handle deposit fee
+            $depositFee = 0;
+            if ($request->has('deposit_fee')) {
+                $depositFee = floatval($request->deposit_fee);
+                $updateData['deposit_fee'] = $depositFee;
+            }
+
+            // Handle parking fee 
+            $parkingFee = 0;
+            if ($request->has('parking_fee')) {
+                $parkingFee = floatval($request->parking_fee);
+                $updateData['parking_fee'] = $parkingFee;
+            }
+
+            // Handle voucher discount
+            $discountAmount = floatval($booking->discount_amount ?? 0);
+            if ($request->has('discount_amount')) {
+                $discountAmount = floatval($request->discount_amount);
+                $updateData['discount_amount'] = $discountAmount;
+            }
+            if ($request->has('voucher_code')) {
+                $updateData['voucher_code'] = $request->voucher_code;
+            }
+
+            // Recalculate grandtotal if fees changed
+            // Formula: Grandtotal = (room_price + admin_fees) - discount + service_fees + deposit + parking
+            $roomPrice = floatval($booking->room_price ?? 0);
+            $adminFees = floatval($booking->admin_fees ?? 0);
+            $serviceFees = floatval($booking->service_fees ?? 0);
+
+            $subtotal = $roomPrice + $adminFees;
+            $newGrandtotal = $subtotal - $discountAmount + $serviceFees + $depositFee + $parkingFee;
+
+            $updateData['grandtotal_price'] = $newGrandtotal;
+            $updateData['subtotal_before_discount'] = $subtotal;
+
+            // Update payment method and fees
             $updated = DB::table('t_transactions')
                 ->where('idrec', $id)
                 ->update($updateData);
 
-            if (!$updated) {
-                throw new \Exception('Failed to update payment method. It may have already been set.');
-            }
+            // Also update t_payment grandtotal_price
+            DB::table('t_payment')
+                ->where('order_id', $booking->order_id)
+                ->update(['grandtotal_price' => $newGrandtotal]);
 
             return response()->json([
                 'status' => 'success',
@@ -1390,7 +1424,11 @@ class BookingController extends ApiController
                 'data' => [
                     'booking_id' => $id,
                     'payment_method' => $request->payment_method,
-                    'transaction_status' => 'waiting'
+                    'deposit_fee' => $depositFee,
+                    'parking_fee' => $parkingFee,
+                    'discount_amount' => $discountAmount,
+                    'grandtotal_price' => $newGrandtotal,
+                    'transaction_status' => 'pending'
                 ]
             ]);
 
