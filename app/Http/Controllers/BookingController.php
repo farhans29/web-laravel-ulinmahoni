@@ -418,6 +418,9 @@ class BookingController extends Controller
                 'virtual_account_no' => 'nullable|string',
                 'bank' => 'nullable|string',
                 'va_data' => 'nullable|string',
+                'deposit_fee' => 'nullable|numeric|min:0',
+                'parking_fee' => 'nullable|numeric|min:0',
+                'parking_type' => 'nullable|string',
                 'voucher_code' => 'nullable|string',
                 'discount_amount' => 'nullable|numeric|min:0'
             ]);
@@ -452,31 +455,50 @@ class BookingController extends Controller
                 $updateData['payment_bank'] = $request->bank;
             }
 
-            // Add voucher information if provided
+            // Handle deposit fee
+            $depositFee = floatval($booking->deposit_fee ?? 0);
+            if ($request->has('deposit_fee')) {
+                $depositFee = floatval($request->deposit_fee);
+                $updateData['deposit_fee'] = $depositFee;
+            }
+
+            // Handle parking fee
+            $parkingFee = floatval($booking->parking_fee ?? 0);
+            if ($request->has('parking_fee')) {
+                $parkingFee = floatval($request->parking_fee);
+                $updateData['parking_fee'] = $parkingFee;
+            }
+
+            // Handle voucher discount
+            $discountAmount = floatval($booking->discount_amount ?? 0);
             if ($request->has('voucher_code')) {
                 $updateData['voucher_code'] = $request->voucher_code;
             }
-
             if ($request->has('discount_amount')) {
-                $updateData['discount_amount'] = $request->discount_amount;
-                // Recalculate subtotal after discount
-                if ($booking->grandtotal_price && $request->discount_amount > 0) {
-                    $updateData['subtotal_before_discount'] = $booking->grandtotal_price;
-                    $updateData['grandtotal_price'] = $booking->grandtotal_price - $request->discount_amount;
-                }
+                $discountAmount = floatval($request->discount_amount);
+                $updateData['discount_amount'] = $discountAmount;
             }
+
+            // Recalculate grandtotal with all fees
+            // Formula: Grandtotal = (room_price + admin_fees) - discount + service_fees + deposit + parking
+            $roomPrice = floatval($booking->room_price ?? 0);
+            $adminFees = floatval($booking->admin_fees ?? 0);
+            $serviceFees = floatval($booking->service_fees ?? 0);
+
+            $subtotal = $roomPrice + $adminFees;
+            $newGrandtotal = $subtotal - $discountAmount + $serviceFees + $depositFee + $parkingFee;
+
+            $updateData['grandtotal_price'] = $newGrandtotal;
+            $updateData['subtotal_before_discount'] = $subtotal;
 
             DB::table('t_transactions')
                 ->where('idrec', $id)
                 ->update($updateData);
 
-            // Also update t_payment grandtotal_price if discount was applied
-            if ($request->has('discount_amount') && $request->discount_amount > 0) {
-                $newGrandtotal = $booking->grandtotal_price - $request->discount_amount;
-                DB::table('t_payment')
-                    ->where('order_id', $booking->order_id)
-                    ->update(['grandtotal_price' => $newGrandtotal]);
-            }
+            // Also update t_payment grandtotal_price
+            DB::table('t_payment')
+                ->where('order_id', $booking->order_id)
+                ->update(['grandtotal_price' => $newGrandtotal]);
 
             // Log voucher usage if voucher was applied
             if ($request->has('voucher_code') && $request->discount_amount > 0) {

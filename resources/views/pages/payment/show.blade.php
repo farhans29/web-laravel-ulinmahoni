@@ -74,6 +74,81 @@
                                 </div>
                             </div>
 
+                            <!-- Deposit & Parking Fee Section -->
+                            @php
+                                $property = \App\Models\Property::find($booking->property_id);
+                                $depositFeeAmount = $property ? ($property->deposit_fee_amount ?? 0) : 0;
+                                $parkingFees = $property ? $property->parkingFees()->where('status', 1)->get() : collect([]);
+                            @endphp
+
+                            @if($depositFeeAmount > 0 || $parkingFees->count() > 0)
+                            <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <h3 class="text-lg font-medium text-gray-700 mb-4">Biaya Tambahan</h3>
+
+                                <!-- Deposit Fee (Read-only) -->
+                                @if($depositFeeAmount > 0)
+                                <div class="mb-4">
+                                    <div class="flex justify-between items-center p-3 bg-white rounded-lg border border-gray-200">
+                                        <div>
+                                            <span class="font-medium text-gray-700">Deposit</span>
+                                            <p class="text-sm text-gray-500">Deposit akan dikembalikan saat checkout</p>
+                                        </div>
+                                        <span class="font-bold text-gray-900">Rp {{ number_format($depositFeeAmount, 0, ',', '.') }}</span>
+                                    </div>
+                                    <input type="hidden" name="deposit_fee" id="deposit_fee" value="{{ $depositFeeAmount }}">
+                                </div>
+                                @endif
+
+                                <!-- Parking Fee Selection -->
+                                @if($parkingFees->count() > 0)
+                                <div class="mb-2">
+                                    <label class="block font-medium text-gray-700 mb-2">Pilih Parkir (Opsional)</label>
+                                    <div class="space-y-2">
+                                        <!-- No Parking Option -->
+                                        <label class="parking-option flex items-center justify-between p-3 bg-white rounded-lg border-2 border-gray-200 cursor-pointer hover:border-teal-500 transition-all">
+                                            <div class="flex items-center">
+                                                <input type="radio" name="parking_selection" value="none" class="mr-3" checked
+                                                    data-parking-fee="0"
+                                                    data-parking-type="none">
+                                                <div>
+                                                    <span class="font-medium text-gray-700">Tidak perlu parkir</span>
+                                                </div>
+                                            </div>
+                                            <span class="font-bold text-gray-500">Rp 0</span>
+                                        </label>
+
+                                        @foreach($parkingFees as $parkingFee)
+                                        <label class="parking-option flex items-center justify-between p-3 bg-white rounded-lg border-2 border-gray-200 cursor-pointer hover:border-teal-500 transition-all">
+                                            <div class="flex items-center">
+                                                <input type="radio" name="parking_selection" value="{{ $parkingFee->idrec }}" class="mr-3"
+                                                    data-parking-fee="{{ $parkingFee->fee }}"
+                                                    data-parking-type="{{ $parkingFee->parking_type }}">
+                                                <div>
+                                                    <span class="font-medium text-gray-700">
+                                                        @if(strtolower($parkingFee->parking_type) == 'car' || strtolower($parkingFee->parking_type) == 'mobil')
+                                                            <i class="fas fa-car mr-2"></i>Parkir Mobil
+                                                        @elseif(strtolower($parkingFee->parking_type) == 'motorcycle' || strtolower($parkingFee->parking_type) == 'motor')
+                                                            <i class="fas fa-motorcycle mr-2"></i>Parkir Motor
+                                                        @else
+                                                            {{ ucfirst($parkingFee->parking_type) }}
+                                                        @endif
+                                                    </span>
+                                                    @if($parkingFee->capacity)
+                                                    <p class="text-sm text-gray-500">Kapasitas: {{ $parkingFee->capacity }}</p>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <span class="font-bold text-gray-900">Rp {{ number_format($parkingFee->fee, 0, ',', '.') }}</span>
+                                        </label>
+                                        @endforeach
+                                    </div>
+                                    <input type="hidden" name="parking_fee" id="parking_fee" value="0">
+                                    <input type="hidden" name="parking_type" id="parking_type" value="none">
+                                </div>
+                                @endif
+                            </div>
+                            @endif
+
                             <!-- Payment Method -->
                             <div class="space-y-6">
                                 <div>
@@ -256,12 +331,12 @@
 
                             <div class="pt-4 border-t">
                                 <h4 class="font-medium mb-2">{{ __('properties.payment.pricing') }}</h4>
-                                <!-- <p class="text-sm text-gray-600">Harga Harian: {{ number_format($booking->daily_price, 0) }}</p> -->
                                 <p class="text-sm text-gray-600">{{ __('properties.payment.room_price') }} <span id="summaryRoomPrice">{{ number_format($booking->room_price, 0) }}</span></p>
-                                {{-- <p class="text-sm text-gray-600">Biaya Admin: {{ number_format($booking->admin_fees, 0) }}</p> --}}
                                 <p class="text-sm text-gray-600 mt-2 pt-2 border-t">{{ __('properties.payment.subtotal') }} <span id="summarySubtotal">{{ number_format($booking->room_price + ($booking->admin_fees ?? 0), 0) }}</span></p>
                                 <p id="summaryDiscountRow" class="text-sm text-green-600 hidden">{{ __('properties.payment.voucher_discount') }} <span id="summaryDiscountAmount">0</span></p>
                                 <p class="text-sm text-gray-600">{{ __('properties.payment.service_fee') }} <span id="summaryServiceFee">{{ number_format($booking->service_fees, 0) }}</span></p>
+                                <p id="summaryDepositRow" class="text-sm text-gray-600 hidden">Deposit: +Rp <span id="summaryDepositAmount">0</span></p>
+                                <p id="summaryParkingRow" class="text-sm text-gray-600 hidden">Parkir (<span id="summaryParkingType">-</span>): +Rp <span id="summaryParkingAmount">0</span></p>
                                 <p class="text-sm font-bold text-gray-900 mt-2 pt-2 border-t">{{ __('properties.payment.grand_total') }} <span id="summaryTotal">{{ number_format($booking->grandtotal_price, 0) }}</span></p>
                             </div>
                         </div>
@@ -432,16 +507,13 @@
         const serviceFee = {{ $booking->service_fees ?? 0 }};
         const adminFees = {{ $booking->admin_fees ?? 0 }};
 
-        // Debug: Log booking values
-        // console.log('Booking Values:', {
-        //     roomPrice: roomPrice,
-        //     serviceFee: serviceFee,
-        //     adminFees: adminFees,
-        //     grandtotal: {{ $booking->grandtotal_price ?? 0 }}
-        // });
+        // Deposit and Parking fee state
+        const depositFee = {{ $depositFeeAmount ?? 0 }};
+        let selectedParkingFee = 0;
+        let selectedParkingType = 'none';
 
         // Calculate subtotal before service fee (for voucher calculation)
-        // Formula: Subtotal = Room Price + Admin Fees (without service fee)
+        // Formula: Subtotal = Room Price + Admin Fees (without service fee, deposit, parking)
         const subtotalBeforeServiceFee = roomPrice + adminFees;
         const originalTotal = {{ $booking->grandtotal_price ?? 0 }};
 
@@ -552,24 +624,77 @@
             updatePriceSummary();
         });
 
+        // Handle parking fee selection
+        document.querySelectorAll('.parking-option input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                selectedParkingFee = parseFloat(this.dataset.parkingFee) || 0;
+                selectedParkingType = this.dataset.parkingType || 'none';
+
+                // Update hidden fields
+                const parkingFeeInput = document.getElementById('parking_fee');
+                const parkingTypeInput = document.getElementById('parking_type');
+                if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
+                if (parkingTypeInput) parkingTypeInput.value = selectedParkingType;
+
+                // Update visual selection
+                document.querySelectorAll('.parking-option').forEach(option => {
+                    option.classList.remove('border-teal-500', 'ring-2', 'ring-teal-200');
+                    option.classList.add('border-gray-200');
+                });
+                this.closest('.parking-option').classList.add('border-teal-500', 'ring-2', 'ring-teal-200');
+                this.closest('.parking-option').classList.remove('border-gray-200');
+
+                // Update price summary
+                updatePriceSummary();
+            });
+        });
+
+        // Initialize deposit fee display and recalculate totals on page load
+        if (depositFee > 0) {
+            document.getElementById('summaryDepositRow').classList.remove('hidden');
+            document.getElementById('summaryDepositAmount').textContent = depositFee.toLocaleString('id-ID');
+        }
+
+        // Call updatePriceSummary on page load to include deposit in Grand Total
+        updatePriceSummary();
+
         // Update price summary
-        // Formula: Grandtotal = Subtotal - Voucher + Service Fee
+        // Formula: Grandtotal = Subtotal - Voucher + Service Fee + Deposit + Parking
         function updatePriceSummary() {
             const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
 
-            // Calculate final total: Subtotal - Discount + Service Fee
+            // Calculate final total: Subtotal - Discount + Service Fee + Deposit + Parking
             const subtotalAfterDiscount = subtotalBeforeServiceFee - discountAmount;
-            const finalTotal = subtotalAfterDiscount + serviceFee;
+            const finalTotal = subtotalAfterDiscount + serviceFee + depositFee + selectedParkingFee;
 
             // Update all price elements
             document.getElementById('summarySubtotal').textContent = subtotalBeforeServiceFee.toLocaleString('id-ID');
             document.getElementById('summaryDiscountAmount').textContent = discountAmount.toLocaleString('id-ID');
             document.getElementById('summaryTotal').textContent = finalTotal.toLocaleString('id-ID');
 
+            // Update discount row visibility
             if (discountAmount > 0) {
                 document.getElementById('summaryDiscountRow').classList.remove('hidden');
             } else {
                 document.getElementById('summaryDiscountRow').classList.add('hidden');
+            }
+
+            // Update deposit row
+            if (depositFee > 0) {
+                document.getElementById('summaryDepositRow').classList.remove('hidden');
+                document.getElementById('summaryDepositAmount').textContent = depositFee.toLocaleString('id-ID');
+            }
+
+            // Update parking row
+            if (selectedParkingFee > 0) {
+                document.getElementById('summaryParkingRow').classList.remove('hidden');
+                document.getElementById('summaryParkingAmount').textContent = selectedParkingFee.toLocaleString('id-ID');
+                const parkingTypeLabel = selectedParkingType === 'car' || selectedParkingType === 'mobil' ? 'Mobil' :
+                                        selectedParkingType === 'motorcycle' || selectedParkingType === 'motor' ? 'Motor' :
+                                        selectedParkingType;
+                document.getElementById('summaryParkingType').textContent = parkingTypeLabel;
+            } else {
+                document.getElementById('summaryParkingRow').classList.add('hidden');
             }
         }
 
@@ -641,14 +766,17 @@
             loadingSpinner.classList.remove('hidden');
 
             try {
-                // Calculate final amount using formula: Subtotal - Voucher + Service Fee
+                // Calculate final amount using formula: Subtotal - Voucher + Service Fee + Deposit + Parking
                 const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
-                const finalAmount = subtotalBeforeServiceFee - discountAmount + serviceFee;
+                const finalAmount = subtotalBeforeServiceFee - discountAmount + serviceFee + depositFee + selectedParkingFee;
 
                 console.log('Payment Calculation:', {
                     subtotalBeforeServiceFee: subtotalBeforeServiceFee,
                     discountAmount: discountAmount,
                     serviceFee: serviceFee,
+                    depositFee: depositFee,
+                    parkingFee: selectedParkingFee,
+                    parkingType: selectedParkingType,
                     finalAmount: finalAmount
                 });
 
@@ -691,7 +819,10 @@
                     updateParams = {
                         payment_method: 'qris',
                         qr_content: paymentData.data.qr_content,
-                        qris_data: JSON.stringify(paymentData.data)
+                        qris_data: JSON.stringify(paymentData.data),
+                        deposit_fee: depositFee,
+                        parking_fee: selectedParkingFee,
+                        parking_type: selectedParkingType
                     };
 
                     // Add voucher data if applied
@@ -732,7 +863,10 @@
                         payment_method: 'credit_card',
                         payment_url: paymentData.payment_url,
                         invoice_number: paymentData.invoice_number,
-                        cc_data: JSON.stringify(paymentData)
+                        cc_data: JSON.stringify(paymentData),
+                        deposit_fee: depositFee,
+                        parking_fee: selectedParkingFee,
+                        parking_type: selectedParkingType
                     };
 
                     // Add voucher data if applied
@@ -786,7 +920,10 @@
                         payment_method: selectedBank.value,
                         bank: selectedBank.dataset.bankName,
                         virtual_account_no: paymentData.data.virtual_account_no,
-                        va_data: JSON.stringify(paymentData.data)
+                        va_data: JSON.stringify(paymentData.data),
+                        deposit_fee: depositFee,
+                        parking_fee: selectedParkingFee,
+                        parking_type: selectedParkingType
                     };
 
                     // Add voucher data if applied
@@ -811,7 +948,10 @@
                             bank_name: 'BRI',
                             account_number: '0505 01 001671 567',
                             account_name: 'Kelola Aset Properti'
-                        })
+                        }),
+                        deposit_fee: depositFee,
+                        parking_fee: selectedParkingFee,
+                        parking_type: selectedParkingType
                     };
 
                     // Add voucher data if applied
@@ -921,9 +1061,9 @@
         }
 
         function showManualTransferModal() {
-            // Calculate final amount using formula: Subtotal - Voucher + Service Fee
+            // Calculate final amount using formula: Subtotal - Voucher + Service Fee + Deposit + Parking
             const discountAmount = appliedVoucher ? appliedVoucher.calculation.discount_amount : 0;
-            const finalAmount = subtotalBeforeServiceFee - discountAmount + serviceFee;
+            const finalAmount = subtotalBeforeServiceFee - discountAmount + serviceFee + depositFee + selectedParkingFee;
 
             // Create modal HTML dynamically
             const modalHtml = `

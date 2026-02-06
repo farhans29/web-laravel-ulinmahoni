@@ -34,6 +34,8 @@ class Transaction extends Model
         'attachment',
         'admin_fees',
         'service_fees',
+        'deposit_fee',
+        'parking_fee',
         'grandtotal_price',
         'voucher_id',
         'voucher_code',
@@ -70,6 +72,8 @@ class Transaction extends Model
         'room_price' => 'decimal:2',
         'admin_fees' => 'decimal:2',
         'service_fees' => 'decimal:2',
+        'deposit_fee' => 'decimal:2',
+        'parking_fee' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'subtotal_before_discount' => 'decimal:2',
         'booking_days' => 'integer'

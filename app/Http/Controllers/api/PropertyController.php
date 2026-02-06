@@ -93,6 +93,10 @@ class PropertyController extends ApiController
 
                 $propertyArray['images'] = $images;
 
+                // Add deposit fee and parking fees
+                $propertyArray['deposit_fee_amount'] = $property->deposit_fee_amount;
+                $propertyArray['parking_fees'] = $property->parking_fees;
+
                 // Remove image-related fields from the main property object
                 unset(
                     $propertyArray['image_id'],
@@ -185,6 +189,10 @@ class PropertyController extends ApiController
                 $propertyArray['thumbnail'] = $firstImageWithThumbnail['thumbnail'] ?? null;
 
                 $propertyArray['images'] = $images;
+
+                // Add deposit fee and parking fees
+                $propertyArray['deposit_fee_amount'] = $property->deposit_fee_amount;
+                $propertyArray['parking_fees'] = $property->parking_fees;
 
                 // Remove image-related fields from the main property object
                 unset(

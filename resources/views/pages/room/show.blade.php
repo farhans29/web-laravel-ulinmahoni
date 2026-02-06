@@ -239,6 +239,34 @@
                                     <pre class="text-gray-600 leading-relaxed whitespace-pre-wrap font-sans">{!! $room['descriptions'] !!}</pre>
                                 </div>
                             </div>
+
+                            <!-- Deposit & Parking Fees Info -->
+                            @if(($room['property']['deposit_fee'] ?? 0) > 0 || !empty($room['property']['parking_fees']))
+                            <div class="mb-8">
+                                <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ __('Biaya Tambahan') }}</h2>
+                                <div class="space-y-2">
+                                    @if(($room['property']['deposit_fee'] ?? 0) > 0)
+                                    <div class="flex items-center space-x-2 py-1">
+                                        <i class="fas fa-money-bill-wave text-teal-600"></i>
+                                        <span class="text-gray-600">Deposit: <span class="font-medium">Rp {{ number_format($room['property']['deposit_fee'], 0, ',', '.') }}</span></span>
+                                    </div>
+                                    @endif
+                                    @if(!empty($room['property']['parking_fees']))
+                                        @foreach($room['property']['parking_fees'] as $parkingFee)
+                                        <div class="flex items-center space-x-2 py-1">
+                                            @if(strtolower($parkingFee['parking_type'] ?? '') == 'motor' || strtolower($parkingFee['parking_type'] ?? '') == 'motorcycle')
+                                                <i class="fas fa-bicycle text-teal-600"></i>
+                                            @else
+                                                <i class="fas fa-car text-teal-600"></i>
+                                            @endif
+                                            <span class="text-gray-600">Parkir {{ $parkingFee['parking_type'] ?? '' }}: <span class="font-medium">Rp {{ number_format($parkingFee['fee'] ?? 0, 0, ',', '.') }}/bulan</span></span>
+                                        </div>
+                                        @endforeach
+                                    @endif
+                                </div>
+                                <p class="text-xs text-gray-400 mt-3">*Biaya akan ditambahkan saat pembayaran</p>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -255,7 +283,7 @@
                             <div class="text-right">
                                 <!-- Room Status -->
                                 <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
-                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? 'bg-green-100 text-green-800' : 'bg-gray-400 text-white' }}">
                                     {{ $room['status'] == 1 && $room['rental_status'] != 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
                                 </span>
 
@@ -407,8 +435,8 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Availability Check -->
-                            <div class="mt-3">
+                            {{-- Availability Check - Commented out, now using roomStatus badge at top --}}
+                            {{-- <div class="mt-3">
                                 <div id="availabilityStatus" class="text-sm p-3 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center">
@@ -418,7 +446,7 @@
                                         <span class="text-xs text-gray-500">{{ __('properties.booking.waiting_date_selection') }}</span>
                                     </div>
                                 </div>
-                            </div>
+                            </div> --}}
 
                             <!-- Price Summary -->
                             <!-- Base Rates Info -->
@@ -589,12 +617,12 @@
     <script>
         // --- Global variables ---
         let bookingForm, errorAlert, loadingOverlay, submitButton, monthInput, dateInputs, monthsSelect, rentTypeSelect;
-        let checkInInput, checkOutInput, availabilityStatusDiv;
+        let checkInInput, checkOutInput, roomStatusSpan;
         let availabilityCheckTimeout;
 
         // --- Global Room Availability Function ---
         async function checkRoomAvailability() {
-            console.log('=== CHECK ROOM AVAILABILITY STARTED ===');
+            // console.log('=== CHECK ROOM AVAILABILITY STARTED ===');
             
             const propertyId = document.getElementById('propertyId').value;
             const roomId = document.querySelector('[name="room_id"]').value;
@@ -602,14 +630,14 @@
             const checkOutDate = document.getElementById('check_out').value;
             const rentType = document.getElementById('rent_type').value;
             
-            console.log('Input values:', {
-                propertyId: propertyId,
-                roomId: roomId,
-                checkInDate: checkInDate,
-                checkOutDate: checkOutDate,
-                rentType: rentType,
-                timestamp: new Date().toISOString()
-            });
+            // console.log('Input values:', {
+            //     propertyId: propertyId,
+            //     roomId: roomId,
+            //     checkInDate: checkInDate,
+            //     checkOutDate: checkOutDate,
+            //     rentType: rentType,
+            //     timestamp: new Date().toISOString()
+            // });
             
             // Clear previous timeout to avoid multiple rapid calls
             if (availabilityCheckTimeout) {
@@ -640,7 +668,7 @@
             }
             
             // Prevent checking if check-out is before check-in
-            console.log('Validating date order');
+            // console.log('Validating date order');
             if (new Date(checkOutDate) <= new Date(checkInDate)) {
                 console.log('Date validation failed - check-out before or same as check-in');
                 showAvailabilityStatus('error', '{{ __("properties.booking.date_invalid") }}');
@@ -745,7 +773,7 @@
                 }
             }, 500); // Add small delay to prevent excessive API calls
             
-            console.log('=== CHECK ROOM AVAILABILITY SCHEDULED ===');
+            // console.log('=== CHECK ROOM AVAILABILITY SCHEDULED ===');
         }
 
         // --- Other Global Utility Functions ---
@@ -754,77 +782,48 @@
         }
         
         function showAvailabilityStatus(type, message) {
-            if (!availabilityStatusDiv) return;
-            
-            let className = 'text-sm p-3 rounded-lg border transition-all duration-300 ';
-            let statusIcon = '';
-            let statusMessage = '';
-            
+            if (!roomStatusSpan) return;
+
+            let className = 'px-4 py-2 rounded-full text-sm font-medium ';
+            let statusText = '';
+
             switch (type) {
                 case 'loading':
-                    className += 'bg-blue-50 border-blue-200 text-blue-800';
-                    statusIcon = '<i class="fas fa-spinner fa-spin mr-2"></i>';
-                    statusMessage = 'Memeriksa ketersediaan...';
+                    className += 'bg-blue-100 text-blue-800';
+                    statusText = '<i class="fas fa-spinner fa-spin mr-1"></i> Memeriksa...';
                     break;
                 case 'available':
-                    className += 'bg-green-50 border-green-200 text-green-800';
-                    statusIcon = '<i class="fas fa-check-circle mr-2 text-green-500"></i>';
-                    statusMessage = 'Tersedia';
+                    className += 'bg-green-100 text-green-800';
+                    statusText = '{{ __("properties.status.available") }}';
                     break;
                 case 'unavailable':
-                    className += 'bg-red-50 border-red-200 text-red-700';
-                    statusIcon = '<i class="fas fa-times-circle mr-2 text-red-500"></i>';
-                    statusMessage = 'Tidak Tersedia';
+                    className += 'bg-red-100 text-red-800';
+                    statusText = '{{ __("properties.status.unavailable") }}';
                     break;
                 case 'error':
-                    className += 'bg-yellow-50 border-yellow-200 text-yellow-800';
-                    statusIcon = '<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>';
-                    statusMessage = 'Validasi Gagal';
+                    className += 'bg-yellow-100 text-yellow-800';
+                    statusText = 'Error';
                     break;
                 default:
-                    className += 'bg-gray-50 border-gray-200 text-gray-600';
-                    statusIcon = '<i class="fas fa-info-circle mr-2 text-blue-500"></i>';
-                    statusMessage = 'Menunggu pemilihan tanggal...';
+                    className += 'bg-gray-100 text-gray-600';
+                    statusText = '{{ __("properties.booking.waiting_date_selection") }}';
             }
-            
-            // Special handling for conflicting bookings
-            if (type === 'unavailable' && message && message.includes('pemesanan konflik')) {
-                const match = message.match(/(\d+)\s+pemesanan konflik/);
-                if (match) {
-                    const count = match[1];
-                    statusMessage = `Kamar sudah dipesan`;
-                }
-            }
-            
-            availabilityStatusDiv.className = className;
-            availabilityStatusDiv.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        ${statusIcon}
-                        <span class="font-medium">{{ __("properties.booking.availability_status") }}</span>
-                    </div>
-                    <span>${statusMessage}</span>
-                </div>
-                ${message && type !== 'loading' && type !== 'available' && type !== 'unavailable' ? `
-                    <div class="mt-2 text-xs opacity-80">
-                        <span>${message}</span>
-                    </div>
-                ` : ''}
-            `;
+
+            roomStatusSpan.className = className;
+            roomStatusSpan.innerHTML = statusText;
         }
-        
+
         function resetAvailabilityStatus() {
-            if (!availabilityStatusDiv) return;
-            availabilityStatusDiv.className = 'text-sm p-3 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300';
-            availabilityStatusDiv.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                        <span class="text-gray-600 font-medium">{{ __("properties.booking.availability_status") }}</span>
-                    </div>
-                    <span class="text-gray-500 text-xs">{{ __("properties.booking.waiting_date_selection") }}</span>
-                </div>
-            `;
+            if (!roomStatusSpan) return;
+            // Reset to initial state based on room status
+            const isAvailable = {{ $room['status'] == 1 && $room['rental_status'] != 1 ? 'true' : 'false' }};
+            if (isAvailable) {
+                roomStatusSpan.className = 'px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800';
+                roomStatusSpan.innerHTML = '{{ __("properties.status.available") }}';
+            } else {
+                roomStatusSpan.className = 'px-4 py-2 rounded-full text-sm font-medium bg-gray-400 text-white';
+                roomStatusSpan.innerHTML = '{{ __("properties.status.unavailable") }}';
+            }
         }
 
         function updateSubmitButton(isEnabled, customMessage = null) {
@@ -835,20 +834,23 @@
             if (!checkAvailabilityButton || !submitButton) return;
 
             if (isEnabled && {{ $room['status'] ?? 0 }} == 1) {
-                // Room is available - show submit button, rental agreement checkbox, and hide check availability button
+                // Room is available - show green submit button, rental agreement checkbox, and hide check availability button
                 checkAvailabilityButton.classList.add('hidden');
                 submitButton.classList.remove('hidden');
                 submitButton.disabled = false;
+                submitButton.className = 'w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium';
+                submitButton.textContent = '{{ __("properties.booking.book_now") }}';
 
                 // Show rental agreement checkbox
                 if (rentalAgreementSection) {
                     rentalAgreementSection.classList.remove('hidden');
                 }
             } else {
-                // Room is not available - show check availability button and hide submit button and agreement
-                checkAvailabilityButton.classList.remove('hidden');
-                submitButton.classList.add('hidden');
+                // Room is not available - show grey submit button and hide check availability button and agreement
+                checkAvailabilityButton.classList.add('hidden');
+                submitButton.classList.remove('hidden');
                 submitButton.disabled = true;
+                submitButton.className = 'w-full bg-gray-400 text-white py-4 px-6 rounded-lg text-lg font-medium cursor-not-allowed';
 
                 // Hide rental agreement checkbox
                 if (rentalAgreementSection) {
@@ -856,11 +858,11 @@
                 }
 
                 if (customMessage) {
-                    checkAvailabilityButton.textContent = customMessage;
+                    submitButton.textContent = customMessage;
                 } else if ({{ $room['status'] ?? 0 }} == 0) {
-                    checkAvailabilityButton.textContent = '{{ __("properties.booking.room_unavailable") }}';
+                    submitButton.textContent = '{{ __("properties.booking.room_unavailable") }}';
                 } else {
-                    checkAvailabilityButton.textContent = '{{ __("properties.booking.check_availability") }}';
+                    submitButton.textContent = '{{ __("properties.booking.room_unavailable") }}';
                 }
             }
         }
@@ -876,7 +878,7 @@
             dateInputs = document.getElementById('dateInputs');
             monthsSelect = document.getElementById('months');
             rentTypeSelect = document.querySelector('select[name="rent_type"]');
-            availabilityStatusDiv = document.getElementById('availabilityStatus');
+            roomStatusSpan = document.getElementById('roomStatus');
             
             // Remove duplicate element references that were declared later
             const priceDailyInput = document.getElementById('priceDaily');
@@ -901,102 +903,76 @@
             
 
             function showAvailabilityStatus(type, message) {
-                if (!availabilityStatusDiv) return;
-                
-                let className = 'text-sm p-3 rounded-lg border transition-all duration-300 ';
-                let statusIcon = '';
-                let statusMessage = '';
-                
+                if (!roomStatusSpan) return;
+
+                let className = 'px-4 py-2 rounded-full text-sm font-medium ';
+                let statusText = '';
+
                 switch (type) {
                     case 'loading':
-                        className += 'bg-blue-50 border-blue-200 text-blue-800';
-                        statusIcon = '<i class="fas fa-spinner fa-spin mr-2"></i>';
-                        statusMessage = '{{ __("properties.booking.checking_availability") }}';
+                        className += 'bg-blue-100 text-blue-800';
+                        statusText = '<i class="fas fa-spinner fa-spin mr-1"></i> {{ __("properties.booking.checking_availability") }}';
                         break;
                     case 'available':
-                        className += 'bg-green-50 border-green-200 text-green-800';
-                        statusIcon = '<i class="fas fa-check-circle mr-2 text-green-500"></i>';
-                        statusMessage = '{{ __("properties.status.available") }}';
+                        className += 'bg-green-100 text-green-800';
+                        statusText = '{{ __("properties.status.available") }}';
                         break;
                     case 'unavailable':
-                        className += 'bg-red-50 border-red-200 text-red-700';
-                        statusIcon = '<i class="fas fa-times-circle mr-2 text-red-500"></i>';
-                        statusMessage = '{{ __("properties.status.unavailable") }}';
+                        className += 'bg-gray-400 text-white';
+                        statusText = '{{ __("properties.status.unavailable") }}';
                         break;
                     case 'error':
-                        className += 'bg-yellow-50 border-yellow-200 text-yellow-800';
-                        statusIcon = '<i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>';
-                        statusMessage = '{{ __("properties.booking.date_invalid") }}';
+                        className += 'bg-yellow-100 text-yellow-800';
+                        statusText = '{{ __("properties.booking.date_invalid") }}';
                         break;
                     default:
-                        className += 'bg-gray-50 border-gray-200 text-gray-600';
-                        statusIcon = '<i class="fas fa-info-circle mr-2 text-blue-500"></i>';
-                        statusMessage = '{{ __("properties.booking.waiting_date_selection") }}';
+                        className += 'bg-gray-100 text-gray-600';
+                        statusText = '{{ __("properties.booking.waiting_date_selection") }}';
                 }
-                
-                // Special handling for conflicting bookings
-                if (type === 'unavailable' && message && message.includes('pemesanan konflik')) {
-                    const match = message.match(/(\d+)\s+pemesanan konflik/);
-                    if (match) {
-                        const count = match[1];
-                        statusMessage = `Konflik ${count} pemesanan`;
-                    }
-                }
-                
-                availabilityStatusDiv.className = className;
-                availabilityStatusDiv.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            ${statusIcon}
-                            <span class="font-medium">Status Ketersediaan:</span>
-                        </div>
-                        <span>${statusMessage}</span>
-                    </div>
-                    ${message && type !== 'loading' && type !== 'available' && type !== 'unavailable' ? `
-                        <div class="mt-2 text-xs opacity-80">
-                            <span>${message}</span>
-                        </div>
-                    ` : ''}
-                `;
+
+                roomStatusSpan.className = className;
+                roomStatusSpan.innerHTML = statusText;
             }
 
             function resetAvailabilityStatus() {
-                if (!availabilityStatusDiv) return;
-                availabilityStatusDiv.className = 'text-sm p-3 rounded-lg border border-gray-200 bg-gray-50 transition-all duration-300';
-                availabilityStatusDiv.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fas fa-info-circle text-blue-500 mr-2"></i>
-                            <span class="text-gray-600 font-medium">Status Ketersediaan:</span>
-                        </div>
-                        <span class="text-gray-500 text-xs">Menunggu pemilihan tanggal...</span>
-                    </div>
-                `;
+                if (!roomStatusSpan) return;
+                // Reset to initial state based on room status
+                const isAvailable = {{ $room['status'] == 1 && $room['rental_status'] != 1 ? 'true' : 'false' }};
+                if (isAvailable) {
+                    roomStatusSpan.className = 'px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800';
+                    roomStatusSpan.innerHTML = '{{ __("properties.status.available") }}';
+                } else {
+                    roomStatusSpan.className = 'px-4 py-2 rounded-full text-sm font-medium bg-gray-400 text-white';
+                    roomStatusSpan.innerHTML = '{{ __("properties.status.unavailable") }}';
+                }
             }
 
             function updateSubmitButton(isEnabled, customMessage = null) {
                 const checkAvailabilityButton = document.getElementById('checkAvailabilityButton');
                 const submitButton = document.getElementById('submitButton');
-                
+
                 if (!checkAvailabilityButton || !submitButton) return;
-                
+
                 if (isEnabled && {{ $room['status'] ?? 0 }} == 1) {
-                    // Room is available - show submit button and hide check availability button
+                    // Room is available - show green submit button and hide check availability button
                     checkAvailabilityButton.classList.add('hidden');
                     submitButton.classList.remove('hidden');
                     submitButton.disabled = false;
+                    submitButton.className = 'w-full bg-teal-600 text-white py-4 px-6 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition-colors duration-200 text-lg font-medium';
+                    submitButton.textContent = '{{ __("properties.booking.book_now") }}';
                 } else {
-                    // Room is not available - show check availability button and hide submit button
-                    checkAvailabilityButton.classList.remove('hidden');
-                    submitButton.classList.add('hidden');
+                    // Room is not available - show grey submit button and hide check availability button
+                    checkAvailabilityButton.classList.add('hidden');
+                    submitButton.classList.remove('hidden');
                     submitButton.disabled = true;
-                    
+                    submitButton.className = 'w-full bg-gray-400 text-white py-4 px-6 rounded-lg text-lg font-medium cursor-not-allowed';
+
                     if (customMessage) {
-                        checkAvailabilityButton.textContent = customMessage;
+                        submitButton.textContent = customMessage;
                     } else if ({{ $room['status'] ?? 0 }} == 0) {
-                        checkAvailabilityButton.textContent = 'Kamar Tidak Tersedia';
+                        submitButton.textContent = '{{ __("properties.booking.room_unavailable") }}';
                     } else {
-                        checkAvailabilityButton.textContent = 'Cek Ketersediaan Kamar';
+                        submitButton.textContent = '{{ __("properties.booking.room_unavailable") }}';
                     }
                 }
             }
