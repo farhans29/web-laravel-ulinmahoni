@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\VoucherAdminController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\PromoBannerController;
+use App\Http\Controllers\Api\DepositFeeController;
+use App\Http\Controllers\Api\ParkingFeeController;
 
 use App\Http\Middleware\VerifyApiKey;
 use Illuminate\Support\Facades\Auth;
@@ -195,6 +197,26 @@ Route::prefix('v1')->group(function () {
             Route::delete('/{id}', [PromoBannerController::class, 'destroy']);
             Route::post('/{id}/images', [PromoBannerController::class, 'addImages']);
             Route::delete('/{id}/images/{imageId}', [PromoBannerController::class, 'removeImage']);
+        });
+
+        // DEPOSIT FEE API ROUTES
+        Route::prefix('deposit-fee')->group(function () {
+            Route::get('/', [DepositFeeController::class, 'index']);
+            Route::get('/property/{property_id}', [DepositFeeController::class, 'byPropertyId']);
+            Route::get('/{id}', [DepositFeeController::class, 'show']);
+            Route::post('/', [DepositFeeController::class, 'store']);
+            Route::put('/{id}', [DepositFeeController::class, 'update']);
+            Route::delete('/{id}', [DepositFeeController::class, 'destroy']);
+        });
+
+        // PARKING FEE API ROUTES
+        Route::prefix('parking-fee')->group(function () {
+            Route::get('/', [ParkingFeeController::class, 'index']);
+            Route::get('/property/{property_id}', [ParkingFeeController::class, 'byPropertyId']);
+            Route::get('/{id}', [ParkingFeeController::class, 'show']);
+            Route::post('/', [ParkingFeeController::class, 'store']);
+            Route::put('/{id}', [ParkingFeeController::class, 'update']);
+            Route::delete('/{id}', [ParkingFeeController::class, 'destroy']);
         });
 
         // COMMENTED FOR REVIEW

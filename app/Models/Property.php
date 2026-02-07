@@ -53,6 +53,11 @@ class Property extends Model
         'price' => 'array',
     ];
 
+    protected $appends = [
+        'deposit_fee_amount',
+        'parking_fees',
+    ];
+
     /**
      * Get the rooms for the property.
      */
@@ -335,5 +340,46 @@ class Property extends Model
     public function chatConversations()
     {
         return $this->hasMany(ChatConversation::class, 'property_id', 'idrec');
+    }
+
+    public function parkingFees()
+    {
+        return $this->hasMany(ParkingFee::class, 'property_id', 'idrec');
+    }
+
+    public function depositFees()
+    {
+        return $this->hasMany(DepositFee::class, 'property_id', 'idrec');
+    }
+
+    /**
+     * Get the deposit fee amount for the property.
+     *
+     * @return float|null
+     */
+    public function getDepositFeeAmountAttribute()
+    {
+        $depositFee = $this->depositFees()->where('status', 1)->first();
+        return $depositFee ? $depositFee->amount : null;
+    }
+
+    /**
+     * Get all parking fees for the property.
+     *
+     * @return array
+     */
+    public function getParkingFeesAttribute()
+    {
+        return $this->parkingFees()
+            ->where('status', 1)
+            ->get()
+            ->map(function ($fee) {
+                return [
+                    'parking_type' => $fee->parking_type,
+                    'fee' => $fee->fee,
+                    'capacity' => $fee->capacity,
+                ];
+            })
+            ->toArray();
     }
 } 
