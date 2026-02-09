@@ -738,11 +738,38 @@ class BookingController extends ApiController
 
     public function renewBooking(Request $request, $orderId)
     {
-        // Validate request
+        // Validate request - similar to store booking but with is_renewal
         $validator = Validator::make($request->all(), [
+            // USER INFO
+            'user_id' => 'required|integer',
+            'user_name' => 'required|string|max:255',
+            'user_phone_number' => 'nullable|string|max:20',
+            'user_email' => 'required|email|max:255',
+            // PROPERTY INFO
+            'property_id' => 'required|integer',
+            'property_name' => 'required|string|max:255',
+            'property_type' => 'required|string',
+            // ROOM INFO
+            'room_name' => 'required|string|max:255',
+            'room_id' => 'required|integer',
+            // BOOKING TYPE
+            'booking_type' => 'required|in:daily,monthly',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
-            'voucher_code' => 'nullable|string|min:8|max:20'
+            // PRICING
+            'daily_price' => 'nullable|numeric|min:0',
+            'monthly_price' => 'nullable|numeric|min:0',
+            'booking_days' => 'nullable|integer|min:0',
+            'booking_months' => 'nullable|integer|min:0',
+            'admin_fees' => 'nullable|numeric|min:0',
+            'service_fees' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
+            // TRANSACTION TYPE
+            'transaction_type' => 'nullable|string',
+            // VOUCHER (optional)
+            'voucher_code' => 'nullable|string|min:8|max:20',
+            // RENEWAL FLAG
+            'is_renewal' => 'nullable|integer|in:0,1'
         ]);
 
         if ($validator->fails()) {
@@ -776,32 +803,12 @@ class BookingController extends ApiController
             }
 
             // Get room details to verify it still exists
-            $room = Room::find($originalTransaction->room_id);
+            $room = Room::find($request->room_id);
             if (!$room) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Room from original booking no longer exists'
+                    'message' => 'Room not found'
                 ], 400);
-            }
-
-            // Validate that the booking type is available for this room
-            $bookingType = $originalTransaction->booking_type;
-            if ($bookingType === 'daily') {
-                $hasDailyPrice = !empty($room->price_original_daily) && floatval($room->price_original_daily) > 0;
-                if (!$hasDailyPrice) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Daily booking is not available for this room'
-                    ], 400);
-                }
-            } else if ($bookingType === 'monthly') {
-                $hasMonthlyPrice = !empty($room->price_original_monthly) && floatval($room->price_original_monthly) > 0;
-                if (!$hasMonthlyPrice) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Monthly booking is not available for this room'
-                    ], 400);
-                }
             }
 
             // Check availability for new dates
@@ -809,8 +816,8 @@ class BookingController extends ApiController
             $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
             $conflictingBookings = DB::table('t_transactions')
-                ->where('property_id', $originalTransaction->property_id)
-                ->where('room_id', $originalTransaction->room_id)
+                ->where('property_id', $request->property_id)
+                ->where('room_id', $request->room_id)
                 ->where('status', '1')
                 ->whereNotIn('transaction_status', ['cancelled', 'expired'])
                 ->where('check_in', '<', $checkOut)
@@ -828,42 +835,38 @@ class BookingController extends ApiController
 
             DB::beginTransaction();
 
-            // Calculate pricing based on booking type
-            $bookingDays = null;
-            $bookingMonths = null;
-            $roomPrice = 0;
-            $adminFees = 0;
-            $serviceFees = 30000;
-            $tax = 0;
-
             // Set check-in time to 14:00:00 and check-out time to 12:00:00
             $checkInWithTime = Carbon::parse($request->check_in)->setTime(14, 0, 0);
             $checkOutWithTime = Carbon::parse($request->check_out)->setTime(12, 0, 0);
 
-            if ($originalTransaction->booking_type === 'daily') {
-                // Calculate days
-                $bookingDays = $checkInWithTime->copy()->startOfDay()->diffInDays($checkOutWithTime->copy()->startOfDay());
+            // Calculate pricing based on booking type
+            $bookingDays = null;
+            $bookingMonths = null;
+            $roomPrice = 0;
 
-                // Get current daily price from room
-                $dailyPrice = $room->price_original_daily ?? $originalTransaction->daily_price;
+            // Determine booking type - prioritize explicit booking_type parameter
+            $isDaily = $request->booking_type === 'daily';
+
+            if ($isDaily) {
+                // DAILY BOOKING
+                $bookingDays = $request->booking_days ?? $checkInWithTime->copy()->startOfDay()->diffInDays($checkOutWithTime->copy()->startOfDay());
+                $dailyPrice = $request->daily_price ?? $room->price_original_daily ?? 0;
                 $roomPrice = $dailyPrice * $bookingDays;
-
-                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
             } else {
-                // Monthly booking
-                // Calculate months from check_in and check_out dates
-                // $bookingMonths = $originalTransaction->booking_months ?? 1;
-                $bookingMonths = $checkInWithTime->copy()->startOfDay()->diffInMonths($checkOutWithTime->copy()->startOfDay());
+                // MONTHLY BOOKING
+                $bookingMonths = $request->booking_months ?? $checkInWithTime->copy()->startOfDay()->diffInMonths($checkOutWithTime->copy()->startOfDay());
                 if ($bookingMonths < 1) {
-                    $bookingMonths = 1; // Minimum 1 month
+                    $bookingMonths = 1;
                 }
-
-                // Get current monthly price from room
-                $monthlyPrice = $room->price_original_monthly ?? $originalTransaction->monthly_price;
+                $monthlyPrice = $request->monthly_price ?? $room->price_original_monthly ?? 0;
                 $roomPrice = $monthlyPrice * $bookingMonths;
-
-                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
             }
+
+            $adminFees = $request->admin_fees ?? 0;
+            $serviceFees = $request->service_fees ?? 30000;
+            $tax = $request->tax ?? 0;
+
+            $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
 
             // Voucher processing
             $voucherId = null;
@@ -877,10 +880,10 @@ class BookingController extends ApiController
                 // Validate and apply voucher
                 $voucherValidation = $voucherService->validateVoucher(
                     $request->voucher_code,
-                    $originalTransaction->user_id,
+                    $request->user_id,
                     $subtotalBeforeServiceFee,
-                    $originalTransaction->property_id,
-                    $originalTransaction->room_id
+                    $request->property_id,
+                    $request->room_id
                 );
 
                 if (!$voucherValidation['valid']) {
@@ -907,7 +910,7 @@ class BookingController extends ApiController
             $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees;
 
             // Generate new order_id
-            $property = Property::find($originalTransaction->property_id);
+            $property = Property::find($request->property_id);
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
             $newOrderId = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
@@ -915,48 +918,51 @@ class BookingController extends ApiController
             // Set expiration time to 1 hour from now
             $expiredAt = now()->addHour();
 
-            // Prepare transaction data (copy from original + new values)
+            // Prepare transaction data from request
             $transactionData = [
-                // USER DATA (copied from original)
-                'user_id' => $originalTransaction->user_id,
-                'user_name' => $originalTransaction->user_name,
-                'user_phone_number' => $originalTransaction->user_phone_number,
-                'user_email' => $originalTransaction->user_email,
-                // PROPERTY DATA (copied from original)
-                'property_id' => $originalTransaction->property_id,
-                'property_name' => $originalTransaction->property_name,
-                'property_type' => $originalTransaction->property_type,
-                // ROOM DATA (copied from original)
-                'room_id' => $originalTransaction->room_id,
-                'room_name' => $originalTransaction->room_name,
-                // ORDER DETAILS (new values)
+                // USER DATA
+                'user_id' => $request->user_id,
+                'user_name' => $request->user_name,
+                'user_phone_number' => $request->user_phone_number,
+                'user_email' => $request->user_email,
+                // PROPERTY DATA
+                'property_id' => $request->property_id,
+                'property_name' => $request->property_name,
+                'property_type' => $request->property_type,
+                // ROOM DATA
+                'room_id' => $request->room_id,
+                'room_name' => $request->room_name,
+                // ORDER DETAILS
                 'order_id' => $newOrderId,
                 'transaction_date' => now(),
-                'booking_type' => $originalTransaction->booking_type,
+                'booking_type' => $request->booking_type,
                 'booking_days' => $bookingDays,
                 'booking_months' => $bookingMonths,
-                // PRICES (recalculated)
+                // PRICES
                 'room_price' => $roomPrice,
-                'daily_price' => $originalTransaction->booking_type === 'daily' ? ($room->price_original_daily ?? $originalTransaction->daily_price) : null,
-                'monthly_price' => $originalTransaction->booking_type === 'monthly' ? ($room->price_original_monthly ?? $originalTransaction->monthly_price) : null,
+                'daily_price' => $isDaily ? ($request->daily_price ?? $room->price_original_daily) : null,
+                'monthly_price' => !$isDaily ? ($request->monthly_price ?? $room->price_original_monthly) : null,
                 'admin_fees' => $adminFees,
                 'service_fees' => $serviceFees,
                 'tax' => $tax,
                 'grandtotal_price' => $grandtotalPrice,
-                // VOUCHER DATA (new voucher if provided)
+                // VOUCHER DATA
                 'voucher_id' => $voucherId,
                 'voucher_code' => $voucherCode,
                 'discount_amount' => $discountAmount,
                 'subtotal_before_discount' => $subtotalBeforeDiscount,
                 // CODE AND STATUS
-                'transaction_type' => $originalTransaction->transaction_type,
+                'transaction_type' => $request->transaction_type ?? 'BRI Manual',
                 'transaction_code' => 'TRX-' . Str::random(16),
                 'transaction_status' => 'pending',
                 'status' => '1',
-                // DATES (new dates)
+                // DATES
                 'check_in' => $checkInWithTime,
                 'check_out' => $checkOutWithTime,
                 'expired_at' => $expiredAt,
+                // RENEWAL FLAG
+                'is_renewal' => $request->is_renewal ?? 1,
+                'original_order_id' => $orderId,
             ];
 
             // Create new transaction
@@ -968,11 +974,11 @@ class BookingController extends ApiController
                 $voucherService->logUsage([
                     'voucher_id' => $voucherId,
                     'voucher_code' => $voucherCode,
-                    'user_id' => $originalTransaction->user_id,
+                    'user_id' => $request->user_id,
                     'order_id' => $newOrderId,
                     'transaction_id' => $newTransaction->idrec,
-                    'property_id' => $originalTransaction->property_id,
-                    'room_id' => $originalTransaction->room_id,
+                    'property_id' => $request->property_id,
+                    'room_id' => $request->room_id,
                     'original_amount' => $subtotalBeforeDiscount,
                     'discount_amount' => $discountAmount,
                     'final_amount' => $grandtotalPrice
@@ -981,24 +987,24 @@ class BookingController extends ApiController
 
             // Create new booking record
             $bookingData = [
-                'property_id' => $originalTransaction->property_id,
+                'property_id' => $request->property_id,
                 'order_id' => $newOrderId,
-                'room_id' => $originalTransaction->room_id,
+                'room_id' => $request->room_id,
                 'status' => '1',
-                'booking_type' => $originalTransaction->booking_type
+                'booking_type' => $request->booking_type
             ];
             Booking::create($bookingData);
 
             // Create new payment record
             $paymentData = [
-                'property_id' => $originalTransaction->property_id,
-                'room_id' => $originalTransaction->room_id,
+                'property_id' => $request->property_id,
+                'room_id' => $request->room_id,
                 'order_id' => $newOrderId,
-                'user_id' => $originalTransaction->user_id,
+                'user_id' => $request->user_id,
                 'grandtotal_price' => $grandtotalPrice,
                 'payment_status' => 'unpaid',
-                'created_by' => $originalTransaction->user_id,
-                'updated_by' => $originalTransaction->user_id,
+                'created_by' => $request->user_id,
+                'updated_by' => $request->user_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
@@ -1008,15 +1014,16 @@ class BookingController extends ApiController
             Log::info("Booking renewed successfully", [
                 'original_order_id' => $orderId,
                 'new_order_id' => $newOrderId,
-                'user_id' => $originalTransaction->user_id,
+                'user_id' => $request->user_id,
+                'is_renewal' => $request->is_renewal ?? 1,
                 'expired_at' => $expiredAt
             ]);
 
             // Send booking confirmation email
-            if ($originalTransaction->user_email) {
+            if ($request->user_email) {
                 $user = new \App\Models\User();
-                $user->email = $originalTransaction->user_email;
-                $user->id = $originalTransaction->user_id;
+                $user->email = $request->user_email;
+                $user->id = $request->user_id;
 
                 $this->sendEmailBooking(
                     $user,
@@ -1034,6 +1041,7 @@ class BookingController extends ApiController
                 'data' => [
                     'original_order_id' => $orderId,
                     'new_order_id' => $newOrderId,
+                    'is_renewal' => $request->is_renewal ?? 1,
                     'transaction' => $newTransaction->toArray(),
                     'expired_at' => $expiredAt->toISOString()
                 ]
@@ -1381,10 +1389,11 @@ class BookingController extends ApiController
         try {
             // Validate request
             $validator = Validator::make($request->all(), [
-                'payment_method' => 'required',
+                'payment_method' => 'required|string',
                 'virtual_account_no' => 'nullable|string',
                 'payment_bank' => 'nullable|string',
                 'deposit_fee' => 'nullable|numeric|min:0',
+                'parking_duration' => 'nullable|integer|min:0',
                 'parking_fee' => 'nullable|numeric|min:0',
                 'parking_type' => 'nullable|string',
                 'voucher_code' => 'nullable|string',
@@ -1435,11 +1444,27 @@ class BookingController extends ApiController
                 $updateData['deposit_fee'] = $depositFee;
             }
 
-            // Handle parking fee 
-            $parkingFee = 0;
+            // Handle parking fee with duration
+            // Formula: total_parking_fee = parking_duration * parking_fee (per month)
+            $parkingDuration = 0;
+            $parkingFeePerMonth = 0;
+            $totalParkingFee = 0;
+
             if ($request->has('parking_fee')) {
-                $parkingFee = floatval($request->parking_fee);
-                $updateData['parking_fee'] = $parkingFee;
+                $parkingFeePerMonth = floatval($request->parking_fee);
+            }
+            if ($request->has('parking_duration')) {
+                $parkingDuration = intval($request->parking_duration);
+            }
+
+            // Calculate total parking fee: duration * fee per month
+            $totalParkingFee = $parkingDuration * $parkingFeePerMonth;
+            $updateData['parking_fee'] = $totalParkingFee;
+            $updateData['parking_duration'] = $parkingDuration;
+
+            // Handle parking type
+            if ($request->has('parking_type')) {
+                $updateData['parking_type'] = $request->parking_type;
             }
 
             // Handle voucher discount
@@ -1459,7 +1484,7 @@ class BookingController extends ApiController
             $serviceFees = floatval($booking->service_fees ?? 0);
 
             $subtotal = $roomPrice + $adminFees;
-            $newGrandtotal = $subtotal - $discountAmount + $serviceFees + $depositFee + $parkingFee;
+            $newGrandtotal = $subtotal - $discountAmount + $serviceFees + $depositFee + $totalParkingFee;
 
             $updateData['grandtotal_price'] = $newGrandtotal;
             $updateData['subtotal_before_discount'] = $subtotal;
@@ -1480,8 +1505,13 @@ class BookingController extends ApiController
                 'data' => [
                     'booking_id' => $id,
                     'payment_method' => $request->payment_method,
+                    'payment_bank' => $request->payment_bank,
+                    'virtual_account_no' => $request->virtual_account_no,
                     'deposit_fee' => $depositFee,
-                    'parking_fee' => $parkingFee,
+                    'parking_duration' => $parkingDuration,
+                    'parking_fee_per_month' => $parkingFeePerMonth,
+                    'parking_fee_total' => $totalParkingFee,
+                    'parking_type' => $request->parking_type,
                     'discount_amount' => $discountAmount,
                     'grandtotal_price' => $newGrandtotal,
                     'transaction_status' => 'pending'
