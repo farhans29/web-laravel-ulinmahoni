@@ -461,7 +461,11 @@ class BookingController extends ApiController
             $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
             $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
 
-            if ($request->has('booking_days') && $request->booking_days > 0) {
+            // Determine booking type - prioritize explicit booking_type parameter
+            $isDaily = $request->booking_type === 'daily' ||
+                       ($request->booking_type !== 'monthly' && $request->has('booking_days') && $request->booking_days > 0);
+
+            if ($isDaily) {
                 // DAILY BOOKING
                 // Calculate days using start of day to count full days/nights
                 $calculatedDays = $checkIn->copy()->startOfDay()->diffInDays($checkOut->copy()->startOfDay());
@@ -564,7 +568,7 @@ class BookingController extends ApiController
                 // ORDER DETAILS
                 'order_id' => $order_id,
                 'transaction_date' => now(),
-                'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly',
+                'booking_type' => $isDaily ? 'daily' : 'monthly',
                 'booking_days' => $bookingDays,
                 'booking_months' => $bookingMonths,
                 // PRICES
