@@ -858,6 +858,11 @@ class BookingController extends Controller
             // Booking will be automatically expired by scheduled task if not paid within 1 hour
             Log::info("Booking created with expiration time: {$expiredAt} for order_id: {$order_id}");
 
+            // Update room rental_status to 1 (room is booked/rented)
+            DB::table('m_rooms')
+                ->where('idrec', $room->idrec)
+                ->update(['rental_status' => 1]);
+
             // Process payment with DOKU
             try {
                 // Use the already calculated grandtotalPrice (with voucher discount applied if any)
