@@ -282,10 +282,16 @@
                             </div>
                             <div class="text-right">
                                 <!-- Room Status -->
-                                <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
-                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? 'bg-green-100 text-green-800' : 'bg-gray-400 text-white' }}">
-                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
-                                </span>
+                                @if($room['rental_status'] == 1)
+                                    <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium bg-gray-400 text-white">
+                                        Tidak Tersedia
+                                    </span>
+                                @else
+                                    <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
+                                        {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-gray-400 text-white' }}">
+                                        {{ $room['status'] == 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
+                                    </span>
+                                @endif
 
                                 <!-- Availability Status -->
 
@@ -621,9 +627,18 @@
         let availabilityCheckTimeout;
 
         // --- Global Room Availability Function ---
+        const rentalStatus = {{ $room['rental_status'] ?? 0 }};
+
         async function checkRoomAvailability() {
+            // Skip availability check if room is already rented (rental_status = 1)
+            if (rentalStatus == 1) {
+                showAvailabilityStatus('unavailable', 'Kamar sedang disewa');
+                updateSubmitButton(false, 'Tidak Tersedia');
+                return;
+            }
+
             // console.log('=== CHECK ROOM AVAILABILITY STARTED ===');
-            
+
             const propertyId = document.getElementById('propertyId').value;
             const roomId = document.querySelector('[name="room_id"]').value;
             const checkInDate = document.getElementById('check_in').value;

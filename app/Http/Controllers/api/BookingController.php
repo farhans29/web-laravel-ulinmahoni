@@ -311,14 +311,38 @@ class BookingController extends ApiController
         $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
         // Check for conflicting bookings using simplified query
+        
+        // $conflictingBookings = DB::table('t_transactions')
+        //     ->where('property_id', $propertyId) //property_id from the m_properties
+        //     ->where('room_id', $roomId) //room_id from the m_rooms
+        //     ->where('status', '1')  // if the status = 1
+        //     ->whereNotIn('transaction_status', ['cancelled','expired','checked_out']) // if the transaction_status is not cancelled, finished, completed, paid
+        //     ->where('check_in', '<', $checkOut) // if the check_in is less than the check_out
+        //     ->where('check_out', '>', $checkIn) // if the check_out is greater than the check_in
+        //     ->limit(5) // limit the result to 5
+        //     ->get();
+
+        
+        // NEW CODE - with t_booking join to get checked_in_at and checked_out_at
         $conflictingBookings = DB::table('t_transactions')
-            ->where('property_id', $propertyId) //property_id from the m_properties
-            ->where('room_id', $roomId) //room_id from the m_rooms
-            ->where('status', '1')  // if the status = 1
-            ->whereNotIn('transaction_status', ['cancelled','expired','checked_out']) // if the transaction_status is not cancelled, finished, completed, paid
-            ->where('check_in', '<', $checkOut) // if the check_in is less than the check_out
-            ->where('check_out', '>', $checkIn) // if the check_out is greater than the check_in
-            ->limit(5) // limit the result to 5
+            ->join('t_booking', 't_booking.order_id', '=', 't_transactions.order_id')
+            ->where('t_transactions.property_id', $propertyId)
+            ->where('t_transactions.room_id', $roomId)
+            ->where('t_transactions.status', '1')
+            ->whereNotIn('t_transactions.transaction_status', [
+                'cancelled',
+                'expired',
+                'checked_out'
+            ])
+            ->whereNull('t_booking.check_out_at') // Exclude if guest has already checked out
+            ->where('t_transactions.check_in', '<', $checkOut)
+            ->where('t_transactions.check_out', '>', $checkIn)
+            ->select(
+                't_transactions.*',
+                't_booking.check_in_at',
+                't_booking.check_out_at'
+            )
+            ->limit(5)
             ->get();
 
         $isAvailable = $conflictingBookings->isEmpty();
@@ -600,6 +624,11 @@ class BookingController extends ApiController
 
             // Booking will be automatically expired by scheduled task if not paid within 1 hour
             Log::info("Booking created with expiration time: {$expiredAt} for order_id: {$order_id}");
+
+            // Update room rental_status to 1 (room is booked/rented)
+            DB::table('m_rooms')    
+                ->where('idrec', $request->room_id)
+                ->update(['rental_status' => 1]);
 
             // Process payment with DOKU
             // $dokuPaymentResponse = $this->processDokuPayment([
