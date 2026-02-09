@@ -829,7 +829,12 @@ class BookingController extends ApiController
                 $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
             } else {
                 // Monthly booking
-                $bookingMonths = $originalTransaction->booking_months ?? 1;
+                // Calculate months from check_in and check_out dates
+                // $bookingMonths = $originalTransaction->booking_months ?? 1;
+                $bookingMonths = $checkInWithTime->copy()->startOfDay()->diffInMonths($checkOutWithTime->copy()->startOfDay());
+                if ($bookingMonths < 1) {
+                    $bookingMonths = 1; // Minimum 1 month
+                }
 
                 // Get current monthly price from room
                 $monthlyPrice = $room->price_original_monthly ?? $originalTransaction->monthly_price;
