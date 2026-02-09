@@ -653,11 +653,25 @@
                                             @endif
                                         </td>
                                         <td class="px-6 py-4">
+                                            @php
+                                                $checkOutDate = \Carbon\Carbon::parse($booking->check_out);
+                                                $renewableDate = $checkOutDate->copy()->subDays(3);
+                                                $canRenew = now() >= $renewableDate;
+                                            @endphp
+                                            @if($canRenew)
                                             <button onclick="openRenewModal('{{ $booking->order_id }}', '{{ $booking->room_id }}', '{{ $booking->booking_type }}', '{{ $booking->booking_months ?? 1 }}')"
                                                     class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors duration-200 text-sm font-medium">
                                                 <i class="fas fa-redo mr-2"></i>
                                                 {{ __('booking.actions.renew_booking') }}
                                             </button>
+                                            @else
+                                            <button disabled
+                                                    class="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
+                                                    title="Perpanjangan tersedia mulai {{ $renewableDate->format('d M Y') }}">
+                                                <i class="fas fa-redo mr-2"></i>
+                                                {{ __('booking.actions.renew_booking') }}
+                                            </button>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
