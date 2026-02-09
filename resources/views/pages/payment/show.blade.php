@@ -142,6 +142,19 @@
                                         </label>
                                         @endforeach
                                     </div>
+
+                                    <!-- Parking Months Input -->
+                                    <div id="parkingMonthsContainer" class="mt-3 hidden">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bulan Parkir</label>
+                                        <div class="flex items-center space-x-3">
+                                            <input type="number" id="parking_months" name="parking_months"
+                                                min="0" max="{{ $booking->booking_months > 0 ? $booking->booking_months : 1 }}" value="1"
+                                                class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                                            <span class="text-sm text-gray-600">bulan (maks: {{ $booking->booking_months > 0 ? $booking->booking_months : 1 }} bulan)</span>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-1">Total biaya parkir: <span id="parkingTotalDisplay" class="font-medium">Rp 0</span></p>
+                                    </div>
+
                                     <input type="hidden" name="parking_fee" id="parking_fee" value="0">
                                     <input type="hidden" name="parking_type" id="parking_type" value="none">
                                 </div>
@@ -511,6 +524,9 @@
         const depositFee = {{ $depositFeeAmount ?? 0 }};
         let selectedParkingFee = 0;
         let selectedParkingType = 'none';
+        let parkingUnitPrice = 0; // Price per month
+        let parkingMonthsSelected = 1;
+        const maxParkingMonths = {{ $booking->booking_months > 0 ? $booking->booking_months : 1 }};
 
         // Calculate subtotal before service fee (for voucher calculation)
         // Formula: Subtotal = Room Price + Admin Fees (without service fee, deposit, parking)
@@ -627,14 +643,36 @@
         // Handle parking fee selection
         document.querySelectorAll('.parking-option input[type="radio"]').forEach(radio => {
             radio.addEventListener('change', function() {
-                selectedParkingFee = parseFloat(this.dataset.parkingFee) || 0;
+                parkingUnitPrice = parseFloat(this.dataset.parkingFee) || 0;
                 selectedParkingType = this.dataset.parkingType || 'none';
+
+                const parkingMonthsContainer = document.getElementById('parkingMonthsContainer');
+                const parkingMonthsInput = document.getElementById('parking_months');
+
+                if (parkingUnitPrice > 0) {
+                    // Show months input when parking is selected
+                    parkingMonthsContainer.classList.remove('hidden');
+                    parkingMonthsSelected = parseInt(parkingMonthsInput.value) || 1;
+                } else {
+                    // Hide months input when "no parking" is selected
+                    parkingMonthsContainer.classList.add('hidden');
+                    parkingMonthsSelected = 0;
+                }
+
+                // Calculate total parking fee
+                selectedParkingFee = parkingUnitPrice * parkingMonthsSelected;
 
                 // Update hidden fields
                 const parkingFeeInput = document.getElementById('parking_fee');
                 const parkingTypeInput = document.getElementById('parking_type');
                 if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
                 if (parkingTypeInput) parkingTypeInput.value = selectedParkingType;
+
+                // Update parking total display
+                const parkingTotalDisplay = document.getElementById('parkingTotalDisplay');
+                if (parkingTotalDisplay) {
+                    parkingTotalDisplay.textContent = 'Rp ' + selectedParkingFee.toLocaleString('id-ID');
+                }
 
                 // Update visual selection
                 document.querySelectorAll('.parking-option').forEach(option => {
@@ -648,6 +686,34 @@
                 updatePriceSummary();
             });
         });
+
+        // Handle parking months input change
+        const parkingMonthsInput = document.getElementById('parking_months');
+        if (parkingMonthsInput) {
+            parkingMonthsInput.addEventListener('input', function() {
+                let months = parseInt(this.value) || 0;
+                // Clamp value between 0 and max
+                months = Math.max(0, Math.min(months, maxParkingMonths));
+                this.value = months;
+                parkingMonthsSelected = months;
+
+                // Calculate total parking fee
+                selectedParkingFee = parkingUnitPrice * parkingMonthsSelected;
+
+                // Update hidden field
+                const parkingFeeInput = document.getElementById('parking_fee');
+                if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
+
+                // Update parking total display
+                const parkingTotalDisplay = document.getElementById('parkingTotalDisplay');
+                if (parkingTotalDisplay) {
+                    parkingTotalDisplay.textContent = 'Rp ' + selectedParkingFee.toLocaleString('id-ID');
+                }
+
+                // Update price summary
+                updatePriceSummary();
+            });
+        }
 
         // Initialize deposit fee display and recalculate totals on page load
         if (depositFee > 0) {
@@ -692,7 +758,9 @@
                 const parkingTypeLabel = selectedParkingType === 'car' || selectedParkingType === 'mobil' ? 'Mobil' :
                                         selectedParkingType === 'motorcycle' || selectedParkingType === 'motor' ? 'Motor' :
                                         selectedParkingType;
-                document.getElementById('summaryParkingType').textContent = parkingTypeLabel;
+                // Show type with months info
+                const monthsLabel = parkingMonthsSelected > 0 ? ` x ${parkingMonthsSelected} bln` : '';
+                document.getElementById('summaryParkingType').textContent = parkingTypeLabel + monthsLabel;
             } else {
                 document.getElementById('summaryParkingRow').classList.add('hidden');
             }
