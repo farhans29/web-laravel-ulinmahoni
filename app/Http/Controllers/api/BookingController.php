@@ -836,7 +836,11 @@ class BookingController extends ApiController
                 ], 400);
             }
 
-            // Check availability for new dates
+            // NOTE: Intentionally skip rental_status check for renewals
+            // Renewals are allowed even if rental_status=1 (room is currently rented)
+            // because the same tenant is extending their stay
+
+            // Check availability for new dates (only check conflicting bookings, not rental_status)
             $checkIn = Carbon::parse($request->check_in)->startOfDay();
             $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
