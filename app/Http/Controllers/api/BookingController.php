@@ -466,8 +466,9 @@ class BookingController extends ApiController
             $serviceFees = 30000;
             $grandtotalPrice = 0;
             // Set check-in time to 14:00:00 and check-out time to 12:00:00
-            $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
-            $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+            // Use createFromFormat to avoid timezone issues with date-only strings
+            $checkIn = Carbon::createFromFormat('Y-m-d', $request->check_in, config('app.timezone'))->setTime(14, 0, 0);
+            $checkOut = Carbon::createFromFormat('Y-m-d', $request->check_out, config('app.timezone'))->setTime(12, 0, 0);
 
             // Determine booking type - prioritize explicit booking_type parameter
             $isDaily = $request->booking_type === 'daily' ||
@@ -610,8 +611,8 @@ class BookingController extends ApiController
                 'transaction_status' => 'pending',
                 'status' => '1',
                 // DATES
-                'check_in' => $request->check_in,
-                'check_out' => $request->check_out,
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
                 'expired_at' => $expiredAt,
             ];
 
@@ -874,8 +875,9 @@ class BookingController extends ApiController
             DB::beginTransaction();
 
             // Set check-in time to 14:00:00 and check-out time to 12:00:00
-            $checkInWithTime = Carbon::parse($request->check_in)->setTime(14, 0, 0);
-            $checkOutWithTime = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+            // Use createFromFormat to avoid timezone issues with date-only strings
+            $checkInWithTime = Carbon::createFromFormat('Y-m-d', $request->check_in, config('app.timezone'))->setTime(14, 0, 0);
+            $checkOutWithTime = Carbon::createFromFormat('Y-m-d', $request->check_out, config('app.timezone'))->setTime(12, 0, 0);
 
             // Calculate pricing based on booking type
             $bookingDays = null;
