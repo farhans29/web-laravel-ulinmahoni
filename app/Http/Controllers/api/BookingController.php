@@ -310,6 +310,24 @@ class BookingController extends ApiController
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
+        // Check if room rental_status is 1 (already rented)
+        $room = DB::table('m_rooms')->where('idrec', $roomId)->first();
+        if ($room && $room->rental_status == 1) {
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'is_available' => false,
+                    'reason' => 'Room is currently rented',
+                    'conflicting_bookings' => [],
+                    'check_in' => $checkIn->format('Y-m-d H:i:s'),
+                    'check_out' => $checkOut->format('Y-m-d H:i:s'),
+                    'property_id' => $propertyId,
+                    'room_id' => $roomId,
+                    'user_info' => null,
+                ]
+            ]);
+        }
+
         // Check for conflicting bookings using simplified query
         
         // $conflictingBookings = DB::table('t_transactions')
