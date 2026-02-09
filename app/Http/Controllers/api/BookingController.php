@@ -434,7 +434,12 @@ class BookingController extends ApiController
             'monthly_price' => 'nullable|numeric|min:0',
             'booking_days' => 'nullable|integer|required_without:booking_months',
             'booking_months' => 'nullable|integer|required_without:booking_days',
-            'voucher_code' => 'nullable|string|min:8|max:20'
+            'voucher_code' => 'nullable|string|min:8|max:20',
+            // DEPOSIT & PARKING
+            'deposit_fee' => 'nullable|numeric|min:0',
+            'parking_type' => 'nullable|string',
+            'parking_fee' => 'nullable|numeric|min:0',
+            'parking_duration' => 'nullable|integer|min:0'
         ], [
             'booking_days.required_without' => 'Either booking_days or booking_months is required',
             'booking_months.required_without' => 'Either booking_days or booking_months is required',
@@ -539,8 +544,18 @@ class BookingController extends ApiController
                 $voucher->increment('current_usage_count');
             }
 
-            // Calculate final grand total: Subtotal - Discount + Service Fee
-            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees;
+            // Handle deposit fee
+            $depositFee = $request->deposit_fee ?? 0;
+
+            // Handle parking fee with duration
+            // Formula: total_parking_fee = parking_duration * parking_fee (per month)
+            $parkingDuration = $request->parking_duration ?? 0;
+            $parkingFeePerMonth = $request->parking_fee ?? 0;
+            $totalParkingFee = $parkingDuration * $parkingFeePerMonth;
+            $parkingType = $request->parking_type ?? null;
+
+            // Calculate final grand total: Subtotal - Discount + Service Fee + Deposit + Parking
+            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees + $depositFee + $totalParkingFee;
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
             $property = $request->property_id ? Property::find($request->property_id) : null;
@@ -583,6 +598,11 @@ class BookingController extends ApiController
                 'voucher_code' => $voucherCode,
                 'discount_amount' => $discountAmount,
                 'subtotal_before_discount' => $subtotalBeforeDiscount,
+                // DEPOSIT & PARKING
+                'deposit_fee' => $depositFee,
+                'parking_type' => $parkingType,
+                'parking_fee' => $totalParkingFee,
+                'parking_duration' => $parkingDuration,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type,
                 'transaction_code' => 'TRX-' . Str::random(16),
@@ -768,6 +788,11 @@ class BookingController extends ApiController
             'transaction_type' => 'nullable|string',
             // VOUCHER (optional)
             'voucher_code' => 'nullable|string|min:8|max:20',
+            // DEPOSIT & PARKING
+            'deposit_fee' => 'nullable|numeric|min:0',
+            'parking_type' => 'nullable|string',
+            'parking_fee' => 'nullable|numeric|min:0',
+            'parking_duration' => 'nullable|integer|min:0',
             // RENEWAL FLAG
             'is_renewal' => 'nullable|integer|in:0,1'
         ]);
@@ -906,8 +931,18 @@ class BookingController extends ApiController
                 $voucher->increment('current_usage_count');
             }
 
-            // Calculate final grand total
-            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees;
+            // Handle deposit fee
+            $depositFee = $request->deposit_fee ?? 0;
+
+            // Handle parking fee with duration
+            // Formula: total_parking_fee = parking_duration * parking_fee (per month)
+            $parkingDuration = $request->parking_duration ?? 0;
+            $parkingFeePerMonth = $request->parking_fee ?? 0;
+            $totalParkingFee = $parkingDuration * $parkingFeePerMonth;
+            $parkingType = $request->parking_type ?? null;
+
+            // Calculate final grand total: Subtotal - Discount + Service Fee + Deposit + Parking
+            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees + $depositFee + $totalParkingFee;
 
             // Generate new order_id
             $property = Property::find($request->property_id);
@@ -951,6 +986,11 @@ class BookingController extends ApiController
                 'voucher_code' => $voucherCode,
                 'discount_amount' => $discountAmount,
                 'subtotal_before_discount' => $subtotalBeforeDiscount,
+                // DEPOSIT & PARKING
+                'deposit_fee' => $depositFee,
+                'parking_type' => $parkingType,
+                'parking_fee' => $totalParkingFee,
+                'parking_duration' => $parkingDuration,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type ?? 'BRI Manual',
                 'transaction_code' => 'TRX-' . Str::random(16),
