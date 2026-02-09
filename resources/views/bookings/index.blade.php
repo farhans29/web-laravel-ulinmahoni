@@ -659,7 +659,21 @@
                                                 $canRenew = now() >= $renewableDate;
                                             @endphp
                                             @if($canRenew)
-                                            <button onclick="openRenewModal('{{ $booking->order_id }}', '{{ $booking->room_id }}', '{{ $booking->booking_type }}', '{{ $booking->booking_months ?? 1 }}')"
+                                            <button onclick="openRenewModal({
+                                                orderId: '{{ $booking->order_id }}',
+                                                roomId: {{ $booking->room_id }},
+                                                bookingType: '{{ $booking->booking_type }}',
+                                                months: {{ $booking->booking_months ?? 1 }},
+                                                previousCheckOut: '{{ $booking->check_out->format('Y-m-d') }}',
+                                                userId: {{ $booking->user_id }},
+                                                userName: '{{ addslashes($booking->user_name) }}',
+                                                userPhone: '{{ $booking->user_phone_number }}',
+                                                userEmail: '{{ $booking->user_email }}',
+                                                propertyId: {{ $booking->property_id }},
+                                                propertyName: '{{ addslashes($booking->property_name) }}',
+                                                propertyType: '{{ $booking->property_type }}',
+                                                roomName: '{{ addslashes($booking->room_name) }}'
+                                            })"
                                                     class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors duration-200 text-sm font-medium">
                                                 <i class="fas fa-redo mr-2"></i>
                                                 {{ __('booking.actions.renew_booking') }}
@@ -740,8 +754,9 @@
                             <label for="renew_check_in" class="block text-sm font-medium text-gray-700 mb-1">
                                 {{ __('booking.js.new_check_in') }} *
                             </label>
-                            <input type="date" id="renew_check_in" name="check_in" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
+                            <input type="date" id="renew_check_in" name="check_in" required readonly
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                            <p class="text-xs text-gray-500 mt-1">Check-in otomatis berdasarkan check-out sebelumnya</p>
                         </div>
                         <div>
                             <label for="renew_check_out" class="block text-sm font-medium text-gray-700 mb-1">
@@ -753,20 +768,16 @@
                     </div>
 
                     <div id="monthlyFields" class="space-y-4 hidden">
-                        <div>
-                            <label for="renew_check_in_monthly" class="block text-sm font-medium text-gray-700 mb-1">
-                                {{ __('booking.js.new_check_in') }} *
-                            </label>
-                            <input type="date" id="renew_check_in_monthly" name="check_in_monthly"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500">
-                        </div>
+                        <!-- Hidden check-in input (auto-set from previous check-out) -->
+                        <input type="hidden" id="renew_check_in_monthly" name="check_in_monthly">
+
                         <div>
                             <label for="renew_months" class="block text-sm font-medium text-gray-700 mb-1">
-                                {{ __('booking.js.months_count') }} *
+                                Jumlah Bulan *
                             </label>
                             <input type="number" id="renew_months" name="months" min="1" value="1"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
-                                   onchange="updateCheckOutDate()">
+                                   oninput="updateCheckOutDate()">
                         </div>
                         <div>
                             <label for="renew_check_out_monthly" class="block text-sm font-medium text-gray-700 mb-1">
@@ -774,17 +785,19 @@
                             </label>
                             <input type="date" id="renew_check_out_monthly" name="check_out_monthly" readonly
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed">
+                            <p class="text-xs text-gray-500 mt-1">Dihitung otomatis dari check-out sebelumnya + jumlah bulan</p>
                         </div>
                     </div>
 
-                    <div class="mt-4">
+                    {{-- Voucher hidden for renewals --}}
+                    {{-- <div class="mt-4">
                         <label for="renew_voucher_code" class="block text-sm font-medium text-gray-700 mb-1">
                             {{ __('booking.js.voucher_code') }}
                         </label>
                         <input type="text" id="renew_voucher_code" name="voucher_code" maxlength="20"
                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
                                placeholder="Enter voucher code">
-                    </div>
+                    </div> --}}
                 </form>
                 <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
                     <button onclick="closeRenewModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
@@ -1074,9 +1087,30 @@
 
     // Store room data globally for validation
     let currentRoomData = null;
+    // Store original booking data for renewal payload
+    let currentBookingData = null;
 
     // Renewal Modal Functions
-    async function openRenewModal(orderId, roomId, bookingType, months) {
+    async function openRenewModal(bookingData) {
+        const { orderId, roomId, bookingType, months, previousCheckOut, userId, userName, userPhone, userEmail, propertyId, propertyName, propertyType, roomName } = bookingData;
+
+        // Store booking data for submitRenewal
+        currentBookingData = {
+            orderId,
+            userId,
+            userName,
+            userPhone,
+            userEmail,
+            propertyId,
+            propertyName,
+            propertyType,
+            roomId,
+            roomName,
+            bookingType,
+            months,
+            previousCheckOut
+        };
+
         const modal = document.getElementById('renewBookingModal');
 
         // Add a small delay before showing loading to avoid flash
@@ -1096,6 +1130,9 @@
 
         try {
             // Fetch room details via API
+            // console.log('Fetching room details for roomId:', roomId);
+            // console.log('API_KEY:', API_KEY ? 'present' : 'missing');
+
             const response = await fetch(`/api/v1/rooms/${roomId}`, {
                 method: 'GET',
                 headers: {
@@ -1104,8 +1141,12 @@
                 }
             });
 
+            console.log('Response status:', response.status);
+
             if (!response.ok) {
-                throw new Error('Failed to fetch room details');
+                const errorData = await response.json().catch(() => ({}));
+                console.error('API Error:', errorData);
+                throw new Error(errorData.message || 'Failed to fetch room details');
             }
 
             const data = await response.json();
@@ -1175,14 +1216,20 @@
                 }
             }
 
-            // Set minimum date to today for all date inputs
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('renew_check_in').min = today;
-            document.getElementById('renew_check_out').min = today;
-            document.getElementById('renew_check_in_monthly').min = today;
+            // Set check-in based on previous booking's check-out date
+            // For renewals, check-in = previous check-out (user cannot change)
+            console.log('Setting check-in from previousCheckOut:', previousCheckOut);
+            document.getElementById('renew_check_in').value = previousCheckOut || '';
+            document.getElementById('renew_check_in_monthly').value = previousCheckOut || '';
+
+            // Set minimum date for check-out (must be after check-in)
+            document.getElementById('renew_check_out').min = previousCheckOut;
 
             // Show appropriate fields
             toggleBookingTypeFields();
+
+            // Auto-calculate check-out for monthly
+            updateCheckOutDate();
 
             modal.classList.remove('hidden');
         } catch (error) {
@@ -1199,9 +1246,10 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: 'Failed to load room details. Please try again.',
+                text: error.message || 'Failed to load room details. Please try again.',
                 confirmButtonColor: '#0d9488',
             });
+            console.error('Full error:', error);
         }
     }
 
@@ -1243,12 +1291,27 @@
         const checkIn = document.getElementById('renew_check_in_monthly').value;
         const months = parseInt(document.getElementById('renew_months').value) || 1;
 
-        if (checkIn) {
+        console.log('updateCheckOutDate - checkIn:', checkIn, 'months:', months);
+
+        if (checkIn && checkIn.trim() !== '') {
             const checkInDate = new Date(checkIn);
+
+            // Check if date is valid
+            if (isNaN(checkInDate.getTime())) {
+                console.error('Invalid check-in date:', checkIn);
+                return;
+            }
+
             checkInDate.setMonth(checkInDate.getMonth() + months);
 
-            const checkOutDate = checkInDate.toISOString().split('T')[0];
+            // Format as YYYY-MM-DD
+            const year = checkInDate.getFullYear();
+            const month = String(checkInDate.getMonth() + 1).padStart(2, '0');
+            const day = String(checkInDate.getDate()).padStart(2, '0');
+            const checkOutDate = `${year}-${month}-${day}`;
+
             document.getElementById('renew_check_out_monthly').value = checkOutDate;
+            console.log('updateCheckOutDate - checkOut:', checkOutDate);
         }
     }
 
@@ -1300,7 +1363,9 @@
             }
         }
 
-        const voucherCode = document.getElementById('renew_voucher_code').value;
+        // Voucher code disabled for renewals
+        const voucherCodeEl = document.getElementById('renew_voucher_code');
+        const voucherCode = voucherCodeEl ? voucherCodeEl.value : null;
 
         // Validate dates
         if (new Date(checkIn) >= new Date(checkOut)) {
@@ -1322,14 +1387,62 @@
         btnLoader.classList.remove('hidden');
 
         try {
+            // Get booking type from the selector
+            const selectedBookingType = document.querySelector('input[name="booking_type_selector"]:checked').value;
+            const isMonthly = selectedBookingType === 'monthly';
+
+            // Calculate booking duration
+            let bookingMonths = null;
+            let bookingDays = null;
+
+            if (isMonthly) {
+                bookingMonths = parseInt(document.getElementById('renew_months').value) || 1;
+            } else {
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                bookingDays = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+            }
+
+            // Get pricing from currentRoomData
+            const dailyPrice = currentRoomData?.price_original_daily || 0;
+            const monthlyPrice = currentRoomData?.price_original_monthly || 0;
+            const serviceFees = currentRoomData?.service_fees || 30000;
+            const adminFees = currentRoomData?.admin_fees || 0;
+
+            // Construct full payload matching renewBooking API requirements
             const payload = {
+                // USER INFO
+                user_id: currentBookingData.userId,
+                user_name: currentBookingData.userName,
+                user_phone_number: currentBookingData.userPhone,
+                user_email: currentBookingData.userEmail,
+                // PROPERTY INFO
+                property_id: currentBookingData.propertyId,
+                property_name: currentBookingData.propertyName,
+                property_type: currentBookingData.propertyType,
+                // ROOM INFO
+                room_id: currentBookingData.roomId,
+                room_name: currentBookingData.roomName,
+                // BOOKING TYPE
+                booking_type: selectedBookingType,
                 check_in: checkIn,
-                check_out: checkOut
+                check_out: checkOut,
+                // PRICING
+                daily_price: parseFloat(dailyPrice),
+                monthly_price: parseFloat(monthlyPrice),
+                booking_days: bookingDays,
+                booking_months: bookingMonths,
+                admin_fees: parseFloat(adminFees),
+                service_fees: parseFloat(serviceFees),
+                // RENEWAL FLAG
+                is_renewal: 1
             };
 
             if (voucherCode) {
                 payload.voucher_code = voucherCode;
             }
+
+            console.log('Renewal payload:', payload);
 
             const response = await fetch(`/api/v1/booking/${orderId}/renew`, {
                 method: 'POST',

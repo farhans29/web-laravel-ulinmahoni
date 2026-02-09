@@ -295,6 +295,7 @@ class BookingController extends ApiController
             'room_id' => 'required|integer|exists:m_rooms,idrec',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
+            'is_renewal' => 'nullable|integer|in:0,1',
         ]);
 
         if ($validator->fails()) {
@@ -309,10 +310,12 @@ class BookingController extends ApiController
         $roomId = $request->room_id;
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->endOfDay();
+        $isRenewal = $request->is_renewal == 1;
 
         // Check if room rental_status is 1 (already rented)
+        // Skip this check if is_renewal = 1 (renewals are allowed for currently rented rooms)
         $room = DB::table('m_rooms')->where('idrec', $roomId)->first();
-        if ($room && $room->rental_status == 1) {
+        if (!$isRenewal && $room && $room->rental_status == 1) {
             return response()->json([
                 'status' => 'success',
                 'data' => [
@@ -840,27 +843,35 @@ class BookingController extends ApiController
             // Renewals are allowed even if rental_status=1 (room is currently rented)
             // because the same tenant is extending their stay
 
-            // Check availability for new dates (only check conflicting bookings, not rental_status)
             $checkIn = Carbon::parse($request->check_in)->startOfDay();
             $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
-            $conflictingBookings = DB::table('t_transactions')
-                ->where('property_id', $request->property_id)
-                ->where('room_id', $request->room_id)
-                ->where('status', '1')
-                ->whereNotIn('transaction_status', ['cancelled', 'expired'])
-                ->where('check_in', '<', $checkOut)
-                ->where('check_out', '>', $checkIn)
-                ->limit(1)
-                ->get();
+            // Check availability for new dates ONLY if NOT a renewal
+            // Renewals skip conflict check because the tenant is extending their current stay
+            $isRenewal = $request->is_renewal == 1;
 
-            if (!$conflictingBookings->isEmpty()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Room is not available for the selected dates',
-                    'conflicting_bookings' => $conflictingBookings
-                ], 409);
+            if (!$isRenewal) {
+                $conflictingBookings = DB::table('t_transactions')
+                    ->where('property_id', $request->property_id)
+                    ->where('room_id', $request->room_id)
+                    ->where('order_id', '!=', $orderId) // Exclude the original booking
+                    ->where('status', '1')
+                    ->whereNotIn('transaction_status', ['cancelled', 'expired'])
+                    ->where('check_in', '<', $checkOut)
+                    ->where('check_out', '>', $checkIn)
+                    ->limit(1)
+                    ->get();
+
+                if (!$conflictingBookings->isEmpty()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Room is not available for the selected dates',
+                        'conflicting_bookings' => $conflictingBookings
+                    ], 409);
+                }
             }
+            // NOTE: When is_renewal=1, we skip the conflict check entirely
+            // because the tenant is extending their stay in the same room
 
             DB::beginTransaction();
 
