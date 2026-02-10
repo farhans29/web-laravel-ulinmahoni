@@ -1665,6 +1665,10 @@
             const maxDate = new Date();
             maxDate.setDate(today.getDate() + 365); // Allow booking up to 1 year ahead
 
+            // Max check-in date is 14 days from today
+            const maxCheckInDate = new Date();
+            maxCheckInDate.setDate(today.getDate() + 14);
+
             // Set default dates (check-in defaults to today)
             const minCheckInDate = new Date(today);
             // Default check-in is today (no offset)
@@ -1678,7 +1682,7 @@
                 checkInPicker = new Datepicker(checkInElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
-                    maxDate: maxDate,
+                    maxDate: maxCheckInDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
@@ -1752,7 +1756,7 @@
                 checkInMonthlyPicker = new Datepicker(checkInMonthlyElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
-                    maxDate: maxDate,
+                    maxDate: maxCheckInDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
