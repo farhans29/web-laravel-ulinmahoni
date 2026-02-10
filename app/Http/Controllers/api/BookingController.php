@@ -1063,15 +1063,27 @@ class BookingController extends ApiController
                 ]);
             }
 
-            // Create new booking record
-            $bookingData = [
-                'property_id' => $request->property_id,
+            // 1. Find old booking by order_id and update check_out_at
+            $oldBooking = Booking::where('order_id', $orderId)->first();
+            if ($oldBooking) {
+                $oldBooking->update(['check_out_at' => now()]);
+            }
+
+            // 2. Clone old booking to new order_id with check_out_at = null
+            $newBookingData = [
+                'property_id' => $oldBooking ? $oldBooking->property_id : $request->property_id,
                 'order_id' => $newOrderId,
-                'room_id' => $request->room_id,
+                'room_id' => $oldBooking ? $oldBooking->room_id : $request->room_id,
+                'check_in_at' => $oldBooking ? $oldBooking->check_in_at : null,
+                'check_out_at' => null, // User hasn't checked out of new booking yet
+                'created_by' => $oldBooking ? $oldBooking->created_by : $request->user_id,
+                'updated_by' => $request->user_id,
+                'transaction_code' => $oldBooking ? $oldBooking->transaction_code : null,
+                'transaction_status' => 'pending',
                 'status' => '1',
-                'booking_type' => $request->booking_type
+                'paid_at' => null
             ];
-            Booking::create($bookingData);
+            Booking::create($newBookingData);
 
             // Create new payment record
             $paymentData = [
@@ -1109,7 +1121,7 @@ class BookingController extends ApiController
 
                 $this->sendEmailBooking(
                     $user,
-                    $bookingData,
+                    $newBookingData,
                     $transactionData,
                     null // Payment URL will be generated separately if needed
                 );
