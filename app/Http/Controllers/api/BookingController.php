@@ -116,11 +116,11 @@ class BookingController extends ApiController
 
         try {
             $query = Transaction::query();
-            
+
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
-            
+
             if ($request->has('user_id')) {
                 $query->where('user_id', $request->user_id);
             }
@@ -130,14 +130,32 @@ class BookingController extends ApiController
             }
 
             $query->orderBy('created_at', 'desc');
-            
+
+            // Helper function to add room_no and check_in_at to each booking
+            $addRoomNo = function ($bookings) {
+                return collect($bookings)->map(function ($booking) {
+                    $bookingData = $booking->toArray();
+                    $bookingData['check_in_at'] = $booking->getCheckInAt();
+
+                    // Get room no from m_rooms table
+                    if ($booking->room_id) {
+                        $room = DB::table('m_rooms')->where('idrec', $booking->room_id)->first();
+                        $bookingData['room_no'] = $room?->no;
+                    } else {
+                        $bookingData['room_no'] = null;
+                    }
+
+                    return $bookingData;
+                })->all();
+            };
+
             if ($request->has('limit') && $request->has('page')) {
                 $transactions = $query->paginate($request->limit);
-                
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Bookings retrieved successfully',
-                    'data' => $transactions->items(),
+                    'data' => $addRoomNo($transactions->items()),
                     'meta' => [
                         'current_page' => $transactions->currentPage(),
                         'last_page' => $transactions->lastPage(),
@@ -146,13 +164,13 @@ class BookingController extends ApiController
                     ]
                 ]);
             }
-            
+
             $transactions = $query->get();
-            
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Bookings retrieved successfully',
-                'data' => $transactions
+                'data' => $addRoomNo($transactions)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -403,6 +421,14 @@ class BookingController extends ApiController
 
             $data = $transaction->toArray();
             $data['check_in_at'] = $transaction->getCheckInAt();
+
+            // Get room no from m_rooms table
+            if ($transaction->room_id) {
+                $room = DB::table('m_rooms')->where('idrec', $transaction->room_id)->first();
+                $data['room_no'] = $room ? $room->no : null;
+            } else {
+                $data['room_no'] = null;
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -1177,6 +1203,14 @@ class BookingController extends ApiController
             $data = $booking->toArray();
             $data['check_in_at'] = $booking->getCheckInAt();
 
+            // Get room no from m_rooms table
+            if ($booking->room_id) {
+                $room = DB::table('m_rooms')->where('idrec', $booking->room_id)->first();
+                $data['room_no'] = $room ? $room->no : null;
+            } else {
+                $data['room_no'] = null;
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Booking retrieved successfully',
@@ -1214,6 +1248,15 @@ class BookingController extends ApiController
                 $data = $bookings->map(function ($booking) {
                     $bookingData = $booking->toArray();
                     $bookingData['check_in_at'] = $booking->getCheckInAt();
+
+                    // Get room no from m_rooms table
+                    if ($booking->room_id) {
+                        $room = DB::table('m_rooms')->where('idrec', $booking->room_id)->first();
+                        $bookingData['room_no'] = $room?->no;
+                    } else {
+                        $bookingData['room_no'] = null;
+                    }
+
                     return $bookingData;
                 });
 
