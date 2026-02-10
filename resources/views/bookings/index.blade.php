@@ -654,9 +654,12 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             @php
-                                                $checkOutDate = \Carbon\Carbon::parse($booking->check_out);
+                                                $checkOutDate = \Carbon\Carbon::parse($booking->check_out)->startOfDay();
                                                 $renewableDate = $checkOutDate->copy()->subDays(3);
-                                                $canRenew = now() >= $renewableDate;
+                                                $today = now()->startOfDay();
+                                                $isTooEarly = $today < $renewableDate;
+                                                $isTooLate = $today > $checkOutDate;
+                                                $canRenew = !$isTooEarly && !$isTooLate;
                                             @endphp
                                             @if($canRenew)
                                             <button onclick="openRenewModal({
@@ -675,6 +678,13 @@
                                                 roomName: '{{ addslashes($booking->room_name) }}'
                                             })"
                                                     class="inline-flex items-center px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors duration-200 text-sm font-medium">
+                                                <i class="fas fa-redo mr-2"></i>
+                                                {{ __('booking.actions.renew_booking') }}
+                                            </button>
+                                            @elseif($isTooLate)
+                                            <button disabled
+                                                    class="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
+                                                    title="Masa perpanjangan sudah berakhir">
                                                 <i class="fas fa-redo mr-2"></i>
                                                 {{ __('booking.actions.renew_booking') }}
                                             </button>
