@@ -116,11 +116,11 @@ class BookingController extends ApiController
 
         try {
             $query = Transaction::query();
-            
+
             if ($request->has('status')) {
                 $query->where('status', $request->status);
             }
-            
+
             if ($request->has('user_id')) {
                 $query->where('user_id', $request->user_id);
             }
@@ -130,14 +130,32 @@ class BookingController extends ApiController
             }
 
             $query->orderBy('created_at', 'desc');
-            
+
+            // Helper function to add room_no and check_in_at to each booking
+            $addRoomNo = function ($bookings) {
+                return collect($bookings)->map(function ($booking) {
+                    $bookingData = $booking->toArray();
+                    $bookingData['check_in_at'] = $booking->getCheckInAt();
+
+                    // Get room no from m_rooms table
+                    if ($booking->room_id) {
+                        $room = DB::table('m_rooms')->where('idrec', $booking->room_id)->first();
+                        $bookingData['room_no'] = $room?->no;
+                    } else {
+                        $bookingData['room_no'] = null;
+                    }
+
+                    return $bookingData;
+                })->all();
+            };
+
             if ($request->has('limit') && $request->has('page')) {
                 $transactions = $query->paginate($request->limit);
-                
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Bookings retrieved successfully',
-                    'data' => $transactions->items(),
+                    'data' => $addRoomNo($transactions->items()),
                     'meta' => [
                         'current_page' => $transactions->currentPage(),
                         'last_page' => $transactions->lastPage(),
@@ -146,13 +164,13 @@ class BookingController extends ApiController
                     ]
                 ]);
             }
-            
+
             $transactions = $query->get();
-            
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Bookings retrieved successfully',
-                'data' => $transactions
+                'data' => $addRoomNo($transactions)
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -295,6 +313,7 @@ class BookingController extends ApiController
             'room_id' => 'required|integer|exists:m_rooms,idrec',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
+            'is_renewal' => 'nullable|integer|in:0,1',
         ]);
 
         if ($validator->fails()) {
@@ -309,16 +328,60 @@ class BookingController extends ApiController
         $roomId = $request->room_id;
         $checkIn = Carbon::parse($request->check_in)->startOfDay();
         $checkOut = Carbon::parse($request->check_out)->endOfDay();
+        $isRenewal = $request->is_renewal == 1;
+
+        // Check if room rental_status is 1 (already rented)
+        // Skip this check if is_renewal = 1 (renewals are allowed for currently rented rooms)
+        $room = DB::table('m_rooms')->where('idrec', $roomId)->first();
+        if (!$isRenewal && $room && $room->rental_status == 1) {
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'is_available' => false,
+                    'reason' => 'Room is currently rented',
+                    'conflicting_bookings' => [],
+                    'check_in' => $checkIn->format('Y-m-d H:i:s'),
+                    'check_out' => $checkOut->format('Y-m-d H:i:s'),
+                    'property_id' => $propertyId,
+                    'room_id' => $roomId,
+                    'user_info' => null,
+                ]
+            ]);
+        }
 
         // Check for conflicting bookings using simplified query
+        
+        // $conflictingBookings = DB::table('t_transactions')
+        //     ->where('property_id', $propertyId) //property_id from the m_properties
+        //     ->where('room_id', $roomId) //room_id from the m_rooms
+        //     ->where('status', '1')  // if the status = 1
+        //     ->whereNotIn('transaction_status', ['cancelled','expired','checked_out']) // if the transaction_status is not cancelled, finished, completed, paid
+        //     ->where('check_in', '<', $checkOut) // if the check_in is less than the check_out
+        //     ->where('check_out', '>', $checkIn) // if the check_out is greater than the check_in
+        //     ->limit(5) // limit the result to 5
+        //     ->get();
+
+        
+        // NEW CODE - with t_booking join to get checked_in_at and checked_out_at
         $conflictingBookings = DB::table('t_transactions')
-            ->where('property_id', $propertyId) //property_id from the m_properties
-            ->where('room_id', $roomId) //room_id from the m_rooms
-            ->where('status', '1')  // if the status = 1
-            ->whereNotIn('transaction_status', ['cancelled','expired','checked_out']) // if the transaction_status is not cancelled, finished, completed, paid
-            ->where('check_in', '<', $checkOut) // if the check_in is less than the check_out
-            ->where('check_out', '>', $checkIn) // if the check_out is greater than the check_in
-            ->limit(5) // limit the result to 5
+            ->join('t_booking', 't_booking.order_id', '=', 't_transactions.order_id')
+            ->where('t_transactions.property_id', $propertyId)
+            ->where('t_transactions.room_id', $roomId)
+            ->where('t_transactions.status', '1')
+            ->whereNotIn('t_transactions.transaction_status', [
+                'cancelled',
+                'expired',
+                'checked_out'
+            ])
+            ->whereNull('t_booking.check_out_at') // Exclude if guest has already checked out
+            ->where('t_transactions.check_in', '<', $checkOut)
+            ->where('t_transactions.check_out', '>', $checkIn)
+            ->select(
+                't_transactions.*',
+                't_booking.check_in_at',
+                't_booking.check_out_at'
+            )
+            ->limit(5)
             ->get();
 
         $isAvailable = $conflictingBookings->isEmpty();
@@ -359,6 +422,14 @@ class BookingController extends ApiController
             $data = $transaction->toArray();
             $data['check_in_at'] = $transaction->getCheckInAt();
 
+            // Get room no from m_rooms table
+            if ($transaction->room_id) {
+                $room = DB::table('m_rooms')->where('idrec', $transaction->room_id)->first();
+                $data['room_no'] = $room ? $room->no : null;
+            } else {
+                $data['room_no'] = null;
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Booking retrieved successfully',
@@ -392,7 +463,12 @@ class BookingController extends ApiController
             'monthly_price' => 'nullable|numeric|min:0',
             'booking_days' => 'nullable|integer|required_without:booking_months',
             'booking_months' => 'nullable|integer|required_without:booking_days',
-            'voucher_code' => 'nullable|string|min:8|max:20'
+            'voucher_code' => 'nullable|string|min:8|max:20',
+            // DEPOSIT & PARKING
+            'deposit_fee' => 'nullable|numeric|min:0',
+            'parking_type' => 'nullable|string',
+            'parking_fee' => 'nullable|numeric|min:0',
+            'parking_duration' => 'nullable|integer|min:0'
         ], [
             'booking_days.required_without' => 'Either booking_days or booking_months is required',
             'booking_months.required_without' => 'Either booking_days or booking_months is required',
@@ -416,10 +492,15 @@ class BookingController extends ApiController
             $serviceFees = 30000;
             $grandtotalPrice = 0;
             // Set check-in time to 14:00:00 and check-out time to 12:00:00
-            $checkIn = Carbon::parse($request->check_in)->setTime(14, 0, 0);
-            $checkOut = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+            // Use createFromFormat to avoid timezone issues with date-only strings
+            $checkIn = Carbon::createFromFormat('Y-m-d', $request->check_in, config('app.timezone'))->setTime(14, 0, 0);
+            $checkOut = Carbon::createFromFormat('Y-m-d', $request->check_out, config('app.timezone'))->setTime(12, 0, 0);
 
-            if ($request->has('booking_days') && $request->booking_days > 0) {
+            // Determine booking type - prioritize explicit booking_type parameter
+            $isDaily = $request->booking_type === 'daily' ||
+                       ($request->booking_type !== 'monthly' && $request->has('booking_days') && $request->booking_days > 0);
+
+            if ($isDaily) {
                 // DAILY BOOKING
                 // Calculate days using start of day to count full days/nights
                 $calculatedDays = $checkIn->copy()->startOfDay()->diffInDays($checkOut->copy()->startOfDay());
@@ -493,8 +574,16 @@ class BookingController extends ApiController
                 $voucher->increment('current_usage_count');
             }
 
-            // Calculate final grand total: Subtotal - Discount + Service Fee
-            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees;
+            // Handle deposit fee
+            $depositFee = $request->deposit_fee ?? 0;
+
+            // Handle parking fee - store as is (no calculation with duration)
+            $parkingDuration = $request->parking_duration ?? 0;
+            $parkingFee = $request->parking_fee ?? 0;
+            $parkingType = $request->parking_type ?? null;
+
+            // Calculate final grand total: Subtotal - Discount + Service Fee + Deposit + Parking
+            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees + $depositFee + $parkingFee;
             
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
             $property = $request->property_id ? Property::find($request->property_id) : null;
@@ -522,7 +611,7 @@ class BookingController extends ApiController
                 // ORDER DETAILS
                 'order_id' => $order_id,
                 'transaction_date' => now(),
-                'booking_type' => $request->has('booking_days') && $request->booking_days > 0 ? 'daily' : 'monthly',
+                'booking_type' => $isDaily ? 'daily' : 'monthly',
                 'booking_days' => $bookingDays,
                 'booking_months' => $bookingMonths,
                 // PRICES
@@ -537,14 +626,19 @@ class BookingController extends ApiController
                 'voucher_code' => $voucherCode,
                 'discount_amount' => $discountAmount,
                 'subtotal_before_discount' => $subtotalBeforeDiscount,
+                // DEPOSIT & PARKING
+                'deposit_fee' => $depositFee,
+                'parking_type' => $parkingType,
+                'parking_fee' => $parkingFee,
+                'parking_duration' => $parkingDuration,
                 // CODE AND STATUS
                 'transaction_type' => $request->transaction_type,
                 'transaction_code' => 'TRX-' . Str::random(16),
                 'transaction_status' => 'pending',
                 'status' => '1',
                 // DATES
-                'check_in' => $request->check_in,
-                'check_out' => $request->check_out,
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
                 'expired_at' => $expiredAt,
             ];
 
@@ -600,6 +694,11 @@ class BookingController extends ApiController
 
             // Booking will be automatically expired by scheduled task if not paid within 1 hour
             Log::info("Booking created with expiration time: {$expiredAt} for order_id: {$order_id}");
+
+            // Update room rental_status to 1 (room is booked/rented)
+            DB::table('m_rooms')    
+                ->where('idrec', $request->room_id)
+                ->update(['rental_status' => 1]);
 
             // Process payment with DOKU
             // $dokuPaymentResponse = $this->processDokuPayment([
@@ -687,11 +786,43 @@ class BookingController extends ApiController
 
     public function renewBooking(Request $request, $orderId)
     {
-        // Validate request
+        // Validate request - similar to store booking but with is_renewal
         $validator = Validator::make($request->all(), [
+            // USER INFO
+            'user_id' => 'required|integer',
+            'user_name' => 'required|string|max:255',
+            'user_phone_number' => 'nullable|string|max:20',
+            'user_email' => 'required|email|max:255',
+            // PROPERTY INFO
+            'property_id' => 'required|integer',
+            'property_name' => 'required|string|max:255',
+            'property_type' => 'required|string',
+            // ROOM INFO
+            'room_name' => 'required|string|max:255',
+            'room_id' => 'required|integer',
+            // BOOKING TYPE
+            'booking_type' => 'required|in:daily,monthly',
             'check_in' => 'required|date|after_or_equal:today',
             'check_out' => 'required|date|after:check_in',
-            'voucher_code' => 'nullable|string|min:8|max:20'
+            // PRICING
+            'daily_price' => 'nullable|numeric|min:0',
+            'monthly_price' => 'nullable|numeric|min:0',
+            'booking_days' => 'nullable|integer|min:0',
+            'booking_months' => 'nullable|integer|min:0',
+            'admin_fees' => 'nullable|numeric|min:0',
+            'service_fees' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0',
+            // TRANSACTION TYPE
+            'transaction_type' => 'nullable|string',
+            // VOUCHER (optional)
+            'voucher_code' => 'nullable|string|min:8|max:20',
+            // DEPOSIT & PARKING
+            'deposit_fee' => 'nullable|numeric|min:0',
+            'parking_type' => 'nullable|string',
+            'parking_fee' => 'nullable|numeric|min:0',
+            'parking_duration' => 'nullable|integer|min:0',
+            // RENEWAL FLAG
+            'is_renewal' => 'nullable|integer|in:0,1'
         ]);
 
         if ($validator->fails()) {
@@ -725,89 +856,83 @@ class BookingController extends ApiController
             }
 
             // Get room details to verify it still exists
-            $room = Room::find($originalTransaction->room_id);
+            $room = Room::find($request->room_id);
             if (!$room) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Room from original booking no longer exists'
+                    'message' => 'Room not found'
                 ], 400);
             }
 
-            // Validate that the booking type is available for this room
-            $bookingType = $originalTransaction->booking_type;
-            if ($bookingType === 'daily') {
-                $hasDailyPrice = !empty($room->price_original_daily) && floatval($room->price_original_daily) > 0;
-                if (!$hasDailyPrice) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Daily booking is not available for this room'
-                    ], 400);
-                }
-            } else if ($bookingType === 'monthly') {
-                $hasMonthlyPrice = !empty($room->price_original_monthly) && floatval($room->price_original_monthly) > 0;
-                if (!$hasMonthlyPrice) {
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Monthly booking is not available for this room'
-                    ], 400);
-                }
-            }
+            // NOTE: Intentionally skip rental_status check for renewals
+            // Renewals are allowed even if rental_status=1 (room is currently rented)
+            // because the same tenant is extending their stay
 
-            // Check availability for new dates
             $checkIn = Carbon::parse($request->check_in)->startOfDay();
             $checkOut = Carbon::parse($request->check_out)->endOfDay();
 
-            $conflictingBookings = DB::table('t_transactions')
-                ->where('property_id', $originalTransaction->property_id)
-                ->where('room_id', $originalTransaction->room_id)
-                ->where('status', '1')
-                ->whereNotIn('transaction_status', ['cancelled', 'expired'])
-                ->where('check_in', '<', $checkOut)
-                ->where('check_out', '>', $checkIn)
-                ->limit(1)
-                ->get();
+            // Check availability for new dates ONLY if NOT a renewal
+            // Renewals skip conflict check because the tenant is extending their current stay
+            $isRenewal = $request->is_renewal == 1;
 
-            if (!$conflictingBookings->isEmpty()) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Room is not available for the selected dates',
-                    'conflicting_bookings' => $conflictingBookings
-                ], 409);
+            if (!$isRenewal) {
+                $conflictingBookings = DB::table('t_transactions')
+                    ->where('property_id', $request->property_id)
+                    ->where('room_id', $request->room_id)
+                    ->where('order_id', '!=', $orderId) // Exclude the original booking
+                    ->where('status', '1')
+                    ->whereNotIn('transaction_status', ['cancelled', 'expired'])
+                    ->where('check_in', '<', $checkOut)
+                    ->where('check_out', '>', $checkIn)
+                    ->limit(1)
+                    ->get();
+
+                if (!$conflictingBookings->isEmpty()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Room is not available for the selected dates',
+                        'conflicting_bookings' => $conflictingBookings
+                    ], 409);
+                }
             }
+            // NOTE: When is_renewal=1, we skip the conflict check entirely
+            // because the tenant is extending their stay in the same room
 
             DB::beginTransaction();
+
+            // Set check-in time to 14:00:00 and check-out time to 12:00:00
+            // Use createFromFormat to avoid timezone issues with date-only strings
+            $checkInWithTime = Carbon::createFromFormat('Y-m-d', $request->check_in, config('app.timezone'))->setTime(14, 0, 0);
+            $checkOutWithTime = Carbon::createFromFormat('Y-m-d', $request->check_out, config('app.timezone'))->setTime(12, 0, 0);
 
             // Calculate pricing based on booking type
             $bookingDays = null;
             $bookingMonths = null;
             $roomPrice = 0;
-            $adminFees = 0;
-            $serviceFees = 30000;
-            $tax = 0;
 
-            // Set check-in time to 14:00:00 and check-out time to 12:00:00
-            $checkInWithTime = Carbon::parse($request->check_in)->setTime(14, 0, 0);
-            $checkOutWithTime = Carbon::parse($request->check_out)->setTime(12, 0, 0);
+            // Determine booking type - prioritize explicit booking_type parameter
+            $isDaily = $request->booking_type === 'daily';
 
-            if ($originalTransaction->booking_type === 'daily') {
-                // Calculate days
-                $bookingDays = $checkInWithTime->copy()->startOfDay()->diffInDays($checkOutWithTime->copy()->startOfDay());
-
-                // Get current daily price from room
-                $dailyPrice = $room->price_original_daily ?? $originalTransaction->daily_price;
+            if ($isDaily) {
+                // DAILY BOOKING
+                $bookingDays = $request->booking_days ?? $checkInWithTime->copy()->startOfDay()->diffInDays($checkOutWithTime->copy()->startOfDay());
+                $dailyPrice = $request->daily_price ?? $room->price_original_daily ?? 0;
                 $roomPrice = $dailyPrice * $bookingDays;
-
-                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
             } else {
-                // Monthly booking
-                $bookingMonths = $originalTransaction->booking_months ?? 1;
-
-                // Get current monthly price from room
-                $monthlyPrice = $room->price_original_monthly ?? $originalTransaction->monthly_price;
+                // MONTHLY BOOKING
+                $bookingMonths = $request->booking_months ?? $checkInWithTime->copy()->startOfDay()->diffInMonths($checkOutWithTime->copy()->startOfDay());
+                if ($bookingMonths < 1) {
+                    $bookingMonths = 1;
+                }
+                $monthlyPrice = $request->monthly_price ?? $room->price_original_monthly ?? 0;
                 $roomPrice = $monthlyPrice * $bookingMonths;
-
-                $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
             }
+
+            $adminFees = $request->admin_fees ?? 0;
+            $serviceFees = $request->service_fees ?? 30000;
+            $tax = $request->tax ?? 0;
+
+            $subtotalBeforeServiceFee = $roomPrice + $adminFees + $tax;
 
             // Voucher processing
             $voucherId = null;
@@ -821,10 +946,10 @@ class BookingController extends ApiController
                 // Validate and apply voucher
                 $voucherValidation = $voucherService->validateVoucher(
                     $request->voucher_code,
-                    $originalTransaction->user_id,
+                    $request->user_id,
                     $subtotalBeforeServiceFee,
-                    $originalTransaction->property_id,
-                    $originalTransaction->room_id
+                    $request->property_id,
+                    $request->room_id
                 );
 
                 if (!$voucherValidation['valid']) {
@@ -847,11 +972,19 @@ class BookingController extends ApiController
                 $voucher->increment('current_usage_count');
             }
 
-            // Calculate final grand total
-            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees;
+            // Handle deposit fee
+            $depositFee = $request->deposit_fee ?? 0;
+
+            // Handle parking fee - store as is (no calculation with duration)
+            $parkingDuration = $request->parking_duration ?? 0;
+            $parkingFee = $request->parking_fee ?? 0;
+            $parkingType = $request->parking_type ?? null;
+
+            // Calculate final grand total: Subtotal - Discount + Service Fee + Deposit + Parking
+            $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees + $depositFee + $parkingFee;
 
             // Generate new order_id
-            $property = Property::find($originalTransaction->property_id);
+            $property = Property::find($request->property_id);
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
             $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
             $newOrderId = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
@@ -859,48 +992,55 @@ class BookingController extends ApiController
             // Set expiration time to 1 hour from now
             $expiredAt = now()->addHour();
 
-            // Prepare transaction data (copy from original + new values)
+            // Prepare transaction data from request
             $transactionData = [
-                // USER DATA (copied from original)
-                'user_id' => $originalTransaction->user_id,
-                'user_name' => $originalTransaction->user_name,
-                'user_phone_number' => $originalTransaction->user_phone_number,
-                'user_email' => $originalTransaction->user_email,
-                // PROPERTY DATA (copied from original)
-                'property_id' => $originalTransaction->property_id,
-                'property_name' => $originalTransaction->property_name,
-                'property_type' => $originalTransaction->property_type,
-                // ROOM DATA (copied from original)
-                'room_id' => $originalTransaction->room_id,
-                'room_name' => $originalTransaction->room_name,
-                // ORDER DETAILS (new values)
+                // USER DATA
+                'user_id' => $request->user_id,
+                'user_name' => $request->user_name,
+                'user_phone_number' => $request->user_phone_number,
+                'user_email' => $request->user_email,
+                // PROPERTY DATA
+                'property_id' => $request->property_id,
+                'property_name' => $request->property_name,
+                'property_type' => $request->property_type,
+                // ROOM DATA
+                'room_id' => $request->room_id,
+                'room_name' => $request->room_name,
+                // ORDER DETAILS
                 'order_id' => $newOrderId,
                 'transaction_date' => now(),
-                'booking_type' => $originalTransaction->booking_type,
+                'booking_type' => $request->booking_type,
                 'booking_days' => $bookingDays,
                 'booking_months' => $bookingMonths,
-                // PRICES (recalculated)
+                // PRICES
                 'room_price' => $roomPrice,
-                'daily_price' => $originalTransaction->booking_type === 'daily' ? ($room->price_original_daily ?? $originalTransaction->daily_price) : null,
-                'monthly_price' => $originalTransaction->booking_type === 'monthly' ? ($room->price_original_monthly ?? $originalTransaction->monthly_price) : null,
+                'daily_price' => $isDaily ? ($request->daily_price ?? $room->price_original_daily) : null,
+                'monthly_price' => !$isDaily ? ($request->monthly_price ?? $room->price_original_monthly) : null,
                 'admin_fees' => $adminFees,
                 'service_fees' => $serviceFees,
                 'tax' => $tax,
                 'grandtotal_price' => $grandtotalPrice,
-                // VOUCHER DATA (new voucher if provided)
+                // VOUCHER DATA
                 'voucher_id' => $voucherId,
                 'voucher_code' => $voucherCode,
                 'discount_amount' => $discountAmount,
                 'subtotal_before_discount' => $subtotalBeforeDiscount,
+                // DEPOSIT & PARKING
+                'deposit_fee' => $depositFee,
+                'parking_type' => $parkingType,
+                'parking_fee' => $parkingFee,
+                'parking_duration' => $parkingDuration,
                 // CODE AND STATUS
-                'transaction_type' => $originalTransaction->transaction_type,
+                'transaction_type' => $request->transaction_type ?? 'BRI Manual',
                 'transaction_code' => 'TRX-' . Str::random(16),
                 'transaction_status' => 'pending',
                 'status' => '1',
-                // DATES (new dates)
+                // DATES
                 'check_in' => $checkInWithTime,
                 'check_out' => $checkOutWithTime,
                 'expired_at' => $expiredAt,
+                // RENEWAL FLAG
+                'is_renewal' => $request->is_renewal ?? 1,
             ];
 
             // Create new transaction
@@ -912,59 +1052,85 @@ class BookingController extends ApiController
                 $voucherService->logUsage([
                     'voucher_id' => $voucherId,
                     'voucher_code' => $voucherCode,
-                    'user_id' => $originalTransaction->user_id,
+                    'user_id' => $request->user_id,
                     'order_id' => $newOrderId,
                     'transaction_id' => $newTransaction->idrec,
-                    'property_id' => $originalTransaction->property_id,
-                    'room_id' => $originalTransaction->room_id,
+                    'property_id' => $request->property_id,
+                    'room_id' => $request->room_id,
                     'original_amount' => $subtotalBeforeDiscount,
                     'discount_amount' => $discountAmount,
                     'final_amount' => $grandtotalPrice
                 ]);
             }
 
-            // Create new booking record
-            $bookingData = [
-                'property_id' => $originalTransaction->property_id,
+            // 1. Find old booking by order_id and update check_out_at
+            $oldBooking = Booking::where('order_id', $orderId)->first();
+            if ($oldBooking) {
+                $oldBooking->update(['check_out_at' => now()]);
+            }
+
+            // 2. Clone old booking to new order_id with check_out_at = null
+            $newBookingData = [
+                'property_id' => $oldBooking ? $oldBooking->property_id : $request->property_id,
+                'room_id' => $oldBooking ? $oldBooking->room_id : $request->room_id,
                 'order_id' => $newOrderId,
-                'room_id' => $originalTransaction->room_id,
+                'user_name' => $oldBooking ? $oldBooking->user_name : $request->user_name,
+                'user_email' => $oldBooking ? $oldBooking->user_email : $request->user_email,
+                'user_phone_number' => $oldBooking ? $oldBooking->user_phone_number : $request->user_phone_number,
+                'check_in_at' => $oldBooking ? $oldBooking->check_in_at : null,
+                'ktp_img' => $oldBooking ? $oldBooking->ktp_img : null,
+                'check_out_at' => null, // User hasn't checked out of new booking yet
+                'doc_type' => $oldBooking ? $oldBooking->doc_type : null,
+                'doc_path' => $oldBooking ? $oldBooking->doc_path : null,
+                'created_by' => $oldBooking ? $oldBooking->created_by : $request->user_id,
+                'updated_by' => $request->user_id,
                 'status' => '1',
-                'booking_type' => $originalTransaction->booking_type
+                'previous_booking_id' => $oldBooking ? $oldBooking->idrec : null,
+                'reason' => null,
+                'description' => null,
+                'room_changed_at' => null,
+                'room_changed_by' => null,
+                'is_printed' => null
             ];
-            Booking::create($bookingData);
+            Booking::create($newBookingData);
 
             // Create new payment record
             $paymentData = [
-                'property_id' => $originalTransaction->property_id,
-                'room_id' => $originalTransaction->room_id,
+                'property_id' => $request->property_id,
+                'room_id' => $request->room_id,
                 'order_id' => $newOrderId,
-                'user_id' => $originalTransaction->user_id,
+                'user_id' => $request->user_id,
                 'grandtotal_price' => $grandtotalPrice,
                 'payment_status' => 'unpaid',
-                'created_by' => $originalTransaction->user_id,
-                'updated_by' => $originalTransaction->user_id,
+                'created_by' => $request->user_id,
+                'updated_by' => $request->user_id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
             Payment::create($paymentData);
 
+            // Update original transaction's renewal_status to 1 (already renewed)
+            $originalTransaction->update(['renewal_status' => 1]);
+
             // Log renewal
             Log::info("Booking renewed successfully", [
                 'original_order_id' => $orderId,
                 'new_order_id' => $newOrderId,
-                'user_id' => $originalTransaction->user_id,
+                'user_id' => $request->user_id,
+                'is_renewal' => $request->is_renewal ?? 1,
+                'renewal_status_updated' => true,
                 'expired_at' => $expiredAt
             ]);
 
             // Send booking confirmation email
-            if ($originalTransaction->user_email) {
+            if ($request->user_email) {
                 $user = new \App\Models\User();
-                $user->email = $originalTransaction->user_email;
-                $user->id = $originalTransaction->user_id;
+                $user->email = $request->user_email;
+                $user->id = $request->user_id;
 
                 $this->sendEmailBooking(
                     $user,
-                    $bookingData,
+                    $newBookingData,
                     $transactionData,
                     null // Payment URL will be generated separately if needed
                 );
@@ -978,6 +1144,7 @@ class BookingController extends ApiController
                 'data' => [
                     'original_order_id' => $orderId,
                     'new_order_id' => $newOrderId,
+                    'is_renewal' => $request->is_renewal ?? 1,
                     'transaction' => $newTransaction->toArray(),
                     'expired_at' => $expiredAt->toISOString()
                 ]
@@ -1060,6 +1227,14 @@ class BookingController extends ApiController
             $data = $booking->toArray();
             $data['check_in_at'] = $booking->getCheckInAt();
 
+            // Get room no from m_rooms table
+            if ($booking->room_id) {
+                $room = DB::table('m_rooms')->where('idrec', $booking->room_id)->first();
+                $data['room_no'] = $room ? $room->no : null;
+            } else {
+                $data['room_no'] = null;
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Booking retrieved successfully',
@@ -1097,6 +1272,15 @@ class BookingController extends ApiController
                 $data = $bookings->map(function ($booking) {
                     $bookingData = $booking->toArray();
                     $bookingData['check_in_at'] = $booking->getCheckInAt();
+
+                    // Get room no from m_rooms table
+                    if ($booking->room_id) {
+                        $room = DB::table('m_rooms')->where('idrec', $booking->room_id)->first();
+                        $bookingData['room_no'] = $room?->no;
+                    } else {
+                        $bookingData['room_no'] = null;
+                    }
+
                     return $bookingData;
                 });
 
@@ -1325,10 +1509,11 @@ class BookingController extends ApiController
         try {
             // Validate request
             $validator = Validator::make($request->all(), [
-                'payment_method' => 'required',
+                'payment_method' => 'required|string',
                 'virtual_account_no' => 'nullable|string',
                 'payment_bank' => 'nullable|string',
                 'deposit_fee' => 'nullable|numeric|min:0',
+                'parking_duration' => 'nullable|integer|min:0',
                 'parking_fee' => 'nullable|numeric|min:0',
                 'parking_type' => 'nullable|string',
                 'voucher_code' => 'nullable|string',
@@ -1379,11 +1564,23 @@ class BookingController extends ApiController
                 $updateData['deposit_fee'] = $depositFee;
             }
 
-            // Handle parking fee 
+            // Handle parking fee - store as is (no calculation with duration)
+            $parkingDuration = 0;
             $parkingFee = 0;
+
             if ($request->has('parking_fee')) {
                 $parkingFee = floatval($request->parking_fee);
-                $updateData['parking_fee'] = $parkingFee;
+            }
+            if ($request->has('parking_duration')) {
+                $parkingDuration = intval($request->parking_duration);
+            }
+
+            $updateData['parking_fee'] = $parkingFee;
+            $updateData['parking_duration'] = $parkingDuration;
+
+            // Handle parking type
+            if ($request->has('parking_type')) {
+                $updateData['parking_type'] = $request->parking_type;
             }
 
             // Handle voucher discount
@@ -1424,8 +1621,12 @@ class BookingController extends ApiController
                 'data' => [
                     'booking_id' => $id,
                     'payment_method' => $request->payment_method,
+                    'payment_bank' => $request->payment_bank,
+                    'virtual_account_no' => $request->virtual_account_no,
                     'deposit_fee' => $depositFee,
+                    'parking_duration' => $parkingDuration,
                     'parking_fee' => $parkingFee,
+                    'parking_type' => $request->parking_type,
                     'discount_amount' => $discountAmount,
                     'grandtotal_price' => $newGrandtotal,
                     'transaction_status' => 'pending'

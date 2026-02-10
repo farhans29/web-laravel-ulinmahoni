@@ -16,16 +16,25 @@ class Booking extends Model
 
     protected $fillable = [
         'property_id',
-        'order_id',
         'room_id',
+        'order_id',
+        'user_name',
+        'user_email',
+        'user_phone_number',
         'check_in_at',
+        'ktp_img',
         'check_out_at',
+        'doc_type',
+        'doc_path',
         'created_by',
         'updated_by',
-        'transaction_code',
-        'transaction_status',
         'status',
-        'paid_at'
+        'previous_booking_id',
+        'reason',
+        'description',
+        'room_changed_at',
+        'room_changed_by',
+        'is_printed'
     ];
 
     protected $dates = [

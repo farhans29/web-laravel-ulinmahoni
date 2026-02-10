@@ -685,18 +685,19 @@ class BookingController extends Controller
             $checkInDate = Carbon::parse($request->check_in);
             $checkOutDate = Carbon::parse($request->check_out);
 
-            // Calculate booking days using date-only comparison
-            $bookingMonths = 0;
-            $bookingDays = 0;
+            // Calculate booking days/months - only set the relevant one based on rent type
+            $bookingMonths = null;
+            $bookingDays = null;
 
             if ($request->rent_type === 'monthly') {
                 $bookingMonths = (int) $request->months;
                 $checkOutDate = $checkInDate->copy()->addMonths($bookingMonths);
-                $bookingDays = $checkInDate->diffInDays($checkOutDate);
+                // $bookingDays stays null for monthly bookings
                 $totalPrice = $price * $bookingMonths;
             } else {
                 // For daily rentals, calculate the difference in days
                 $bookingDays = $checkInDate->diffInDays($checkOutDate);
+                // $bookingMonths stays null for daily bookings
                 $totalPrice = $price * $bookingDays;
             }
 
@@ -857,6 +858,11 @@ class BookingController extends Controller
 
             // Booking will be automatically expired by scheduled task if not paid within 1 hour
             Log::info("Booking created with expiration time: {$expiredAt} for order_id: {$order_id}");
+
+            // Update room rental_status to 1 (room is booked/rented)
+            DB::table('m_rooms')
+                ->where('idrec', $room->idrec)
+                ->update(['rental_status' => 1]);
 
             // Process payment with DOKU
             try {

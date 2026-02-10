@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\ApiController;
 use App\Models\Room;
+use App\Models\Property;
 use Illuminate\Http\Request;
 
 
@@ -13,6 +14,11 @@ class RoomController extends ApiController
     public function byPropertyId($property_id)
     {
         try {
+            // Get property parking fees and deposit fee
+            $property = Property::find($property_id);
+            $parkingFees = $property ? $property->parking_fees : [];
+            $depositFee = $property ? $property->deposit_fee_amount : null;
+
             $query = Room::query()
                 ->where('m_rooms.property_id', $property_id)
                 ->leftJoin('m_room_images', 'm_room_images.room_id', '=', 'm_rooms.idrec')
@@ -27,7 +33,7 @@ class RoomController extends ApiController
             $rooms = $query->get();
 
             // Group images by room
-            $groupedRooms = $rooms->groupBy('idrec')->map(function ($roomGroup) {
+            $groupedRooms = $rooms->groupBy('idrec')->map(function ($roomGroup) use ($parkingFees, $depositFee) {
                 $room = $roomGroup->first();
 
                 // Map and sort images - images with thumbnails come first
@@ -57,6 +63,8 @@ class RoomController extends ApiController
                 $roomArray['thumbnail'] = $firstImageWithThumbnail['thumbnail'] ?? null;
 
                 $roomArray['images'] = $images;
+                $roomArray['parking_fees'] = $parkingFees;
+                $roomArray['deposit_fee'] = $depositFee;
 
                 // Remove image-related fields from the main room object
                 unset(
@@ -81,7 +89,7 @@ class RoomController extends ApiController
     {
         try {
             $query = Room::query();
-            
+
             // Join with room images
             $query->leftJoin('m_room_images', 'm_room_images.room_id', '=', 'm_rooms.idrec')
                 ->select([
@@ -97,9 +105,13 @@ class RoomController extends ApiController
             }
 
             $rooms = $query->get();
-            
+
+            // Pre-load properties for parking fees
+            $propertyIds = $rooms->pluck('property_id')->unique()->filter();
+            $properties = Property::whereIn('idrec', $propertyIds)->get()->keyBy('idrec');
+
             // Group images by room
-            $groupedRooms = $rooms->groupBy('idrec')->map(function ($roomGroup) {
+            $groupedRooms = $rooms->groupBy('idrec')->map(function ($roomGroup) use ($properties) {
                 $room = $roomGroup->first();
                 $images = $roomGroup->filter(function ($item) {
                     return $item->image_id !== null;
@@ -110,17 +122,22 @@ class RoomController extends ApiController
                         'caption' => $imageItem->caption,
                     ];
                 })->values();
-                
+
                 $roomArray = $room->toArray();
                 $roomArray['images'] = $images;
-                
+
+                // Add parking fees and deposit fee from property
+                $property = $properties->get($room->property_id);
+                $roomArray['parking_fees'] = $property ? $property->parking_fees : [];
+                $roomArray['deposit_fee'] = $property ? $property->deposit_fee_amount : null;
+
                 // Remove image-related fields from the main room object
                 unset(
                     $roomArray['image_id'],
                     $roomArray['image_data'],
                     $roomArray['caption']
                 );
-                
+
                 return $roomArray;
             })->values();
 
@@ -151,8 +168,14 @@ class RoomController extends ApiController
                 return $this->respondNotFound('Room not found');
             }
 
+            // Get property for parking fees and deposit fee
+            $propertyId = $room->first()->property_id;
+            $property = Property::find($propertyId);
+            $parkingFees = $property ? $property->parking_fees : [];
+            $depositFee = $property ? $property->deposit_fee_amount : null;
+
             // Group images by room
-            $groupedRoom = $room->groupBy('idrec')->map(function ($roomGroup) {
+            $groupedRoom = $room->groupBy('idrec')->map(function ($roomGroup) use ($parkingFees, $depositFee) {
                 $room = $roomGroup->first();
 
                 // Map and sort images - images with thumbnails come first
@@ -182,6 +205,8 @@ class RoomController extends ApiController
                 $roomArray['thumbnail'] = $firstImageWithThumbnail['thumbnail'] ?? null;
 
                 $roomArray['images'] = $images;
+                $roomArray['parking_fees'] = $parkingFees;
+                $roomArray['deposit_fee'] = $depositFee;
 
                 // Remove image-related fields from the main room object
                 unset(

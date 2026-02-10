@@ -282,10 +282,16 @@
                             </div>
                             <div class="text-right">
                                 <!-- Room Status -->
-                                <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
-                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? 'bg-green-100 text-green-800' : 'bg-gray-400 text-white' }}">
-                                    {{ $room['status'] == 1 && $room['rental_status'] != 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
-                                </span>
+                                @if($room['rental_status'] == 1)
+                                    <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium bg-gray-400 text-white">
+                                        Tidak Tersedia
+                                    </span>
+                                @else
+                                    <span id="roomStatus" class="px-4 py-2 rounded-full text-sm font-medium
+                                        {{ $room['status'] == 1 ? 'bg-green-100 text-green-800' : 'bg-gray-400 text-white' }}">
+                                        {{ $room['status'] == 1 ? __('properties.status.available') : __('properties.status.unavailable') }}
+                                    </span>
+                                @endif
 
                                 <!-- Availability Status -->
 
@@ -621,9 +627,18 @@
         let availabilityCheckTimeout;
 
         // --- Global Room Availability Function ---
+        const rentalStatus = {{ $room['rental_status'] ?? 0 }};
+
         async function checkRoomAvailability() {
+            // Skip availability check if room is already rented (rental_status = 1)
+            if (rentalStatus == 1) {
+                showAvailabilityStatus('unavailable', 'Kamar sedang disewa');
+                updateSubmitButton(false, 'Tidak Tersedia');
+                return;
+            }
+
             // console.log('=== CHECK ROOM AVAILABILITY STARTED ===');
-            
+
             const propertyId = document.getElementById('propertyId').value;
             const roomId = document.querySelector('[name="room_id"]').value;
             const checkInDate = document.getElementById('check_in').value;
@@ -1074,10 +1089,10 @@
                         document.getElementById('bookingMonths').value = monthsSelect.value;
                     }
 
-                    // Set check-in date for monthly with 14-day minimum
+                    // Set check-in date for monthly (default to today)
                     const today = new Date();
                     const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
+                    // Default check-in is today (no offset)
 
                     if (checkInMonthlyInput) {
                         checkInMonthlyInput.value = minCheckInDate.toISOString().split('T')[0];
@@ -1108,10 +1123,10 @@
                     monthlyRateDisplay.classList.add('hidden');
                     rateTypeDisplay.textContent = '{{ __("properties.booking.daily_rate") }}';
 
-                    // Set dates to defaults with 14-day minimum
+                    // Set dates to defaults (check-in defaults to today)
                     const today = new Date();
                     const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
+                    // Default check-in is today (no offset)
                     const minCheckOutDate = new Date(minCheckInDate);
                     minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
 
@@ -1176,10 +1191,10 @@
 
             // --- Initialization ---
             function initializeForm() {
-                // Get current date for default values with 14 days minimum
+                // Get current date for default values (today)
                 const today = new Date();
                 const minCheckInDate = new Date(today);
-                minCheckInDate.setDate(today.getDate() + 14);
+                // Default check-in is today (no +14 days offset)
 
                 // Use default dates
                 const defaultCheckIn = minCheckInDate.toISOString().split('T')[0];
@@ -1563,10 +1578,10 @@
                 }
             }
 
-            // Set default dates with 14-day minimum
+            // Set default dates (check-in defaults to today)
             const today = new Date();
             const minCheckInDate = new Date(today);
-            minCheckInDate.setDate(today.getDate() + 14);
+            // Default check-in is today (no offset)
             const minCheckOutDate = new Date(minCheckInDate);
             minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
 
@@ -1648,11 +1663,15 @@
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const maxDate = new Date();
-            maxDate.setDate(today.getDate() + 14);
+            maxDate.setDate(today.getDate() + 365); // Allow booking up to 1 year ahead
 
-            // Set default dates
+            // Max check-in date is 14 days from today
+            const maxCheckInDate = new Date();
+            maxCheckInDate.setDate(today.getDate() + 14);
+
+            // Set default dates (check-in defaults to today)
             const minCheckInDate = new Date(today);
-            minCheckInDate.setDate(today.getDate() + 14);
+            // Default check-in is today (no offset)
             const minCheckOutDate = new Date(minCheckInDate);
             minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
 
@@ -1663,7 +1682,7 @@
                 checkInPicker = new Datepicker(checkInElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
-                    maxDate: maxDate,
+                    maxDate: maxCheckInDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
@@ -1737,7 +1756,7 @@
                 checkInMonthlyPicker = new Datepicker(checkInMonthlyElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
-                    maxDate: maxDate,
+                    maxDate: maxCheckInDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
