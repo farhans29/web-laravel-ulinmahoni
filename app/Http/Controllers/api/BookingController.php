@@ -1072,16 +1072,25 @@ class BookingController extends ApiController
             // 2. Clone old booking to new order_id with check_out_at = null
             $newBookingData = [
                 'property_id' => $oldBooking ? $oldBooking->property_id : $request->property_id,
-                'order_id' => $newOrderId,
                 'room_id' => $oldBooking ? $oldBooking->room_id : $request->room_id,
+                'order_id' => $newOrderId,
+                'user_name' => $oldBooking ? $oldBooking->user_name : $request->user_name,
+                'user_email' => $oldBooking ? $oldBooking->user_email : $request->user_email,
+                'user_phone_number' => $oldBooking ? $oldBooking->user_phone_number : $request->user_phone_number,
                 'check_in_at' => $oldBooking ? $oldBooking->check_in_at : null,
+                'ktp_img' => $oldBooking ? $oldBooking->ktp_img : null,
                 'check_out_at' => null, // User hasn't checked out of new booking yet
+                'doc_type' => $oldBooking ? $oldBooking->doc_type : null,
+                'doc_path' => $oldBooking ? $oldBooking->doc_path : null,
                 'created_by' => $oldBooking ? $oldBooking->created_by : $request->user_id,
                 'updated_by' => $request->user_id,
-                'transaction_code' => $oldBooking ? $oldBooking->transaction_code : null,
-                'transaction_status' => 'pending',
                 'status' => '1',
-                'paid_at' => null
+                'previous_booking_id' => $oldBooking ? $oldBooking->idrec : null,
+                'reason' => null,
+                'description' => null,
+                'room_changed_at' => null,
+                'room_changed_by' => null,
+                'is_printed' => null
             ];
             Booking::create($newBookingData);
 
