@@ -659,9 +659,17 @@
                                                 $today = now()->startOfDay();
                                                 $isTooEarly = $today < $renewableDate;
                                                 $isTooLate = $today > $checkOutDate;
-                                                $canRenew = !$isTooEarly && !$isTooLate;
+                                                $isAlreadyRenewed = $booking->renewal_status == 1;
+                                                $canRenew = !$isTooEarly && !$isTooLate && !$isAlreadyRenewed;
                                             @endphp
-                                            @if($canRenew)
+                                            @if($isAlreadyRenewed)
+                                            <button disabled
+                                                    class="inline-flex items-center px-4 py-2 bg-blue-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
+                                                    title="Booking ini sudah diperpanjang">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                Already Renewed
+                                            </button>
+                                            @elseif($canRenew)
                                             <button onclick="openRenewModal({
                                                 orderId: '{{ $booking->order_id }}',
                                                 roomId: {{ $booking->room_id }},

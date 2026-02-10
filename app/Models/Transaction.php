@@ -36,6 +36,8 @@ class Transaction extends Model
         'service_fees',
         'deposit_fee',
         'parking_fee',
+        'parking_type',
+        'parking_duration',
         'grandtotal_price',
         'voucher_id',
         'voucher_code',
@@ -47,7 +49,9 @@ class Transaction extends Model
         'transaction_status',
         'status',
         'paid_at',
-        'expired_at'
+        'expired_at',
+        'is_renewal',
+        'renewal_status'
     ];
 
     protected $hidden = [

@@ -1041,7 +1041,6 @@ class BookingController extends ApiController
                 'expired_at' => $expiredAt,
                 // RENEWAL FLAG
                 'is_renewal' => $request->is_renewal ?? 1,
-                'original_order_id' => $orderId,
             ];
 
             // Create new transaction
@@ -1089,12 +1088,16 @@ class BookingController extends ApiController
             ];
             Payment::create($paymentData);
 
+            // Update original transaction's renewal_status to 1 (already renewed)
+            $originalTransaction->update(['renewal_status' => 1]);
+
             // Log renewal
             Log::info("Booking renewed successfully", [
                 'original_order_id' => $orderId,
                 'new_order_id' => $newOrderId,
                 'user_id' => $request->user_id,
                 'is_renewal' => $request->is_renewal ?? 1,
+                'renewal_status_updated' => true,
                 'expired_at' => $expiredAt
             ]);
 

@@ -77,7 +77,8 @@
                             <!-- Deposit & Parking Fee Section -->
                             @php
                                 $property = \App\Models\Property::find($booking->property_id);
-                                $depositFeeAmount = $property ? ($property->deposit_fee_amount ?? 0) : 0;
+                                // Deposit fee is 0 for renewals (is_renewal = 1)
+                                $depositFeeAmount = ($booking->is_renewal == 1) ? 0 : ($property ? ($property->deposit_fee_amount ?? 0) : 0);
                                 $parkingFees = $property ? $property->parkingFees()->where('status', 1)->get() : collect([]);
                             @endphp
 

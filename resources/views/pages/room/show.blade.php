@@ -1089,10 +1089,10 @@
                         document.getElementById('bookingMonths').value = monthsSelect.value;
                     }
 
-                    // Set check-in date for monthly with 14-day minimum
+                    // Set check-in date for monthly (default to today)
                     const today = new Date();
                     const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
+                    // Default check-in is today (no offset)
 
                     if (checkInMonthlyInput) {
                         checkInMonthlyInput.value = minCheckInDate.toISOString().split('T')[0];
@@ -1123,10 +1123,10 @@
                     monthlyRateDisplay.classList.add('hidden');
                     rateTypeDisplay.textContent = '{{ __("properties.booking.daily_rate") }}';
 
-                    // Set dates to defaults with 14-day minimum
+                    // Set dates to defaults (check-in defaults to today)
                     const today = new Date();
                     const minCheckInDate = new Date(today);
-                    minCheckInDate.setDate(today.getDate() + 14);
+                    // Default check-in is today (no offset)
                     const minCheckOutDate = new Date(minCheckInDate);
                     minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
 
@@ -1191,10 +1191,10 @@
 
             // --- Initialization ---
             function initializeForm() {
-                // Get current date for default values with 14 days minimum
+                // Get current date for default values (today)
                 const today = new Date();
                 const minCheckInDate = new Date(today);
-                minCheckInDate.setDate(today.getDate() + 14);
+                // Default check-in is today (no +14 days offset)
 
                 // Use default dates
                 const defaultCheckIn = minCheckInDate.toISOString().split('T')[0];
@@ -1578,10 +1578,10 @@
                 }
             }
 
-            // Set default dates with 14-day minimum
+            // Set default dates (check-in defaults to today)
             const today = new Date();
             const minCheckInDate = new Date(today);
-            minCheckInDate.setDate(today.getDate() + 14);
+            // Default check-in is today (no offset)
             const minCheckOutDate = new Date(minCheckInDate);
             minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
 
@@ -1663,11 +1663,11 @@
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date();
             const maxDate = new Date();
-            maxDate.setDate(today.getDate() + 14);
+            maxDate.setDate(today.getDate() + 365); // Allow booking up to 1 year ahead
 
-            // Set default dates
+            // Set default dates (check-in defaults to today)
             const minCheckInDate = new Date(today);
-            minCheckInDate.setDate(today.getDate() + 14);
+            // Default check-in is today (no offset)
             const minCheckOutDate = new Date(minCheckInDate);
             minCheckOutDate.setDate(minCheckInDate.getDate() + 1);
 
