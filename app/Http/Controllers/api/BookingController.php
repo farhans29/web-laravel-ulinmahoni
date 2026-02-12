@@ -109,6 +109,34 @@ class BookingController extends ApiController
         }
     }
 
+    /**
+     * Increment parking quota when a booking uses parking
+     *
+     * @param int $propertyId
+     * @param string|null $parkingType
+     * @return void
+     */
+    private function incrementParkingQuota($propertyId, $parkingType)
+    {
+        if (empty($parkingType)) {
+            return;
+        }
+
+        $parkingFee = \App\Models\ParkingFee::where('property_id', $propertyId)
+            ->where('parking_type', $parkingType)
+            ->where('status', '1')
+            ->first();
+
+        if ($parkingFee) {
+            $parkingFee->increment('quota_used');
+            Log::info("Incremented parking quota", [
+                'property_id' => $propertyId,
+                'parking_type' => $parkingType,
+                'new_quota_used' => $parkingFee->quota_used
+            ]);
+        }
+    }
+
     public function index(Request $request)
     {
         // Auto-expire pending bookings when user accesses their bookings
@@ -696,9 +724,14 @@ class BookingController extends ApiController
             Log::info("Booking created with expiration time: {$expiredAt} for order_id: {$order_id}");
 
             // Update room rental_status to 1 (room is booked/rented)
-            DB::table('m_rooms')    
+            DB::table('m_rooms')
                 ->where('idrec', $request->room_id)
                 ->update(['rental_status' => 1]);
+
+            // Increment parking quota if parking is used
+            if ($parkingFee > 0 && $parkingType) {
+                $this->incrementParkingQuota($request->property_id, $parkingType);
+            }
 
             // Process payment with DOKU
             // $dokuPaymentResponse = $this->processDokuPayment([
@@ -1111,6 +1144,11 @@ class BookingController extends ApiController
 
             // Update original transaction's renewal_status to 1 (already renewed)
             $originalTransaction->update(['renewal_status' => 1]);
+
+            // Increment parking quota if parking is used in renewal
+            if ($parkingFee > 0 && $parkingType) {
+                $this->incrementParkingQuota($request->property_id, $parkingType);
+            }
 
             // Log renewal
             Log::info("Booking renewed successfully", [

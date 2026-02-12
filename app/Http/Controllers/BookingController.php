@@ -112,6 +112,34 @@ class BookingController extends Controller
     }
 
     /**
+     * Increment parking quota when a booking uses parking
+     *
+     * @param int $propertyId
+     * @param string|null $parkingType
+     * @return void
+     */
+    private function incrementParkingQuota($propertyId, $parkingType)
+    {
+        if (empty($parkingType)) {
+            return;
+        }
+
+        $parkingFee = \App\Models\ParkingFee::where('property_id', $propertyId)
+            ->where('parking_type', $parkingType)
+            ->where('status', '1')
+            ->first();
+
+        if ($parkingFee) {
+            $parkingFee->increment('quota_used');
+            Log::info("Incremented parking quota", [
+                'property_id' => $propertyId,
+                'parking_type' => $parkingType,
+                'new_quota_used' => $parkingFee->quota_used
+            ]);
+        }
+    }
+
+    /**
      * Send booking confirmation email to user
      *
      * @param \App\Models\User $user
@@ -499,6 +527,11 @@ class BookingController extends Controller
             DB::table('t_payment')
                 ->where('order_id', $booking->order_id)
                 ->update(['grandtotal_price' => $newGrandtotal]);
+
+            // Increment parking quota if parking is used
+            if ($parkingFee > 0 && $request->parking_type) {
+                $this->incrementParkingQuota($booking->property_id, $request->parking_type);
+            }
 
             // Log voucher usage if voucher was applied
             if ($request->has('voucher_code') && $request->discount_amount > 0) {
