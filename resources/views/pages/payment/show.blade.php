@@ -119,13 +119,18 @@
                                         </label>
 
                                         @foreach($parkingFees as $parkingFee)
-                                        <label class="parking-option flex items-center justify-between p-3 bg-white rounded-lg border-2 border-gray-200 cursor-pointer hover:border-teal-500 transition-all">
+                                        @php
+                                            $isFull = $parkingFee->capacity && $parkingFee->quota_used >= $parkingFee->capacity;
+                                            $remainingSlots = $parkingFee->capacity ? ($parkingFee->capacity - ($parkingFee->quota_used ?? 0)) : null;
+                                        @endphp
+                                        <label class="parking-option flex items-center justify-between p-3 rounded-lg border-2 transition-all {{ $isFull ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60' : 'bg-white border-gray-200 cursor-pointer hover:border-teal-500' }}">
                                             <div class="flex items-center">
                                                 <input type="radio" name="parking_selection" value="{{ $parkingFee->idrec }}" class="mr-3"
                                                     data-parking-fee="{{ $parkingFee->fee }}"
-                                                    data-parking-type="{{ $parkingFee->parking_type }}">
+                                                    data-parking-type="{{ $parkingFee->parking_type }}"
+                                                    {{ $isFull ? 'disabled' : '' }}>
                                                 <div>
-                                                    <span class="font-medium text-gray-700">
+                                                    <span class="font-medium {{ $isFull ? 'text-gray-400' : 'text-gray-700' }}">
                                                         @if(strtolower($parkingFee->parking_type) == 'car' || strtolower($parkingFee->parking_type) == 'mobil')
                                                             <i class="fas fa-car mr-2"></i>Parkir Mobil
                                                         @elseif(strtolower($parkingFee->parking_type) == 'motorcycle' || strtolower($parkingFee->parking_type) == 'motor')
@@ -133,13 +138,21 @@
                                                         @else
                                                             {{ ucfirst($parkingFee->parking_type) }}
                                                         @endif
+                                                        @if($isFull)
+                                                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold text-red-600 bg-red-100 rounded">PENUH</span>
+                                                        @endif
                                                     </span>
                                                     @if($parkingFee->capacity)
-                                                    <p class="text-sm text-gray-500">Kapasitas: {{ $parkingFee->capacity }}</p>
+                                                    <p class="text-sm {{ $isFull ? 'text-gray-400' : 'text-gray-500' }}">
+                                                        Kapasitas: {{ $parkingFee->quota_used ?? 0 }}/{{ $parkingFee->capacity }}
+                                                        @if(!$isFull && $remainingSlots !== null)
+                                                            <span class="text-green-600">({{ $remainingSlots }} tersisa)</span>
+                                                        @endif
+                                                    </p>
                                                     @endif
                                                 </div>
                                             </div>
-                                            <span class="font-bold text-gray-900">Rp {{ number_format($parkingFee->fee, 0, ',', '.') }}</span>
+                                            <span class="font-bold {{ $isFull ? 'text-gray-400' : 'text-gray-900' }}">Rp {{ number_format($parkingFee->fee, 0, ',', '.') }}</span>
                                         </label>
                                         @endforeach
                                     </div>

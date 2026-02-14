@@ -728,8 +728,8 @@ class BookingController extends ApiController
                 ->where('idrec', $request->room_id)
                 ->update(['rental_status' => 1]);
 
-            // Increment parking quota if parking is used
-            if ($parkingFee > 0 && $parkingType) {
+            // Increment parking quota if parking is used (only for new bookings, not renewals)
+            if ($request->is_renewal != 1 && $parkingFee > 0 && $parkingType) {
                 $this->incrementParkingQuota($request->property_id, $parkingType);
             }
 
@@ -1145,10 +1145,7 @@ class BookingController extends ApiController
             // Update original transaction's renewal_status to 1 (already renewed)
             $originalTransaction->update(['renewal_status' => 1]);
 
-            // Increment parking quota if parking is used in renewal
-            if ($parkingFee > 0 && $parkingType) {
-                $this->incrementParkingQuota($request->property_id, $parkingType);
-            }
+            // Note: Do NOT increment parking quota for renewals - user is extending existing parking slot
 
             // Log renewal
             Log::info("Booking renewed successfully", [
