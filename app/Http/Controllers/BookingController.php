@@ -528,8 +528,8 @@ class BookingController extends Controller
                 ->where('order_id', $booking->order_id)
                 ->update(['grandtotal_price' => $newGrandtotal]);
 
-            // Increment parking quota if parking is used
-            if ($parkingFee > 0 && $request->parking_type) {
+            // Increment parking quota if parking is used (only for new bookings, not renewals)
+            if ($booking->is_renewal != 1 && $parkingFee > 0 && $request->parking_type) {
                 $this->incrementParkingQuota($booking->property_id, $request->parking_type);
             }
 
