@@ -120,7 +120,9 @@
 
                                         @foreach($parkingFees as $parkingFee)
                                         @php
-                                            $isFull = $parkingFee->capacity && $parkingFee->quota_used >= $parkingFee->capacity;
+                                            $isRenewal = $booking->is_renewal == 1;
+                                            // Don't lock parking for renewals - they're extending existing parking slot
+                                            $isFull = !$isRenewal && $parkingFee->capacity && $parkingFee->quota_used >= $parkingFee->capacity;
                                             $remainingSlots = $parkingFee->capacity ? ($parkingFee->capacity - ($parkingFee->quota_used ?? 0)) : null;
                                         @endphp
                                         <label class="parking-option flex items-center justify-between p-3 rounded-lg border-2 transition-all {{ $isFull ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60' : 'bg-white border-gray-200 cursor-pointer hover:border-teal-500' }}">
@@ -904,7 +906,8 @@
                         qris_data: JSON.stringify(paymentData.data),
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
-                        parking_type: selectedParkingType
+                        parking_type: selectedParkingType,
+                        parking_duration: parkingMonthsSelected
                     };
 
                     // Add voucher data if applied
@@ -948,7 +951,8 @@
                         cc_data: JSON.stringify(paymentData),
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
-                        parking_type: selectedParkingType
+                        parking_type: selectedParkingType,
+                        parking_duration: parkingMonthsSelected
                     };
 
                     // Add voucher data if applied
@@ -1005,7 +1009,8 @@
                         va_data: JSON.stringify(paymentData.data),
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
-                        parking_type: selectedParkingType
+                        parking_type: selectedParkingType,
+                        parking_duration: parkingMonthsSelected
                     };
 
                     // Add voucher data if applied
@@ -1033,7 +1038,8 @@
                         }),
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
-                        parking_type: selectedParkingType
+                        parking_type: selectedParkingType,
+                        parking_duration: parkingMonthsSelected
                     };
 
                     // Add voucher data if applied

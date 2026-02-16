@@ -9,6 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/css/datepicker.min.css">
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
     <!-- Styles -->
     @include('components.property.styles')
     <style>
@@ -219,8 +220,18 @@
                                 <div class="grid grid-cols-2 gap-2">
                                     @foreach($room['facility'] as $facility)
                                         <div class="flex items-center space-x-2 py-1">
-                                            <i class="fas fa-check text-teal-600"></i>
-                                            <span class="text-gray-600">{{ strtoupper($facility) }}</span>
+                                            @if(is_array($facility) && !empty($facility['icon']))
+                                                <span class="iconify text-teal-600 text-xl" data-icon="{{ $facility['icon'] }}"></span>
+                                            @else
+                                                <i class="fas fa-check text-teal-600"></i>
+                                            @endif
+                                            <span class="text-gray-600">
+                                                @if(is_array($facility))
+                                                    {{ strtoupper($facility['name'] ?? '') }}
+                                                @else
+                                                    {{ strtoupper($facility) }}
+                                                @endif
+                                            </span>
                                         </div>
                                     @endforeach
                                 </div>

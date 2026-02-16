@@ -310,14 +310,91 @@ class PropertyController extends ApiController
     {
         try {
             $property = Property::find($id);
-            
+
             if (!$property) {
                 return $this->respondNotFound('Property not found');
             }
-            
+
             $property->delete();
-            
+
             return $this->respondDeleted('Property deleted successfully');
+        } catch (\Exception $e) {
+            return $this->respondInternalError($e->getMessage());
+        }
+    }
+
+    /**
+     * Get all property facilities with optional filters
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFacilities(Request $request)
+    {
+        try {
+            $query = \DB::table('m_property_facility')
+                ->select([
+                    'idrec',
+                    'facility',
+                    'icon',
+                    'description',
+                    'category',
+                    'status'
+                ]);
+
+            // Filter by status (default to active only)
+            if ($request->has('status')) {
+                $query->where('status', $request->status);
+            } else {
+                $query->where('status', 1);
+            }
+
+            // Filter by category if provided
+            if ($request->has('category')) {
+                $query->where('category', $request->category);
+            }
+
+            // Order by category then facility name
+            $query->orderBy('category')->orderBy('facility');
+
+            $facilities = $query->get();
+
+            return $this->respond([
+                'data' => $facilities
+            ]);
+        } catch (\Exception $e) {
+            return $this->respondInternalError($e->getMessage());
+        }
+    }
+
+    /**
+     * Get a specific property facility by ID
+     *
+     * @param int $id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getFacility($id)
+    {
+        try {
+            $facility = \DB::table('m_property_facility')
+                ->select([
+                    'idrec',
+                    'facility',
+                    'icon',
+                    'description',
+                    'category',
+                    'status'
+                ])
+                ->where('idrec', $id)
+                ->first();
+
+            if (!$facility) {
+                return $this->respondNotFound('Facility not found');
+            }
+
+            return $this->respond([
+                'data' => $facility
+            ]);
         } catch (\Exception $e) {
             return $this->respondInternalError($e->getMessage());
         }

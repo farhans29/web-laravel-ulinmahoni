@@ -454,7 +454,10 @@
                                                 @if(!empty($room['facility']))
                                                     @foreach($room['facility'] as $facility)
                                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
-                                                            {{ strtoupper($facility) }}
+                                                            @if(is_array($facility) && !empty($facility['icon']))
+                                                                <span class="iconify mr-1" data-icon="{{ $facility['icon'] }}"></span>
+                                                            @endif
+                                                            {{ is_array($facility) ? strtoupper($facility['name'] ?? '') : strtoupper($facility) }}
                                                         </span>
                                                     @endforeach
                                                 @else

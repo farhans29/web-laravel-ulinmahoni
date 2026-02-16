@@ -290,21 +290,24 @@ class Room extends Model
             // Convert to integers for safe database query
             $facilityIds = array_map('intval', $facilityIds);
 
-            // Try to get facility names from a facilities table if it exists
+            // Try to get facility names and icons from a facilities table if it exists
             try {
                 $placeholders = implode(',', array_fill(0, count($facilityIds), '?'));
-                
+
                 $facilityRecords = \DB::select("
-                    SELECT idrec, facility
+                    SELECT idrec, facility, icon
                     FROM m_room_facility
                     WHERE idrec IN ($placeholders)
                 ", $facilityIds);
-                
+
                 $facilities = [];
                 foreach ($facilityRecords as $record) {
-                    $facilities[] = $record->facility;
+                    $facilities[] = [
+                        'name' => $record->facility,
+                        'icon' => $record->icon ?? null
+                    ];
                 }
-                
+
                 // If we found facilities, return them
                 if (!empty($facilities)) {
                     return $facilities;
@@ -315,25 +318,25 @@ class Room extends Model
             
             // Fallback mapping for common facility IDs
             $facilityNames = [
-                '1' => '~ AC',
-                '2' => '~ Wi-Fi',
-                '3' => '~ TV Kabel',
-                '4' => '~ Kamar Mandi',
-                '5' => '~ Meja & Kursi',
-                '6' => 'F',
-                '7' => 'G',
-                '8' => 'H',
-                '9' => 'I',
-                '10' => 'J'
+                '1' => ['name' => 'AC', 'icon' => 'mynaui:air-conditioner'],
+                '2' => ['name' => 'Wi-Fi', 'icon' => 'mdi:wifi'],
+                '3' => ['name' => 'TV Kabel', 'icon' => 'mdi:television'],
+                '4' => ['name' => 'Kamar Mandi', 'icon' => 'mdi:shower'],
+                '5' => ['name' => 'Meja & Kursi', 'icon' => 'mdi:desk'],
+                '6' => ['name' => 'F', 'icon' => null],
+                '7' => ['name' => 'G', 'icon' => null],
+                '8' => ['name' => 'H', 'icon' => null],
+                '9' => ['name' => 'I', 'icon' => null],
+                '10' => ['name' => 'J', 'icon' => null]
             ];
-            
+
             $facilities = [];
             foreach ($facilityIds as $id) {
                 if (isset($facilityNames[(string)$id])) {
                     $facilities[] = $facilityNames[(string)$id];
                 }
             }
-            
+
             return $facilities;
             
         } catch (\Exception $e) {
