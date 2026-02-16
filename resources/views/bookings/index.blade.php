@@ -655,12 +655,10 @@
                                         <td class="px-6 py-4">
                                             @php
                                                 $checkOutDate = \Carbon\Carbon::parse($booking->check_out)->startOfDay();
-                                                $renewableDate = $checkOutDate->copy()->subDays(3);
                                                 $today = now()->startOfDay();
-                                                $isTooEarly = $today < $renewableDate;
                                                 $isTooLate = $today > $checkOutDate;
                                                 $isAlreadyRenewed = $booking->renewal_status == 1;
-                                                $canRenew = !$isTooEarly && !$isTooLate && !$isAlreadyRenewed;
+                                                $canRenew = !$isTooLate && !$isAlreadyRenewed;
                                             @endphp
                                             @if($isAlreadyRenewed)
                                             <button disabled
@@ -689,17 +687,10 @@
                                                 <i class="fas fa-redo mr-2"></i>
                                                 {{ __('booking.actions.renew_booking') }}
                                             </button>
-                                            @elseif($isTooLate)
-                                            <button disabled
-                                                    class="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
-                                                    title="Masa perpanjangan sudah berakhir">
-                                                <i class="fas fa-redo mr-2"></i>
-                                                {{ __('booking.actions.renew_booking') }}
-                                            </button>
                                             @else
                                             <button disabled
                                                     class="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
-                                                    title="Perpanjangan tersedia mulai {{ $renewableDate->format('d M Y') }}">
+                                                    title="Masa perpanjangan sudah berakhir">
                                                 <i class="fas fa-redo mr-2"></i>
                                                 {{ __('booking.actions.renew_booking') }}
                                             </button>

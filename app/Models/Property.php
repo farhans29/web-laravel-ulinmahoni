@@ -276,63 +276,121 @@ class Property extends Model
 
     protected function processRoomFacilityAttribute($value)
     {
-        // return json_decode($value, true) ?? [];
        try {
             // Get the facility IDs from the facility column (JSON array)
             $generalIds = json_decode($value, true) ?? [];
-            // \Log::info('General IDs: ', $generalIds);
             if (empty($generalIds) || !is_array($generalIds)) {
                 return [];
             }
 
             // Convert to integers for safe database query
             $generalIds = array_map('intval', $generalIds);
-            // return $generalIds;
             try {
                 $placeholders = implode(',', array_fill(0, count($generalIds), '?'));
-                
+
                 $records = \DB::select("
                     SELECT idrec, facility
                     FROM m_property_facility
                     WHERE idrec IN ($placeholders)
                 ", $generalIds);
-                
+
                 $facilities = [];
                 foreach ($records as $record) {
                     $facilities[] = $record->facility;
                 }
-                
+
                 // If we found facilities, return them
                 if (!empty($facilities)) {
                     return $facilities;
                 }
             } catch (\Exception $e) {
                 // Fallback to predefined mapping if general table doesn't exist
-            $facilityNames = [
-                '1' => '~',
-                '2' => '~',
-                '3' => '~',
-                '4' => '~',
-                '5' => '~',
-                '6' => 'F',
-                '7' => 'G',
-                '8' => 'H',
-                '9' => 'I',
-                '10' => 'J'
-            ];
-            
-            $facilities = [];
-            foreach ($generalIds as $id) {
-                if (isset($facilityNames[(string)$id])) {
-                    $facilities[] = $facilityNames[(string)$id];
+                $facilityNames = [
+                    '1' => '~',
+                    '2' => '~',
+                    '3' => '~',
+                    '4' => '~',
+                    '5' => '~',
+                    '6' => 'F',
+                    '7' => 'G',
+                    '8' => 'H',
+                    '9' => 'I',
+                    '10' => 'J'
+                ];
+
+                $facilities = [];
+                foreach ($generalIds as $id) {
+                    if (isset($facilityNames[(string)$id])) {
+                        $facilities[] = $facilityNames[(string)$id];
+                    }
                 }
-            }
-            
-            return $facilities;
+
+                return $facilities;
             }
 
         } catch (\Exception $e) {
-            // \Log::error('Error processing general attribute: ' . $e->getMessage() . ' for property_id: ' . $this->idrec);
+            return [];
+        }
+    }
+
+    /**
+     * Get the facility attribute with icon and other details.
+     * Combines facility IDs from general, security, and amenities columns.
+     *
+     * @return array
+     */
+    public function getFacilityAttribute()
+    {
+        try {
+            // Get facility IDs from general, security, and amenities columns
+            $generalIds = json_decode($this->attributes['general'] ?? '[]', true) ?? [];
+            $securityIds = json_decode($this->attributes['security'] ?? '[]', true) ?? [];
+            $amenitiesIds = json_decode($this->attributes['amenities'] ?? '[]', true) ?? [];
+
+            // Combine all facility IDs
+            $facilityIds = array_merge(
+                is_array($generalIds) ? $generalIds : [],
+                is_array($securityIds) ? $securityIds : [],
+                is_array($amenitiesIds) ? $amenitiesIds : []
+            );
+
+            // Remove duplicates and empty values
+            $facilityIds = array_unique(array_filter($facilityIds));
+
+            if (empty($facilityIds)) {
+                return [];
+            }
+
+            // Convert to integers for safe database query
+            $facilityIds = array_map('intval', $facilityIds);
+
+            try {
+                $placeholders = implode(',', array_fill(0, count($facilityIds), '?'));
+
+                $records = \DB::select("
+                    SELECT idrec, facility, icon, description, category, status
+                    FROM m_property_facility
+                    WHERE idrec IN ($placeholders)
+                ", $facilityIds);
+
+                $facilities = [];
+                foreach ($records as $record) {
+                    $facilities[] = [
+                        'name' => $record->facility,
+                        'icon' => $record->icon ?? null,
+                        'description' => $record->description ?? null,
+                        'category' => $record->category ?? null,
+                    ];
+                }
+
+                return $facilities;
+            } catch (\Exception $e) {
+                \Log::error('Error fetching facilities: ' . $e->getMessage());
+                return [];
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Error processing facility attribute: ' . $e->getMessage() . ' for property_id: ' . $this->idrec);
             return [];
         }
     }

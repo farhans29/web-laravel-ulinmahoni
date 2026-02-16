@@ -449,6 +449,7 @@ class BookingController extends Controller
                 'deposit_fee' => 'nullable|numeric|min:0',
                 'parking_fee' => 'nullable|numeric|min:0',
                 'parking_type' => 'nullable|string',
+                'parking_duration' => 'nullable|integer|min:0',
                 'voucher_code' => 'nullable|string',
                 'discount_amount' => 'nullable|numeric|min:0'
             ]);
@@ -490,11 +491,17 @@ class BookingController extends Controller
                 $updateData['deposit_fee'] = $depositFee;
             }
 
-            // Handle parking fee
+            // Handle parking fee, type, and duration
             $parkingFee = floatval($booking->parking_fee ?? 0);
             if ($request->has('parking_fee')) {
                 $parkingFee = floatval($request->parking_fee);
                 $updateData['parking_fee'] = $parkingFee;
+            }
+            if ($request->has('parking_type') && $request->parking_type !== 'none') {
+                $updateData['parking_type'] = $request->parking_type;
+            }
+            if ($request->has('parking_duration')) {
+                $updateData['parking_duration'] = intval($request->parking_duration);
             }
 
             // Handle voucher discount

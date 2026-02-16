@@ -123,6 +123,7 @@
         }
     </style>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
 </head>
 <body class="font-inter antialiased bg-white text-gray-900 tracking-tight">
     <!-- Header -->
@@ -287,21 +288,16 @@
                         <div class="mb-6">
                             <h3 class="text-lg font-semibold text-gray-800 mb-3">{{ __('properties.sections.facilities') }}</h3>
                             <div class="flex flex-wrap gap-2">
-                                @foreach($house['general'] as $generalFeature)
-                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
-                                        {{ $generalFeature }}
-                                    </span>
-                                @endforeach
-                                @foreach($house['security'] as $securityFeature)
-                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
-                                        {{ $securityFeature }}
-                                    </span>
-                                @endforeach
-                                @foreach($house['amenities'] as $amenityFeature)
-                                    <span class="inline-flex items-center border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 bg-gray-50">
-                                        {{ $amenityFeature }}
-                                    </span>
-                                @endforeach
+                                @if(!empty($house['facility']))
+                                    @foreach($house['facility'] as $facility)
+                                        <span class="inline-flex items-center rounded-lg px-3 py-1.5 text-sm text-gray-700">
+                                            @if(!empty($facility['icon']))
+                                                <span class="iconify mr-1.5 text-teal-600" data-icon="{{ $facility['icon'] }}"></span>
+                                            @endif
+                                            {{ $facility['name'] }}
+                                        </span>
+                                    @endforeach
+                                @endif
                             </div>
                         </div>
 
@@ -634,21 +630,6 @@
                                             <div class="p-6">
                                                 <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h3>
                                                 <!-- <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p> -->
-
-                                                <div class="mb-4">
-                                                    <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('properties.room.room_facilities') }}</h4>
-                                                    <div class="flex flex-wrap gap-2">
-                                                        @if(!empty($room['facility']) && is_array($room['facility']) && count($room['facility']) > 0)
-                                                            @foreach($room['facility'] as $facility)
-                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
-                                                                    {{ strtoupper($facility) }}
-                                                                </span>
-                                                            @endforeach
-                                                        @else
-                                                            <span class="text-gray-500 text-sm">{{ __('properties.room.no_facilities') }}</span>
-                                                        @endif
-                                                    </div>
-                                                </div>
 
                                                 <!-- Rental Periods -->
                                                 <div class="mb-4">
