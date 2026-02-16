@@ -77,6 +77,7 @@
         aspect-ratio: 1911 / 372;
         background-color: #e5e7eb;
         overflow: hidden;
+        border-radius: 1rem;
     }
 
     .promo-image {
