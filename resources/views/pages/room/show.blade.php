@@ -94,8 +94,9 @@
                                 @keydown.arrow-right.window="showModal && nextImage()"
                                 @keydown.arrow-left.window="showModal && prevImage()">
 
-                                <div class="relative">
-                                    <img :src="modalImg" :alt="modalAlt" class="max-h-[80vh] max-w-[90vw] rounded shadow-lg border-4 border-white object-contain" style="aspect-ratio: 16/9; object-fit: contain;" @click.stop>
+                                <!-- Modal Container with consistent border -->
+                                <div class="relative w-[90vw] h-[80vh] max-w-5xl bg-black rounded-lg border-4 border-white shadow-2xl flex items-center justify-center overflow-hidden" @click.stop>
+                                    <img :src="modalImg" :alt="modalAlt" class="max-h-full max-w-full object-contain">
 
                                     <!-- Arrow Navigation Buttons -->
                                     <template x-if="images.length > 1">
@@ -123,61 +124,59 @@
                                 <button @click="showModal=false" class="absolute top-4 right-6 text-white text-3xl font-bold focus:outline-none hover:text-gray-300 transition-colors">&times;</button>
                             </div>
                             
-                            <!-- Main Image -->
-                            <div class="absolute inset-0">
+                            <!-- Main Image with overlay badges -->
+                            <div class="absolute inset-0 bg-gray-100 rounded-lg overflow-hidden">
                                 @if($mainImage)
-                                    {{-- <img src="data:image/jpeg;base64,{{ $mainImage }}" 
-                                        alt="{{ $room['name'] }}" 
-                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
-                                        @click.prevent="showModal=true; modalImg='data:image/jpeg;base64,{{ $mainImage }}'; modalAlt='{{ $room['name'] }}'"> --}}
                                     <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
                                         alt="{{ $room['name'] }}"
-                                        class="w-full h-full object-cover transition-transform duration-300 hover:scale-105 cursor-pointer"
-                                        @click.prevent="showImage(0); modalAlt='{{ $room['name'] }}'">
+                                        class="w-full h-full object-fill object-center cursor-pointer"
+                                        @click.prevent="showImage(0); modalAlt='{{ $room['name'] }}'"
+                                        onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                                 @else
                                     <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                         <i class="fas fa-image text-4xl text-gray-400"></i>
                                         <span class="ml-2 font-medium text-gray-500">{{ __('properties.images.no_image') }}</span>
                                     </div>
                                 @endif
-                                
+
                                 <!-- Image Counter -->
                                 @if($totalImages > 1)
-                                    <div class="absolute bottom-4 right-4">
+                                    <div class="absolute top-4 right-4">
                                         <span class="bg-black bg-opacity-60 text-white px-3 py-1 rounded-full text-sm">
                                             <i class="fas fa-camera mr-1"></i> {{ $totalImages }}
                                         </span>
                                     </div>
                                 @endif
-                                
-                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16">
-                                    <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
-                                        {{ ucfirst($room['type']) }}
-                                    </span>
-                                </div>
+
+                                <!-- Type Badge -->
+                                <span class="absolute top-4 left-4 bg-teal-600 text-white px-3 py-1 rounded-full text-sm">
+                                    {{ ucfirst($room['type']) }}
+                                </span>
+
+                                <!-- Thumbnails (if multiple images) -->
+                                @if($totalImages > 1)
+                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent py-4 px-6">
+                                        <div class="flex space-x-3 overflow-x-auto">
+                                            @if($mainImage)
+                                                <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
+                                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
+                                                        alt="{{ $room['name'] }} - Main"
+                                                        class="w-full h-full object-cover cursor-pointer hover:opacity-80"
+                                                        @click.prevent="showImage(0); modalAlt='{{ $room['name'] }}'">
+                                                </div>
+                                            @endif
+                                            @foreach($roomImages as $index => $image)
+                                                <div class="flex-shrink-0 w-32 h-20 rounded overflow-hidden border-2 border-white shadow-md mb-2 flex-none">
+                                                    <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] }}"
+                                                        alt="{{ $room['name'] }} - Image {{ $index + 1 }}"
+                                                        class="w-full h-full object-cover cursor-pointer hover:opacity-80"
+                                                        @click.prevent="showImage({{ $mainImage ? $index + 1 : $index }}); modalAlt='{{ $room['name'] }} - Image {{ $index + 1 }}'">
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
-                            
-                            <!-- Thumbnails (if multiple images) -->
-                            @if($totalImages > 1)
-                                <div class="absolute bottom-4 left-4 right-4 flex space-x-2 overflow-x-auto pb-2">
-                                    @if($mainImage)
-                                        <div class="flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 border-white shadow-md">
-                                            <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
-                                                alt="{{ $room['name'] }} - Main"
-                                                class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                                @click.prevent="showImage(0); modalAlt='{{ $room['name'] }}'">
-                                        </div>
-                                    @endif
-                                    @foreach($roomImages as $index => $image)
-                                        <div class="flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 border-white shadow-md">
-                                            <img src="{{ env('ADMIN_URL') }}/storage/{{ $image['image'] }}"
-                                                alt="{{ $room['name'] }} - Image {{ $index + 1 }}"
-                                                class="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                                                @click.prevent="showImage({{ $mainImage ? $index + 1 : $index }}); modalAlt='{{ $room['name'] }} - Image {{ $index + 1 }}'">
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
                         </div>
 
                         <div class="p-8">

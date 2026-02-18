@@ -184,8 +184,9 @@
                     @keydown.arrow-right.window="showModal && nextImage()"
                     @keydown.arrow-left.window="showModal && prevImage()">
 
-                    <div class="relative">
-                        <img :src="modalImg" :alt="modalAlt" class="max-h-[80vh] max-w-[90vw] rounded shadow-lg border-4 border-white object-contain" style="aspect-ratio: 16/9; object-fit: contain;" @click.stop>
+                    <!-- Modal Container with consistent border -->
+                    <div class="relative w-[90vw] h-[80vh] max-w-5xl bg-black rounded-lg border-4 border-white shadow-2xl flex items-center justify-center overflow-hidden" @click.stop>
+                        <img :src="modalImg" :alt="modalAlt" class="max-h-full max-w-full object-contain">
 
                         <!-- Arrow Navigation Buttons -->
                         <template x-if="images.length > 1">
