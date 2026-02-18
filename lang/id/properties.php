@@ -3,9 +3,9 @@
 return [
     'price' => [
         'from' => 'mulai dari',
-        'per_month' => '/bulan',
-        'per_night' => '/malam',
-        'per_day' => '/hari',
+        'per_month' => '/ bulan',
+        'per_night' => '/ malam',
+        'per_day' => '/ hari',
         'original' => 'Harga Asli',
         'discounted' => 'Harga Diskon',
     ],

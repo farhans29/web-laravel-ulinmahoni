@@ -696,19 +696,19 @@
                                                             @if($room['price_original_daily'] > 0)
                                                                 @php $hasValidPeriod = true; @endphp
                                                                 <li class="flex items-center">
-                                                                    <span class="w-20 text-sm text-gray-600">{{ __('properties.room.daily') }}</span>
                                                                     <span class="font-bold text-green-600">
                                                                         Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}
                                                                     </span>
+                                                                    <span class="text-sm text-gray-800 ml-1">{{ __('properties.price.per_day') }}</span>
                                                                 </li>
                                                             @endif
                                                             @if($room['price_original_monthly'] > 0 )
                                                                 @php $hasValidPeriod = true; @endphp
                                                                 <li class="flex items-center">
-                                                                    <span class="w-20 text-sm text-gray-600">{{ __('properties.room.monthly') }}</span>
                                                                     <span class="font-bold text-green-600">
                                                                         Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}
                                                                     </span>
+                                                                    <span class="text-sm text-gray-800 ml-1"> {{ __('properties.price.per_month') }}</span>
                                                                 </li>
                                                             @endif
 

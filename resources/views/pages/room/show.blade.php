@@ -253,7 +253,7 @@
 
                             <!-- Deposit & Parking Fees Info -->
                             @if(($room['property']['deposit_fee'] ?? 0) > 0 || !empty($room['property']['parking_fees']))
-                            <div class="mb-8">
+                            <div class="mt-8 mb-8">
                                 <h2 class="text-xl font-semibold text-gray-900 mb-4">{{ __('Biaya Tambahan') }}</h2>
                                 <div class="space-y-2">
                                     @if(($room['property']['deposit_fee'] ?? 0) > 0)
