@@ -20,8 +20,8 @@ module.exports = {
                 blue: '2px solid rgba(0, 112, 244, 0.5)',
             },
             fontFamily: {
-                inter: ['DengXian', 'Noto Sans SC', 'Microsoft YaHei', 'sans-serif'],
-                dengxian: ['DengXian', 'Noto Sans SC', 'Microsoft YaHei', 'sans-serif'],
+                inter: ['Inter', 'sans-serif'],
+                sans: ['Inter', 'sans-serif'],
             },
             fontSize: {
                 xs: ['0.75rem', { lineHeight: '1.5' }],

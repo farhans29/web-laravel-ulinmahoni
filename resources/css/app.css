@@ -1,14 +1,13 @@
-/* DengXian Font - System font with web fallback */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap');
-
-@font-face {
-    font-family: 'DengXian';
-    src: local('DengXian'), local('Noto Sans SC'), local('Microsoft YaHei');
-    font-weight: normal;
-    font-style: normal;
-}
+/* Inter Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @import 'tailwindcss/base';
+
+@layer base {
+    html, body {
+        font-family: 'Inter', sans-serif;
+    }
+}
 @import 'tailwindcss/components';
 
 /* Additional styles */

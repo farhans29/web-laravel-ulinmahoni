@@ -3,9 +3,9 @@
 return [
     'price' => [
         'from' => 'from',
-        'per_month' => '/month',
-        'per_night' => '/night',
-        'per_day' => '/day',
+        'per_month' => '/ month',
+        'per_night' => '/ night',
+        'per_day' => '/ day',
         'original' => 'Original Price',
         'discounted' => 'Discounted Price',
     ],
@@ -35,6 +35,7 @@ return [
         'amenities' => 'Amenities',
         'rules' => 'House Rules',
         'distance' => 'Distance',
+        'nearby_locations' => 'Nearby Locations',
     ],
 
     'navigation' => [

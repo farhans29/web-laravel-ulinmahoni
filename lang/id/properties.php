@@ -3,9 +3,9 @@
 return [
     'price' => [
         'from' => 'mulai dari',
-        'per_month' => '/bulan',
-        'per_night' => '/malam',
-        'per_day' => '/hari',
+        'per_month' => '/ bulan',
+        'per_night' => '/ malam',
+        'per_day' => '/ hari',
         'original' => 'Harga Asli',
         'discounted' => 'Harga Diskon',
     ],
@@ -25,7 +25,7 @@ return [
     'status' => [
         'available' => 'Tersedia',
         'booked' => 'Terpesan',
-        'unavailable' => 'Tidak Tersedia',
+        'unavailable' => 'Terisi',
     ],
 
     'details' => [
@@ -35,6 +35,7 @@ return [
         'amenities' => 'Fasilitas',
         'rules' => 'Peraturan',
         'distance' => 'Jarak',
+        'nearby_locations' => 'Lokasi Terdekat',
     ],
 
     'navigation' => [

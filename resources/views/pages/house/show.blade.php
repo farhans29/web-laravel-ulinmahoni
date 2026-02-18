@@ -407,6 +407,54 @@
                         </div>
                     </div> -->
 
+                    <!-- Nearby Locations -->
+                    @if(!empty($house['nearby_locations']))
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">{{ __('properties.details.nearby_locations') }}</h3>
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                            @php
+                                $groupedLocations = collect($house['nearby_locations'])->groupBy('category');
+                                $categoryLabels = [
+                                    'transport' => 'Transportation',
+                                    'health' => 'Health',
+                                    'food_drink' => 'Food & Drink',
+                                    'finance' => 'Finance',
+                                    'education' => 'Education',
+                                    'worship' => 'Worship',
+                                    'shopping' => 'Shopping',
+                                ];
+                                $categoryIcons = [
+                                    'transport' => 'fas fa-bus',
+                                    'health' => 'fas fa-hospital',
+                                    'food_drink' => 'fas fa-utensils',
+                                    'finance' => 'fas fa-university',
+                                    'education' => 'fas fa-graduation-cap',
+                                    'worship' => 'fas fa-mosque',
+                                    'shopping' => 'fas fa-shopping-bag',
+                                ];
+                            @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                @foreach($groupedLocations as $category => $locations)
+                                    <div class="space-y-2">
+                                        <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center">
+                                            <i class="{{ $categoryIcons[$category] ?? 'fas fa-map-marker-alt' }} text-teal-600 mr-2"></i>
+                                            {{ $categoryLabels[$category] ?? ucfirst(str_replace('_', ' ', $category)) }}
+                                        </h4>
+                                        <ul class="space-y-1">
+                                            @foreach($locations as $location)
+                                                <li class="text-sm text-gray-600 flex items-center justify-between">
+                                                    <span>{{ $location['name'] }}</span>
+                                                    <span class="text-xs text-gray-400">{{ $location['distance_text'] ?? '' }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Location Map -->
                     <div class="mt-8">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">{{ __('properties.details.location') }}</h3>
@@ -603,26 +651,31 @@
                                                     @endphp
 
                                                     @if(!empty($roomMainImage) && is_string($roomMainImage))
-                                                        {{-- <img src="data:image/jpeg;base64,{{ $roomMainImage }}"
-                                                            alt="{{ $room['name'] ?? 'Room image' }}"
-                                                            class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                                            onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
-                                                            onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }"> --}}
                                                             <img src="{{ env('ADMIN_URL') }}/storage/{{ $roomMainImage }}"
                                                             alt="{{ $room['name'] ?? 'Room image' }}"
                                                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                                                            onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';"
-                                                            onclick="if(window.openRoomGallery) { openRoomGallery({{ $loop->index }}) }">
+                                                            onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2YzZjRmNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzljYTZhYSI+SW1hZ2Ugbm90IGF2YWlsYWJsZTwvdGV4dD48L3N2Zz4=';">
                                                     @else
                                                         <div class="bg-gray-100 w-full h-full flex items-center justify-center">
                                                             <i class="fas fa-image text-4xl text-gray-400"></i>
                                                             <span class="ml-2 text-gray-500">{{ __('properties.images.no_image') }}</span>
                                                         </div>
                                                     @endif
+
                                                     <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16">
-                                                        <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
-                                                            {{ ucfirst($room['type']) }}
-                                                        </span>
+                                                    
+                                                        <!-- Availability Status Overlay -->
+                                                        @if($room['status'] === 1 && $room['rental_status'] !== 1)
+                                                            <span class="absolute bottom-2 left-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-sm">
+                                                                
+                                                                {{ __('properties.status.available') }}
+                                                            </span>
+                                                        @else
+                                                            <span class="absolute bottom-2 left-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500 text-white shadow-sm">
+                                                                
+                                                                {{ __('properties.status.unavailable') }}
+                                                            </span>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>
@@ -631,57 +684,53 @@
                                                 <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $room['no'] }} - {{ $room['name'] }}</h3>
                                                 <!-- <p class="text-gray-600 text-sm mb-4">{{ $room['descriptions'] }}</p> -->
 
-                                                <!-- Rental Periods -->
-                                                <div class="mb-4">
-                                                    <h4 class="text-sm font-semibold text-gray-700 mt-8 mb-4">{{ __('properties.room.period_price') }}</h4>
-                                                    <ul class="space-y-2">
-                                                        @php
-                                                            $hasValidPeriod = false;
-                                                        @endphp
+                                                <!-- Rental Periods & View Details -->
+                                                <div class="flex items-end justify-between mt-4">
+                                                    <div>
+                                                        <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('properties.room.period_price') }}</h4>
+                                                        <ul class="space-y-1">
+                                                            @php
+                                                                $hasValidPeriod = false;
+                                                            @endphp
 
-                                                        @if($room['price_original_daily'] > 0)
-                                                            @php $hasValidPeriod = true; @endphp
-                                                            <li class="flex items-center">
-                                                                <span class="w-24 text-sm font-semibold text-gray-800">{{ __('properties.room.daily') }}</span>
-                                                                <span class="font-medium">
-                                                                    Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}
-                                                                </span>
-                                                            </li>
-                                                        @endif
-                                                        @if($room['price_original_monthly'] > 0 )
-                                                            @php $hasValidPeriod = true; @endphp
-                                                            <li class="flex items-center">
-                                                                <span class="w-24 text-sm font-semibold text-gray-800">{{ __('properties.room.monthly') }}</span>
-                                                                <span class="font-medium">
-                                                                    Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}
-                                                                </span>
-                                                            </li>
-                                                        @endif
+                                                            @if($room['price_original_daily'] > 0)
+                                                                @php $hasValidPeriod = true; @endphp
+                                                                <li class="flex items-center">
+                                                                    <span class="font-bold text-green-600">
+                                                                        Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}
+                                                                    </span>
+                                                                    <span class="text-sm text-gray-800 ml-1">{{ __('properties.price.per_day') }}</span>
+                                                                </li>
+                                                            @endif
+                                                            @if($room['price_original_monthly'] > 0 )
+                                                                @php $hasValidPeriod = true; @endphp
+                                                                <li class="flex items-center">
+                                                                    <span class="font-bold text-green-600">
+                                                                        Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}
+                                                                    </span>
+                                                                    <span class="text-sm text-gray-800 ml-1"> {{ __('properties.price.per_month') }}</span>
+                                                                </li>
+                                                            @endif
 
-                                                        @if(!$hasValidPeriod)
-                                                            <li>
-                                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                                    {{ __('properties.room.period_not_available') }}
-                                                                    <i class="fas fa-exclamation-circle ml-1"></i>
-                                                                </span>
-                                                            </li>
-                                                        @endif
-                                                    </ul>
+                                                            @if(!$hasValidPeriod)
+                                                                <li>
+                                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                        {{ __('properties.room.period_not_available') }}
+                                                                        <i class="fas fa-exclamation-circle ml-1"></i>
+                                                                    </span>
+                                                                </li>
+                                                            @endif
+                                                        </ul>
+                                                    </div>
+
+                                                    <!-- View Details Button -->
+                                                    <span class="inline-flex items-center px-4 py-2 bg-teal-600 text-white text-sm font-medium rounded-lg hover:bg-teal-700 transition-colors">
+                                                        {{ __('properties.view_details') }}
+                                                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                        </svg>
+                                                    </span>
                                                 </div>
-
-                                                @if($room['status'] === 1 && $room['rental_status'] !== 1)
-                                                    <div class="flex items-center justify-between mt-4">
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                            {{ __('properties.status.available') }}
-                                                        </span>
-                                                    </div>
-                                                @else
-                                                    <div class="flex items-center justify-between mt-4">
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                            {{ __('properties.status.unavailable') }}
-                                                        </span>
-                                                    </div>
-                                                @endif
                                             </div>
                                         </div>
                                         </a>

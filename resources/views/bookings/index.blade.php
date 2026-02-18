@@ -646,7 +646,9 @@
                                                 <span class="text-gray-400 italic">{{ __('booking.js.no_attachment') }}</span>
                                             @else
                                                 <div class="flex justify-center items-center h-full">
-                                                    <a href="{{ asset('storage/' . $booking->attachment) }}" target="_blank" class="text-teal-600 hover:text-teal-700">
+                                                    <a href="{{ route('bookings.view-attachment', $booking->idrec) }}" target="_blank"
+                                                       class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors duration-200"
+                                                       title="{{ __('booking.actions.view_attachment') }}">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                 </div>
