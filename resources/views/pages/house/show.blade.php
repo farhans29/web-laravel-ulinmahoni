@@ -687,7 +687,7 @@
                                                 <!-- Rental Periods & View Details -->
                                                 <div class="flex items-end justify-between mt-4">
                                                     <div>
-                                                        <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('properties.room.period_price') }}</h4>
+                                                        <!-- <h4 class="text-sm font-semibold text-gray-700 mb-2">{{ __('properties.room.period_price') }}</h4> -->
                                                         <ul class="space-y-1">
                                                             @php
                                                                 $hasValidPeriod = false;
