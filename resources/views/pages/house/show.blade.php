@@ -225,7 +225,7 @@
                             this.src='{{ asset('images/placeholder-property.jpg') }}';"> --}}
                         <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage ?? $primaryImage }}"
                             alt="{{ $house['name'] ?? 'Property Image' }}"
-                            class="w-full h-full object-fill object-center cursor-pointer"
+                            class="w-full h-full object-cover object-center cursor-pointer"
                             @click.prevent="showImage(0); modalAlt='{{ $house['name'] ?? 'Property Image' }}'"
                             onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                     @else

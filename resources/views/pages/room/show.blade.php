@@ -129,7 +129,7 @@
                                 @if($mainImage)
                                     <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
                                         alt="{{ $room['name'] }}"
-                                        class="w-full h-full object-fill object-center cursor-pointer"
+                                        class="w-full h-full object-cover object-center cursor-pointer"
                                         @click.prevent="showImage(0); modalAlt='{{ $room['name'] }}'"
                                         onerror="this.onerror=null; this.src='{{ asset('images/placeholder-property.jpg') }}';">
                                 @else
