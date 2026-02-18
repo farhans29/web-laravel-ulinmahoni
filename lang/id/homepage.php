@@ -63,4 +63,9 @@ return [
         'bogor' => 'Bogor',
         'jakarta' => 'Jakarta',
     ],
+
+    'rooms' => [
+        'available' => 'Tersedia',
+        'full' => 'Penuh',
+    ],
 ];

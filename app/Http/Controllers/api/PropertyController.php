@@ -97,6 +97,21 @@ class PropertyController extends ApiController
                 $propertyArray['deposit_fee_amount'] = $property->deposit_fee_amount;
                 $propertyArray['parking_fees'] = $property->parking_fees;
 
+                // Get total rooms count
+                $totalRooms = $property->rooms()->where('status', 1)->count();
+
+                // Get available rooms count (status = 1 and rental_status != 1)
+                $availableRooms = $property->rooms()
+                    ->where('status', 1)
+                    ->where(function($query) {
+                        $query->where('rental_status', '!=', 1)
+                              ->orWhereNull('rental_status');
+                    })
+                    ->count();
+
+                $propertyArray['total_rooms'] = $totalRooms;
+                $propertyArray['available_rooms'] = $availableRooms;
+
                 // Remove image-related fields from the main property object
                 unset(
                     $propertyArray['image_id'],
@@ -193,6 +208,21 @@ class PropertyController extends ApiController
                 // Add deposit fee and parking fees
                 $propertyArray['deposit_fee_amount'] = $property->deposit_fee_amount;
                 $propertyArray['parking_fees'] = $property->parking_fees;
+
+                // Get total rooms count
+                $totalRooms = $property->rooms()->where('status', 1)->count();
+
+                // Get available rooms count (status = 1 and rental_status != 1)
+                $availableRooms = $property->rooms()
+                    ->where('status', 1)
+                    ->where(function($query) {
+                        $query->where('rental_status', '!=', 1)
+                              ->orWhereNull('rental_status');
+                    })
+                    ->count();
+
+                $propertyArray['total_rooms'] = $totalRooms;
+                $propertyArray['available_rooms'] = $availableRooms;
 
                 // Remove image-related fields from the main property object
                 unset(

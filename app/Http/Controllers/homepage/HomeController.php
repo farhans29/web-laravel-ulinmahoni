@@ -192,6 +192,18 @@ class HomeController extends Controller {
             ->where('price_original_monthly', '>', 0)
             ->min('price_original_monthly');
 
+        // Get total rooms count
+        $totalRooms = $property->rooms()->where('status', 1)->count();
+
+        // Get available rooms count (status = 1 and rental_status != 1)
+        $availableRooms = $property->rooms()
+            ->where('status', 1)
+            ->where(function($query) {
+                $query->where('rental_status', '!=', 1)
+                      ->orWhereNull('rental_status');
+            })
+            ->count();
+
         // Get price data (already cast to array by the model)
         $price = is_array($property->price) ? $property->price : [];
 
@@ -238,7 +250,9 @@ class HomeController extends Controller {
             'image' => $mainImage,  // Use the first image as main image
             'thumbnail' => $thumbnail,  // Thumbnail for listing/cards
             'images' => $images,    // Keep all images array for gallery
-            'status' => $property->status
+            'status' => $property->status,
+            'total_rooms' => $totalRooms,
+            'available_rooms' => $availableRooms
         ];
     }
 

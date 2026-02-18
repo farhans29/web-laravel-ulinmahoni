@@ -29,9 +29,13 @@
                         </div>
                     @endif
 
-                    @if(isset($kosan['check_in']) && isset($kosan['check_out']))
+                    @if(isset($kosan['available_rooms']) && $kosan['available_rooms'] > 0)
                     <span class="property-card-available-badge">
-                        <i class="fas fa-check"></i>Tersedia
+                        <i class="fas fa-door-open"></i>{{ $kosan['available_rooms'] }} {{ __('homepage.rooms.available') }}
+                    </span>
+                    @elseif(isset($kosan['available_rooms']) && $kosan['available_rooms'] == 0)
+                    <span class="property-card-full-badge">
+                        <i class="fas fa-door-closed"></i>{{ __('homepage.rooms.full') }}
                     </span>
                     @endif
                 </div>
@@ -194,7 +198,7 @@
 
     .property-card-available-badge {
         position: absolute;
-        top: 0.5rem; /* 8px */
+        bottom: 0.5rem; /* 8px */
         right: 0.5rem; /* 8px */
         background: #22c55e;
         color: #ffffff;
@@ -205,6 +209,22 @@
     }
 
     .property-card-available-badge i {
+        margin-right: 0.25rem; /* 4px */
+    }
+
+    .property-card-full-badge {
+        position: absolute;
+        bottom: 0.5rem; /* 8px */
+        right: 0.5rem; /* 8px */
+        background: #ef4444;
+        color: #ffffff;
+        font-size: 0.75rem; /* 12px */
+        padding: 0.25rem 0.5rem; /* 4px 8px */
+        border-radius: 9999px;
+        font-weight: 500;
+    }
+
+    .property-card-full-badge i {
         margin-right: 0.25rem; /* 4px */
     }
 
