@@ -35,6 +35,7 @@ return [
         'amenities' => 'Amenities',
         'rules' => 'House Rules',
         'distance' => 'Distance',
+        'nearby_locations' => 'Nearby Locations',
     ],
 
     'navigation' => [

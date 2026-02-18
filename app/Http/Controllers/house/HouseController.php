@@ -120,7 +120,8 @@ class HouseController extends Controller {
                     'full_address' => $property->address
                 ],
                 'status' => $property->status,
-                'rooms' => $this->getPropertyRooms($property->idrec)
+                'rooms' => $this->getPropertyRooms($property->idrec),
+                'nearby_locations' => is_string($property->nearby_locations) ? json_decode($property->nearby_locations, true) : ($property->nearby_locations ?? [])
             ];
 
             return view('pages.house.show', [
