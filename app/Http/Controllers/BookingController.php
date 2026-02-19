@@ -602,7 +602,7 @@ class BookingController extends Controller
                                         'owner_phone' => $request->owner_phone ?? $existingParking->owner_phone,
                                         'parking_duration' => intval($request->parking_duration ?? $existingParking->parking_duration),
                                         'fee_amount' => $parkingFee,
-                                        'notes' => 'Renewal Booking Order: ' . $booking->order_id,
+                                        'order_id' => $booking->order_id,
                                         'updated_at' => now()
                                     ]);
                             } catch (\Exception $e) {
@@ -624,7 +624,7 @@ class BookingController extends Controller
                                 'user_id' => Auth::id(),
                                 'parking_duration' => intval($request->parking_duration ?? 1),
                                 'fee_amount' => $parkingFee,
-                                'notes' => 'Renewal Booking Order: ' . $booking->order_id,
+                                'order_id' => $booking->order_id,
                                 'management_only' => 0,
                                 'created_by' => Auth::id(),
                                 'created_at' => now(),
@@ -648,7 +648,7 @@ class BookingController extends Controller
                             'user_id' => Auth::id(),
                             'parking_duration' => intval($request->parking_duration ?? 1),
                             'fee_amount' => $parkingFee,
-                            'notes' => 'Booking Order: ' . $booking->order_id,
+                            'order_id' => $booking->order_id,
                             'management_only' => 0,
                             'created_by' => Auth::id(),
                             'created_at' => now(),
