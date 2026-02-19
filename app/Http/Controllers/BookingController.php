@@ -451,7 +451,10 @@ class BookingController extends Controller
                 'parking_type' => 'nullable|string',
                 'parking_duration' => 'nullable|integer|min:0',
                 'voucher_code' => 'nullable|string',
-                'discount_amount' => 'nullable|numeric|min:0'
+                'discount_amount' => 'nullable|numeric|min:0',
+                'vehicle_plate' => 'nullable|string|max:20',
+                'owner_name' => 'nullable|string|max:100',
+                'owner_phone' => 'nullable|string|max:20'
             ]);
 
             $booking = DB::table('t_transactions')
@@ -536,8 +539,34 @@ class BookingController extends Controller
                 ->update(['grandtotal_price' => $newGrandtotal]);
 
             // Increment parking quota if parking is used (only for new bookings, not renewals)
-            if ($booking->is_renewal != 1 && $parkingFee > 0 && $request->parking_type) {
+            if ($booking->is_renewal != 1 && $parkingFee > 0 && $request->parking_type && $request->parking_type !== 'none') {
                 $this->incrementParkingQuota($booking->property_id, $request->parking_type);
+
+                // Insert parking record into t_parking table
+                try {
+                    // Get user info for owner details if not provided
+                    $user = Auth::user();
+
+                    DB::table('t_parking')->insert([
+                        'property_id' => $booking->property_id,
+                        'parking_type' => $request->parking_type,
+                        'vehicle_plate' => $request->vehicle_plate ?? null,
+                        'owner_name' => $request->owner_name ?? $user->name ?? null,
+                        'owner_phone' => $request->owner_phone ?? $user->phone_number ?? null,
+                        'user_id' => Auth::id(),
+                        'parking_duration' => intval($request->parking_duration ?? 1),
+                        'fee_amount' => $parkingFee,
+                        'notes' => 'Booking Order: ' . $booking->order_id,
+                        // 'status' => 0, // 0 = quota by Parking Booking
+                        'management_only' => 0,
+                        'created_by' => Auth::id(),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to insert parking record: ' . $e->getMessage());
+                    // Continue even if parking record insert fails
+                }
             }
 
             // Log voucher usage if voucher was applied

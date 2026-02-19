@@ -171,8 +171,26 @@
                                         <p class="text-xs text-gray-500 mt-1">Total biaya parkir: <span id="parkingTotalDisplay" class="font-medium">Rp 0</span></p>
                                     </div>
 
+                                    <!-- Vehicle Details (shown when parking is selected) -->
+                                    <div id="vehicleDetailsContainer" class="mt-4 p-4 bg-white rounded-lg border border-gray-200 hidden">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-3">Detail Kendaraan</h4>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <label for="vehicle_plate" class="block text-sm text-gray-600 mb-1">Nomor Plat Kendaraan</label>
+                                                <input type="text" id="vehicle_plate" name="vehicle_plate"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 uppercase"
+                                                    placeholder="Contoh: B 1234 ABC" maxlength="20"
+                                                    oninput="this.value = this.value.toUpperCase()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Hidden fields for owner data (auto-filled from user) -->
+                                    <input type="hidden" id="owner_name" name="owner_name" value="{{ $booking->user_name }}">
+                                    <input type="hidden" id="owner_phone" name="owner_phone" value="{{ $booking->user_phone_number }}">
+
                                     <input type="hidden" name="parking_fee" id="parking_fee" value="0">
                                     <input type="hidden" name="parking_type" id="parking_type" value="none">
+                                    <input type="hidden" name="parking_duration" id="parking_duration" value="0">
                                 </div>
                                 @endif
                             </div>
@@ -663,15 +681,18 @@
                 selectedParkingType = this.dataset.parkingType || 'none';
 
                 const parkingMonthsContainer = document.getElementById('parkingMonthsContainer');
+                const vehicleDetailsContainer = document.getElementById('vehicleDetailsContainer');
                 const parkingMonthsInput = document.getElementById('parking_months');
 
                 if (parkingUnitPrice > 0) {
-                    // Show months input when parking is selected
+                    // Show months input and vehicle details when parking is selected
                     parkingMonthsContainer.classList.remove('hidden');
+                    vehicleDetailsContainer.classList.remove('hidden');
                     parkingMonthsSelected = parseInt(parkingMonthsInput.value) || 1;
                 } else {
-                    // Hide months input when "no parking" is selected
+                    // Hide months input and vehicle details when "no parking" is selected
                     parkingMonthsContainer.classList.add('hidden');
+                    vehicleDetailsContainer.classList.add('hidden');
                     parkingMonthsSelected = 0;
                 }
 
@@ -681,8 +702,10 @@
                 // Update hidden fields
                 const parkingFeeInput = document.getElementById('parking_fee');
                 const parkingTypeInput = document.getElementById('parking_type');
+                const parkingDurationInput = document.getElementById('parking_duration');
                 if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
                 if (parkingTypeInput) parkingTypeInput.value = selectedParkingType;
+                if (parkingDurationInput) parkingDurationInput.value = parkingMonthsSelected;
 
                 // Update parking total display
                 const parkingTotalDisplay = document.getElementById('parkingTotalDisplay');
@@ -716,9 +739,11 @@
                 // Calculate total parking fee
                 selectedParkingFee = parkingUnitPrice * parkingMonthsSelected;
 
-                // Update hidden field
+                // Update hidden fields
                 const parkingFeeInput = document.getElementById('parking_fee');
+                const parkingDurationInput = document.getElementById('parking_duration');
                 if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
+                if (parkingDurationInput) parkingDurationInput.value = parkingMonthsSelected;
 
                 // Update parking total display
                 const parkingTotalDisplay = document.getElementById('parkingTotalDisplay');
@@ -907,7 +932,11 @@
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied
@@ -952,7 +981,11 @@
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied
@@ -1010,7 +1043,11 @@
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied
@@ -1039,7 +1076,11 @@
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied
