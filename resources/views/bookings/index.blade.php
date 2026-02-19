@@ -628,7 +628,19 @@
                                         </td>
                                         <td class="px-6 py-4">
                                             <div class="flex justify-center items-center h-full">
-                                                @if(strtolower($booking->transaction_status) === 'paid')
+                                                @if($booking->booking && $booking->booking->check_out_at)
+                                                {{-- Already checked out --}}
+                                                <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm bg-purple-50 text-purple-700 border border-gray-200">
+                                                    <span class="w-2 h-2 rounded-full bg-purple-500 inline-block"></span>
+                                                    <span class="tracking-wide capitalize">Checked Out</span>
+                                                </span>
+                                                @elseif($booking->booking && $booking->booking->check_in_at)
+                                                {{-- Already checked in but not checked out --}}
+                                                <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm bg-teal-50 text-teal-700 border border-gray-200">
+                                                    <span class="w-2 h-2 rounded-full bg-teal-500 inline-block"></span>
+                                                    <span class="tracking-wide capitalize">Checked In</span>
+                                                </span>
+                                                @elseif(strtolower($booking->transaction_status) === 'paid')
                                                 <span class="flex items-center gap-2 px-4 py-1 rounded-2xl shadow-sm font-semibold text-sm bg-green-50 text-green-700 border border-gray-200">
                                                     <span class="w-2 h-2 rounded-full bg-green-500 inline-block"></span>
                                                     <span class="tracking-wide capitalize">Paid</span>
@@ -660,9 +672,26 @@
                                                 $today = now()->startOfDay();
                                                 $isTooLate = $today > $checkOutDate;
                                                 $isAlreadyRenewed = $booking->renewal_status == 1;
-                                                $canRenew = !$isTooLate && !$isAlreadyRenewed;
+                                                $isCheckedIn = $booking->booking && $booking->booking->check_in_at;
+                                                $isCheckedOut = $booking->booking && $booking->booking->check_out_at;
+                                                // Can only renew if: checked in, not checked out, not too late, not already renewed
+                                                $canRenew = $isCheckedIn && !$isCheckedOut && !$isTooLate && !$isAlreadyRenewed;
                                             @endphp
-                                            @if($isAlreadyRenewed)
+                                            @if($isCheckedOut)
+                                            <button disabled
+                                                    class="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
+                                                    title="Tidak bisa perpanjang, sudah checkout">
+                                                <i class="fas fa-sign-out-alt mr-2"></i>
+                                                Checked Out
+                                            </button>
+                                            @elseif(!$isCheckedIn)
+                                            <button disabled
+                                                    class="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
+                                                    title="Tidak bisa perpanjang, belum check-in">
+                                                <i class="fas fa-door-closed mr-2"></i>
+                                                Not Checked In
+                                            </button>
+                                            @elseif($isAlreadyRenewed)
                                             <button disabled
                                                     class="inline-flex items-center px-4 py-2 bg-blue-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
                                                     title="Booking ini sudah diperpanjang">

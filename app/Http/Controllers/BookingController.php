@@ -643,7 +643,7 @@ class BookingController extends Controller
         ]);
 
         // Get all bookings for the user with relationships
-        $bookings = Transaction::with(['user', 'room', 'property'])
+        $bookings = Transaction::with(['user', 'room', 'property', 'booking'])
             ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
