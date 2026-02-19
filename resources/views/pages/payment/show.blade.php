@@ -983,6 +983,7 @@
 
                     updateParams = {
                         payment_method: 'qris',
+                        order_id: '{{ $booking->order_id }}',
                         qr_content: paymentData.data.qr_content,
                         qris_data: JSON.stringify(paymentData.data),
                         deposit_fee: depositFee,
@@ -1031,6 +1032,7 @@
 
                     updateParams = {
                         payment_method: 'credit_card',
+                        order_id: '{{ $booking->order_id }}',
                         payment_url: paymentData.payment_url,
                         invoice_number: paymentData.invoice_number,
                         cc_data: JSON.stringify(paymentData),
@@ -1093,6 +1095,7 @@
 
                     updateParams = {
                         payment_method: selectedBank.value,
+                        order_id: '{{ $booking->order_id }}',
                         bank: selectedBank.dataset.bankName,
                         virtual_account_no: paymentData.data.virtual_account_no,
                         va_data: JSON.stringify(paymentData.data),
@@ -1122,6 +1125,7 @@
                     // Manual Transfer Payment - Direct update without API call
                     updateParams = {
                         payment_method: 'bri_manual',
+                        order_id: '{{ $booking->order_id }}',
                         bank: 'BRI Manual',
                         virtual_account_no: '0505 01 001671 567',
                         manual_transfer_data: JSON.stringify({

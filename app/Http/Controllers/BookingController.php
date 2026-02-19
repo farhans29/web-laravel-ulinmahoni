@@ -471,6 +471,7 @@ class BookingController extends Controller
         try {
             $request->validate([
                 'payment_method' => 'required',
+                'order_id' => 'nullable|string',
                 'virtual_account_no' => 'nullable|string',
                 'bank' => 'nullable|string',
                 'va_data' => 'nullable|string',
@@ -504,6 +505,11 @@ class BookingController extends Controller
                 'paid_at' => null,
                 'updated_at' => now()
             ];
+
+            // Add order_id if provided
+            if ($request->has('order_id')) {
+                $updateData['order_id'] = $request->order_id;
+            }
 
             // Add virtual account number if provided
             if ($request->has('virtual_account_no')) {
