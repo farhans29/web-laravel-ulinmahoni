@@ -80,6 +80,17 @@
                                 // Deposit fee is 0 for renewals (is_renewal = 1)
                                 $depositFeeAmount = ($booking->is_renewal == 1) ? 0 : ($property ? ($property->deposit_fee_amount ?? 0) : 0);
                                 $parkingFees = $property ? $property->parkingFees()->where('status', 1)->get() : collect([]);
+
+                                // For renewals, check existing parking record
+                                $existingParking = null;
+                                $isRenewalBooking = $booking->is_renewal == 1;
+                                if ($isRenewalBooking) {
+                                    $existingParking = \Illuminate\Support\Facades\DB::table('t_parking')
+                                        ->where('user_id', auth()->id())
+                                        ->where('property_id', $booking->property_id)
+                                        ->orderBy('created_at', 'desc')
+                                        ->first();
+                                }
                             @endphp
 
                             @if($depositFeeAmount > 0 || $parkingFees->count() > 0)
@@ -104,11 +115,23 @@
                                 @if($parkingFees->count() > 0)
                                 <div class="mb-2">
                                     <label class="block font-medium text-gray-700 mb-2">Pilih Parkir (Opsional)</label>
+
+                                    @if($isRenewalBooking && $existingParking)
+                                    <div class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <p class="text-sm text-blue-800">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            <strong>Info Perpanjangan:</strong> Anda memiliki parkir
+                                            <strong>{{ strtolower($existingParking->parking_type) == 'car' || strtolower($existingParking->parking_type) == 'mobil' ? 'Mobil' : (strtolower($existingParking->parking_type) == 'motorcycle' || strtolower($existingParking->parking_type) == 'motor' ? 'Motor' : ucfirst($existingParking->parking_type)) }}</strong>
+                                            yang aktif. Pilih tipe yang sama untuk memperpanjang tanpa mengubah kuota, atau pilih tipe lain jika ingin mengganti.
+                                        </p>
+                                    </div>
+                                    @endif
+
                                     <div class="space-y-2">
                                         <!-- No Parking Option -->
                                         <label class="parking-option flex items-center justify-between p-3 bg-white rounded-lg border-2 border-gray-200 cursor-pointer hover:border-teal-500 transition-all">
                                             <div class="flex items-center">
-                                                <input type="radio" name="parking_selection" value="none" class="mr-3" checked
+                                                <input type="radio" name="parking_selection" value="none" class="mr-3" {{ !$existingParking ? 'checked' : '' }}
                                                     data-parking-fee="0"
                                                     data-parking-type="none">
                                                 <div>
@@ -124,13 +147,16 @@
                                             // Don't lock parking for renewals - they're extending existing parking slot
                                             $isFull = !$isRenewal && $parkingFee->capacity && $parkingFee->quota_used >= $parkingFee->capacity;
                                             $remainingSlots = $parkingFee->capacity ? ($parkingFee->capacity - ($parkingFee->quota_used ?? 0)) : null;
+                                            // Check if this is the existing parking type for renewals
+                                            $isExistingParkingType = $existingParking && strtolower($existingParking->parking_type) === strtolower($parkingFee->parking_type);
                                         @endphp
-                                        <label class="parking-option flex items-center justify-between p-3 rounded-lg border-2 transition-all {{ $isFull ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60' : 'bg-white border-gray-200 cursor-pointer hover:border-teal-500' }}">
+                                        <label class="parking-option flex items-center justify-between p-3 rounded-lg border-2 transition-all {{ $isFull ? 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60' : ($isExistingParkingType ? 'bg-white border-teal-500 ring-2 ring-teal-200' : 'bg-white border-gray-200 cursor-pointer hover:border-teal-500') }}">
                                             <div class="flex items-center">
                                                 <input type="radio" name="parking_selection" value="{{ $parkingFee->idrec }}" class="mr-3"
                                                     data-parking-fee="{{ $parkingFee->fee }}"
                                                     data-parking-type="{{ $parkingFee->parking_type }}"
-                                                    {{ $isFull ? 'disabled' : '' }}>
+                                                    {{ $isFull ? 'disabled' : '' }}
+                                                    {{ $isExistingParkingType ? 'checked' : '' }}>
                                                 <div>
                                                     <span class="font-medium {{ $isFull ? 'text-gray-400' : 'text-gray-700' }}">
                                                         @if(strtolower($parkingFee->parking_type) == 'car' || strtolower($parkingFee->parking_type) == 'mobil')
@@ -142,6 +168,8 @@
                                                         @endif
                                                         @if($isFull)
                                                             <span class="ml-2 px-2 py-0.5 text-xs font-semibold text-red-600 bg-red-100 rounded">PENUH</span>
+                                                        @elseif($isExistingParkingType)
+                                                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold text-teal-600 bg-teal-100 rounded">PARKIR AKTIF</span>
                                                         @endif
                                                     </span>
                                                     @if($parkingFee->capacity)
@@ -160,7 +188,7 @@
                                     </div>
 
                                     <!-- Parking Months Input -->
-                                    <div id="parkingMonthsContainer" class="mt-3 hidden">
+                                    <div id="parkingMonthsContainer" class="mt-3 {{ $existingParking ? '' : 'hidden' }}">
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bulan Parkir</label>
                                         <div class="flex items-center space-x-3">
                                             <input type="number" id="parking_months" name="parking_months"
@@ -171,8 +199,27 @@
                                         <p class="text-xs text-gray-500 mt-1">Total biaya parkir: <span id="parkingTotalDisplay" class="font-medium">Rp 0</span></p>
                                     </div>
 
+                                    <!-- Vehicle Details (shown when parking is selected) -->
+                                    <div id="vehicleDetailsContainer" class="mt-4 p-4 bg-white rounded-lg border border-gray-200 {{ $existingParking ? '' : 'hidden' }}">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-3">Detail Kendaraan</h4>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <label for="vehicle_plate" class="block text-sm text-gray-600 mb-1">Nomor Plat Kendaraan</label>
+                                                <input type="text" id="vehicle_plate" name="vehicle_plate"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 uppercase"
+                                                    placeholder="Contoh: B 1234 ABC" maxlength="20"
+                                                    value="{{ $existingParking->vehicle_plate ?? '' }}"
+                                                    oninput="this.value = this.value.toUpperCase()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Hidden fields for owner data (auto-filled from user) -->
+                                    <input type="hidden" id="owner_name" name="owner_name" value="{{ $booking->user_name }}">
+                                    <input type="hidden" id="owner_phone" name="owner_phone" value="{{ $booking->user_phone_number }}">
+
                                     <input type="hidden" name="parking_fee" id="parking_fee" value="0">
                                     <input type="hidden" name="parking_type" id="parking_type" value="none">
+                                    <input type="hidden" name="parking_duration" id="parking_duration" value="0">
                                 </div>
                                 @endif
                             </div>
@@ -544,6 +591,33 @@
         let parkingMonthsSelected = 1;
         const maxParkingMonths = {{ $booking->booking_months > 0 ? $booking->booking_months : 1 }};
 
+        // Initialize parking state for renewals with existing parking
+        @if($existingParking)
+        (function initExistingParking() {
+            const preSelectedRadio = document.querySelector('input[name="parking_selection"]:checked');
+            if (preSelectedRadio && preSelectedRadio.value !== 'none') {
+                parkingUnitPrice = parseFloat(preSelectedRadio.dataset.parkingFee) || 0;
+                selectedParkingType = preSelectedRadio.dataset.parkingType || 'none';
+                parkingMonthsSelected = parseInt(document.getElementById('parking_months')?.value) || 1;
+                selectedParkingFee = parkingUnitPrice * parkingMonthsSelected;
+
+                // Update hidden fields
+                const parkingFeeInput = document.getElementById('parking_fee');
+                const parkingTypeInput = document.getElementById('parking_type');
+                const parkingDurationInput = document.getElementById('parking_duration');
+                if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
+                if (parkingTypeInput) parkingTypeInput.value = selectedParkingType;
+                if (parkingDurationInput) parkingDurationInput.value = parkingMonthsSelected;
+
+                // Update parking total display
+                const parkingTotalDisplay = document.getElementById('parkingTotalDisplay');
+                if (parkingTotalDisplay) {
+                    parkingTotalDisplay.textContent = 'Rp ' + selectedParkingFee.toLocaleString('id-ID');
+                }
+            }
+        })();
+        @endif
+
         // Calculate subtotal before service fee (for voucher calculation)
         // Formula: Subtotal = Room Price + Admin Fees (without service fee, deposit, parking)
         const subtotalBeforeServiceFee = roomPrice + adminFees;
@@ -663,15 +737,18 @@
                 selectedParkingType = this.dataset.parkingType || 'none';
 
                 const parkingMonthsContainer = document.getElementById('parkingMonthsContainer');
+                const vehicleDetailsContainer = document.getElementById('vehicleDetailsContainer');
                 const parkingMonthsInput = document.getElementById('parking_months');
 
                 if (parkingUnitPrice > 0) {
-                    // Show months input when parking is selected
+                    // Show months input and vehicle details when parking is selected
                     parkingMonthsContainer.classList.remove('hidden');
+                    vehicleDetailsContainer.classList.remove('hidden');
                     parkingMonthsSelected = parseInt(parkingMonthsInput.value) || 1;
                 } else {
-                    // Hide months input when "no parking" is selected
+                    // Hide months input and vehicle details when "no parking" is selected
                     parkingMonthsContainer.classList.add('hidden');
+                    vehicleDetailsContainer.classList.add('hidden');
                     parkingMonthsSelected = 0;
                 }
 
@@ -681,8 +758,10 @@
                 // Update hidden fields
                 const parkingFeeInput = document.getElementById('parking_fee');
                 const parkingTypeInput = document.getElementById('parking_type');
+                const parkingDurationInput = document.getElementById('parking_duration');
                 if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
                 if (parkingTypeInput) parkingTypeInput.value = selectedParkingType;
+                if (parkingDurationInput) parkingDurationInput.value = parkingMonthsSelected;
 
                 // Update parking total display
                 const parkingTotalDisplay = document.getElementById('parkingTotalDisplay');
@@ -716,9 +795,11 @@
                 // Calculate total parking fee
                 selectedParkingFee = parkingUnitPrice * parkingMonthsSelected;
 
-                // Update hidden field
+                // Update hidden fields
                 const parkingFeeInput = document.getElementById('parking_fee');
+                const parkingDurationInput = document.getElementById('parking_duration');
                 if (parkingFeeInput) parkingFeeInput.value = selectedParkingFee;
+                if (parkingDurationInput) parkingDurationInput.value = parkingMonthsSelected;
 
                 // Update parking total display
                 const parkingTotalDisplay = document.getElementById('parkingTotalDisplay');
@@ -902,12 +983,17 @@
 
                     updateParams = {
                         payment_method: 'qris',
+                        order_id: '{{ $booking->order_id }}',
                         qr_content: paymentData.data.qr_content,
                         qris_data: JSON.stringify(paymentData.data),
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied
@@ -946,13 +1032,18 @@
 
                     updateParams = {
                         payment_method: 'credit_card',
+                        order_id: '{{ $booking->order_id }}',
                         payment_url: paymentData.payment_url,
                         invoice_number: paymentData.invoice_number,
                         cc_data: JSON.stringify(paymentData),
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied
@@ -1004,13 +1095,18 @@
 
                     updateParams = {
                         payment_method: selectedBank.value,
+                        order_id: '{{ $booking->order_id }}',
                         bank: selectedBank.dataset.bankName,
                         virtual_account_no: paymentData.data.virtual_account_no,
                         va_data: JSON.stringify(paymentData.data),
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied
@@ -1029,6 +1125,7 @@
                     // Manual Transfer Payment - Direct update without API call
                     updateParams = {
                         payment_method: 'bri_manual',
+                        order_id: '{{ $booking->order_id }}',
                         bank: 'BRI Manual',
                         virtual_account_no: '0505 01 001671 567',
                         manual_transfer_data: JSON.stringify({
@@ -1039,7 +1136,11 @@
                         deposit_fee: depositFee,
                         parking_fee: selectedParkingFee,
                         parking_type: selectedParkingType,
-                        parking_duration: parkingMonthsSelected
+                        parking_duration: parkingMonthsSelected,
+                        vehicle_plate: document.getElementById('vehicle_plate')?.value || '',
+                        owner_name: document.getElementById('owner_name')?.value || '',
+                        owner_phone: document.getElementById('owner_phone')?.value || '',
+                        parking_notes: document.getElementById('parking_notes')?.value || ''
                     };
 
                     // Add voucher data if applied

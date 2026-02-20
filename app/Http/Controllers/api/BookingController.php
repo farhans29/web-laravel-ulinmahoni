@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Property;
 
 class BookingController extends ApiController
@@ -1552,7 +1553,10 @@ class BookingController extends ApiController
                 'parking_fee' => 'nullable|numeric|min:0',
                 'parking_type' => 'nullable|string',
                 'voucher_code' => 'nullable|string',
-                'discount_amount' => 'nullable|numeric|min:0'
+                'discount_amount' => 'nullable|numeric|min:0',
+                'vehicle_plate' => 'nullable|string|max:20',
+                'owner_name' => 'nullable|string|max:100',
+                'owner_phone' => 'nullable|string|max:20'
             ]);
 
             if ($validator->fails()) {
@@ -1650,6 +1654,33 @@ class BookingController extends ApiController
                 ->where('order_id', $booking->order_id)
                 ->update(['grandtotal_price' => $newGrandtotal]);
 
+            // Insert parking record into t_parking table (only for new bookings with parking, not renewals)
+            if (($booking->is_renewal ?? 0) != 1 && $parkingFee > 0 && $request->parking_type && $request->parking_type !== 'none') {
+                try {
+                    // Get user info for owner details if not provided
+                    $user = Auth::user();
+
+                    DB::table('t_parking')->insert([
+                        'property_id' => $booking->property_id,
+                        'parking_type' => $request->parking_type,
+                        'vehicle_plate' => $request->vehicle_plate ?? null,
+                        'owner_name' => $request->owner_name ?? $user->name ?? null,
+                        'owner_phone' => $request->owner_phone ?? $user->phone_number ?? null,
+                        'user_id' => Auth::id(),
+                        'parking_duration' => $parkingDuration,
+                        'fee_amount' => $parkingFee,
+                        'notes' => 'Booking Order: ' . $booking->order_id,
+                        'management_only' => 0,
+                        'created_by' => Auth::id(),
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to insert parking record: ' . $e->getMessage());
+                    // Continue even if parking record insert fails
+                }
+            }
+
             return response()->json([
                 'status' => 'success',
                 'message' => 'Payment method updated successfully',
@@ -1662,6 +1693,7 @@ class BookingController extends ApiController
                     'parking_duration' => $parkingDuration,
                     'parking_fee' => $parkingFee,
                     'parking_type' => $request->parking_type,
+                    'vehicle_plate' => $request->vehicle_plate,
                     'discount_amount' => $discountAmount,
                     'grandtotal_price' => $newGrandtotal,
                     'transaction_status' => 'pending'
