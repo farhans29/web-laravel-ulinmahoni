@@ -147,9 +147,17 @@ class UserController extends ApiController
                 ], 404);
             }
             $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+                'first_name' => 'sometimes|required|string|max:255',
+                'last_name' => 'sometimes|required|string|max:255',
+                'username' => 'sometimes|required|string|max:255|alpha_dash|unique:users,username,' . $id,
                 'name' => 'sometimes|required|string|max:255',
                 'email' => 'sometimes|required|email|unique:users,email,' . $id,
+                'phone_number' => 'sometimes|nullable|string|max:20|unique:users,phone_number,' . $id,
+                'nik' => 'sometimes|nullable|string|max:16|unique:users,nik,' . $id,
                 'password' => 'sometimes|required|string|min:6',
+                'status' => 'sometimes|required|integer|in:0,1',
+                'is_admin' => 'sometimes|required|integer|in:0,1',
+                'profile_photo_path' => 'sometimes|nullable|string|max:2048',
             ]);
             if ($validator->fails()) {
                 return response()->json([
