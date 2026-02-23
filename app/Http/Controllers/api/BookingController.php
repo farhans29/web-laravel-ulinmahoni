@@ -617,8 +617,10 @@ class BookingController extends ApiController
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
             $property = $request->property_id ? Property::find($request->property_id) : null;
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
-            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            do {
+                $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+                $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            } while (Transaction::where('order_id', $order_id)->exists());
 
             // Set expiration time to 1 hour from now
             $expiredAt = now()->addHour();
@@ -1020,8 +1022,10 @@ class BookingController extends ApiController
             // Generate new order_id
             $property = Property::find($request->property_id);
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
-            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $newOrderId = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            do {
+                $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+                $newOrderId = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            } while (Transaction::where('order_id', $newOrderId)->exists());
 
             // Set expiration time to 1 hour from now
             $expiredAt = now()->addHour();

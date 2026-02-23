@@ -921,10 +921,12 @@ class BookingController extends Controller
                 }
             }
 
-            // Generate order_id in format UMW-yymmddXXXPP
+            // Generate unique order_id in format UMH-yymmddXXXPP
             $propertyInitial = $room->property->initial ?? 'HX';
-            $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
-            $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            do {
+                $randomNumber = str_pad(mt_rand(0, 999), 3, '0', STR_PAD_LEFT);
+                $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
+            } while (Transaction::where('order_id', $order_id)->exists());
 
             // Set expiration time to 1 hour from now
             $expiredAt = now()->addHour();

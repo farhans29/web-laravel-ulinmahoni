@@ -30,6 +30,7 @@ class Voucher extends Model
         'scope_ids',
         'property_id',
         'status',
+        'how_to_claim',
         'created_by',
         'updated_by'
     ];
@@ -50,6 +51,7 @@ class Voucher extends Model
         'valid_from' => 'datetime',
         'valid_to' => 'datetime',
         'scope_ids' => 'array',
+        'how_to_claim' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
