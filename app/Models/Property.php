@@ -51,6 +51,7 @@ class Property extends Model
         'features' => 'array',
         'attributes' => 'array',
         'price' => 'array',
+        'nearby_locations' => 'array',
     ];
 
     protected $appends = [
