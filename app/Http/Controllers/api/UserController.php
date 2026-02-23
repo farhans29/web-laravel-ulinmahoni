@@ -171,6 +171,7 @@ class UserController extends ApiController
                 $data['password'] = bcrypt($data['password']);
             }
             $user->update($data);
+            $user->refresh();
             return response()->json([
                 'status' => 'success',
                 'message' => 'User updated successfully',
