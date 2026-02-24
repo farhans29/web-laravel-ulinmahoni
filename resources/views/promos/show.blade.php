@@ -54,8 +54,6 @@
                 <ol class="flex items-center space-x-2 text-gray-500">
                     <li><a href="{{ route('homepage') }}" class="hover:text-gray-700">Home</a></li>
                     <li><span class="mx-2">/</span></li>
-                    <li><a href="{{ route('promos.index') }}" class="hover:text-gray-700">Promos</a></li>
-                    <li><span class="mx-2">/</span></li>
                     <li class="text-gray-900">{{ $promo['title'] }}</li>
                 </ol>
             </nav>
