@@ -44,7 +44,7 @@
 <style>
     .promo-section {
         width: 100%;
-        background-color: #f5f2ea;
+        background-color: #f8f7f4;
         padding: 1rem 0;
     }
 
