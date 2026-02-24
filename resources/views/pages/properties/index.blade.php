@@ -17,7 +17,7 @@
 
     @stack('styles')
 </head>
-<body class="bg-gray-50">
+<body style="background-color: #f8f7f4;">
     @include('components.homepage.header')
 
     <main class="container mx-auto px-4 py-8">
