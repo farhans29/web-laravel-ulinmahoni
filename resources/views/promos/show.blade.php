@@ -43,7 +43,7 @@
     </style>
 </head>
 
-<body class="font-inter antialiased bg-white text-gray-900 tracking-tight">
+<body class="font-inter antialiased text-gray-900 tracking-tight" style="background-color: #f8f7f4;">
     <!-- Header -->
     @include('components.homepage.header')
 
