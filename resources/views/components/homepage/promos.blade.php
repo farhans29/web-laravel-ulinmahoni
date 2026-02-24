@@ -44,7 +44,7 @@
 <style>
     .promo-section {
         width: 100%;
-        background-color: #f5f2ea;
+        background-color: transparent;
         padding: 1rem 0;
     }
 
@@ -78,6 +78,12 @@
         background-color: #e5e7eb;
         overflow: hidden;
         border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: box-shadow 0.3s ease;
+    }
+
+    .promo-link:hover .promo-image-container {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
 
     .promo-image {
