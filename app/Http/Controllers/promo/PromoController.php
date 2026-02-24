@@ -81,7 +81,7 @@ class PromoController extends Controller
             'Hanya berlaku untuk pengguna secara terbatas'
         ];
 
-        $promoArr['how_to_claim'] = [
+        $promoArr['how_to_claim'] = $promo->how_to_claim ?? [
             'Pilih properti yang diinginkan',
             'Lalu Pilih Kamar yang diinginkan',
             'Masukkan Kode Voucher saat checkout',
