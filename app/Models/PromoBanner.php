@@ -13,6 +13,7 @@ class PromoBanner extends Model
         'title',
         'image_id',
         'descriptions',
+        'how_to_claim',
         'status',
         'created_by',
         'updated_by'
@@ -21,6 +22,10 @@ class PromoBanner extends Model
     protected $hidden = [
         'created_at',
         'updated_at'
+    ];
+
+    protected $casts = [
+        'how_to_claim' => 'array',
     ];
 
     public function images()
