@@ -67,8 +67,8 @@
             font-weight: 600;
         }
         .detail-row {
-            display: flex;
-            justify-content: space-between;
+            display: table;
+            width: 100%;
             padding: 10px 0;
             border-bottom: 1px solid #e5e7eb;
         }
@@ -76,15 +76,22 @@
             border-bottom: none;
         }
         .detail-label {
+            display: table-cell;
+            width: 55%;
             font-weight: 500;
             color: #6b7280;
             font-size: 14px;
+            padding-right: 16px;
+            vertical-align: middle;
         }
         .detail-value {
+            display: table-cell;
+            width: 45%;
             font-weight: 600;
             color: #1f2937;
             text-align: right;
             font-size: 14px;
+            vertical-align: middle;
         }
         .total-row {
             background-color: #ecfdf5;
@@ -156,11 +163,17 @@
                 padding: 20px;
             }
             .detail-row {
-                flex-direction: column;
+                display: block;
+            }
+            .detail-label,
+            .detail-value {
+                display: block;
+                width: 100%;
+                text-align: left;
+                padding-right: 0;
             }
             .detail-value {
-                text-align: left;
-                margin-top: 4px;
+                margin-top: 2px;
             }
         }
     </style>
