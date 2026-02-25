@@ -16,6 +16,41 @@
     @include('components.homepage.styles')
 
     @stack('styles')
+    <style>
+        /* Consistent room card sizing */
+        .room-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .room-card .room-image {
+            flex-shrink: 0;
+            height: 180px;
+        }
+        .room-card .room-image > div {
+            height: 100%;
+        }
+        .room-card .room-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .room-card .room-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 120px;
+        }
+        .room-card .room-price {
+            margin-top: auto;
+        }
+        .room-card h4 {
+            min-height: 1.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 <body style="background-color: #f8f7f4;">
     @include('components.homepage.header')
@@ -177,6 +212,8 @@
             error_occurred: '{{ __("properties.index.error_occurred") }}',
             try_again: '{{ __("properties.index.try_again") }}',
             available: '{{ __("properties.index.available") }}',
+            unavailable: '{{ __("properties.status.unavailable") }}',
+            status_available: '{{ __("properties.status.available") }}',
         };
 
         // Global variables
@@ -661,7 +698,7 @@
                                                 class="w-full h-full object-cover"
                                                 onerror="this.onerror=null; this.src=roomPlaceholder;">
                                         ` : `
-                                            <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                            <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
                                                 <i class="fas fa-door-open text-4xl"></i>
                                             </div>
                                         `}
@@ -670,6 +707,17 @@
                                                 <i class="fas fa-check mr-1"></i>Tersedia
                                             </span>
                                         ` : ''}
+
+                                        <!-- Availability Badge -->
+                                        ${room.status === 1 && room.rental_status !== 1 ? `
+                                            <span class="absolute bottom-3 left-3 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-sm">
+                                                ${translations.status_available}
+                                            </span>
+                                        ` : `
+                                            <span class="absolute bottom-3 left-3 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500 text-white shadow-sm">
+                                                ${translations.unavailable}
+                                            </span>
+                                        `}
                                     </div>
                                 </a>
 
@@ -743,17 +791,17 @@
             const periodLabel = room.current_period === 'daily' ? 'hari' : 'bulan';
 
             return `
-                <div class="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200">
+                <div class="room-card bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200">
                     <!-- Room Image -->
-                    <a href="${roomRoute}" class="room-link block overflow-hidden">
+                    <a href="${roomRoute}" class="room-link room-image block overflow-hidden">
                         <div class="relative aspect-[4/3] bg-gray-100">
                             ${roomThumbnail ? `
                                 <img src="${adminUrl}/storage/${roomThumbnail}"
                                     alt="${room.name}"
-                                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                    class="hover:scale-105 transition-transform duration-500"
                                     onerror="this.onerror=null; this.src=roomPlaceholder;">
                             ` : `
-                                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                                <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
                                     <i class="fas fa-door-open text-3xl"></i>
                                 </div>
                             `}
@@ -763,26 +811,35 @@
                                     <i class="fas fa-check mr-1"></i>Tersedia
                                 </span>
                             ` : ''}
+
+                            <!-- Availability Badge -->
+                            ${room.status === 1 && room.rental_status !== 1 ? `
+                                <span class="absolute bottom-2 left-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-500 text-white shadow-sm">
+                                    ${translations.status_available}
+                                </span>
+                            ` : `
+                                <span class="absolute bottom-2 left-2 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500 text-white shadow-sm">
+                                    ${translations.unavailable}
+                                </span>
+                            `}
                         </div>
                     </a>
 
                     <!-- Room Info -->
-                    <div class="p-3">
+                    <div class="room-content p-3">
                         <a href="${roomRoute}" class="room-link">
                             <h4 class="font-semibold text-gray-800 mb-1 line-clamp-1 hover:text-teal-600 transition-colors">
                                 ${room.name}
                             </h4>
                         </a>
 
-                        ${room.bed_count || room.room_size ? `
-                            <div class="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                                ${room.bed_count ? `<span><i class="fas fa-bed mr-1"></i>${room.bed_count}</span>` : ''}
-                                ${room.room_size ? `<span><i class="fas fa-expand-arrows-alt mr-1"></i>${room.room_size}m²</span>` : ''}
-                            </div>
-                        ` : ''}
+                        <div class="flex items-center gap-3 text-xs text-gray-500 mb-2 min-h-[1.25rem]">
+                            ${room.bed_count ? `<span><i class="fas fa-bed mr-1"></i>${room.bed_count}</span>` : ''}
+                            ${room.room_size ? `<span><i class="fas fa-expand-arrows-alt mr-1"></i>${room.room_size}m²</span>` : ''}
+                        </div>
 
                         <!-- Price -->
-                        <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div class="room-price flex items-center justify-between pt-2 border-t border-gray-100">
                             <div>
                                 <div class="text-lg font-bold text-teal-600">
                                     Rp ${formatRupiah(room.current_price)}

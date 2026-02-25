@@ -139,6 +139,8 @@ class SearchController extends ApiController
                         'current_period' => $period,
                         'price_daily' => $room->price_original_daily,
                         'price_monthly' => $room->price_original_monthly,
+                        'status' => $room->status,
+                        'rental_status' => $room->rental_status,
                     ];
                 });
 

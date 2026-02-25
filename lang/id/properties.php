@@ -38,6 +38,16 @@ return [
         'nearby_locations' => 'Lokasi Terdekat',
     ],
 
+    'nearby_categories' => [
+        'transport' => 'Transportasi',
+        'health' => 'Kesehatan',
+        'food_drink' => 'Makanan & Minuman',
+        'finance' => 'Keuangan',
+        'education' => 'Pendidikan',
+        'worship' => 'Tempat Ibadah',
+        'shopping' => 'Perbelanjaan',
+    ],
+
     'navigation' => [
         'home' => 'Home',
         'properties' => 'Properties',

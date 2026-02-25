@@ -38,6 +38,16 @@ return [
         'nearby_locations' => 'Nearby Locations',
     ],
 
+    'nearby_categories' => [
+        'transport' => 'Transportation',
+        'health' => 'Health',
+        'food_drink' => 'Food & Drink',
+        'finance' => 'Finance',
+        'education' => 'Education',
+        'worship' => 'Worship',
+        'shopping' => 'Shopping',
+    ],
+
     'navigation' => [
         'home' => 'Home',
         'properties' => 'Properties',

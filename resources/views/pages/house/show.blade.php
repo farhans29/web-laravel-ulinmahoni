@@ -408,54 +408,7 @@
                         </div>
                     </div> -->
 
-                    <!-- Nearby Locations -->
-                    @if(!empty($house['nearby_locations']))
-                    <div class="mt-8">
-                        <h3 class="text-xl font-bold text-gray-900 mb-4">{{ __('properties.details.nearby_locations') }}</h3>
-                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-                            @php
-                                $groupedLocations = collect($house['nearby_locations'])->groupBy('category');
-                                $categoryLabels = [
-                                    'transport' => 'Transportation',
-                                    'health' => 'Health',
-                                    'food_drink' => 'Food & Drink',
-                                    'finance' => 'Finance',
-                                    'education' => 'Education',
-                                    'worship' => 'Worship',
-                                    'shopping' => 'Shopping',
-                                ];
-                                $categoryIcons = [
-                                    'transport' => 'fas fa-bus',
-                                    'health' => 'fas fa-hospital',
-                                    'food_drink' => 'fas fa-utensils',
-                                    'finance' => 'fas fa-university',
-                                    'education' => 'fas fa-graduation-cap',
-                                    'worship' => 'fas fa-mosque',
-                                    'shopping' => 'fas fa-shopping-bag',
-                                ];
-                            @endphp
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                @foreach($groupedLocations as $category => $locations)
-                                    <div class="space-y-2">
-                                        <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center">
-                                            <i class="{{ $categoryIcons[$category] ?? 'fas fa-map-marker-alt' }} text-teal-600 mr-2"></i>
-                                            {{ $categoryLabels[$category] ?? ucfirst(str_replace('_', ' ', $category)) }}
-                                        </h4>
-                                        <ul class="space-y-1">
-                                            @foreach($locations as $location)
-                                                <li class="text-sm text-gray-600 flex items-center justify-between">
-                                                    <span>{{ $location['name'] }}</span>
-                                                    <span class="text-xs text-gray-400">{{ $location['distance_text'] ?? '' }}</span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
+                    
                     <!-- Location Map -->
                     <div class="mt-8">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">{{ __('properties.details.location') }}</h3>
@@ -586,6 +539,45 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Nearby Locations -->
+                    @if(!empty($house['nearby_locations']))
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">{{ __('properties.details.nearby_locations') }}</h3>
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                            @php
+                                $groupedLocations = collect($house['nearby_locations'])->groupBy('category');
+                                $categoryIcons = [
+                                    'transport' => 'fas fa-bus',
+                                    'health' => 'fas fa-hospital',
+                                    'food_drink' => 'fas fa-utensils',
+                                    'finance' => 'fas fa-university',
+                                    'education' => 'fas fa-graduation-cap',
+                                    'worship' => 'fas fa-mosque',
+                                    'shopping' => 'fas fa-shopping-bag',
+                                ];
+                            @endphp
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                @foreach($groupedLocations as $category => $locations)
+                                    <div class="space-y-2">
+                                        <h4 class="text-sm font-semibold text-gray-700 uppercase tracking-wide flex items-center">
+                                            <i class="{{ $categoryIcons[$category] ?? 'fas fa-map-marker-alt' }} text-teal-600 mr-2"></i>
+                                            {{ __("properties.nearby_categories.{$category}") }}
+                                        </h4>
+                                        <ul class="space-y-1">
+                                            @foreach($locations as $location)
+                                                <li class="text-sm text-gray-600 flex items-center justify-between">
+                                                    <span>{{ $location['name'] }}</span>
+                                                    <span class="text-xs text-gray-400">{{ $location['distance_text'] ?? '' }}</span>
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
                     <!-- Rooms Section -->
                     <div id="rooms-section" class="mt-12" x-data="{ openCategories: [] }">
