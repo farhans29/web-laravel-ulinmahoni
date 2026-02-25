@@ -587,7 +587,7 @@
                     </div>
                     <div class="p-5 bg-gray-50">
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            ${property.available_rooms.map(room => renderRoomCard(room, property)).join('')}
+                            ${property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1).map(room => renderRoomCard(room, property)).join('')}
                         </div>
                     </div>
                 </div>
@@ -660,7 +660,7 @@
                         <!-- Available Rooms Grid -->
                         <div class="p-5 bg-gray-50">
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                ${property.available_rooms.map(room => renderRoomCard(room, property)).join('')}
+                                ${property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1).map(room => renderRoomCard(room, property)).join('')}
                             </div>
                         </div>
                     </div>
@@ -682,7 +682,7 @@
                 const propertyRoute = getPropertyRoute(property);
                 const thumbnail = getPropertyThumbnail(property);
 
-                property.available_rooms.forEach(room => {
+                property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1).forEach(room => {
                     const roomRoute = `/rooms/${room.slug || room.id}`;
                     const roomThumbnail = getRoomThumbnail(room, property);
 
@@ -749,6 +749,9 @@
 
                                         <!-- Room Details -->
                                         <div class="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                                            ${room.no ? `
+                                                <span><i class="fas fa-hashtag mr-1"></i>${room.no}</span>
+                                            ` : ''}
                                             ${room.bed_count ? `
                                                 <span><i class="fas fa-bed mr-1"></i>${room.bed_count} ${translations.bed}</span>
                                             ` : ''}
@@ -834,6 +837,7 @@
                         </a>
 
                         <div class="flex items-center gap-3 text-xs text-gray-500 mb-2 min-h-[1.25rem]">
+                            ${room.no ? `<span><i class="fas fa-hashtag mr-1"></i>${room.no}</span>` : ''}
                             ${room.bed_count ? `<span><i class="fas fa-bed mr-1"></i>${room.bed_count}</span>` : ''}
                             ${room.room_size ? `<span><i class="fas fa-expand-arrows-alt mr-1"></i>${room.room_size}m²</span>` : ''}
                         </div>

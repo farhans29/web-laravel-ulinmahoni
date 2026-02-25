@@ -130,6 +130,7 @@ class SearchController extends ApiController
                     return [
                         'id' => $room->idrec,
                         'slug' => $room->slug,
+                        'no' => $room->no,
                         'name' => $room->name,
                         'image' => $room->image,
                         'images' => $room->images,
