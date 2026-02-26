@@ -266,7 +266,7 @@ return [
     'gender' => [
         'male' => 'Putra',
         'female' => 'Putri',
-        'mixed' => 'Campuran',
+        'mixed' => 'Campur',
     ],
 
     'js' => [

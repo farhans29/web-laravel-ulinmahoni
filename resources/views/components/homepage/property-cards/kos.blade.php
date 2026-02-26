@@ -48,9 +48,16 @@
                     </h4>
 
                     @if(!empty($kosan['gender']))
+                    @php $genderKey = strtolower($kosan['gender']); @endphp
                     <div class="property-card-gender">
-                        <i class="fas fa-venus-mars"></i>
-                        <span>{{ __('properties.gender.' . strtolower($kosan['gender']), ['default' => $kosan['gender']]) }}</span>
+                        @if($genderKey === 'male')
+                            <i class="fas fa-mars gender-icon-male"></i>        
+                        @elseif($genderKey === 'female')
+                            <i class="fas fa-venus gender-icon-female"></i>
+                        @else
+                            <i class="fas fa-venus-mars gender-icon-mixed"></i>
+                        @endif
+                        <span>{{ __('properties.gender.' . $genderKey, ['default' => $kosan['gender']]) }}</span>
                     </div>
                     @endif
 
@@ -258,17 +265,29 @@
     }
 
     .property-card-gender {
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        color: #6b7280;
-        font-size: 0.75rem; /* 12px */
-        margin-bottom: 0.25rem; /* 4px */
+        color: #374151;
+        font-size: 1rem; /* 16px - same as title */
+        font-weight: 700;
+        margin-bottom: 0.375rem; /* 6px */
+        border: 1.5px solid #d1d5db;
+        border-radius: 6px;
+        padding: 0.1rem 0.25rem;
     }
 
     .property-card-gender i {
-        margin-right: 0.25rem; /* 4px */
-        color: #9ca3af;
+        margin-right: 0.3rem;
         flex-shrink: 0;
+    }
+
+    .gender-icon-male { color: #3b82f6; }
+    .gender-icon-female { color: #ef4444; }
+    .gender-icon-mixed {
+        background: linear-gradient(to right, #ef4444, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .property-card-location {
