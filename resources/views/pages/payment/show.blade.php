@@ -192,7 +192,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Bulan Parkir</label>
                                         <div class="flex items-center space-x-3">
                                             <input type="number" id="parking_months" name="parking_months"
-                                                min="0" max="{{ $booking->booking_months > 0 ? $booking->booking_months : 1 }}" value="1"
+                                                min="1" max="{{ $booking->booking_months > 0 ? $booking->booking_months : 1 }}" value="1"
                                                 class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
                                             <span class="text-sm text-gray-600">bulan (maks: {{ $booking->booking_months > 0 ? $booking->booking_months : 1 }} bulan)</span>
                                         </div>
@@ -388,8 +388,11 @@
 
                             <div>
                                 <h4 class="font-medium">{{ __('properties.payment.property_details') }}</h4>
-                                <p class="text-sm text-gray-600">{{ $booking->property_name }} ({{ $booking->room_name }})</p>
-                                <p class="text-sm text-gray-600">{{ __('properties.payment.type') }} {{ ucfirst($booking->property_type) }}</p>
+                                <p class="text-sm text-gray-600">{{ $booking->property_name }}</p>
+                                <p class="text-sm text-gray-600">{{ __('properties.payment.type') }} {{ $booking->room_name }}</p>
+                                @if($booking->room?->no)
+                                <p class="text-sm text-gray-600">No. Room: {{ $booking->room->no }}</p>
+                                @endif
                             </div>
 
                             <div>
@@ -744,7 +747,9 @@
                     // Show months input and vehicle details when parking is selected
                     parkingMonthsContainer.classList.remove('hidden');
                     vehicleDetailsContainer.classList.remove('hidden');
-                    parkingMonthsSelected = parseInt(parkingMonthsInput.value) || 1;
+                    parkingMonthsSelected = Math.max(1, parseInt(parkingMonthsInput.value) || 1);
+                    parkingMonthsInput.min = '1';
+                    parkingMonthsInput.value = parkingMonthsSelected;
                 } else {
                     // Hide months input and vehicle details when "no parking" is selected
                     parkingMonthsContainer.classList.add('hidden');
@@ -786,9 +791,9 @@
         const parkingMonthsInput = document.getElementById('parking_months');
         if (parkingMonthsInput) {
             parkingMonthsInput.addEventListener('input', function() {
-                let months = parseInt(this.value) || 0;
-                // Clamp value between 0 and max
-                months = Math.max(0, Math.min(months, maxParkingMonths));
+                let months = parseInt(this.value) || 1;
+                // Clamp value between 1 and max
+                months = Math.max(1, Math.min(months, maxParkingMonths));
                 this.value = months;
                 parkingMonthsSelected = months;
 
