@@ -19,6 +19,8 @@ class PaymentController extends Controller
             abort(403);
         }
 
+        $booking->load('room');
+
         return view('pages.payment.show', compact('booking'));
     }
 

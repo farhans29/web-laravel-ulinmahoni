@@ -309,6 +309,9 @@
                                         <td class="px-6 py-4">
                                             <div class="text-sm font-medium text-gray-900">{{ $booking->property_name }}</div>
                                             <div class="text-sm text-gray-500">{{ $booking->room_name }}</div>
+                                            @if($booking->room?->no)
+                                            <div class="text-xs text-gray-500">No. Room: {{ $booking->room->no }}</div>
+                                            @endif
                                             <div class="text-xs text-gray-500 flex items-center">
                                                 <i class="fas fa-building mr-1"></i>
                                                 {{ ucfirst($booking->property_type) }}
@@ -587,6 +590,9 @@
                                         <td class="px-6 py-4">
                                             <div class="text-sm font-medium text-gray-900">{{ $booking->property_name }}</div>
                                             <div class="text-sm text-gray-500">{{ $booking->room_name }}</div>
+                                            @if($booking->room?->no)
+                                            <div class="text-xs text-gray-500">No. Room: {{ $booking->room->no }}</div>
+                                            @endif
                                             <div class="text-xs text-gray-500 flex items-center">
                                                 <i class="fas fa-building mr-1"></i>
                                                 {{ ucfirst($booking->property_type) }}
