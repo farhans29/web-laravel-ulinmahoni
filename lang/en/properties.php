@@ -263,6 +263,12 @@ return [
         'hotel' => 'Hotel',
     ],
 
+    'gender' => [
+        'male' => 'Male',
+        'female' => 'Female',
+        'mixed' => 'Mixed',
+    ],
+
     'js' => [
         'no_rooms_available' => 'No rooms available',
         'no_rooms_for_dates' => 'No rooms available for the selected dates. Try changing check-in or check-out dates.',

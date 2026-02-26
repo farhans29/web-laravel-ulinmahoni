@@ -250,6 +250,7 @@ class HomeController extends Controller {
             'image' => $mainImage,  // Use the first image as main image
             'thumbnail' => $thumbnail,  // Thumbnail for listing/cards
             'images' => $images,    // Keep all images array for gallery
+            'gender' => $property->gender,
             'status' => $property->status,
             'total_rooms' => $totalRooms,
             'available_rooms' => $availableRooms

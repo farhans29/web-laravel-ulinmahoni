@@ -263,6 +263,12 @@ return [
         'hotel' => 'Hotel',
     ],
 
+    'gender' => [
+        'male' => 'Putra',
+        'female' => 'Putri',
+        'mixed' => 'Campuran',
+    ],
+
     'js' => [
         'no_rooms_available' => 'Tidak ada kamar tersedia',
         'no_rooms_for_dates' => 'Tidak ada kamar tersedia untuk tanggal yang dipilih. Coba ubah tanggal check-in atau check-out.',

@@ -281,6 +281,9 @@
                     <div class="lg:w-1/2">
                         <div class="mb-6">
                             <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $house['name'] }}</h1>
+                            @if(!empty($house['gender']))
+                            <p class="text-gray-500 text-sm mb-1"><i class="fas fa-venus-mars mr-1"></i>{{ __('properties.gender.' . strtolower($house['gender']), ['default' => $house['gender']]) }}</p>
+                            @endif
                             <p class="text-gray-600 mb-1">{{ $house['location'] }}</p>
                             <p class="text-gray-500 text-sm">{{ $house['distance'] }}</p>
                         </div>

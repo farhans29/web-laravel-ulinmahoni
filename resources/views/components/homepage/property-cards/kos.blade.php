@@ -25,7 +25,7 @@
                     @else
                         <div class="property-card-no-image">
                             <i class="fas fa-building"></i>
-                            <span>No Image</span>
+                            <span>No Image</span>   
                         </div>
                     @endif
 
@@ -46,6 +46,13 @@
                     <h4 class="property-card-title">
                         {{ $kosan['name'] }}
                     </h4>
+
+                    @if(!empty($kosan['gender']))
+                    <div class="property-card-gender">
+                        <i class="fas fa-venus-mars"></i>
+                        <span>{{ __('properties.gender.' . strtolower($kosan['gender']), ['default' => $kosan['gender']]) }}</span>
+                    </div>
+                    @endif
 
                     <!-- Location -->
                     <div class="property-card-location">
@@ -248,6 +255,20 @@
 
     .property-card:hover .property-card-title {
         color: #0d9488;
+    }
+
+    .property-card-gender {
+        display: flex;
+        align-items: center;
+        color: #6b7280;
+        font-size: 0.75rem; /* 12px */
+        margin-bottom: 0.25rem; /* 4px */
+    }
+
+    .property-card-gender i {
+        margin-right: 0.25rem; /* 4px */
+        color: #9ca3af;
+        flex-shrink: 0;
     }
 
     .property-card-location {
