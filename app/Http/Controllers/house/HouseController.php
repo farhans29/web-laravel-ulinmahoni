@@ -119,6 +119,7 @@ class HouseController extends Controller {
                     'postal_code' => $property->postal_code,
                     'full_address' => $property->address
                 ],
+                'gender' => $property->gender,
                 'status' => $property->status,
                 'rooms' => $this->getPropertyRooms($property->idrec),
                 'nearby_locations' => is_string($property->nearby_locations) ? json_decode($property->nearby_locations, true) : ($property->nearby_locations ?? [])

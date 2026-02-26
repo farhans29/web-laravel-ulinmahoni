@@ -36,6 +36,7 @@ class Property extends Model
         'amenities',
         'attributes',
         'image',
+        'gender',
         'status',
         'created_by',
         'updated_by'
