@@ -266,6 +266,7 @@
 
     .property-card-gender {
         display: inline-flex;
+        align-self: flex-start;
         align-items: center;
         color: #374151;
         font-size: 1rem; /* 16px - same as title */
