@@ -77,6 +77,13 @@
       margin-top: 4rem;
     }
 
+    /* On mobile the search form stacks vertically, making it much taller */
+    @media (max-width: 767px) {
+      main > section:first-of-type {
+        margin-top: 10rem;
+      }
+    }
+
 /* Global styles */
 .bg-teal-600 { background-color: var(--teal-600); }
 .bg-teal-700 { background-color: var(--teal-700); }

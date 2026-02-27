@@ -549,28 +549,33 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                     <div class="p-5 border-b border-gray-100">
                         <div class="flex items-start justify-between gap-4">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <a href="${propertyRoute}" class="text-xl font-bold text-gray-800 hover:text-teal-600 transition-colors">
+                            <div class="flex-1 min-w-0">
+                                <!-- Name + type badge -->
+                                <div class="flex flex-wrap items-center gap-2 mb-1">
+                                    <a href="${propertyRoute}" class="text-xl font-bold text-gray-800 hover:text-teal-600 transition-colors truncate">
                                         ${property.name}
                                     </a>
-                                    <span class="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                                    <span class="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0">
                                         ${property.tags}
                                     </span>
                                 </div>
-                                <div class="flex items-center text-gray-600 text-sm mb-2">
-                                    <i class="fas fa-map-marker-alt mr-2"></i>
+                                <!-- Gender badge -->
+                                ${property.gender ? `<div class="mb-2">${getGenderBadge(property.gender)}</div>` : ''}
+                                <!-- Location -->
+                                <div class="flex items-start text-gray-600 text-sm mb-3">
+                                    <i class="fas fa-map-marker-alt mr-2 mt-0.5 flex-shrink-0"></i>
                                     <span>${property.address}</span>
                                 </div>
-                                <div class="flex items-center gap-4 text-sm text-gray-500">
-                                    <span>
-                                        <i class="fas fa-door-open mr-1"></i>
-                                        ${property.available_rooms_count} kamar tersedia
+                                <!-- Rooms + price -->
+                                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                                    <span class="flex items-center gap-1">
+                                        <i class="fas fa-door-open"></i>
+                                        <span>${property.available_rooms_count} kamar tersedia</span>
                                     </span>
                                     ${property.lowest_price ? `
-                                        <span>
-                                            <i class="fas fa-tag mr-1"></i>
-                                            Mulai dari <strong class="text-teal-600">Rp ${formatRupiah(property.lowest_price)}</strong>/${periodLabel}
+                                        <span class="flex items-center gap-1">
+                                            <i class="fas fa-tag"></i>
+                                            <span>Mulai dari <strong class="text-teal-600">Rp ${formatRupiah(property.lowest_price)}</strong>/${periodLabel}</span>
                                         </span>
                                     ` : ''}
                                 </div>
@@ -1041,6 +1046,24 @@
 
             const newUrl = params.toString() ? `${window.location.pathname}?${params.toString()}` : window.location.pathname;
             window.history.pushState({}, '', newUrl);
+        }
+
+        function getGenderBadge(gender) {
+            if (!gender) return '';
+            const key = gender.toLowerCase();
+            const labels = {
+                'male':   '{{ __("properties.gender.male") }}',
+                'female': '{{ __("properties.gender.female") }}',
+                'mixed':  '{{ __("properties.gender.mixed") }}'
+            };
+            const icons = {
+                'male':   '<i class="fas fa-mars" style="color:#3b82f6"></i>',
+                'female': '<i class="fas fa-venus" style="color:#ef4444"></i>',
+                'mixed':  '<i class="fas fa-venus-mars" style="background:linear-gradient(to right,#ef4444,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"></i>'
+            };
+            const label = labels[key] || gender;
+            const icon  = icons[key]  || '';
+            return `<div style="display:inline-flex;align-items:center;gap:0.3rem;border:1.5px solid #d1d5db;border-radius:6px;padding:0.1rem 0.4rem;font-size:0.875rem;font-weight:700;color:#374151;">${icon}<span>${label}</span></div>`;
         }
 
         // Helper functions

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Property;
+use App\Models\Room;
 
 class ApartController extends Controller {
     public function index(Request $request){
@@ -56,50 +57,83 @@ class ApartController extends Controller {
     public function show($id)
     {
         try {
-            // Get apartment from database (using Property model and filtering for apartments)
-            $apartment = Property::where('tags', 'Apartment')->findOrFail($id);
+            $property = Property::where('tags', 'Apartment')->findOrFail($id);
 
-            // Format the data for the view
+            $propertyImages = $property->images;
+            $mainImage = !empty($propertyImages[0]['image']) ? $propertyImages[0]['image'] : $property->image;
+            $secondaryImages = array_slice($propertyImages, !empty($propertyImages[0]['image']) ? 1 : 0);
+
             $formattedApartment = [
-                'id' => $apartment->idrec,
-                'name' => $apartment->name,
-                'type' => $apartment->tags,
-                'location' => $apartment->address,
-                'subLocation' => $apartment->subdistrict . ', ' . $apartment->city,
-                'distance' => $apartment->distance ? "{$apartment->distance} km dari {$apartment->location}" : null,
-                'price' => [
-                    'original' => $apartment->price['original'] ?? 0,
-                    'discounted' => $apartment->price['discounted'] ?? 0
-                ],
-                'features' => is_string($apartment->features) ? json_decode($apartment->features, true) : ($apartment->features ?? []),
-                'image' => $apartment->image,
-                'image_2' => $apartment->image_2 ?? null,
-                'image_3' => $apartment->image_3 ?? null,
-                'attributes' => is_string($apartment->attributes) ? json_decode($apartment->attributes, true) : ($apartment->attributes ?? [
-                    'amenities' => [],
-                    'room_facilities' => [],
-                    'rules' => []
-                ]),
-                'description' => $apartment->description,
+                'id' => $property->idrec,
+                'slug' => $property->slug,
+                'name' => $property->name,
+                'type' => $property->tags,
+                'location' => $property->address,
+                'latitude' => $property->latitude,
+                'longitude' => $property->longitude,
+                'subLocation' => $property->subdistrict . ', ' . $property->city,
+                'distance' => $property->distance ? "{$property->distance} km dari {$property->location}" : null,
+                'price_original_daily' => $property->price_original_daily,
+                'price_original_monthly' => $property->price_original_monthly,
+                'price_discounted_daily' => $property->price_discounted_daily,
+                'price_discounted_monthly' => $property->price_discounted_monthly,
+                'features' => is_string($property->features) ? json_decode($property->features, true) : [],
+                'facility' => $property->facility,
+                'image' => $mainImage,
+                'images' => $propertyImages,
+                'description' => $property->description,
                 'address' => [
-                    'province' => $apartment->province,
-                    'city' => $apartment->city,
-                    'subdistrict' => $apartment->subdistrict,
-                    'village' => $apartment->village,
-                    'postal_code' => $apartment->postal_code,
-                    'full_address' => $apartment->address
+                    'province' => $property->province,
+                    'city' => $property->city,
+                    'subdistrict' => $property->subdistrict,
+                    'village' => $property->village,
+                    'postal_code' => $property->postal_code,
+                    'full_address' => $property->address
                 ],
-                'status' => $apartment->status
+                'gender' => $property->gender,
+                'status' => $property->status,
+                'rooms' => $this->getPropertyRooms($property->idrec),
+                'nearby_locations' => is_string($property->nearby_locations) ? json_decode($property->nearby_locations, true) : ($property->nearby_locations ?? [])
             ];
 
             return view('pages.apartment.show', [
-                'apartment' => $formattedApartment
+                'apartment' => $formattedApartment,
+                'primaryImage' => $mainImage,
+                'secondaryImages' => $secondaryImages,
+                'totalImages' => count($propertyImages) > 0 ? count($propertyImages) : ($mainImage ? 1 : 0)
             ]);
 
         } catch (Exception $e) {
             Log::error('Apartment not found or error occurred: ' . $e->getMessage());
             abort(404);
         }
+    }
+
+    protected function getPropertyRooms($propertyId)
+    {
+        $rooms = Room::where('property_id', $propertyId)->where('status', 1)->get();
+
+        return $rooms->map(function($room) {
+            $roomImages = $room->images;
+            $mainImage = !empty($roomImages[0]['image']) ? $roomImages[0]['image'] : $room->image;
+
+            return [
+                'id' => $room->idrec,
+                'property_id' => $room->property_id,
+                'slug' => $room->slug,
+                'no' => $room->no,
+                'name' => $room->name,
+                'descriptions' => $room->descriptions,
+                'type' => $room->type,
+                'facility' => is_string($room->facility) ? (json_decode($room->facility, true) ?? []) : ($room->facility ?? []),
+                'image' => $mainImage,
+                'images' => $roomImages,
+                'price_original_daily' => $room->price_original_daily,
+                'price_original_monthly' => $room->price_original_monthly,
+                'status' => $room->status,
+                'rental_status' => $room->rental_status
+            ];
+        })->toArray();
     }
 
     /**
