@@ -535,16 +535,16 @@
                                                                 @php $hasValidPeriod = false; @endphp
                                                                 @if($room['price_original_daily'] > 0)
                                                                     @php $hasValidPeriod = true; @endphp
-                                                                    <li class="flex items-center">
+                                                                    <li class="flex flex-col md:flex-row md:items-center">
                                                                         <span class="text-lg font-bold text-green-600">Rp{{ number_format($room['price_original_daily'], 0, ',', '.') }}</span>
-                                                                        <span class="text-base font-bold text-gray-800 ml-1">{{ __('properties.price.per_day') }}</span>
+                                                                        <span class="text-base font-bold text-gray-800 md:ml-1">{{ __('properties.price.per_day') }}</span>
                                                                     </li>
                                                                 @endif
                                                                 @if($room['price_original_monthly'] > 0)
                                                                     @php $hasValidPeriod = true; @endphp
-                                                                    <li class="flex items-center">
+                                                                    <li class="flex flex-col md:flex-row md:items-center">
                                                                         <span class="text-lg font-bold text-green-600">Rp{{ number_format($room['price_original_monthly'], 0, ',', '.') }}</span>
-                                                                        <span class="text-base font-bold text-gray-800 ml-1">{{ __('properties.price.per_month') }}</span>
+                                                                        <span class="text-base font-bold text-gray-800 md:ml-1">{{ __('properties.price.per_month') }}</span>
                                                                     </li>
                                                                 @endif
                                                                 @if(!$hasValidPeriod)
