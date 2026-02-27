@@ -56,6 +56,9 @@ return [
         'no_promos' => 'Tidak ada promo yang tersedia saat ini',
         'check_back_later' => 'Silakan cek kembali nanti untuk penawaran terbaru',
         'no_kos_available' => 'Tidak ada kosan yang tersedia saat ini.',
+        'no_apartments_available' => 'Tidak ada apartemen yang tersedia saat ini.',
+        'no_villas_available' => 'Tidak ada villa yang tersedia saat ini.',
+        'no_hotels_available' => 'Tidak ada hotel yang tersedia saat ini.',
     ],
 
     'cities' => [

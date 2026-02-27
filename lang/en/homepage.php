@@ -56,6 +56,9 @@ return [
         'no_promos' => 'No promotions available at this time',
         'check_back_later' => 'Please check back later for the latest offers',
         'no_kos_available' => 'No kos available at this time.',
+        'no_apartments_available' => 'No apartments available at this time.',
+        'no_villas_available' => 'No villas available at this time.',
+        'no_hotels_available' => 'No hotels available at this time.',
     ],
 
     'cities' => [

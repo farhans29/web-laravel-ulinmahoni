@@ -1,152 +1,99 @@
-<!-- Hotel Content -->
-<div class="property-tab-content hidden" data-tab="hotel">
-    <!-- Swiper container -->
-    <div class="swiper property-swiper">
-        <div class="swiper-wrapper mb-8">
-            @forelse($hotels as $hotel)
-            <div class="swiper-slide">
-                <a href="{{ route('hotels.show', ['id' => $hotel['id']]) }}" class="block h-full">
-                    <div class="property-card bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col">
-                        <div class="relative">
-                            <div class="relative pb-[56.25%] h-48">
-                                <div class="absolute inset-0">
-                                    @if($hotel['image'])
-                                        <img src="data:image/jpeg;base64,{{ $hotel['image'] }}" 
-                                             alt="{{ $hotel['name'] }}" 
-                                             class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
-                                    @else
-                                        <div class="bg-gray-100 w-full h-full flex items-center justify-center">
-                                            <i class="fas fa-image text-4xl text-gray-400"></i>
-                                            <span class="ml-2 text-gray-500">No Image</span>
-                                        </div>
-                                    @endif
-                                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent h-16"></div>
-                                </div>
-                                <span class="absolute top-2 left-2 bg-teal-600 text-white px-2 py-1 rounded-full text-sm">
-                                    {{ $hotel['type'] }}
-                                </span>
+<!-- Grid container -->
+<div class="property-cards-grid">
+    @forelse($hotels as $hotel)
+    <div class="property-card-wrapper">
+        <a href="{{ route('hotels.show', ['id' => $hotel['id']]) }}" class="property-card-link">
+            <div class="property-card">
+                <!-- Image Container -->
+                <div class="property-card-image">
+                    @php
+                        $mainImage = $hotel['thumbnail'] ?? $hotel['images'][0]['image'] ?? $hotel['image'] ?? null;
+                    @endphp
+
+                    @if($mainImage)
+                        <img src="{{ env('ADMIN_URL') }}/storage/{{ $mainImage }}"
+                             alt="{{ $hotel['name'] }}"
+                             class="property-card-img"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'property-card-no-image\'><i class=\'fas fa-building\'></i></div>';">
+
+                        @if(count($hotel['images'] ?? []) > 1)
+                            <div class="property-card-image-count">
+                                <i class="fas fa-images"></i>{{ count($hotel['images']) }}
                             </div>
+                        @endif
+                    @else
+                        <div class="property-card-no-image">
+                            <i class="fas fa-building"></i>
+                            <span>No Image</span>
                         </div>
+                    @endif
 
-                        <div class="p-4 flex-1 flex flex-col">
-                            <div class="flex-1">
-                                <h3 class="text-base font-medium text-gray-800 mb-1">{{ $hotel['name'] }}</h3>
-                                <p class="text-gray-500 text-sm mb-1">{{ $hotel['subLocation'] }}</p>
-                                <p class="text-gray-500 text-xs mb-1">{{ $hotel['distance'] }}</p>
-                            </div>
+                    @if(isset($hotel['available_rooms']) && $hotel['available_rooms'] > 0)
+                    <span class="property-card-available-badge">
+                        <i class="fas fa-door-open"></i>{{ $hotel['available_rooms'] }} {{ __('homepage.rooms.available') }}
+                    </span>
+                    @elseif(isset($hotel['available_rooms']) && $hotel['available_rooms'] == 0)
+                    <span class="property-card-full-badge">
+                        <i class="fas fa-door-closed"></i>{{ __('homepage.rooms.full') }}
+                    </span>
+                    @endif
+                </div>
 
-                            <div>
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs text-gray-500">
-                                            mulai dari <span class="line-through">Rp{{ number_format($hotel['price']['original'], 0, ',', '.') }}</span>
-                                        </p>
-                                        <div class="flex items-center">
-                                            <p class="text-lg font-bold text-gray-800">
-                                                Rp{{ number_format($hotel['price']['discounted'], 0, ',', '.') }} 
-                                                <span class="text-xs font-normal">/bulan</span>
-                                            </p>
-                                        </div>
-                                    </div>
+                <!-- Content -->
+                <div class="property-card-content">
+                    <h4 class="property-card-title">
+                        {{ $hotel['name'] }}
+                    </h4>
 
-                                    <div class="flex flex-col space-y-1 text-xs text-gray-500">
-                                        @foreach($hotel['features'] as $feature)
-                                            <span class="border border-gray-300 rounded-lg px-2 py-1 text-center">{{ $feature }}</span>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    @if(!empty($hotel['gender']))
+                    @php $genderKey = strtolower($hotel['gender']); @endphp
+                    <div class="property-card-gender">
+                        @if($genderKey === 'male')
+                            <i class="fas fa-mars gender-icon-male"></i>
+                        @elseif($genderKey === 'female')
+                            <i class="fas fa-venus gender-icon-female"></i>
+                        @else
+                            <i class="fas fa-venus-mars gender-icon-mixed"></i>
+                        @endif
+                        <span>{{ __('properties.gender.' . $genderKey, ['default' => $hotel['gender']]) }}</span>
                     </div>
-                </a>
-            </div>
-            @empty
-            <div class="swiper-slide">
-                <div class="text-center p-6">
-                    <p class="text-gray-500">Tidak ada hotel yang tersedia.</p>
+                    @endif
+
+                    <div class="property-card-location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ $hotel['subLocation'] }}</span>
+                    </div>
+
+                    <div class="property-card-price-section">
+                        @php
+                            $roomPriceMonthly = $hotel['room_price_original_monthly'] ?? null;
+                            $roomPriceDaily = $hotel['price_original_daily'] ?? null;
+                            $roomPrice = $roomPriceMonthly ?: $roomPriceDaily;
+                            $pricePeriod = $roomPriceMonthly ? '/bulan' : '/hari';
+                        @endphp
+                        @if(!empty($roomPrice))
+                        <div class="property-card-price">
+                            <div class="property-card-price-value">
+                                Rp{{ number_format($roomPrice, 0, ',', '.') }}
+                            </div>
+                            <div class="property-card-price-period">{{ $pricePeriod }}</div>
+                        </div>
+                        <span class="property-card-view-btn">
+                            {{ __('homepage.actions.view') }} <i class="fas fa-arrow-right"></i>
+                        </span>
+                        @else
+                        <span class="property-card-view-btn property-card-view-btn-center">
+                            {{ __('homepage.actions.view_detail') }} <i class="fas fa-arrow-right"></i>
+                        </span>
+                        @endif
+                    </div>
                 </div>
             </div>
-            @endforelse
-        </div>
-        
-        <!-- Add Navigation -->
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
-        <!-- Add Pagination -->
-        <div class="swiper-pagination"></div>
+        </a>
     </div>
+    @empty
+    <div class="property-cards-empty">
+        <p class="apt-empty-text">{{ __('homepage.messages.no_hotels_available') }}</p>
+    </div>
+    @endforelse
 </div>
-
-<style>
-    .property-swiper {
-        padding: 20px 40px;
-    }
-    
-    .swiper-button-next,
-    .swiper-button-prev {
-        color: #0d9488; /* teal-600 */
-    }
-    
-    .swiper-pagination-bullet-active {
-        background: #0d9488; /* teal-600 */
-    }
-    
-    .property-card {
-        height: 100%;
-    }
-    
-    @media (min-width: 1024px) {
-        .property-swiper .swiper-slide {
-            width: 20%; /* 5 cards per view on large screens */
-            height: auto;
-        }
-    }
-    
-    @media (min-width: 768px) and (max-width: 1023px) {
-        .property-swiper .swiper-slide {
-            width: 50%; /* 2 cards per view on medium screens */
-            height: auto;
-        }
-    }
-    
-    @media (max-width: 767px) {
-        .property-swiper .swiper-slide {
-            width: 100%; /* 1 card per view on small screens */
-            height: auto;
-        }
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        new Swiper('.property-swiper', {
-            slidesPerView: 'auto',
-            spaceBetween: 16,
-            navigation: {
-                nextEl: '.swiper-button-next',
-                prevEl: '.swiper-button-prev',
-            },
-            pagination: {
-                el: '.swiper-pagination',
-                clickable: true,
-            },
-            breakpoints: {
-                // Mobile
-                320: {
-                    slidesPerView: 1,
-                    spaceBetween: 16
-                },
-                // Tablet
-                768: {
-                    slidesPerView: 2,
-                    spaceBetween: 16
-                },
-                // Desktop
-                1024: {
-                    slidesPerView: 5,
-                    spaceBetween: 16
-                }
-            }
-        });
-    });
-</script> 

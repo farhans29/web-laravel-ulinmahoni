@@ -70,14 +70,17 @@
                     <!-- Price Section -->
                     <div class="property-card-price-section">
                         @php
-                            $roomPrice = $kosan['room_price_original_monthly'];
+                            $roomPriceMonthly = $kosan['room_price_original_monthly'] ?? null;
+                            $roomPriceDaily = $kosan['price_original_daily'] ?? null;
+                            $roomPrice = $roomPriceMonthly ?: $roomPriceDaily;
+                            $pricePeriod = $roomPriceMonthly ? '/bulan' : '/hari';
                         @endphp
                         @if(!empty($roomPrice))
                         <div class="property-card-price">
                             <div class="property-card-price-value">
                                 Rp{{ number_format($roomPrice, 0, ',', '.') }}
                             </div>
-                            <div class="property-card-price-period">/bulan</div>
+                            <div class="property-card-price-period">{{ $pricePeriod }}</div>
                         </div>
                         <span class="property-card-view-btn">
                             {{ __('homepage.actions.view') }} <i class="fas fa-arrow-right"></i>
