@@ -570,7 +570,7 @@
                                 <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                                     <span class="flex items-center gap-1">
                                         <i class="fas fa-door-open"></i>
-                                        <span>${property.available_rooms_count} kamar tersedia</span>
+                                        <span>${property.available_rooms.filter(r => r.status === 1 && r.rental_status !== 1).length} kamar tersedia</span>
                                     </span>
                                     ${property.lowest_price ? `
                                         <span class="flex items-center gap-1">
@@ -591,9 +591,13 @@
                         </div>
                     </div>
                     <div class="p-5 bg-gray-50">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            ${property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1).map(room => renderRoomCard(room, property)).join('')}
-                        </div>
+                        ${(() => {
+                            const availableRooms = property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1);
+                            if (availableRooms.length === 0) {
+                                return `<p class="text-center text-gray-500 py-3 text-sm">{{ __('properties.room.no_rooms') }}</p>`;
+                            }
+                            return `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${availableRooms.map(room => renderRoomCard(room, property)).join('')}</div>`;
+                        })()}
                     </div>
                 </div>
             `;
@@ -639,7 +643,7 @@
                                     <div class="flex items-center gap-4 text-sm text-gray-500">
                                         <span>
                                             <i class="fas fa-door-open mr-1"></i>
-                                            ${property.available_rooms_count} ${translations.rooms_available}
+                                            ${property.available_rooms.filter(r => r.status === 1 && r.rental_status !== 1).length} ${translations.rooms_available}
                                         </span>
                                         ${property.lowest_price ? `
                                             <span>
@@ -664,9 +668,13 @@
 
                         <!-- Available Rooms Grid -->
                         <div class="p-5 bg-gray-50">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                ${property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1).map(room => renderRoomCard(room, property)).join('')}
-                            </div>
+                            ${(() => {
+                                const availableRooms = property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1);
+                                if (availableRooms.length === 0) {
+                                    return `<p class="text-center text-gray-500 py-3 text-sm">{{ __('properties.room.no_rooms') }}</p>`;
+                                }
+                                return `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">${availableRooms.map(room => renderRoomCard(room, property)).join('')}</div>`;
+                            })()}
                         </div>
                     </div>
                 `;
@@ -687,7 +695,8 @@
                 const propertyRoute = getPropertyRoute(property);
                 const thumbnail = getPropertyThumbnail(property);
 
-                property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1).forEach(room => {
+                const availableRooms = property.available_rooms.filter(room => room.status === 1 && room.rental_status !== 1);
+                availableRooms.forEach(room => {
                     const roomRoute = `/rooms/${room.slug || room.id}`;
                     const roomThumbnail = getRoomThumbnail(room, property);
 
