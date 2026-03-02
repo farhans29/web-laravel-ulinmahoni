@@ -185,8 +185,8 @@ class VoucherService
         // Calculate percentage discount
         $discountAmount = ($amount * $voucher->discount_percentage) / 100;
 
-        // Apply maximum discount cap
-        if ($discountAmount > $voucher->max_discount_amount) {
+        // Apply maximum discount cap only if max_discount_amount is set (> 0)
+        if ($voucher->max_discount_amount > 0 && $discountAmount > $voucher->max_discount_amount) {
             $discountAmount = $voucher->max_discount_amount;
         }
 
