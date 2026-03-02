@@ -66,12 +66,18 @@
                         <i class="fa-brands fa-instagram text-lg"></i>
                     </div>
                 </a>
-                <!-- Twitter (X) -->
-                {{-- <a href="#" class="text-gray-400 hover:text-black transition-colors duration-200" aria-label="Twitter">
+                <!-- TikTok -->
+                <a href="https://www.tiktok.com/@ulin.mahoni" target="_blank" class="text-gray-400 hover:text-white transition-colors duration-200" aria-label="TikTok">
                     <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
-                        <i class="fa-brands fa-twitter text-lg"></i>
+                        <i class="fa-brands fa-tiktok text-lg"></i>
                     </div>
-                </a> --}}
+                </a>
+                <!-- Twitter (X) -->
+                <a href="https://x.com/ulinmahoni?s=21" target="_blank" aria-label="Twitter">
+                    <div class="w-10 h-10 rounded-full bg-gray-800 hover:bg-white flex items-center justify-center transition-colors duration-200">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/33/X_logo-white.png" alt="X" class="w-5 h-5 object-contain">
+                    </div>
+                </a>
             </div>
         </div>
     </div>
