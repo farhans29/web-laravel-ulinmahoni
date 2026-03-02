@@ -2694,6 +2694,7 @@ class BookingController extends ApiController
 
             return [
                 'success' => true,
+                'amount' => $data['amount'],
                 'reference_no' => $responseData['referenceNo'],
                 'partner_reference_no' => $responseData['partnerReferenceNo'],
                 'qr_content' => $responseData['qrContent'],
