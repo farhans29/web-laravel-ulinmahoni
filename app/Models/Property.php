@@ -438,6 +438,7 @@ class Property extends Model
                     'parking_type' => $fee->parking_type,
                     'fee' => $fee->fee,
                     'capacity' => $fee->capacity,
+                    'quota_used' => $fee->quota_used,
                 ];
             })
             ->toArray();
