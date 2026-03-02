@@ -157,6 +157,7 @@ class SearchController extends ApiController
                     'name' => $property->name,
                     'slug' => $property->slug,
                     'tags' => $property->tags,
+                    'gender' => $property->gender,
                     'address' => $property->address,
                     'city' => $property->city,
                     'province' => $property->province,
