@@ -291,14 +291,17 @@ class Property extends Model
                 $placeholders = implode(',', array_fill(0, count($generalIds), '?'));
 
                 $records = \DB::select("
-                    SELECT idrec, facility
+                    SELECT idrec, facility, icon
                     FROM m_property_facility
                     WHERE idrec IN ($placeholders)
                 ", $generalIds);
 
                 $facilities = [];
                 foreach ($records as $record) {
-                    $facilities[] = $record->facility;
+                    $facilities[] = [
+                        'name' => $record->facility,
+                        'icon' => $record->icon ?? null,
+                    ];
                 }
 
                 // If we found facilities, return them
