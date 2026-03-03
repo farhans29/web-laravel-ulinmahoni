@@ -551,13 +551,11 @@
                         <div class="flex items-start justify-between gap-4">
                             <div class="flex-1 min-w-0">
                                 <!-- Name + type badge -->
+                                <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 border border-teal-400 inline-block mb-2">${property.tags}</span>
                                 <div class="flex flex-wrap items-center gap-2 mb-1">
                                     <a href="${propertyRoute}" class="text-xl font-bold text-gray-800 hover:text-teal-600 transition-colors truncate">
                                         ${property.name}
                                     </a>
-                                    <span class="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0">
-                                        ${property.tags}
-                                    </span>
                                 </div>
                                 <!-- Gender badge -->
                                 ${property.gender ? `<div class="mb-2">${getGenderBadge(property.gender)}</div>` : ''}
@@ -625,30 +623,31 @@
                         <div class="p-5 border-b border-gray-100">
                             <div class="flex items-start justify-between gap-4">
                                 <!-- Property Info -->
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <a href="${propertyRoute}" class="text-xl font-bold text-gray-800 hover:text-teal-600 transition-colors">
+                                <div class="flex-1 min-w-0">
+                                    <!-- Name + type badge -->
+                                    <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2.5 py-1 rounded-full flex-shrink-0 border border-teal-400 inline-block mb-2">${property.tags}</span>
+                                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                                        <a href="${propertyRoute}" class="text-xl font-bold text-gray-800 hover:text-teal-600 transition-colors truncate">
                                             ${property.name}
                                         </a>
-                                        <span class="bg-teal-100 text-teal-800 text-xs font-medium px-2.5 py-1 rounded-full">
-                                            ${property.tags}
-                                        </span>
                                     </div>
-
-                                    <div class="flex items-center text-gray-600 text-sm mb-2">
-                                        <i class="fas fa-map-marker-alt mr-2"></i>
+                                    <!-- Gender badge -->
+                                    ${property.gender ? `<div class="mb-2">${getGenderBadge(property.gender)}</div>` : ''}
+                                    <!-- Location -->
+                                    <div class="flex items-start text-gray-600 text-sm mb-3">
+                                        <i class="fas fa-map-marker-alt mr-2 mt-0.5 flex-shrink-0"></i>
                                         <span>${property.address}</span>
                                     </div>
-
-                                    <div class="flex items-center gap-4 text-sm text-gray-500">
-                                        <span>
-                                            <i class="fas fa-door-open mr-1"></i>
-                                            ${property.available_rooms.filter(r => r.status === 1 && r.rental_status !== 1).length} ${translations.rooms_available}
+                                    <!-- Rooms + price -->
+                                    <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+                                        <span class="flex items-center gap-1">
+                                            <i class="fas fa-door-open"></i>
+                                            <span>${property.available_rooms.filter(r => r.status === 1 && r.rental_status !== 1).length} ${translations.rooms_available}</span>
                                         </span>
                                         ${property.lowest_price ? `
-                                            <span>
-                                                <i class="fas fa-tag mr-1"></i>
-                                                ${translations.start_from} <strong class="text-teal-600">Rp ${formatRupiah(property.lowest_price)}</strong>/${periodLabel}
+                                            <span class="flex items-center gap-1">
+                                                <i class="fas fa-tag"></i>
+                                                <span>${translations.start_from} <strong class="text-teal-600">Rp ${formatRupiah(property.lowest_price)}</strong>/${periodLabel}</span>
                                             </span>
                                         ` : ''}
                                     </div>
