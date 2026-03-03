@@ -1101,8 +1101,8 @@ class BookingController extends ApiController
                 ]);
             }
 
-            // 1. Find old booking by order_id and update check_out_at
-            $oldBooking = Booking::where('order_id', $orderId)->first();
+            // 1. Find old active booking (status=1) by order_id and update check_out_at
+            $oldBooking = Booking::where('order_id', $orderId)->where('status', '1')->first();
             if ($oldBooking) {
                 $oldBooking->update(['check_out_at' => now()]);
             }
