@@ -683,7 +683,14 @@
                                                 // Can only renew if: checked in, not checked out, not too late, not already renewed
                                                 $canRenew = $isCheckedIn && !$isCheckedOut && !$isTooLate && !$isAlreadyRenewed;
                                             @endphp
-                                            @if($isCheckedOut)
+                                            @if($isAlreadyRenewed)
+                                            <button disabled
+                                                    class="inline-flex items-center px-4 py-2 bg-blue-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
+                                                    title="Booking ini sudah diperpanjang">
+                                                <i class="fas fa-check-circle mr-2"></i>
+                                                Already Renewed
+                                            </button>
+                                            @elseif($isCheckedOut)
                                             <button disabled
                                                     class="inline-flex items-center px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
                                                     title="Tidak bisa perpanjang, sudah checkout">
@@ -696,13 +703,6 @@
                                                     title="Tidak bisa perpanjang, belum check-in">
                                                 <i class="fas fa-door-closed mr-2"></i>
                                                 Not Checked In
-                                            </button>
-                                            @elseif($isAlreadyRenewed)
-                                            <button disabled
-                                                    class="inline-flex items-center px-4 py-2 bg-blue-400 text-white rounded-md cursor-not-allowed text-sm font-medium"
-                                                    title="Booking ini sudah diperpanjang">
-                                                <i class="fas fa-check-circle mr-2"></i>
-                                                Already Renewed
                                             </button>
                                             @elseif($canRenew)
                                             <button onclick="openRenewModal({
