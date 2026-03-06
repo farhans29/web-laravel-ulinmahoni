@@ -129,6 +129,16 @@
                     </div>
 
                     <div>
+                        <label for="phone" class="sr-only">{{ __('Phone Number') }}</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-phone text-gray-400"></i>
+                            </div>
+                            <input id="phone_number" name="phone_number" type="tel" class="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-gray-200 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent" placeholder="Nomor Telepon" value="{{ old('phone_number') }}" />
+                        </div>
+                    </div>
+
+                    <div>
                         <label for="password" class="sr-only">{{ __('Password') }}</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
