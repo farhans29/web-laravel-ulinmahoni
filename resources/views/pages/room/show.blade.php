@@ -1655,7 +1655,21 @@
             }
             
             if (monthsSelect) {
-                monthsSelect.addEventListener('change', updatePriceSummary);
+                monthsSelect.addEventListener('change', function() {
+                    const rentType = document.getElementById('rent_type').value;
+                    if (rentType === 'monthly') {
+                        const checkInMonthlyInput = document.getElementById('check_in_monthly');
+                        const checkOutInput = document.getElementById('check_out');
+                        if (checkInMonthlyInput && checkOutInput && checkInMonthlyInput.value) {
+                            const checkInDate = new Date(checkInMonthlyInput.value);
+                            const months = parseInt(monthsSelect.value, 10) || 1;
+                            const checkOutDate = new Date(checkInDate);
+                            checkOutDate.setMonth(checkOutDate.getMonth() + months);
+                            checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                        }
+                    }
+                    updatePriceSummary();
+                });
             }
             
             // Initialize form state
