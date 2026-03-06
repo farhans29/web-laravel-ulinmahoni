@@ -45,10 +45,10 @@ use Illuminate\Support\Facades\Storage;
 |
 */
 
-// Email Verification Confirmation Page
+// Email Verification Confirmation Page (no auth required — user may not be logged in)
 Route::get('/email/verification-confirmation', function () {
     return view('auth.verify-email-confirmation');
-})->middleware('auth')->name('verification.confirmation');
+})->name('verification.confirmation');
 
 // Language Switch Route
 Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');
@@ -105,7 +105,7 @@ Route::get('/login', function () {
 // Authentication Routes
 Route::middleware(['guest'])->group(function () {
     Route::get('/register', function () {
-        return view('auth.register-fallback');
+        return view('auth.register');
     })->name('register');
 
     // Password Reset Routes
@@ -164,7 +164,7 @@ Route::prefix('id')->name('id.')->group(function () {
         return view('auth.login');
     })->name('login');
     Route::get('/register', function () {
-        return view('auth.register-fallback');
+        return view('auth.register');
     })->name('register');
 
     // Homepage
@@ -249,7 +249,7 @@ Route::prefix('en')->name('en.')->group(function () {
         return view('auth.en.login');
     })->name('login');
     Route::get('/register', function () {
-        return view('auth.register-fallback');
+        return view('auth.register');
     })->name('register');
 
     // Homepage

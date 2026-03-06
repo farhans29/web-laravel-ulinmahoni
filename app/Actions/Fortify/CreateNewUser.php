@@ -26,6 +26,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => ['nullable', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone_number' => ['nullable', 'string', 'max:20'],
             'password' => $this->passwordRules(),
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
@@ -40,6 +41,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => $name,
             'username' => $input['username'],
             'email' => $input['email'],
+            'phone_number' => $input['phone_number'] ?? null,
             'password' => Hash::make($input['password']),
             'status' => 1, // Setting a default status
             'is_admin' => 0, // Default user group (adjust as needed)
