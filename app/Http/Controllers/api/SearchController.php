@@ -25,6 +25,10 @@ class SearchController extends ApiController
             $query = Room::query()
                 ->join('m_properties', 'm_rooms.property_id', '=', 'm_properties.idrec')
                 ->where('m_rooms.status', 1)
+                ->where(function($q) {
+                    $q->where('m_rooms.rental_status', '!=', 1)
+                      ->orWhereNull('m_rooms.rental_status');
+                })
                 ->where('m_properties.status', 1)
                 ->select('m_rooms.*');
 
