@@ -45,10 +45,10 @@ use Illuminate\Support\Facades\Storage;
 |
 */
 
-// Email Verification Confirmation Page
+// Email Verification Confirmation Page (no auth required — user may not be logged in)
 Route::get('/email/verification-confirmation', function () {
     return view('auth.verify-email-confirmation');
-})->middleware('auth')->name('verification.confirmation');
+})->name('verification.confirmation');
 
 // Language Switch Route
 Route::post('/language/switch', [LanguageController::class, 'switch'])->name('language.switch');

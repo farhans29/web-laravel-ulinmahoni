@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Auth\Access\AuthorizationException;
 use App\Models\User;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Auth;
 
 class VerifyEmailController extends Controller
 {
@@ -73,6 +73,10 @@ class VerifyEmailController extends Controller
         if ($saved) {
             \Log::info('Email verified successfully', ['user_id' => $user->id]);
             event(new Verified($user));
+            // Auto-login the user so the confirmation page can greet them by email
+            if (! Auth::check()) {
+                Auth::login($user);
+            }
         } else {
             \Log::error('Failed to verify email', ['user_id' => $user->id]);
         }
