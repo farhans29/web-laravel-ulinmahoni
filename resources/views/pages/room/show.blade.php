@@ -715,11 +715,17 @@
                     const apiUrl = '{{ route("api.booking.check-availability") }}';
                     
                     
+                    const months = rentType === 'monthly'
+                        ? (parseInt(document.getElementById('months')?.value, 10) || 1)
+                        : undefined;
+
                     const requestBody = JSON.stringify({
                         property_id: propertyId,
                         room_id: roomId,
                         check_in: checkInDate,
-                        check_out: checkOutDate
+                        check_out: checkOutDate,
+                        period: rentType,
+                        ...(months !== undefined && { months })
                     });
                     // console.log('Request body:', requestBody);
                     
@@ -1316,6 +1322,7 @@
                             }
                         }
                         updatePriceSummary();
+                        checkRoomAvailability();
                     });
                 }
                 
