@@ -715,11 +715,17 @@
                     const apiUrl = '{{ route("api.booking.check-availability") }}';
                     
                     
+                    const months = rentType === 'monthly'
+                        ? (parseInt(document.getElementById('months')?.value, 10) || 1)
+                        : undefined;
+
                     const requestBody = JSON.stringify({
                         property_id: propertyId,
                         room_id: roomId,
                         check_in: checkInDate,
-                        check_out: checkOutDate
+                        check_out: checkOutDate,
+                        period: rentType,
+                        ...(months !== undefined && { months })
                     });
                     // console.log('Request body:', requestBody);
                     
@@ -1316,6 +1322,7 @@
                             }
                         }
                         updatePriceSummary();
+                        checkRoomAvailability();
                     });
                 }
                 
@@ -1648,7 +1655,21 @@
             }
             
             if (monthsSelect) {
-                monthsSelect.addEventListener('change', updatePriceSummary);
+                monthsSelect.addEventListener('change', function() {
+                    const rentType = document.getElementById('rent_type').value;
+                    if (rentType === 'monthly') {
+                        const checkInMonthlyInput = document.getElementById('check_in_monthly');
+                        const checkOutInput = document.getElementById('check_out');
+                        if (checkInMonthlyInput && checkOutInput && checkInMonthlyInput.value) {
+                            const checkInDate = new Date(checkInMonthlyInput.value);
+                            const months = parseInt(monthsSelect.value, 10) || 1;
+                            const checkOutDate = new Date(checkInDate);
+                            checkOutDate.setMonth(checkOutDate.getMonth() + months);
+                            checkOutInput.value = checkOutDate.toISOString().split('T')[0];
+                        }
+                    }
+                    updatePriceSummary();
+                });
             }
             
             // Initialize form state
