@@ -523,7 +523,7 @@
                                                             id="attachment-{{ $booking->idrec }}"
                                                             class="hidden"
                                                             accept="image/jpeg, image/png"
-                                                            onchange="handleFileUpload(this, '{{ $booking->idrec }}')">
+                                                            onchange="confirmFileUpload(this)">
                                                         <label for="attachment-{{ $booking->idrec }}"
                                                             class="cursor-pointer inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors duration-200"
                                                             title="{{ __('booking.actions.reupload') }}">
