@@ -1,66 +1,68 @@
+# Ulin Mahoni — Property Rental Booking Platform
 
-## Mosaic - Admin Dashboard Template for Laravel
+A Laravel-based property rental management system supporting daily and monthly room rentals, payment processing, and multi-language support (Indonesian / English).
 
-How to get the best out of this template:
+---
 
-#### Setup your .env config file
+## Booking Flow
 
-Make sure to add the database configuration in your .env file such as database name, username, password and port.
+1. **Browse & Select** — User picks a property and room, selects dates and rental type (daily / monthly).
+2. **Create Booking** — A transaction is created with status `pending`. It expires automatically if unpaid within the deadline.
+3. **Choose Payment Method** — User selects a payment method (bank transfer, virtual account, or QRIS).
+4. **Upload Payment Proof** — After transferring, the user uploads a JPEG or PNG image as proof of payment. Status moves to `waiting`.
+5. **Re-upload** — If the wrong file was uploaded, the user can replace it while the booking is still under review.
+6. **Admin Review** — Admin confirms payment; status moves to `paid` / `completed`.
+7. **Cancellation / Expiry** — Bookings not paid in time are automatically expired. Users can cancel eligible bookings.
 
-##
-#### Install Laravel dependencies
+---
 
-In the root of your Laravel application, run the ``php composer.phar install`` (or ``composer install``) command to install all of the framework's dependencies. 
+## Transaction Statuses
 
-##
-#### Migrate the tables
+| Status | Meaning |
+|---|---|
+| `pending` | Booking created, awaiting payment |
+| `waiting` | Payment proof uploaded, awaiting admin confirmation |
+| `paid` | Payment confirmed |
+| `completed` | Stay completed |
+| `cancelled` | Cancelled by user or admin |
+| `expired` | Not paid within the allowed window |
 
-In order to migrate the tables and setup the bare minimum structure for this app
-to display some data you shoud open your terminal, locate and enter this project
-directory and run the following command
+---
 
-##### ``php artisan migrate``
+## Payment Proof (Attachment)
 
-##
-#### Generate some test data
+- Accepted formats: JPEG, PNG
+- Maximum size: 10 MB
+- Can be replaced at any time while the booking is in `waiting` status
+- Viewable via a time-limited signed URL (valid 10 minutes)
 
-Once you have all your database tables setup you can then generate some test data
-which will come from our pre-made database table seeders.
-In order to do so, in your terminal run the following command
+---
 
-##### ``php artisan db:seed``
+## Key Booking Endpoints
 
-N.B. If you run this command twice, all the test data will be duplicated and added
-to the existing table data, if you want to avoid having duplicate test data please
-make sure to ``truncate`` the following tables in your database:
-- ``campaign_marketer``
-- ``campaigns``
-- ``customers``
-- ``datafeeds``
-- ``invoices``
-- ``jobs``
-- ``marketers``
-- ``members``
-- ``orders``
-- ``transactions``
+| Method | URI | Description |
+|---|---|---|
+| GET | `/bookings` | List user bookings with status tabs |
+| POST | `/bookings` | Create a new booking |
+| POST | `/bookings/{id}/upload-attachment` | Upload or re-upload payment proof |
+| GET | `/bookings/{id}/attachment` | View attachment (signed URL) |
+| POST | `/bookings/{id}/payment-method` | Update payment method |
+| GET | `/payment/{booking}` | Payment page |
 
-##
-#### Compile the front-end
- 
-In order to compile all the CSS and JS assets for the front-end of this site you need to install NPM dependencies. To do that, open the terminal, type npm install and press the ``Enter`` key.
+---
 
-Then run ``npm run dev`` in the terminal to run a development server to re-compile static assets when making changes to the template.
+## Supported Payment Methods
 
-When you have done with changes, run ``npm run build`` for compiling and minify for production.
+Processed via the **DOKU** payment gateway:
 
-##
-#### Launch the Laravel backend
+- Virtual accounts — BRI, BNI, BCA, Mandiri, BSI, Permata, Maybank, CIMB, Danamon, BNC
+- QRIS
 
-In order to make this Laravel installation work properly on your local machine you
-can run the following command in your terminal window.
+---
 
-##### ``php artisan serve``
+## Rental Types
 
-You should receive a message similar to this
-``Starting Laravel development server: http://127.0.0.1:8000`` simply copy the URL
-in your browser and you'll be ready to test out your new mosaic laravel app.
+| Type | Pricing Unit | Checkout Date |
+|---|---|---|
+| Daily | Per night | User-selected |
+| Monthly | Per month | Auto-calculated from check-in + months |
