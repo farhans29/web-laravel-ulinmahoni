@@ -77,6 +77,7 @@ return [
     'actions' => [
         'upload' => 'Upload',
         'uploading' => 'Uploading...',
+        'reupload' => 'Re-upload',
         'view_details' => 'View Details',
         'view_attachment' => 'View Attachment',
         'close' => 'Close',

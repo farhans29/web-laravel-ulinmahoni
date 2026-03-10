@@ -509,13 +509,28 @@
                                                 </div>
                                                 -->
                                                 
-                                                <!-- Eye icon for viewing attachment -->
-                                                <div class="flex justify-center items-center h-full">
-                                                    <a href="{{ route('bookings.view-attachment', $booking->idrec) }}" target="_blank" 
+                                                <!-- Eye icon + re-upload -->
+                                                <div class="flex justify-center items-center gap-2 h-full">
+                                                    <a href="{{ route('bookings.view-attachment', $booking->idrec) }}" target="_blank"
                                                        class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors duration-200"
                                                        title="{{ __('booking.actions.view_attachment') }}">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
+                                                    <form action="{{ route('bookings.upload-attachment', $booking->idrec) }}" method="POST" enctype="multipart/form-data" id="upload-form-{{ $booking->idrec }}">
+                                                        @csrf
+                                                        <input type="file"
+                                                            name="attachment_file"
+                                                            id="attachment-{{ $booking->idrec }}"
+                                                            class="hidden"
+                                                            accept="image/jpeg, image/png"
+                                                            onchange="handleFileUpload(this, '{{ $booking->idrec }}')">
+                                                        <label for="attachment-{{ $booking->idrec }}"
+                                                            class="cursor-pointer inline-flex items-center justify-center w-10 h-10 rounded-full bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors duration-200"
+                                                            title="{{ __('booking.actions.reupload') }}">
+                                                            <span class="upload-text"><i class="fas fa-upload text-sm"></i></span>
+                                                            <span class="upload-loader hidden"><i class="fas fa-spinner fa-spin text-sm"></i></span>
+                                                        </label>
+                                                    </form>
                                                 </div>
                                             @endif
                                         </td>
