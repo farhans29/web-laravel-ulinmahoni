@@ -572,7 +572,7 @@ class DokuServiceController extends ApiController
                 'order.invoice_number' => 'required|string',
                 'order.amount' => 'required|numeric',
                 'emoney_payment' => 'required|array',
-                'emoney_payment.account_id' => 'required|string',
+                'emoney_payment.account_id' => 'nullable|string',
                 'emoney_payment.approval_code' => 'required|string',
                 'transaction' => 'required|array',
                 'transaction.status' => 'required|string',
