@@ -309,6 +309,7 @@ Route::prefix('en')->name('en.')->group(function () {
         Route::get('/bookings/{id}/view-attachment', [BookingController::class, 'generateAttachmentUrl'])->name('bookings.view-attachment');
         Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
         Route::post('/bookings/{id}/mark-expired', [BookingController::class, 'markExpired'])->name('bookings.mark-expired');
+        Route::get('/payment/qris', fn() => view('pages.payment.qris-show'))->name('payment.qris-show');
         Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
         Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
     });
@@ -384,6 +385,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/bookings/{id}/view-attachment', [BookingController::class, 'generateAttachmentUrl'])->name('bookings.view-attachment');
     Route::post('/bookings/{id}/update-payment', [BookingController::class, 'updatePaymentMethod'])->name('bookings.update-payment');
     Route::post('/bookings/{id}/mark-expired', [BookingController::class, 'markExpired'])->name('bookings.mark-expired');
+    Route::get('/payment/qris', fn() => view('pages.payment.qris-show'))->name('payment.qris-show');
     Route::get('/payment/{booking:order_id}', [PaymentController::class, 'show'])->name('payment.show');
     Route::post('/payment/process', [PaymentController::class, 'process'])->name('payment.process');
 });

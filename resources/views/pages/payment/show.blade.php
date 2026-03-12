@@ -231,7 +231,7 @@
                                     <label class="block text-lg font-medium text-gray-700 mb-4">{{ __('properties.payment.payment_method') }}</label>
 
                                     <!-- Manual Transfer Payment -->
-                                    <div class="mb-6">
+                                    <!-- <div class="mb-6">
                                         <h3 class="text-md font-medium text-gray-700 mb-3">Transfer Manual (Direct)</h3>
                                         <p class="text-sm text-gray-600 mb-3">Transfer langsung ke rekening kami</p>
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,7 +253,7 @@
                                                 </div>
                                             </label>
                                         </div>
-                                    </div>
+                                    </div> -->
 
                                     <!-- Virtual Account Payment -->
                                     <div class="mb-6">
@@ -499,6 +499,14 @@
                             <p class="text-sm text-gray-600 mb-3">{{ __('properties.payment.qr_code') }}</p>
                             <div id="qrisCodeContainer" class="flex justify-center mb-3">
                                 <img id="qrisCodeImage" src="" alt="QRIS Code" class="w-64 h-64 border-2 border-gray-300 rounded">
+                            </div>
+                            <div class="flex justify-center mb-3">
+                                <button id="downloadQrisBtn" class="inline-flex items-center px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                                    <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Download QR Code
+                                </button>
                             </div>
                             <div class="text-left space-y-2">
                                 <div class="flex justify-between">
@@ -1193,30 +1201,22 @@
 
         // Modal functions
         function showQrisModal(qrisData) {
-            // Generate QR code image URL (assuming qr_content is base64 or URL)
-            const qrImage = document.getElementById('qrisCodeImage');
-
-            // If qr_content is a base64 string, use it directly
-            if (qrisData.qr_content && qrisData.qr_content.startsWith('data:image')) {
-                qrImage.src = qrisData.qr_content;
-            } else if (qrisData.qr_content) {
-                // Generate QR code using quickchart.io API (reliable and free alternative)
-                qrImage.src = `https://quickchart.io/qr?text=${encodeURIComponent(qrisData.qr_content)}&size=300`;
-            } else {
-                console.error('No QR content available');
-            }
-
-            document.getElementById('modalQrisAmount').textContent = `Rp ${parseFloat(qrisData.amount || 0).toLocaleString('id-ID')}`;
-
             // Calculate expiry time
-            const now = new Date();
             const expiryMinutes = qrisData.validity_period || '60M';
             const minutes = parseInt(expiryMinutes.replace('M', ''));
-            const expiryTime = new Date(now.getTime() + minutes * 60000);
-            document.getElementById('modalQrisExpiry').textContent = expiryTime.toLocaleString('id-ID');
+            const expiresAt = new Date(Date.now() + minutes * 60000);
 
-            // Show modal
-            document.getElementById('qrisModal').classList.remove('hidden');
+            // Save to localStorage so qris-show page survives refresh
+            const storageKey = 'qris_data_{{ $booking->order_id }}';
+            localStorage.setItem(storageKey, JSON.stringify({
+                qr_content: qrisData.qr_content,
+                amount: qrisData.amount,
+                expiresAt: expiresAt.toISOString(),
+                order_id: '{{ $booking->order_id }}'
+            }));
+
+            // Redirect to dedicated QRIS page
+            window.location.href = '{{ route("payment.qris-show") }}?order_id={{ $booking->order_id }}';
         }
 
         function showCCModal(ccData) {
@@ -1341,6 +1341,35 @@
 
         document.getElementById('closeErrorModalBtn').addEventListener('click', function() {
             document.getElementById('errorModal').classList.add('hidden');
+        });
+
+        document.getElementById('downloadQrisBtn').addEventListener('click', function() {
+            const img = document.getElementById('qrisCodeImage');
+            const src = img.src;
+            if (!src) return;
+
+            if (src.startsWith('data:image')) {
+                const a = document.createElement('a');
+                a.href = src;
+                a.download = 'qris-code.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                fetch(src)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'qris-code.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    })
+                    .catch(() => window.open(src, '_blank'));
+            }
         });
 
         document.getElementById('closeQrisModalBtn').addEventListener('click', function() {
