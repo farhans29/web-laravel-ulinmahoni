@@ -622,8 +622,8 @@ class BookingController extends ApiController
                 $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
             } while (Transaction::where('order_id', $order_id)->exists());
 
-            // Set expiration time to 1 hour from now
-            $expiredAt = now()->addHour();
+            // Set expiration time to 15 minutes from now
+            $expiredAt = now()->addMinutes(15);
 
             // Prepare transaction data
             $transactionData = [
@@ -1027,8 +1027,8 @@ class BookingController extends ApiController
                 $newOrderId = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
             } while (Transaction::where('order_id', $newOrderId)->exists());
 
-            // Set expiration time to 1 hour from now
-            $expiredAt = now()->addHour();
+            // Set expiration time to 15 minutes from now
+            $expiredAt = now()->addMinutes(15);
 
             // Prepare transaction data from request
             $transactionData = [
@@ -2450,6 +2450,22 @@ class BookingController extends ApiController
                     'message' => 'Validation failed',
                     'errors' => $validator->errors()
                 ], 422);
+            }
+
+            // Idempotency check: return existing VA if already generated
+            $existingTransaction = Transaction::where('order_id', $request->order_id)->first();
+            if ($existingTransaction && $existingTransaction->virtual_account_no) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Virtual Account already exists',
+                    'data' => [
+                        'success' => true,
+                        'virtual_account_no' => $existingTransaction->virtual_account_no,
+                        'bank' => $existingTransaction->payment_bank,
+                        'total_amount' => $existingTransaction->total_amount,
+                        'amount' => $existingTransaction->total_amount,
+                    ]
+                ], 200);
             }
 
             $result = $this->dokuGenerateVA($request->all());

@@ -29,6 +29,7 @@ class PromoController extends Controller
                     'image' => $image,
                     'badge' => 'Promo',
                     'description' => $promo->descriptions,
+                    'promo_code' => $promo->promo_code,
                 ];
             });
 
@@ -71,6 +72,7 @@ class PromoController extends Controller
             'images' => $allImages,
             'badge' => 'Promo',
             'description' => $promo->descriptions,
+            'promo_code' => $promo->promo_code,
         ];
 
         // Add additional details for the promo page

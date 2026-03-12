@@ -85,6 +85,14 @@
                 <div class="grid md:grid-cols-2 gap-8 p-8">
                     <!-- Left Column -->
                     <div>
+                        <!-- Promo Code -->
+                        @if(!empty($promo['promo_code']))
+                        <div class="mb-6">
+                            <h2 class="text-2xl font-semibold mb-2">Kode Promo</h2>
+                            <span class="text-lg font-bold text-gray-900">{{ $promo['promo_code'] }}</span>
+                        </div>
+                        @endif
+
                         <!-- Description -->
                         @if(!empty($promo['description']))
                         <div class="mb-8">
