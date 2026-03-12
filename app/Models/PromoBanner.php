@@ -14,6 +14,7 @@ class PromoBanner extends Model
         'image_id',
         'descriptions',
         'how_to_claim',
+        'promo_code',
         'status',
         'created_by',
         'updated_by'

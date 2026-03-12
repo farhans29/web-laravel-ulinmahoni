@@ -622,8 +622,8 @@ class BookingController extends ApiController
                 $order_id = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
             } while (Transaction::where('order_id', $order_id)->exists());
 
-            // Set expiration time to 1 hour from now
-            $expiredAt = now()->addHour();
+            // Set expiration time to 15 minutes from now
+            $expiredAt = now()->addMinutes(15);
 
             // Prepare transaction data
             $transactionData = [
@@ -1027,8 +1027,8 @@ class BookingController extends ApiController
                 $newOrderId = 'UMH-' . now()->format('ymd') . $randomNumber . $propertyInitial;
             } while (Transaction::where('order_id', $newOrderId)->exists());
 
-            // Set expiration time to 1 hour from now
-            $expiredAt = now()->addHour();
+            // Set expiration time to 15 minutes from now
+            $expiredAt = now()->addMinutes(15);
 
             // Prepare transaction data from request
             $transactionData = [

@@ -356,11 +356,9 @@
                                         <!-- Transaction StatusS -->
                                         @php
                                             $status = strtolower($booking->transaction_status);
-                                            $transactionDate = \Carbon\Carbon::parse($booking->transaction_date);
                                             $currentTime = now();
-                                            $hoursDiff = $currentTime->diffInHours($transactionDate);
-                                            $expiresAt = $transactionDate->copy()->addHour();
-                                            $remainingMinutes = $currentTime->diffInMinutes($expiresAt, false);
+                                            $expiresAt = $booking->expired_at ? \Carbon\Carbon::parse($booking->expired_at) : null;
+                                            $remainingMinutes = $expiresAt ? $currentTime->diffInMinutes($expiresAt, false) : -1;
                                             $shouldShowTimer = false;
 
                                             // Status mapping
