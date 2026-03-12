@@ -110,8 +110,8 @@ class SearchController extends ApiController
                 });
             }
 
-            // Order by created_at (newest first)
-            $query->orderBy('m_rooms.created_at', 'desc');
+            // Order by property_id ascending
+            $query->orderBy('m_rooms.property_id', 'asc');
 
             // Get paginated results
             $perPage = $request->get('per_page', 12);
