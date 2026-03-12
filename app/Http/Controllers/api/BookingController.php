@@ -2452,6 +2452,22 @@ class BookingController extends ApiController
                 ], 422);
             }
 
+            // Idempotency check: return existing VA if already generated
+            $existingTransaction = Transaction::where('order_id', $request->order_id)->first();
+            if ($existingTransaction && $existingTransaction->virtual_account_no) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Virtual Account already exists',
+                    'data' => [
+                        'success' => true,
+                        'virtual_account_no' => $existingTransaction->virtual_account_no,
+                        'bank' => $existingTransaction->payment_bank,
+                        'total_amount' => $existingTransaction->total_amount,
+                        'amount' => $existingTransaction->total_amount,
+                    ]
+                ], 200);
+            }
+
             $result = $this->dokuGenerateVA($request->all());
 
             if ($result['success']) {

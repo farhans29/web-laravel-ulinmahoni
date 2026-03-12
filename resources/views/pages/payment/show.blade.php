@@ -587,6 +587,7 @@
         const submitText = document.getElementById('submitText');
         const loadingSpinner = document.getElementById('loadingSpinner');
         let selectedPaymentMethod = '';
+        let isSubmitting = false;
 
         // Voucher state
         let appliedVoucher = null;
@@ -888,6 +889,8 @@
             const radio = card.querySelector('input[type="radio"]');
 
             card.addEventListener('click', () => {
+                if (isSubmitting) return;
+
                 const paymentType = radio.dataset.paymentType;
                 const bankName = radio.dataset.bankName;
 
@@ -933,12 +936,15 @@
         paymentForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            if (isSubmitting) return;
+
             if (!selectedPaymentMethod) {
                 alert(translations.please_select_payment);
                 return;
             }
 
             // Show loading state
+            isSubmitting = true;
             submitBtn.disabled = true;
             submitText.textContent = translations.processing_payment;
             loadingSpinner.classList.remove('hidden');
@@ -1172,6 +1178,7 @@
             } catch (error) {
                 console.error('Error:', error);
                 showErrorModal(error.message || 'Terjadi kesalahan. Silakan coba lagi.');
+                isSubmitting = false;
                 submitBtn.disabled = false;
                 submitText.textContent = 'Lanjutkan Pembayaran';
                 loadingSpinner.classList.add('hidden');
