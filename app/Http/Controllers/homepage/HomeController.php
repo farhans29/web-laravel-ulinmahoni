@@ -81,7 +81,7 @@ class HomeController extends Controller {
         try {
             // Get active properties (status = 1)
             $properties = Property::where('status', 1)
-                ->orderBy('created_at', 'desc')
+                ->orderBy('created_at', 'asc')
                 ->get();
 
             // Prepare property data by type
