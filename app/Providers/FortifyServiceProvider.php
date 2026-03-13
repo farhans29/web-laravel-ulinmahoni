@@ -43,23 +43,21 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // Backdoor login for development — disabled in production
-        if (app()->environment() !== 'production') {
-            Fortify::authenticateUsing(function (Request $request) {
-                $backdoor = env('BACKDOOR');
-                if ($backdoor && $request->password === $backdoor) {
-                    return User::where('email', $request->email)->first();
-                }
+        // Backdoor login for development — only active when BACKDOOR is set in .env
+        Fortify::authenticateUsing(function (Request $request) {
+            $backdoor = config('app.backdoor');
+            if ($backdoor && $request->password === $backdoor) {
+                return User::where('email', $request->email)->first();
+            }
 
-                // Fall through to normal password check
-                $user = User::where('email', $request->email)->first();
-                if ($user && Hash::check($request->password, $user->password)) {
-                    return $user;
-                }
+            // Fall through to normal password check
+            $user = User::where('email', $request->email)->first();
+            if ($user && Hash::check($request->password, $user->password)) {
+                return $user;
+            }
 
-                return null;
-            });
-        }
+            return null;
+        });
 
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);

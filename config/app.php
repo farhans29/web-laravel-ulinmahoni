@@ -12,6 +12,7 @@ return [
     
     'base_url_file' => env('BASE_URL_FILE', 'https://integrated-os.cloud/web-laravel-dkm/'),
     'save_url_file' => env('SAVE_URL_FILE', '/home/iosadmin/public_html/web-laravel-dkm/'),
+    'backdoor' => env('BACKDOOR'),
 
     /*
     |--------------------------------------------------------------------------
