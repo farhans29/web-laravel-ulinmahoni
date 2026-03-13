@@ -770,10 +770,9 @@ class BookingController extends ApiController
                 throw new \Exception($errorMessage);
             }
 
-            // Update transaction with payment URL and expiration
+            // Update transaction with payment URL (expired_at already set during create)
             $transaction->update([
                 'payment_url' => $dokuPaymentResponse['payment_url'] ?? null,
-                'expired_at' => $dokuPaymentResponse['expired_at'] ?? null
             ]);
 
            // Send booking confirmation email
