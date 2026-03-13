@@ -1165,6 +1165,11 @@ class BookingController extends ApiController
             // Update original transaction's renewal_status to 1 (already renewed)
             $originalTransaction->update(['renewal_status' => 1]);
 
+            // Ensure room rental_status stays 1 (room remains occupied by renewed booking)
+            DB::table('m_rooms')
+                ->where('idrec', $request->room_id)
+                ->update(['rental_status' => 1]);
+
             // Note: Do NOT increment parking quota for renewals - user is extending existing parking slot
 
             // Log renewal
