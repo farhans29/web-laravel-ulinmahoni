@@ -1123,7 +1123,7 @@ class BookingController extends ApiController
                 'created_by' => $oldBooking ? $oldBooking->created_by : $request->user_id,
                 'updated_by' => $request->user_id,
                 'status' => '1',
-                'previous_booking_id' => $oldBooking ? $oldBooking->idrec : null,
+                'previous_booking_id' => null,
                 'reason' => null,
                 'description' => null,
                 'room_changed_at' => null,
