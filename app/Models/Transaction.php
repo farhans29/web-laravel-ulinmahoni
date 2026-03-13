@@ -65,6 +65,7 @@ class Transaction extends Model
         'check_in',
         'check_out',
         'paid_at',
+        'expired_at',
         'created_at',
         'updated_at'
     ];
