@@ -604,16 +604,16 @@ class BookingController extends ApiController
             }
 
             // Handle deposit fee
-            $depositFee = $request->deposit_fee ?? 0;
+            $depositFee = floatval($request->deposit_fee ?? 0);
 
             // Handle parking fee - store as is (no calculation with duration)
-            $parkingDuration = $request->parking_duration ?? 0;
-            $parkingFee = $request->parking_fee ?? 0;
+            $parkingDuration = intval($request->parking_duration ?? 0);
+            $parkingFee = floatval($request->parking_fee ?? 0);
             $parkingType = $request->parking_type ?? null;
 
             // Calculate final grand total: Subtotal - Discount + Service Fee + Deposit + Parking
             $grandtotalPrice = $subtotalBeforeServiceFee - $discountAmount + $serviceFees + $depositFee + $parkingFee;
-            
+
             // Generate order_id in format INV-UM-APP-yymmddXXXPP
             $property = $request->property_id ? Property::find($request->property_id) : null;
             $propertyInitial = $property && $property->initial ? $property->initial : 'XX';
@@ -838,7 +838,7 @@ class BookingController extends ApiController
             'room_id' => 'required|integer',
             // BOOKING TYPE
             'booking_type' => 'required|in:daily,monthly',
-            'check_in' => 'required|date|after_or_equal:today',
+            'check_in' => 'required|date',
             'check_out' => 'required|date|after:check_in',
             // PRICING
             'daily_price' => 'nullable|numeric|min:0',
@@ -1600,12 +1600,9 @@ class BookingController extends ApiController
                 $updateData['payment_bank'] = $request->payment_bank;
             }
 
-            // Handle deposit fee
-            $depositFee = 0;
-            if ($request->has('deposit_fee')) {
-                $depositFee = floatval($request->deposit_fee);
-                $updateData['deposit_fee'] = $depositFee;
-            }
+            // Handle deposit fee — fall back to DB value if not provided
+            $depositFee = floatval($request->input('deposit_fee', $booking->deposit_fee ?? 0));
+            $updateData['deposit_fee'] = $depositFee;
 
             // Handle parking fee - store as is (no calculation with duration)
             $parkingDuration = 0;
