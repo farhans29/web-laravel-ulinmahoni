@@ -1623,24 +1623,14 @@ class BookingController extends ApiController
             $depositFee = floatval($request->input('deposit_fee', $booking->deposit_fee ?? 0));
             $updateData['deposit_fee'] = $depositFee;
 
-            // Handle parking fee - store as is (no calculation with duration)
-            $parkingDuration = 0;
-            $parkingFee = 0;
-
-            if ($request->has('parking_fee')) {
-                $parkingFee = floatval($request->parking_fee);
-            }
-            if ($request->has('parking_duration')) {
-                $parkingDuration = intval($request->parking_duration);
-            }
+            // Handle parking fee — fall back to DB value if not provided
+            $parkingFee = floatval($request->input('parking_fee', $booking->parking_fee ?? 0));
+            $parkingDuration = intval($request->input('parking_duration', $booking->parking_duration ?? 0));
+            $parkingType = $request->input('parking_type', $booking->parking_type ?? null);
 
             $updateData['parking_fee'] = $parkingFee;
             $updateData['parking_duration'] = $parkingDuration;
-
-            // Handle parking type
-            if ($request->has('parking_type')) {
-                $updateData['parking_type'] = $request->parking_type;
-            }
+            $updateData['parking_type'] = $parkingType;
 
             // Handle voucher discount
             $discountAmount = floatval($booking->discount_amount ?? 0);
@@ -1675,7 +1665,7 @@ class BookingController extends ApiController
                 ->update(['grandtotal_price' => $newGrandtotal]);
 
             // Handle parking record in t_parking
-            if ($parkingFee > 0 && $request->parking_type && $request->parking_type !== 'none') {
+            if ($parkingFee > 0 && $parkingType && $parkingType !== 'none') {
                 try {
                     $existingParking = DB::table('t_parking')
                         ->where('user_id', $booking->user_id)
@@ -1684,16 +1674,16 @@ class BookingController extends ApiController
                         ->first();
 
                     if ($existingParking) {
-                        if ($existingParking->parking_type !== $request->parking_type) {
+                        if ($existingParking->parking_type !== $parkingType) {
                             // Type changed — swap quota
                             $this->decrementParkingQuota($booking->property_id, $existingParking->parking_type);
-                            $this->incrementParkingQuota($booking->property_id, $request->parking_type);
+                            $this->incrementParkingQuota($booking->property_id, $parkingType);
                         }
                         // Same type — no quota change needed, just update record details
                         DB::table('t_parking')
                             ->where('idrec', $existingParking->idrec)
                             ->update([
-                                'parking_type' => $request->parking_type,
+                                'parking_type' => $parkingType,
                                 'vehicle_plate' => $request->vehicle_plate ?? $existingParking->vehicle_plate,
                                 'owner_name' => $request->owner_name ?? $existingParking->owner_name,
                                 'owner_phone' => $request->owner_phone ?? $existingParking->owner_phone,
@@ -1703,11 +1693,11 @@ class BookingController extends ApiController
                             ]);
                     } else {
                         // No existing record — new parking slot, increment and insert
-                        $this->incrementParkingQuota($booking->property_id, $request->parking_type);
+                        $this->incrementParkingQuota($booking->property_id, $parkingType);
                         DB::table('t_parking')->insert([
                             'property_id' => $booking->property_id,
                             'order_id' => $booking->order_id,
-                            'parking_type' => $request->parking_type,
+                            'parking_type' => $parkingType,
                             'vehicle_plate' => $request->vehicle_plate ?? null,
                             'owner_name' => $request->owner_name ?? null,
                             'owner_phone' => $request->owner_phone ?? null,
