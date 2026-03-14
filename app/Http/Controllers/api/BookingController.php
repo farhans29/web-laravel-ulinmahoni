@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Property;
 
 class BookingController extends ApiController
@@ -1675,20 +1674,22 @@ class BookingController extends ApiController
                 ->where('order_id', $booking->order_id)
                 ->update(['grandtotal_price' => $newGrandtotal]);
 
-            // Insert parking record into t_parking table (only for new bookings with parking, not renewals)
+            // Handle parking record in t_parking
             if ($parkingFee > 0 && $request->parking_type && $request->parking_type !== 'none') {
                 try {
-                    $user = Auth::user();
                     $existingParking = DB::table('t_parking')
-                        ->where('order_id', $booking->order_id)
+                        ->where('user_id', $booking->user_id)
+                        ->where('property_id', $booking->property_id)
+                        ->latest('created_at')
                         ->first();
 
                     if ($existingParking) {
-                        // Update existing record if parking type changed
                         if ($existingParking->parking_type !== $request->parking_type) {
+                            // Type changed — swap quota
                             $this->decrementParkingQuota($booking->property_id, $existingParking->parking_type);
                             $this->incrementParkingQuota($booking->property_id, $request->parking_type);
                         }
+                        // Same type — no quota change needed, just update record details
                         DB::table('t_parking')
                             ->where('idrec', $existingParking->idrec)
                             ->update([
@@ -1701,25 +1702,26 @@ class BookingController extends ApiController
                                 'updated_at' => now(),
                             ]);
                     } else {
+                        // No existing record — new parking slot, increment and insert
                         $this->incrementParkingQuota($booking->property_id, $request->parking_type);
                         DB::table('t_parking')->insert([
                             'property_id' => $booking->property_id,
                             'order_id' => $booking->order_id,
                             'parking_type' => $request->parking_type,
                             'vehicle_plate' => $request->vehicle_plate ?? null,
-                            'owner_name' => $request->owner_name ?? ($user->name ?? null),
-                            'owner_phone' => $request->owner_phone ?? ($user->phone_number ?? null),
-                            'user_id' => Auth::id(),
+                            'owner_name' => $request->owner_name ?? null,
+                            'owner_phone' => $request->owner_phone ?? null,
+                            'user_id' => $booking->user_id,
                             'parking_duration' => $parkingDuration,
                             'fee_amount' => $parkingFee,
                             'management_only' => 0,
-                            'created_by' => Auth::id(),
+                            'created_by' => $booking->user_id,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
                     }
                 } catch (\Exception $e) {
-                    \Log::error('Failed to insert/update parking record: ' . $e->getMessage());
+                    \Log::error('Failed to handle parking record: ' . $e->getMessage());
                 }
             }
 
