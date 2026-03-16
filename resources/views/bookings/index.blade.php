@@ -407,7 +407,7 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">
-                                            @if(!$booking->attachment)
+                                            @if(!$booking->attachment && $booking->transaction_status !== 'expired')
                                                 <form action="{{ route('bookings.upload-attachment', $booking->idrec) }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-2" id="upload-form-{{ $booking->idrec }}">
                                                     @csrf
                                                     <div class="relative">

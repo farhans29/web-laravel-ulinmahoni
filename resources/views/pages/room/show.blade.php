@@ -1176,18 +1176,19 @@
                     checkOutDate.setMonth(checkOutDate.getMonth() + months);
                     checkOutInput.value = checkOutDate.toISOString().split('T')[0];
                 } else {
-                    // For daily, apply month boundary and 14-day limit
+                    // For daily, apply month boundary
                     const checkInDate = new Date(checkInInput.value);
                     const minCheckout = new Date(checkInDate);
                     minCheckout.setDate(checkInDate.getDate() + 1);
 
-                    // Calculate max checkout: 14 days OR end of month, whichever is earlier
-                    const maxCheckoutDate = new Date(checkInDate);
-                    maxCheckoutDate.setDate(checkInDate.getDate() + 14);
+                    // // Calculate max checkout: 14 days OR end of month, whichever is earlier
+                    // const maxCheckoutDate = new Date(checkInDate);
+                    // maxCheckoutDate.setDate(checkInDate.getDate() + 14);
 
                     const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
 
-                    const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
+                    // const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
+                    const actualMaxCheckout = endOfMonth;
 
                     checkOutInput.min = minCheckout.toISOString().split('T')[0];
                     checkOutInput.max = actualMaxCheckout.toISOString().split('T')[0];
@@ -1242,13 +1243,14 @@
                             const minCheckout = new Date(checkInDate);
                             minCheckout.setDate(checkInDate.getDate() + 1);
 
-                            // Calculate max checkout: 14 days OR end of month, whichever is earlier
-                            const maxCheckoutDate = new Date(checkInDate);
-                            maxCheckoutDate.setDate(checkInDate.getDate() + 14);
+                            // // Calculate max checkout: 14 days OR end of month, whichever is earlier
+                            // const maxCheckoutDate = new Date(checkInDate);
+                            // maxCheckoutDate.setDate(checkInDate.getDate() + 14);
 
                             const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
 
-                            const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
+                            // const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
+                            const actualMaxCheckout = endOfMonth;
 
                             if (checkOutInput) {
                                 checkOutInput.min = formatDate(minCheckout);
@@ -1384,14 +1386,14 @@
                             isValid = false;
                         }
 
-                        // Check if booking period exceeds 14 days
-                        const daysDiff = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-                        if (daysDiff > 14) {
-                            document.getElementById('check_outError').textContent = 'Booking period cannot exceed 14 days';
-                            document.getElementById('check_outError').classList.remove('hidden');
-                            checkOutInput.classList.add('border-red-500');
-                            isValid = false;
-                        }
+                        // // Check if booking period exceeds 14 days
+                        // const daysDiff = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                        // if (daysDiff > 14) {
+                        //     document.getElementById('check_outError').textContent = 'Booking period cannot exceed 14 days';
+                        //     document.getElementById('check_outError').classList.remove('hidden');
+                        //     checkOutInput.classList.add('border-red-500');
+                        //     isValid = false;
+                        // }
                     }
                 }
 
@@ -1617,13 +1619,14 @@
                         const minCheckout = new Date(checkInDate);
                         minCheckout.setDate(checkInDate.getDate() + 1);
 
-                        // Calculate max checkout: 14 days OR end of month, whichever is earlier
-                        const maxCheckoutDate = new Date(checkInDate);
-                        maxCheckoutDate.setDate(checkInDate.getDate() + 14);
+                        // // Calculate max checkout: 14 days OR end of month, whichever is earlier
+                        // const maxCheckoutDate = new Date(checkInDate);
+                        // maxCheckoutDate.setDate(checkInDate.getDate() + 14);
 
                         const endOfMonth = new Date(checkInDate.getFullYear(), checkInDate.getMonth() + 1, 0);
 
-                        const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
+                        // const actualMaxCheckout = maxCheckoutDate < endOfMonth ? maxCheckoutDate : endOfMonth;
+                        const actualMaxCheckout = endOfMonth;
 
                         if (checkOutInput) {
                             checkOutInput.min = formatDate(minCheckout);
@@ -1696,9 +1699,9 @@
             const maxDate = new Date();
             maxDate.setDate(today.getDate() + 365); // Allow booking up to 1 year ahead
 
-            // Max check-in date is 14 days from today
-            const maxCheckInDate = new Date();
-            maxCheckInDate.setDate(today.getDate() + 14);
+            // // Max check-in date is 14 days from today
+            // const maxCheckInDate = new Date();
+            // maxCheckInDate.setDate(today.getDate() + 14);
 
             // Set default dates (check-in defaults to today)
             const minCheckInDate = new Date(today);
@@ -1713,7 +1716,7 @@
                 checkInPicker = new Datepicker(checkInElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
-                    maxDate: maxCheckInDate,
+                    maxDate: maxDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
@@ -1729,12 +1732,13 @@
                         const minCheckOut = new Date(selectedCheckIn);
                         minCheckOut.setDate(selectedCheckIn.getDate() + 1);
 
-                        // Calculate max checkout: 14 days from check-in OR end of month
-                        const maxCheckOutDate = new Date(selectedCheckIn);
-                        maxCheckOutDate.setDate(selectedCheckIn.getDate() + 14);
+                        // // Calculate max checkout: 14 days from check-in OR end of month
+                        // const maxCheckOutDate = new Date(selectedCheckIn);
+                        // maxCheckOutDate.setDate(selectedCheckIn.getDate() + 14);
 
                         const endOfMonth = new Date(selectedCheckIn.getFullYear(), selectedCheckIn.getMonth() + 1, 0);
-                        const actualMaxCheckOut = maxCheckOutDate < endOfMonth ? maxCheckOutDate : endOfMonth;
+                        // const actualMaxCheckOut = maxCheckOutDate < endOfMonth ? maxCheckOutDate : endOfMonth;
+                        const actualMaxCheckOut = endOfMonth;
 
                         // Update check-out datepicker options
                         if (checkOutPicker) {
@@ -1787,7 +1791,7 @@
                 checkInMonthlyPicker = new Datepicker(checkInMonthlyElem, {
                     format: 'yyyy-mm-dd',
                     minDate: today,
-                    maxDate: maxCheckInDate,
+                    maxDate: maxDate,
                     autohide: true,
                     todayHighlight: true,
                     weekStart: 0
