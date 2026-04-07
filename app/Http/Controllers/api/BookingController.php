@@ -1224,6 +1224,132 @@ class BookingController extends ApiController
         }
     }
 
+    public function cancelBooking(Request $request, $id)
+    {
+        try {
+            $transaction = Transaction::find($id);
+
+            if (!$transaction) {
+                return response()->json(['status' => 'error', 'message' => 'Transaction not found'], 404);
+            }
+
+            $nonCancellable = ['cancelled', 'expired', 'completed', 'checked_out'];
+            if (\in_array(strtolower($transaction->getAttribute('transaction_status')), $nonCancellable)) {
+                return response()->json(['status' => 'error', 'message' => 'Booking cannot be cancelled in its current status'], 422);
+            }
+
+            DB::beginTransaction();
+
+            // Cancel the transaction
+            $transaction->update([
+                'transaction_status' => 'cancelled',
+                'status' => '0',
+            ]);
+
+            // Cancel payment if exists
+            $payment = Payment::where('order_id', $transaction->order_id)->first();
+            if ($payment) {
+                $payment->update(['payment_status' => 'cancelled']);
+            }
+
+            // Deactivate booking record
+            $booking = Booking::where('order_id', $transaction->order_id)->first();
+            if ($booking) {
+                $booking->update(['status' => '0']);
+            }
+
+            // Restore voucher usage if applicable
+            if ($transaction->voucher_id) {
+                $voucher = \App\Models\Voucher::find($transaction->voucher_id);
+                if ($voucher && $voucher->current_usage_count > 0) {
+                    $voucher->decrement('current_usage_count');
+                }
+            }
+
+            // Renewal rollback — mirrors the expiry SQL reference
+            $txRoomId    = (int)    $transaction->getAttribute('room_id');
+            $txUserId    = (int)    $transaction->getAttribute('user_id');
+            $txIdrec     = (int)    $transaction->getAttribute('idrec');
+            $txCreatedAt = (string) $transaction->getAttribute('created_at');
+
+            if ($transaction->is_renewal == 1) {
+                // Find the most recent previous PAID transaction for same room + user
+                $previousTransaction = DB::table('t_transactions')
+                    ->where('room_id', $txRoomId)
+                    ->where('user_id', $txUserId)
+                    ->where('idrec', '!=', $txIdrec)
+                    ->whereRaw('UPPER(transaction_status) IN (?, ?)', ['PAID', 'CONFIRMED'])
+                    ->where('created_at', '<', $txCreatedAt)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                if ($previousTransaction) {
+                    $prevIdrec   = (int) $previousTransaction->idrec;
+                    $prevOrderId = (string) $previousTransaction->order_id;
+
+                    $previousBooking = DB::table('t_booking')->where('order_id', $prevOrderId)->first();
+
+                    // Check BEFORE nullifying — mirrors: b.check_out_at IS NOT NULL in SQL
+                    $hadCheckOut = $previousBooking && $previousBooking->check_out_at !== null;
+
+                    // Rollback renewal_status to 0
+                    DB::table('t_transactions')
+                        ->where('idrec', $prevIdrec)
+                        ->update(['renewal_status' => 0]);
+
+                    // Rollback check_out_at to null (restore previous booking as active)
+                    DB::table('t_booking')
+                        ->where('order_id', $prevOrderId)
+                        ->update(['check_out_at' => null]);
+
+                    // rental_status = 1 if previous booking had check_out_at set, else 0
+                    DB::table('m_rooms')
+                        ->where('idrec', $txRoomId)
+                        ->update(['rental_status' => $hadCheckOut ? 1 : 0]);
+
+                    Log::info('Renewal rollback on cancellation', [
+                        'cancelled_transaction_id' => $txIdrec,
+                        'previous_transaction_id'  => $prevIdrec,
+                        'previous_order_id'        => $prevOrderId,
+                        'had_check_out'            => $hadCheckOut,
+                    ]);
+                }
+            } else {
+                // Non-renewal: free the room if no other active bookings exist
+                $otherActive = DB::table('t_transactions')
+                    ->where('room_id', $txRoomId)
+                    ->where('idrec', '!=', $txIdrec)
+                    ->where('status', '1')
+                    ->whereNotIn('transaction_status', ['cancelled', 'expired', 'checked_out'])
+                    ->exists();
+
+                if (!$otherActive) {
+                    DB::table('m_rooms')
+                        ->where('idrec', $txRoomId)
+                        ->update(['rental_status' => 0]);
+                }
+            }
+
+            DB::commit();
+
+            Log::info('Booking cancelled', [
+                'transaction_id' => $txIdrec,
+                'order_id'       => $transaction->getAttribute('order_id'),
+                'is_renewal'     => $transaction->getAttribute('is_renewal'),
+            ]);
+
+            return response()->json(['status' => 'success', 'message' => 'Booking cancelled successfully'], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Cancel booking error', [
+                'error' => $e->getMessage(),
+                'id' => $id,
+            ]);
+            return response()->json(['status' => 'error', 'message' => 'Failed to cancel booking'], 500);
+        }
+    }
+
     public function update(Request $request, $id)
     {
         try {

@@ -229,6 +229,9 @@
                                     <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         {{ __('booking.index.table_headers.attachment') }}
                                     </th>
+                                    <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -532,11 +535,19 @@
                                                 </div>
                                             @endif
                                         </td>
-                                        
+                                        <td class="px-6 py-4">
+                                            @if(in_array(strtolower($booking->transaction_status), ['pending', 'waiting']))
+                                                <button onclick="cancelBooking({{ $booking->idrec }})"
+                                                        class="inline-flex items-center px-3 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm font-medium">
+                                                    <i class="fas fa-times mr-1"></i> Cancel
+                                                </button>
+                                            @endif
+                                        </td>
+
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-12 text-center">
+                                        <td colspan="8" class="px-6 py-12 text-center">
                                             <div class="flex flex-col items-center justify-center text-gray-500">
                                                 <i class="fas fa-calendar-times text-4xl mb-4"></i>
                                                 <p class="text-lg">{{ __('booking.index.empty_states.no_bookings') }}</p>
@@ -743,6 +754,13 @@
                                                     title="Masa perpanjangan sudah berakhir">
                                                 <i class="fas fa-redo mr-2"></i>
                                                 {{ __('booking.actions.renew_booking') }}
+                                            </button>
+                                            @endif
+                                            @if(!$isCheckedOut && strtolower($booking->transaction_status) === 'paid')
+                                            <button onclick="cancelBooking({{ $booking->idrec }})"
+                                                    class="inline-flex items-center px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors duration-200 text-sm font-medium mt-2">
+                                                <i class="fas fa-times mr-2"></i>
+                                                Cancel
                                             </button>
                                             @endif
                                         </td>
@@ -1562,6 +1580,61 @@
             submitBtn.disabled = false;
             btnText.classList.remove('hidden');
             btnLoader.classList.add('hidden');
+        }
+    }
+
+    async function cancelBooking(bookingId) {
+        const result = await Swal.fire({
+            title: 'Cancel Booking?',
+            text: 'Are you sure you want to cancel this booking? This cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, Cancel Booking',
+            cancelButtonText: 'Keep Booking',
+            reverseButtons: true
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await fetch(`/api/v1/booking/${bookingId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'x-api-key': API_KEY,
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === 'success') {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Booking Cancelled',
+                    text: 'Your booking has been cancelled.',
+                    confirmButtonColor: '#0d9488',
+                    timer: 2000,
+                    timerProgressBar: true,
+                });
+                window.location.reload();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Cancellation Failed',
+                    text: data.message || 'Unable to cancel this booking.',
+                    confirmButtonColor: '#0d9488',
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred. Please try again.',
+                confirmButtonColor: '#0d9488',
+            });
         }
     }
     </script>
